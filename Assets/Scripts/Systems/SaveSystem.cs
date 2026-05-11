@@ -261,9 +261,6 @@ namespace CrowdDefense.Systems
             return reward;
         }
 
-        private static bool IsStackable(string id) =>
-            id is "range" or "fire_rate" or "pierce" or "lifesteal" or "move_speed";
-
         // ── Skins ──
 
         public static bool IsSkinOwned(string skinId)
