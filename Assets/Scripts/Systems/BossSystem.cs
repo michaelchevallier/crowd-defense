@@ -80,7 +80,7 @@ namespace CrowdDefense.Systems
             _defeatedPublished = false;
 
             EventManager.Instance?.Publish(new BossEncounteredEvent(
-                def.DisplayNameFr, cfg.Hp, def.AuraColor));
+                def.DisplayNameFr, cfg.Hp, def.AuraColor, e.Enemy.transform.position));
         }
 
         private void LateUpdate()

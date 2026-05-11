@@ -1,5 +1,7 @@
 #nullable enable
+using System.Collections;
 using UnityEngine;
+using CrowdDefense.Common;
 
 namespace CrowdDefense.Visual
 {
@@ -26,6 +28,7 @@ namespace CrowdDefense.Visual
         private bool        _rightDrag;       // right-click orbit around castle
         private Vector3     _dragOrigin;
         private Vector3     _orbitPivot;
+        private bool        _zooming;         // boss intro in progress
 
         // ── Public API ────────────────────────────────────────────────────────
         public void SetHero(Transform hero)    => _hero   = hero;
@@ -33,8 +36,41 @@ namespace CrowdDefense.Visual
         public void SetMapBounds(float halfX, float halfZ) { mapHalfX = halfX; mapHalfZ = halfZ; }
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
+        private void Start()     => EventManager.Instance?.Subscribe<BossEncounteredEvent>(OnBossSpawn);
+        private void OnDestroy() => EventManager.Instance?.Unsubscribe<BossEncounteredEvent>(OnBossSpawn);
+
+        private void OnBossSpawn(BossEncounteredEvent e) => StartCoroutine(BossZoomIntro(e.BossPos));
+
+        private IEnumerator BossZoomIntro(Vector3 bossPos)
+        {
+            _zooming = true;
+            var origin = transform.position;
+            var target = new Vector3(bossPos.x - 5f, 0f, bossPos.z - 8f);
+            target.y = Mathf.Clamp(minY, minY, maxY);
+
+            // Lerp in (0.6 s) — unscaledDeltaTime: survives timeScale=0 boss cutscene
+            for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.6f)
+            {
+                transform.position = Vector3.Lerp(origin, target, Mathf.SmoothStep(0f, 1f, t));
+                yield return null;
+            }
+            transform.position = target;
+
+            yield return new WaitForSecondsRealtime(1.4f);  // hold: total intro = 2 s
+
+            // Lerp back (0.6 s)
+            for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.6f)
+            {
+                transform.position = Vector3.Lerp(target, origin, Mathf.SmoothStep(0f, 1f, t));
+                yield return null;
+            }
+            transform.position = origin;
+            _zooming = false;
+        }
+
         private void Update()
         {
+            if (_zooming) return;
             HandleZoom();
             HandleToggleFollow();
             HandlePan();
