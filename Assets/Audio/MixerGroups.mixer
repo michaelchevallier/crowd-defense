@@ -128,7 +128,13 @@ AudioMixerController:
     name: SFXVol
   - guid: 2429f091e37e945508f62dacc17fdd04
     name: UIVol
-  m_AudioMixerGroupViews: []
+  m_AudioMixerGroupViews:
+  - guids:
+    - 5caf98694192f4f5688baadaab6616d1
+    - cd981456c00744df5832f9fb32e28efb
+    - 47a2d833c324848f3b3a338428bd806b
+    - 0c7bdb8bf6bfc4517bd4155550a19629
+    name: View
   m_CurrentViewIndex: 0
   m_TargetSnapshot: {fileID: -1009964797827817964}
 --- !u!243 &24300002

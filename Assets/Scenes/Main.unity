@@ -605,8 +605,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Visual.VfxPool
   impactPrefab: {fileID: 407788081387377539, guid: 89637bf1b5fe348dd88c2a7ebfd70e1f, type: 3}
   deathPrefab: {fileID: 2258627021153961714, guid: 177370200a4774562b6198f1ed39f02d, type: 3}
-  auraPrefab: {fileID: 6139624220986538897, guid: dbb7a1025fd114e6190a2d5f0165a037, type: 3}
-  coinPickupPrefab: {fileID: 988940015651830929, guid: 0e9d1938126834d449263b45872603d9, type: 3}
+  explosionPrefab: {fileID: 0}
+  coinBurstPrefab: {fileID: 0}
+  hitFlashPrefab: {fileID: 0}
 --- !u!1 &612914512
 GameObject:
   m_ObjectHideFlags: 0
@@ -923,6 +924,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.LevelRunner
   currentLevel: {fileID: 11400000, guid: 7fb0ab0cdb28c435b84e820e174e969c, type: 2}
   castlePrefab: {fileID: 0}
+  heroType: {fileID: 0}
+  heroPrefab: {fileID: 0}
+  spawnHero: 1
 --- !u!1 &1382892671
 GameObject:
   m_ObjectHideFlags: 0
