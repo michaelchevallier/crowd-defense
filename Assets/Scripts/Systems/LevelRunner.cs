@@ -16,7 +16,11 @@ namespace CrowdDefense.Systems
     {
         [SerializeField] private LevelData? currentLevel;
         [SerializeField] private GameObject? castlePrefab;
+
+        [Header("Hero")]
+        [SerializeField] private HeroType? heroType;
         [SerializeField] private GameObject? heroPrefab;
+        [SerializeField] private bool spawnHero = true;
 
         public GameState State { get; private set; } = GameState.Play;
         public LevelData? CurrentLevel => currentLevel;
@@ -70,9 +74,22 @@ namespace CrowdDefense.Systems
             }
 
             SpawnCastle();
-            SpawnHeroFromPrefab();
-            ApplyRunStateToHero();
+            SpawnHero();
             TryPlayOpeningCutscene();
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                targetSpeed = Mathf.Approximately(targetSpeed, 1f) ? 10f : 1f;
+                ApplyTimeScale();
+#if UNITY_EDITOR
+                Debug.Log($"[LevelRunner] speed cheat → {targetSpeed}x");
+#endif
+            }
+
+            UpdateHeroInput();
         }
 
         private void TryPlayOpeningCutscene()
@@ -81,7 +98,7 @@ namespace CrowdDefense.Systems
             string id = currentLevel.CutsceneIdAtStart;
             if (string.IsNullOrEmpty(id)) return;
 
-            var ctrl = Object.FindFirstObjectByType<CutsceneController>();
+            var ctrl = UnityEngine.Object.FindFirstObjectByType<CutsceneController>();
             if (ctrl == null) return;
 
             Time.timeScale = 0f;
@@ -92,6 +109,24 @@ namespace CrowdDefense.Systems
         {
             targetSpeed = Mathf.Clamp(multiplier, 1, 3);
             ApplyTimeScale();
+        }
+
+        private void UpdateHeroInput()
+        {
+            if (Hero == null || State != GameState.Play) return;
+
+            float dx = Input.GetAxisRaw("Horizontal");
+            float dz = Input.GetAxisRaw("Vertical");
+            Hero.SetMove(dx, dz);
+
+            bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            Hero.SetRunning(shiftHeld);
+
+            if (Input.GetKeyDown(KeyCode.B) && _castleWorldPos != Vector3.zero)
+                Hero.transform.position = _castleWorldPos + Vector3.up * 0.5f;
+
+            if (Input.GetKeyDown(KeyCode.U))
+                Hero.TryUlt();
         }
 
         private void SpawnCastle()
@@ -138,20 +173,30 @@ namespace CrowdDefense.Systems
             OnTotalHPChanged?.Invoke(TotalCastleHP, TotalCastleHPMax);
         }
 
-        private void SpawnHeroFromPrefab()
+        private void SpawnHero()
         {
-            if (heroPrefab == null) return;
-            if (PathManager.Instance?.Grid == null) return;
-            var grid = PathManager.Instance.Grid;
-            float cx = grid.Width  * grid.CellSize * 0.5f;
-            float cz = grid.Height * grid.CellSize * 0.5f;
-            var go = Instantiate(heroPrefab, new Vector3(cx, 0f, cz), Quaternion.identity);
-            Hero = go.GetComponent<Hero>();
-        }
+            if (!spawnHero || heroType == null) return;
 
-        private void ApplyRunStateToHero()
-        {
-            if (Hero == null) return;
+            var grid = PathManager.Instance?.Grid;
+            float maxX = grid != null ? grid.Width  * grid.CellSize * 0.5f : 29.5f;
+            float maxZ = grid != null ? grid.Height * grid.CellSize * 0.5f : 29.5f;
+
+            Vector3 spawnPos = _castleWorldPos != Vector3.zero
+                ? _castleWorldPos + new Vector3(1.5f, 0f, 0f)
+                : Vector3.zero;
+
+            GameObject heroGo;
+            if (heroPrefab != null)
+                heroGo = Instantiate(heroPrefab, spawnPos, Quaternion.identity);
+            else
+            {
+                heroGo = new GameObject("Hero");
+                heroGo.transform.position = spawnPos;
+            }
+
+            Hero = heroGo.GetComponent<Hero>() ?? heroGo.AddComponent<Hero>();
+            Hero.Init(heroType, spawnPos, maxX, maxZ);
+
             var rs = SaveSystem.GetRunState();
             Hero.ApplyRunContext(
                 rs?.heroPerks ?? new List<string>(),
@@ -166,6 +211,10 @@ namespace CrowdDefense.Systems
                 int bonus = Mathf.RoundToInt(PrimaryCastle.HPMax * (Hero.CastleHPMaxMul - 1f));
                 PrimaryCastle.GrantBonusHP(bonus);
             }
+
+#if UNITY_EDITOR
+            Debug.Log($"[LevelRunner] spawned hero '{heroType.Id}' at {spawnPos}");
+#endif
         }
 
         public int ResolveCastleHP() => currentLevel?.CastleHP ?? 120;
