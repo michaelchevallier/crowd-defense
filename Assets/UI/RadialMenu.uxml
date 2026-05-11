@@ -1,0 +1,30 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="RadialMenu.uss" />
+    <!-- Radial menu L3 upgrade (D1-03) — visible quand tower L2 signature selectionnee -->
+    <ui:VisualElement name="radial-menu" class="radial-menu hidden">
+        <!-- Titre contextuel : nom de la tour + niveau -->
+        <ui:Label text="" name="radial-title" class="radial-title" />
+
+        <!-- Ligne de boutons upgrade L3 -->
+        <ui:VisualElement class="radial-upgrade-row">
+            <ui:Button name="btn-upgrade-dps" class="radial-btn radial-btn-dps">
+                <ui:Label text="DPS" name="btn-dps-label" class="radial-btn-label" />
+                <ui:Label text="" name="btn-dps-cost" class="radial-btn-cost" />
+                <ui:Label text="" name="btn-dps-hint" class="radial-btn-hint" />
+            </ui:Button>
+
+            <ui:Button name="btn-upgrade-utility" class="radial-btn radial-btn-utility">
+                <ui:Label text="Utility" name="btn-utility-label" class="radial-btn-label" />
+                <ui:Label text="" name="btn-utility-cost" class="radial-btn-cost" />
+                <ui:Label text="" name="btn-utility-hint" class="radial-btn-hint" />
+            </ui:Button>
+        </ui:VisualElement>
+
+        <!-- Bouton vendre -->
+        <ui:Button name="btn-sell" class="radial-btn-sell">
+            <ui:Label text="" name="btn-sell-label" class="radial-btn-sell-label" />
+        </ui:Button>
+    </ui:VisualElement>
+</ui:UXML>
