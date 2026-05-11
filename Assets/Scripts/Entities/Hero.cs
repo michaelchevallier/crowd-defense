@@ -431,8 +431,8 @@ namespace CrowdDefense.Entities
 
         private void TriggerUltVfx()
         {
-            if (VfxPool.Instance == null) return;
-            VfxPool.Instance.SpawnImpact(transform.position + Vector3.up, new Color(1f, 0.82f, 0.22f));
+            if (VfxPool.Instance == null || cfg == null) return;
+            VfxPool.Instance.SpawnUlt(transform.position, cfg.UltAoeRadius);
         }
 
         // ── Tower aura query (used by Synergies.cs) ───────────────────────────

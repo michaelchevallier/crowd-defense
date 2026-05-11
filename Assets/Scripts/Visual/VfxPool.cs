@@ -23,6 +23,7 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? hitFlashPrefab;
         [SerializeField] private GameObject? levelUpPrefab;
         [SerializeField] private GameObject? perkPickupPrefab;
+        [SerializeField] private GameObject? ultPrefab;
 
         private ObjectPool<ParticleSystem>? _impactPool;
         private ObjectPool<ParticleSystem>? _deathPool;
@@ -31,6 +32,7 @@ namespace CrowdDefense.Visual
         private ObjectPool<ParticleSystem>? _hitFlashPool;
         private ObjectPool<ParticleSystem>? _levelUpPool;
         private ObjectPool<ParticleSystem>? _perkPickupPool;
+        private ObjectPool<ParticleSystem>? _ultPool;
 
         private Transform? _root;
         private Material? _additiveMat;
@@ -48,6 +50,7 @@ namespace CrowdDefense.Visual
             hitFlashPrefab  ??= BuildProceduralPrefab("HitFlash",  BuildHitFlashModule);
             levelUpPrefab   ??= BuildProceduralPrefab("LevelUp",   BuildLevelUpModule);
             perkPickupPrefab ??= BuildProceduralPrefab("PerkPickup", BuildPerkPickupModule);
+            ultPrefab        ??= BuildProceduralPrefab("Ult",        BuildUltModule);
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
@@ -56,6 +59,7 @@ namespace CrowdDefense.Visual
             _hitFlashPool  = BuildPool(hitFlashPrefab,  "HitFlash",  DefaultCapacity);
             _levelUpPool   = BuildPool(levelUpPrefab,   "LevelUp",   8);
             _perkPickupPool = BuildPool(perkPickupPrefab, "PerkPickup", DefaultCapacity);
+            _ultPool       = BuildPool(ultPrefab,        "Ult",        4);
 
             PreWarm();
         }
@@ -142,6 +146,41 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _perkPickupPool);
         }
 
+        public void SpawnUlt(Vector3 worldPos, float range)
+        {
+            if (!IsVfxEnabled() || _ultPool == null) return;
+            var ps = _ultPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+            float scale = Mathf.Clamp(range * 0.18f, 0.8f, 6f);
+            ps.transform.localScale = new Vector3(scale, 0.3f, scale);
+            ApplyTint(ps, new Color(1f, 0.82f, 0.22f));
+            PlayAndAutoRelease(ps, _ultPool);
+
+            // Light flash — short-lived point light centred on ult
+            StartCoroutine(UltLightFlash(worldPos, range));
+        }
+
+        private IEnumerator UltLightFlash(Vector3 worldPos, float range)
+        {
+            var go = new GameObject("UltFlash_Light");
+            var light = go.AddComponent<Light>();
+            light.type      = LightType.Point;
+            light.color     = new Color(1f, 0.88f, 0.4f);
+            light.intensity = 8f;
+            light.range     = range * 2.2f;
+            go.transform.position = worldPos + Vector3.up * 1.5f;
+
+            const float duration = 0.35f;
+            float t = 0f;
+            while (t < duration)
+            {
+                t += Time.deltaTime;
+                light.intensity = Mathf.Lerp(8f, 0f, t / duration);
+                yield return null;
+            }
+            Destroy(go);
+        }
+
         // ── Pool internals ────────────────────────────────────────────────────
 
         private ObjectPool<ParticleSystem> BuildPool(GameObject prefab, string label, int capacity)
@@ -182,6 +221,7 @@ namespace CrowdDefense.Visual
             PreWarmPool(_hitFlashPool,  DefaultCapacity);
             PreWarmPool(_levelUpPool,   8);
             PreWarmPool(_perkPickupPool, DefaultCapacity);
+            PreWarmPool(_ultPool,       4);
         }
 
         private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
@@ -382,6 +422,32 @@ namespace CrowdDefense.Visual
             shape.enabled   = true;
             shape.shapeType = ParticleSystemShapeType.Sphere;
             shape.radius    = 0.3f;
+
+            SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
+        }
+
+        private static void BuildUltModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime   = new ParticleSystem.MinMaxCurve(0.55f, 0.9f);
+            main.startSpeed      = new ParticleSystem.MinMaxCurve(4f, 10f);
+            main.startSize       = new ParticleSystem.MinMaxCurve(0.18f, 0.55f);
+            main.startColor      = new Color(1f, 0.82f, 0.22f);
+            main.maxParticles    = 200;
+            main.duration        = 0.12f;
+            main.gravityModifier = -0.15f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 80, 100, 1, 0.01f) });
+
+            // Donut shape = ring expanding outward
+            var shape = ps.shape;
+            shape.enabled    = true;
+            shape.shapeType  = ParticleSystemShapeType.Donut;
+            shape.radius     = 1f;
+            shape.donutRadius = 0.15f;
 
             SetSizeOverLifetimeFade(ps);
             SetColorAlphaFade(ps);
