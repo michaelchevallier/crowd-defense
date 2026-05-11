@@ -5,6 +5,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.UI;
 using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
@@ -62,6 +63,20 @@ namespace CrowdDefense.Systems
             SpawnCastle();
             SpawnHeroFromPrefab();
             ApplyRunStateToHero();
+            TryPlayOpeningCutscene();
+        }
+
+        private void TryPlayOpeningCutscene()
+        {
+            if (currentLevel == null) return;
+            string id = currentLevel.CutsceneIdAtStart;
+            if (string.IsNullOrEmpty(id)) return;
+
+            var ctrl = Object.FindFirstObjectByType<CutsceneController>();
+            if (ctrl == null) return;
+
+            Time.timeScale = 0f;
+            ctrl.Play(id, () => ApplyTimeScale());
         }
 
         private void Update()

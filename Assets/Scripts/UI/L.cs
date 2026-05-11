@@ -123,6 +123,19 @@ namespace CrowdDefense.UI
                     ["settings.close"] = "Close",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+
+                    // ── Cutscene ───────────────────────────────────────────────────
+                    ["cutscene.continue_hint"] = "[Click / Space]",
+
+                    // ── Skin picker ────────────────────────────────────────────────
+                    ["skin.title"] = "Skins",
+                    ["skin.category_hero"] = "Hero",
+                    ["skin.category_castle"] = "Castle",
+                    ["skin.category_vfx"] = "Effects",
+                    ["skin.locked"] = "Locked",
+                    ["skin.equipped"] = "Equipped",
+                    ["skin.equip_btn"] = "Equip",
+                    ["skin.close"] = "Close",
                 },
                 ["fr"] = new()
                 {
@@ -230,6 +243,19 @@ namespace CrowdDefense.UI
                     ["settings.close"] = "Fermer",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+
+                    // ── Cutscene ───────────────────────────────────────────────────
+                    ["cutscene.continue_hint"] = "[Clic / Espace]",
+
+                    // ── Skin picker ────────────────────────────────────────────────
+                    ["skin.title"] = "Skins",
+                    ["skin.category_hero"] = "Héros",
+                    ["skin.category_castle"] = "Château",
+                    ["skin.category_vfx"] = "Effets",
+                    ["skin.locked"] = "Verrouillé",
+                    ["skin.equipped"] = "Équipé",
+                    ["skin.equip_btn"] = "Équiper",
+                    ["skin.close"] = "Fermer",
                 },
             },
 
