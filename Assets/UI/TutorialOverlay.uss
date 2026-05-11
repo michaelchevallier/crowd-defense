@@ -1,0 +1,91 @@
+.tutorial-root {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.tutorial-bubble {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    translate: -50% 0;
+    background-color: rgba(15, 15, 30, 0.92);
+    border-radius: 16px;
+    padding: 20px 28px 16px 28px;
+    max-width: 480px;
+    min-width: 280px;
+    align-items: center;
+    border-width: 2px;
+    border-color: rgba(255, 210, 63, 0.55);
+    pointer-events: auto;
+}
+
+.tutorial-text {
+    color: white;
+    font-size: 18px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 16px;
+}
+
+.tutorial-bubble-actions {
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+}
+
+.tutorial-btn {
+    background-color: rgba(255, 210, 63, 0.9);
+    color: rgb(20, 20, 20);
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    border-radius: 10px;
+    padding: 8px 28px;
+    border-width: 0;
+    pointer-events: auto;
+}
+
+.tutorial-btn:hover {
+    background-color: rgb(255, 210, 63);
+}
+
+.tutorial-btn-next {
+    min-width: 100px;
+}
+
+.tutorial-btn-skip {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background-color: rgba(60, 60, 60, 0.75);
+    color: rgba(200, 200, 200, 0.85);
+    font-size: 13px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    border-radius: 8px;
+    padding: 6px 14px;
+    border-width: 0;
+    pointer-events: auto;
+}
+
+.tutorial-btn-skip:hover {
+    background-color: rgba(80, 80, 80, 0.9);
+    color: white;
+}
+
+/* Arrow indicator — positioned dynamically from C# */
+.tutorial-arrow {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background-color: rgba(255, 210, 63, 0.9);
+    border-radius: 4px;
+    rotate: 45deg;
+    pointer-events: none;
+}
+
+.hidden {
+    display: none;
+}

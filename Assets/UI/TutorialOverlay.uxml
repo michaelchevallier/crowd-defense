@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="TutorialOverlay.uss" />
+    <ui:VisualElement name="tutorial-root" class="tutorial-root hidden">
+        <!-- Arrow indicator pointing to a target UI element -->
+        <ui:VisualElement name="tutorial-arrow" class="tutorial-arrow hidden" />
+
+        <!-- Text bubble top-center -->
+        <ui:VisualElement name="tutorial-bubble" class="tutorial-bubble">
+            <ui:Label text="" name="tutorial-text" class="tutorial-text" />
+            <ui:VisualElement class="tutorial-bubble-actions">
+                <ui:Button text="Next" name="tutorial-btn-next" class="tutorial-btn tutorial-btn-next" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Skip tutorial — top-right corner -->
+        <ui:Button text="Skip Tutorial" name="tutorial-btn-skip" class="tutorial-btn-skip" />
+    </ui:VisualElement>
+</ui:UXML>
