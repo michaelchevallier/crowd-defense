@@ -1,0 +1,60 @@
+#nullable enable
+using UnityEngine;
+using CrowdDefense.Common;
+using CrowdDefense.Entities;
+
+namespace CrowdDefense.Systems
+{
+    public class TowerHoverController : MonoSingleton<TowerHoverController>
+    {
+        private Camera? cam;
+        private Tower? hoveredTower;
+        private readonly Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+
+        protected override void OnAwakeSingleton() => cam = Camera.main;
+
+        private void Update()
+        {
+            if (cam == null || PlacementController.Instance == null) return;
+
+            // Ne pas afficher le ring hover si une tour est sélectionnée (radial menu ouvert)
+            if (PlacementController.Instance.SelectedTower != null)
+            {
+                ClearHover();
+                return;
+            }
+
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (!groundPlane.Raycast(ray, out float dist))
+            {
+                ClearHover();
+                return;
+            }
+
+            Vector3 hitPos = ray.GetPoint(dist);
+            Tower? found = null;
+            float bestDist = 1.5f;
+            var towers = PlacementController.Instance.PlacedTowers;
+            for (int i = 0; i < towers.Count; i++)
+            {
+                var t = towers[i];
+                if (t == null) continue;
+                float d = (t.transform.position - hitPos).magnitude;
+                if (d < bestDist) { bestDist = d; found = t; }
+            }
+
+            if (found == hoveredTower) return;
+
+            if (hoveredTower != null) hoveredTower.ShowRangeRing(false);
+            hoveredTower = found;
+            if (hoveredTower != null) hoveredTower.ShowRangeRing(true);
+        }
+
+        private void ClearHover()
+        {
+            if (hoveredTower == null) return;
+            hoveredTower.ShowRangeRing(false);
+            hoveredTower = null;
+        }
+    }
+}
