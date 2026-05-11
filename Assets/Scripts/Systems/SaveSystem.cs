@@ -75,8 +75,12 @@ namespace CrowdDefense.Systems
             {
                 _cached = JsonUtility.FromJson<ProgressData>(json) ?? new ProgressData();
             }
-            catch
+            catch (Exception ex)
             {
+#if UNITY_EDITOR
+                PlayerPrefs.SetString(KEY + "_corrupted", json);
+                Debug.LogWarning($"[SaveSystem] Progression corrompue, reset silencieux: {ex.Message}");
+#endif
                 _cached = new ProgressData();
             }
             return _cached;
