@@ -371,6 +371,28 @@
     display: none;
 }
 
+/* === Combo display (center HUD, multi-kill streak) === */
+.combo-display {
+    position: absolute;
+    left: 50%;
+    top: 40%;
+    translate: -50% -50%;
+    align-items: center;
+    justify-content: center;
+}
+
+.combo-label {
+    font-size: 48px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    color: rgb(255, 218, 50);
+}
+
+.combo-display.combo-level-2 .combo-label { color: rgb(255, 218, 50); }
+.combo-display.combo-level-3 .combo-label { color: rgb(255, 160, 30); }
+.combo-display.combo-level-4 .combo-label { color: rgb(255, 80, 30); }
+
 /* === Debug HUD (top-left, editor / debug=1) === */
 #debug-hud {
     position: absolute;
