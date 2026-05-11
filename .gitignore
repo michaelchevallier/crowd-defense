@@ -114,3 +114,4 @@ env/
 *.pem
 *.key
 secrets.json
+/.claude/scheduled_tasks.lock
