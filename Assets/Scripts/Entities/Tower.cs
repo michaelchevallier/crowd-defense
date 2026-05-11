@@ -1019,7 +1019,17 @@ namespace CrowdDefense.Entities
             string variantKey = cfg.AssetKey + suffix;
 
             var registry = Resources.Load<AssetRegistry>("AssetRegistry");
-            var variantPrefab = registry != null ? registry.Get(variantKey) : null;
+            if (registry == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning($"[Tower] AssetRegistry not found in ApplyTierSkin — using color tint fallback");
+#endif
+                var tintRoot = _meshChild != null ? _meshChild : gameObject;
+                var fallbackColor = tier == 2 ? new Color(0.85f, 0.85f, 0.95f) : new Color(1f, 0.8f, 0.3f);
+                MaterialController.UpdateTint(tintRoot, fallbackColor);
+                return;
+            }
+            var variantPrefab = registry.Get(variantKey);
 
             if (variantPrefab != null)
             {
