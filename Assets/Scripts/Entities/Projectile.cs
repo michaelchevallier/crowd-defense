@@ -142,23 +142,89 @@ namespace CrowdDefense.Entities
                     }
                     return;
                 }
+                // No next target — pierce consumed. If source is L3 Crossbow, trigger final explosion.
+                TryFinalExplosion();
             }
 
             ReleaseToPool();
+        }
+
+        // L3 Crossbow "FinalExplosion": when last pierce target consumed, AoE damage bonus burst.
+        private void TryFinalExplosion()
+        {
+            if (sourceTower == null || !sourceTower.L3FinalExplosion) return;
+            if (sourceTower.L3FinalExplosionAoe <= 0f || sourceTower.L3FinalExplosionDmg <= 0f) return;
+            if (WaveManager.Instance == null) return;
+
+            float r2 = sourceTower.L3FinalExplosionAoe * sourceTower.L3FinalExplosionAoe;
+            float boom = sourceTower.L3FinalExplosionDmg;
+            var enemies = WaveManager.Instance.ActiveEnemies;
+            Vector3 pos = transform.position;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var e = enemies[i];
+                if (e == null || e.IsDead) continue;
+                if ((e.transform.position - pos).sqrMagnitude <= r2)
+                    e.TakeDamage(boom);
+            }
+            Visual.VfxPool.Instance?.SpawnExplosion(pos, sourceTower.L3FinalExplosionAoe);
         }
 
         private void ApplyOnHitEffects(Enemy e)
         {
             if (sourceTower == null || e.IsDead) return;
             var slow = SlowEffectManager.Instance;
-            if (slow == null) return;
+            if (slow != null)
+            {
+                if (sourceTower._freezeOnHitActive)
+                    e.ApplyFreeze(sourceTower._freezeDurMs / 1000f);
+                else if (sourceTower._slowOnHitActive)
+                    slow.ApplySlow(e, sourceTower._slowOnHitMul, sourceTower._slowOnHitDurMs);
+                else if (sourceTower._appliesSlowActive)
+                    slow.ApplySlow(e, sourceTower._appliesSlowMul, sourceTower._appliesSlowDurMs);
+            }
 
-            if (sourceTower._freezeOnHitActive)
-                e.ApplyFreeze(sourceTower._freezeDurMs / 1000f);
-            else if (sourceTower._slowOnHitActive)
-                slow.ApplySlow(e, sourceTower._slowOnHitMul, sourceTower._slowOnHitDurMs);
-            else if (sourceTower._appliesSlowActive)
-                slow.ApplySlow(e, sourceTower._appliesSlowMul, sourceTower._appliesSlowDurMs);
+            // Armor break (Ballista L3 / synergy) — boost incoming damage temporarily
+            if (sourceTower.L3ArmorBreak && sourceTower.L3ArmorBreakMul > 1f)
+                e.ApplyArmorBreak(sourceTower.L3ArmorBreakMul, sourceTower.L3ArmorBreakDurMs);
+
+            // Knockback (Tank L3 / synergy) — push enemy back along path
+            float kb = sourceTower._knockbackOnHit;
+            if (sourceTower.L3Knockback) kb = Mathf.Max(kb, 1f);
+            if (kb > 0f) e.ApplyKnockback(kb);
+
+            // PropagateAoE (mage→cannon cross-effect) — splash damage to nearby non-target enemies
+            if (sourceTower._propagateAoEActive && sourceTower._propagateAoERadius > 0f
+                && sourceTower._propagateAoEDmg > 0f && WaveManager.Instance != null)
+            {
+                float r2 = sourceTower._propagateAoERadius * sourceTower._propagateAoERadius;
+                var enemies = WaveManager.Instance.ActiveEnemies;
+                Vector3 hitPos = e.transform.position;
+                for (int i = 0; i < enemies.Count; i++)
+                {
+                    var e2 = enemies[i];
+                    if (e2 == null || e2 == e || e2.IsDead) continue;
+                    if ((e2.transform.position - hitPos).sqrMagnitude <= r2)
+                        e2.TakeDamage(sourceTower._propagateAoEDmg);
+                }
+                Visual.VfxPool.Instance?.SpawnImpact(hitPos + Vector3.up * 0.4f, new Color(0.63f, 0.31f, 1f));
+            }
+
+            // CascadeRadius (cannon→X cross-effect) — chain damage at reduced power
+            if (sourceTower._cascadeRadius > 0f && WaveManager.Instance != null)
+            {
+                float r2 = sourceTower._cascadeRadius * sourceTower._cascadeRadius;
+                var enemies = WaveManager.Instance.ActiveEnemies;
+                Vector3 hitPos = e.transform.position;
+                float chainDmg = damage * 0.5f * Mathf.Max(1f, sourceTower._buffMul);
+                for (int i = 0; i < enemies.Count; i++)
+                {
+                    var e2 = enemies[i];
+                    if (e2 == null || e2 == e || e2.IsDead) continue;
+                    if ((e2.transform.position - hitPos).sqrMagnitude <= r2)
+                        e2.TakeDamage(chainDmg);
+                }
+            }
         }
 
         private void ApplyAoeDamage()

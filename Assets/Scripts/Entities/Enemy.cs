@@ -135,6 +135,24 @@ namespace CrowdDefense.Entities
             _enragedSummonCdMul = summonCdMul;
         }
 
+        // Armor break — boost incoming damage for a duration (ms). Caller picks max if already active.
+        public void ApplyArmorBreak(float dmgTakenMul, int durMs)
+        {
+            if (dmgTakenMul <= 1f || durMs <= 0) return;
+            _dmgTakenMul       = Mathf.Max(_dmgTakenMul, dmgTakenMul);
+            float until        = Time.time + durMs / 1000f;
+            _dmgTakenMulUntil  = Mathf.Max(_dmgTakenMulUntil, until);
+        }
+
+        // Knockback along path — rewind current waypoint progress to push enemy back.
+        public void ApplyKnockback(float strength)
+        {
+            if (strength <= 0f || _dying || IsDead || cfg == null || cfg.IsFlyer) return;
+            if (pathManager == null) return;
+            int steps = Mathf.Max(1, Mathf.RoundToInt(strength));
+            currentWaypoint = Mathf.Max(1, currentWaypoint - steps);
+        }
+
         // Applied by freeze towers — stops movement and adds cyan emissive tint
         public void ApplyFreeze(float durationSec)
         {
@@ -159,6 +177,9 @@ namespace CrowdDefense.Entities
             _chargeActiveTimer = 0f;
             _enragedSpeedMul  = 1f;
             _enragedSummonCdMul = 1f;
+            _enragedSelfTriggered = false;
+            _dmgTakenMul      = 1f;
+            _dmgTakenMulUntil = 0f;
             _hitFlashTimer    = 0f;
             _freezeUntilTime  = 0f;
             _frozenTinted     = false;
@@ -807,6 +828,18 @@ namespace CrowdDefense.Entities
 
             if (actualDmg <= 0f) return;
 
+            // Armor break — amplify incoming damage while active (Ballista L3 / synergy)
+            if (_dmgTakenMulUntil > 0f)
+            {
+                if (Time.time < _dmgTakenMulUntil)
+                    actualDmg *= _dmgTakenMul;
+                else
+                {
+                    _dmgTakenMul      = 1f;
+                    _dmgTakenMulUntil = 0f;
+                }
+            }
+
             // Apocalypse boss phase invulnerability: clamp HP floor
             if (cfg != null && cfg.IsApocalypseBoss && _invulUntilTime > 0f && Time.time < _invulUntilTime)
             {
@@ -816,6 +849,17 @@ namespace CrowdDefense.Entities
             else
             {
                 hp -= actualDmg;
+            }
+
+            // Fallback boss enrage @ 50% HP — fires once if BossSystem hasn't already triggered.
+            // V5 parity: Enemy.js auto-enrages any boss without external orchestration.
+            if (cfg != null && cfg.IsBoss && !cfg.IsApocalypseBoss
+                && !_enragedSelfTriggered && _enragedSpeedMul == 1f && hp <= maxHp * 0.5f && hp > 0f)
+            {
+                _enragedSelfTriggered = true;
+                _enragedSpeedMul      = 1.4f;
+                _enragedSummonCdMul   = 0.6f;
+                EventManager.Instance?.Publish(new BossPhaseChangedEvent("enraged", 1));
             }
 
             // Dynamic HP bar color (green → yellow → red) — port of Enemy.js hpBar color update

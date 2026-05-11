@@ -31,6 +31,7 @@ namespace CrowdDefense.Entities
         // HP bar (world-space canvas child)
         private Transform?    _hpBarFill;
         private float         _hpBarBaseScaleX;
+        private TextMesh?     _hpText;
 
         public void Init(int hp, int world = 1)
         {
@@ -80,11 +81,25 @@ namespace CrowdDefense.Entities
             fillRend.material = BuildUnlitMaterial(new Color(0.27f, 0.87f, 0.27f, 1f), transparent: false);
             fillRend.sortingOrder = 2;
 
+            // HP number text above the bar — "<hp> / <hpMax>" (port V5 _hpText sprite)
+            var textGo = new GameObject("CastleHPText");
+            textGo.transform.SetParent(transform, false);
+            textGo.transform.localPosition = new Vector3(0f, barY + 0.4f, -0.06f);
+            textGo.transform.localScale    = Vector3.one * 0.18f;
+            _hpText = textGo.AddComponent<TextMesh>();
+            _hpText.anchor    = TextAnchor.MiddleCenter;
+            _hpText.alignment = TextAlignment.Center;
+            _hpText.fontSize  = 64;
+            _hpText.fontStyle = FontStyle.Bold;
+            _hpText.color     = Color.white;
+            _hpText.text      = $"{HP} / {HPMax}";
+
             RefreshHpBar();
         }
 
         private void RefreshHpBar()
         {
+            if (_hpText != null) _hpText.text = $"{Mathf.Max(0, HP)} / {HPMax}";
             if (_hpBarFill == null) return;
             float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
             ratio = Mathf.Clamp01(ratio);

@@ -106,6 +106,16 @@ namespace CrowdDefense.Entities
         public int L3ArmorBreakDurMs { get; private set; } = 0;
         public bool L3Knockback { get; private set; } = false;
 
+        // L3 Tank "Bloc": DoT aura that ticks 0.6 dmg/sec to enemies within range (V5 _tankBlockAura)
+        public bool  L3TankBlockAura { get; private set; } = false;
+        public float L3TankBlockAuraRange { get; private set; } = 5f;
+        public float L3TankBlockAuraDps { get; private set; } = 0.6f;
+
+        // L3 Crossbow "FinalExplosion": when last pierce consumed, explode with AoE bonus damage
+        public bool  L3FinalExplosion { get; private set; } = false;
+        public float L3FinalExplosionAoe { get; private set; } = 0f;
+        public float L3FinalExplosionDmg { get; private set; } = 0f;
+
         // Tint appliqué au L3 signature (rouge=DPS, cyan=Utility)
         private bool _l3TintApplied = false;
 
@@ -323,7 +333,24 @@ namespace CrowdDefense.Entities
 
             UpgradeBranch = isSignature ? branch : TowerBranch.None;
 
-            if (!isSignature) return; // tours non-signature : pas de divergence
+            // Tours non-signature : effets L3 spécifiques sans choix de branche (port V5 Tower.js L350-355)
+            if (!isSignature)
+            {
+                switch (cfg.Id)
+                {
+                    case "tank":
+                        L3TankBlockAura      = true;
+                        L3TankBlockAuraRange = 5f;
+                        L3TankBlockAuraDps   = 0.6f;
+                        break;
+                    case "crossbow":
+                        L3FinalExplosion     = true;
+                        L3FinalExplosionAoe  = 2f;
+                        L3FinalExplosionDmg  = cfg.Damage * BalanceConfig.Get().TowerDamageMul * 2.5f;
+                        break;
+                }
+                return;
+            }
 
             switch (cfg.Id)
             {
@@ -439,6 +466,9 @@ namespace CrowdDefense.Entities
             if (cfg == null) return;
 
             TickIdleAnim();
+
+            // L3 Tank DoT aura — continuous damage to enemies in radius (V5 _tankBlockAura)
+            if (L3TankBlockAura) TickTankBlockAura();
 
             // _buffMul et tous les champs synergy sont reset + recomputed par Synergies.LateUpdate.
             switch (cfg.Behavior)
@@ -786,6 +816,24 @@ namespace CrowdDefense.Entities
                 }
 
                 _tierPips.Add(pip);
+            }
+        }
+
+        // ── L3 Tank Block Aura DoT ────────────────────────────────────────────
+        // Continuous 0.6 dmg/sec to enemies within 5 m radius (V5 Tower.js L614-625)
+        private void TickTankBlockAura()
+        {
+            if (WaveManager.Instance == null) return;
+            float r2 = L3TankBlockAuraRange * L3TankBlockAuraRange;
+            float dmg = L3TankBlockAuraDps * Time.deltaTime;
+            var enemies = WaveManager.Instance.ActiveEnemies;
+            Vector3 myPos = transform.position;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var e = enemies[i];
+                if (e == null || e.IsDead) continue;
+                if ((e.transform.position - myPos).sqrMagnitude < r2)
+                    e.TakeDamage(dmg);
             }
         }
 
