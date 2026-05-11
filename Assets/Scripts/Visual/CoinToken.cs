@@ -89,6 +89,7 @@ namespace CrowdDefense.Visual
             // Arrival
             transform.position = end;
             VfxPool.Instance?.SpawnCoinBurst(end);
+            CrowdDefense.Systems.AudioController.Instance?.Play("coin_pickup", 0.55f);
 
             ReturnToPool();
         }

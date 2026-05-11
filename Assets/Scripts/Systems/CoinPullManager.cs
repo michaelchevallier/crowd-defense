@@ -10,6 +10,7 @@ namespace CrowdDefense.Systems
     // Registre des sources Magnet actives + animation CoinFlyTo (enemy death → HUD gold pill).
     // Magnet tracking: Tower.UpdateCoinPull() registers each frame; Enemy.TakeDamage() queries.
     // Coin fly: SpawnCoinFlyTo() pools CoinToken billboards that arc via bezier to the HUD.
+    // Magnet perk: ApplyMagnetRangeMul/ApplyCoinFlySpeedMul called by PerkSystem when perk picked.
     public class CoinPullManager : MonoSingleton<CoinPullManager>
     {
         private struct CoinSource
@@ -23,6 +24,13 @@ namespace CrowdDefense.Systems
 
         // Réinitialisé en fin de frame via LateUpdate, reconstruit par les Magnets dans Update
         private readonly List<CoinSource> sources = new();
+
+        // Magnet perk boosts (multiplicative, persist for the run)
+        private float _magnetRangeMul  = 1f;
+        private float _coinFlySpeedMul = 1f;
+
+        // Hero pull range: radius around Hero that snaps coin target to Hero instead of HUD.
+        private const float HeroPullBaseRange = 6f;
 
         private void LateUpdate()
         {
@@ -50,10 +58,21 @@ namespace CrowdDefense.Systems
             return best;
         }
 
+        // Called by PerkSystem when a magnet perk is picked (stacks multiplicatively)
+        public void ApplyMagnetRangeMul(float mul)  => _magnetRangeMul  *= mul;
+        public void ApplyCoinFlySpeedMul(float mul) => _coinFlySpeedMul *= mul;
+
+        // Reset per-run (called by LevelRunner at level start)
+        public void ResetPerkBoosts()
+        {
+            _magnetRangeMul  = 1f;
+            _coinFlySpeedMul = 1f;
+        }
+
         // ── Coin fly-to animation ─────────────────────────────────────────────
 
-        private const int PoolCapacity = 20;
-        private const int PoolMaxSize = 60;
+        private const int   PoolCapacity   = 20;
+        private const int   PoolMaxSize    = 60;
         private const float FlyDurationSec = 0.72f;
 
         private ObjectPool<CoinToken>? _tokenPool;
@@ -81,9 +100,27 @@ namespace CrowdDefense.Systems
         public void SpawnCoinFlyTo(Vector3 worldPos, int amount)
         {
             if (_tokenPool == null) return;
-            var token = _tokenPool.Get();
-            Vector3 target = HudWorldTarget();
-            token.Fly(worldPos, target, amount, FlyDurationSec);
+            var token    = _tokenPool.Get();
+            Vector3 target   = ResolveTarget(worldPos);
+            float   duration = FlyDurationSec / Mathf.Max(0.5f, _coinFlySpeedMul);
+            token.Fly(worldPos, target, amount, duration);
+        }
+
+        // Resolves the coin fly destination:
+        // — Hero if active and within magnet pull range (boosted by perk),
+        // — otherwise the HUD gold pill world position.
+        private Vector3 ResolveTarget(Vector3 fromWorldPos)
+        {
+            var hero = LevelRunner.Instance?.Hero;
+            if (hero != null)
+            {
+                float pullRange = HeroPullBaseRange * _magnetRangeMul;
+                float dx = fromWorldPos.x - hero.transform.position.x;
+                float dz = fromWorldPos.z - hero.transform.position.z;
+                if (dx * dx + dz * dz < pullRange * pullRange)
+                    return hero.transform.position + Vector3.up * 1.0f;
+            }
+            return HudWorldTarget();
         }
 
         private Vector3 HudWorldTarget()
