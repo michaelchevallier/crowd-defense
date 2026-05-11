@@ -210,8 +210,8 @@ namespace CrowdDefense.Entities
                          ?? FindChildNamed(_meshChild.transform, "Turret");
             }
             _barrelTip = _meshHead != null
-                ? FindChildNamed(_meshHead.transform, "BarrelTip")
-                : (_meshChild != null ? FindChildNamed(_meshChild.transform, "BarrelTip") : null);
+                ? FindChildNamed(_meshHead.transform, "BarrelTip")?.transform
+                : (_meshChild != null ? FindChildNamed(_meshChild.transform, "BarrelTip")?.transform : null);
 
             BuildRangeRing(type.Range);
             BuildSynergyHalo();
@@ -998,6 +998,91 @@ namespace CrowdDefense.Entities
         {
             DrawTierPips(level);
             if (cfg != null) BuildRangeRing(cfg.Range);
+            ApplyTierSkin(level);
+        }
+
+        /// <summary>
+        /// Tier 1 = default (set at Init). Tier 2 = try _t2 mesh swap, fallback silver tint.
+        /// Tier 3 = try _t3 mesh swap, fallback gold tint + emission.
+        /// </summary>
+        public void ApplyTierSkin(int tier)
+        {
+            if (cfg == null || tier <= 1) return;
+
+            string suffix = tier == 2 ? "_t2" : "_t3";
+            string variantKey = cfg.AssetKey + suffix;
+
+            var registry = Resources.Load<AssetRegistry>("AssetRegistry");
+            var variantPrefab = registry != null ? registry.Get(variantKey) : null;
+
+            if (variantPrefab != null)
+            {
+                SwapMeshChild(variantPrefab, variantKey);
+            }
+            else
+            {
+                // Fallback tint on existing mesh subtree
+                var tintRoot = _meshChild != null ? _meshChild : gameObject;
+                if (tier == 2)
+                {
+                    // Silver
+                    MaterialController.UpdateTint(tintRoot, new Color(0.85f, 0.85f, 0.95f));
+                }
+                else
+                {
+                    // Gold + emission
+                    Color gold = new Color(1f, 0.8f, 0.3f);
+                    MaterialController.UpdateTint(tintRoot, gold);
+                    foreach (var r in tintRoot.GetComponentsInChildren<Renderer>())
+                    {
+                        foreach (var m in r.materials)
+                        {
+                            if (m == null) continue;
+                            if (m.HasProperty("_EmissionColor"))
+                            {
+                                m.SetColor("_EmissionColor", gold * 0.3f);
+                                m.EnableKeyword("_EMISSION");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        private void SwapMeshChild(GameObject variantPrefab, string variantKey)
+        {
+            if (_meshChild != null)
+                Destroy(_meshChild);
+
+            // Disable placeholder primitives (Base + Top)
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                if (child.name == "Base" || child.name == "Top")
+                    child.gameObject.SetActive(false);
+            }
+
+            var inst = Object.Instantiate(variantPrefab, transform);
+            inst.name = "Mesh_" + variantKey;
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one;
+            _meshChild = inst;
+
+            // Reapply toon + outline on new mesh
+            Color bodyColor = cfg != null ? cfg.BodyColor : Color.white;
+            MaterialController.ApplyToon(_meshChild, bodyColor);
+            Outline.ApplyToHierarchy(_meshChild.transform);
+
+            // Relink animator
+            _animator = AnimationController.SetupAnimator(_meshChild, "Idle", null);
+
+            // Re-discover turret head
+            _meshHead = FindChildNamed(_meshChild.transform, "Head")
+                     ?? FindChildNamed(_meshChild.transform, "Turret");
+            _barrelTip = _meshHead != null
+                ? FindChildNamed(_meshHead.transform, "BarrelTip")?.transform
+                : FindChildNamed(_meshChild.transform, "BarrelTip")?.transform;
         }
 
 #if UNITY_EDITOR
