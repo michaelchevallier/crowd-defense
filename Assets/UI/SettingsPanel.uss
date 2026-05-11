@@ -122,3 +122,12 @@
 .settings-btn-close:hover {
     background-color: rgba(100, 130, 180, 0.65);
 }
+
+.settings-btn-reset {
+    background-color: rgba(60, 80, 60, 0.5);
+    margin-right: 8px;
+}
+
+.settings-btn-reset:hover {
+    background-color: rgba(80, 120, 80, 0.65);
+}

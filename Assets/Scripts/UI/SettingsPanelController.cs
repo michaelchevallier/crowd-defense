@@ -14,10 +14,13 @@ namespace CrowdDefense.UI
         private Slider? _masterSlider;
         private Slider? _sfxSlider;
         private Slider? _musicSlider;
+        private Slider? _uiSlider;
         private Label? _masterValue;
         private Label? _sfxValue;
         private Label? _musicValue;
+        private Label? _uiValue;
         private Toggle? _muteToggle;
+        private Button? _resetCameraBtn;
 
         private DropdownField? _qualityDropdown;
         private Toggle? _vfxToggle;
@@ -36,6 +39,7 @@ namespace CrowdDefense.UI
         private Label? _masterLabel;
         private Label? _sfxLabel;
         private Label? _musicLabel;
+        private Label? _uiLabel;
         private Label? _muteLabel;
         private Label? _gfxSectionLabel;
         private Label? _qualityLabel;
@@ -73,10 +77,13 @@ namespace CrowdDefense.UI
             _masterSlider = _root.Q<Slider>("master-slider");
             _sfxSlider = _root.Q<Slider>("sfx-slider");
             _musicSlider = _root.Q<Slider>("music-slider");
+            _uiSlider = _root.Q<Slider>("ui-slider");
             _masterValue = _root.Q<Label>("master-value");
             _sfxValue = _root.Q<Label>("sfx-value");
             _musicValue = _root.Q<Label>("music-value");
+            _uiValue = _root.Q<Label>("ui-value");
             _muteToggle = _root.Q<Toggle>("mute-toggle");
+            _resetCameraBtn = _root.Q<Button>("settings-reset-camera-btn");
 
             _qualityDropdown = _root.Q<DropdownField>("quality-dropdown");
             _vfxToggle = _root.Q<Toggle>("vfx-toggle");
@@ -94,6 +101,7 @@ namespace CrowdDefense.UI
             _masterLabel         = _root.Q<Label>("master-label");
             _sfxLabel            = _root.Q<Label>("sfx-label");
             _musicLabel          = _root.Q<Label>("music-label");
+            _uiLabel             = _root.Q<Label>("ui-label");
             _muteLabel           = _root.Q<Label>("mute-label");
             _gfxSectionLabel     = _root.Q<Label>("gfx-section-title");
             _qualityLabel        = _root.Q<Label>("quality-label");
@@ -145,6 +153,7 @@ namespace CrowdDefense.UI
             if (_masterLabel != null)         _masterLabel.text         = L.Get("settings.master");
             if (_sfxLabel != null)            _sfxLabel.text            = L.Get("settings.sfx");
             if (_musicLabel != null)          _musicLabel.text          = L.Get("settings.music");
+            if (_uiLabel != null)             _uiLabel.text             = L.Get("settings.ui");
             if (_muteLabel != null)           _muteLabel.text           = L.Get("settings.mute");
             if (_gfxSectionLabel != null)     _gfxSectionLabel.text     = L.Get("settings.gfx_section");
             if (_qualityLabel != null)        _qualityLabel.text        = L.Get("settings.quality");
@@ -157,6 +166,7 @@ namespace CrowdDefense.UI
             if (_langSectionLabel != null)    _langSectionLabel.text    = L.Get("settings.lang_section");
             if (_langLabel != null)           _langLabel.text           = L.Get("settings.lang_label");
             if (_closeBtn != null)            _closeBtn.text            = L.Get("settings.close");
+            if (_resetCameraBtn != null)      _resetCameraBtn.text      = L.Get("settings.reset_camera");
 
             if (_qualityDropdown != null) _qualityDropdown.choices = QualityChoices;
             if (_langDropdown != null)    _langDropdown.choices    = LangChoices;
@@ -183,6 +193,13 @@ namespace CrowdDefense.UI
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
                 SettingsRegistry.Instance.MusicVolume = evt.newValue;
                 if (_musicValue != null) _musicValue.text = FormatPct(evt.newValue);
+            });
+
+            _uiSlider?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.UIVolume = evt.newValue;
+                if (_uiValue != null) _uiValue.text = FormatPct(evt.newValue);
             });
 
             _muteToggle?.RegisterValueChangedCallback(evt =>
@@ -239,6 +256,8 @@ namespace CrowdDefense.UI
             });
 
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Hide());
+
+            _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
         }
 
         public void Show()
@@ -263,9 +282,11 @@ namespace CrowdDefense.UI
                 if (_masterSlider != null) _masterSlider.value = reg.MasterVolume;
                 if (_sfxSlider != null) _sfxSlider.value = reg.SFXVolume;
                 if (_musicSlider != null) _musicSlider.value = reg.MusicVolume;
+                if (_uiSlider != null) _uiSlider.value = reg.UIVolume;
                 if (_masterValue != null) _masterValue.text = FormatPct(reg.MasterVolume);
                 if (_sfxValue != null) _sfxValue.text = FormatPct(reg.SFXVolume);
                 if (_musicValue != null) _musicValue.text = FormatPct(reg.MusicVolume);
+                if (_uiValue != null) _uiValue.text = FormatPct(reg.UIVolume);
                 if (_muteToggle != null) _muteToggle.value = reg.Muted;
 
                 if (_qualityDropdown != null)
@@ -291,6 +312,13 @@ namespace CrowdDefense.UI
             {
                 _suppressEvents = false;
             }
+        }
+
+        private static void ResetCamera()
+        {
+            var cam = Camera.main;
+            if (cam == null) return;
+            cam.transform.SetPositionAndRotation(Vector3.back * 10f, Quaternion.identity);
         }
 
         private static string FormatPct(float v) => Mathf.RoundToInt(v * 100f) + "%";

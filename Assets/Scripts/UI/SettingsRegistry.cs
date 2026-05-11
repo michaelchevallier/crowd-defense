@@ -10,6 +10,7 @@ namespace CrowdDefense.UI
         private const string KMaster = "cd.audio.master";
         private const string KSFX = "cd.audio.sfx";
         private const string KMusic = "cd.audio.music";
+        private const string KUI = "cd.audio.ui";
         private const string KMuted = "cd.audio.muted";
         private const string KQuality = "cd.gfx.quality";
         private const string KVFX = "cd.gfx.vfx";
@@ -25,6 +26,7 @@ namespace CrowdDefense.UI
         private float _masterVolume = 1f;
         private float _sfxVolume = 1f;
         private float _musicVolume = 0.7f;
+        private float _uiVolume = 1f;
         private bool _muted;
         private int _qualityLevel = 1;
         private bool _vfxEnabled = true;
@@ -44,13 +46,19 @@ namespace CrowdDefense.UI
         public float SFXVolume
         {
             get => _sfxVolume;
-            set { if (Mathf.Approximately(_sfxVolume, value)) return; _sfxVolume = Mathf.Clamp01(value); Save(); Notify(); }
+            set { if (Mathf.Approximately(_sfxVolume, value)) return; _sfxVolume = Mathf.Clamp01(value); ApplyAudioSFX(); Save(); Notify(); }
         }
 
         public float MusicVolume
         {
             get => _musicVolume;
-            set { if (Mathf.Approximately(_musicVolume, value)) return; _musicVolume = Mathf.Clamp01(value); Save(); Notify(); }
+            set { if (Mathf.Approximately(_musicVolume, value)) return; _musicVolume = Mathf.Clamp01(value); ApplyAudioMusic(); Save(); Notify(); }
+        }
+
+        public float UIVolume
+        {
+            get => _uiVolume;
+            set { if (Mathf.Approximately(_uiVolume, value)) return; _uiVolume = Mathf.Clamp01(value); ApplyAudioUI(); Save(); Notify(); }
         }
 
         public bool Muted
@@ -119,6 +127,7 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetFloat(KMaster, _masterVolume);
             PlayerPrefs.SetFloat(KSFX, _sfxVolume);
             PlayerPrefs.SetFloat(KMusic, _musicVolume);
+            PlayerPrefs.SetFloat(KUI, _uiVolume);
             PlayerPrefs.SetInt(KMuted, _muted ? 1 : 0);
             PlayerPrefs.SetInt(KQuality, _qualityLevel);
             PlayerPrefs.SetInt(KVFX, _vfxEnabled ? 1 : 0);
@@ -136,6 +145,7 @@ namespace CrowdDefense.UI
             _masterVolume = PlayerPrefs.GetFloat(KMaster, 1f);
             _sfxVolume = PlayerPrefs.GetFloat(KSFX, 1f);
             _musicVolume = PlayerPrefs.GetFloat(KMusic, 0.7f);
+            _uiVolume = PlayerPrefs.GetFloat(KUI, 1f);
             _muted = PlayerPrefs.GetInt(KMuted, 0) == 1;
             _qualityLevel = PlayerPrefs.GetInt(KQuality, 1);
             _vfxEnabled = PlayerPrefs.GetInt(KVFX, 1) == 1;
@@ -152,8 +162,20 @@ namespace CrowdDefense.UI
             var audio = Systems.AudioController.Instance;
             if (audio == null) return;
             audio.SetMasterVolume(_muted ? 0f : _masterVolume);
+            audio.SetSFXVolume(_sfxVolume);
+            audio.SetMusicVolume(_musicVolume);
+            audio.SetUIVolume(_uiVolume);
             audio.SetMuted(_muted);
         }
+
+        private void ApplyAudioSFX() =>
+            Systems.AudioController.Instance?.SetSFXVolume(_sfxVolume);
+
+        private void ApplyAudioMusic() =>
+            Systems.AudioController.Instance?.SetMusicVolume(_musicVolume);
+
+        private void ApplyAudioUI() =>
+            Systems.AudioController.Instance?.SetUIVolume(_uiVolume);
 
         private void ApplyQuality()
         {
