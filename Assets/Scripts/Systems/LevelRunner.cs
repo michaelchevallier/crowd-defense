@@ -323,6 +323,10 @@ namespace CrowdDefense.Systems
             if (State == GameState.Lobby || State == GameState.WaveBreak)
                 TransitionTo(GameState.WaveActive);
             OnWaveStarted?.Invoke(waveIdx + 1);
+
+            int total = WaveManager.Instance?.TotalWaves is > 0 ? WaveManager.Instance.TotalWaves : 10;
+            int intensity = Mathf.Clamp(waveIdx * 3 / total, 0, 2);
+            MusicManager.Instance?.SetIntensity(intensity);
         }
 
         private void HandleWaveCleared(int waveIdx)

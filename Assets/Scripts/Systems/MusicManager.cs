@@ -206,6 +206,21 @@ namespace CrowdDefense.Systems
 
         public string? GetCurrentTrack() => _currentTrack;
 
+        /// <summary>
+        /// Adaptive layer intensity: 0 = calm (base), 1 = intense (drums), 2 = boss (full ensemble).
+        /// Called each wave start with currentWave/10 clamped to [0,2].
+        /// </summary>
+        public void SetIntensity(int level)
+        {
+            string track = level switch
+            {
+                0 => "calm",
+                1 => "intense",
+                _ => "boss",
+            };
+            Play(track);
+        }
+
         // ── Private helpers ─────────────────────────────────────────────────
 
         private void RegisterTrack(string name, Func<AudioClip?> clipGetter, float volMul)
