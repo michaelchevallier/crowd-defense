@@ -23,9 +23,13 @@ namespace CrowdDefense.Build
                 Directory.Delete(absOutput, true);
             Directory.CreateDirectory(absOutput);
 
+            var scenesList = new System.Collections.Generic.List<string>();
+            if (File.Exists(LoaderScene)) scenesList.Add(LoaderScene);
+            scenesList.Add(MainScene);
+
             var opts = new BuildPlayerOptions
             {
-                scenes = new[] { LoaderScene, MainScene },
+                scenes = scenesList.ToArray(),
                 locationPathName = OutputFolder,
                 target = BuildTarget.WebGL,
                 options = BuildOptions.None,
