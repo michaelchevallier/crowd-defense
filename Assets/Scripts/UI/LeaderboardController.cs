@@ -56,7 +56,7 @@ namespace CrowdDefense.UI
             if (_listContainer == null) return;
             _listContainer.Clear();
 
-            var entries = SaveSystem.GetLeaderboard();
+            var entries = SaveSystem.GetTopScores(10);
 
             if (entries == null || entries.Count == 0)
             {
@@ -68,6 +68,7 @@ namespace CrowdDefense.UI
             // Header row
             _listContainer.Add(MakeRow(
                 L.Get("leaderboard.col_rank"),
+                L.Get("leaderboard.col_name"),
                 L.Get("leaderboard.col_wave"),
                 L.Get("leaderboard.col_score"),
                 L.Get("leaderboard.col_date"),
@@ -77,8 +78,10 @@ namespace CrowdDefense.UI
             for (int i = 0; i < entries.Count; i++)
             {
                 var e = entries[i];
+                var name = string.IsNullOrEmpty(e.playerName) ? "—" : e.playerName;
                 var row = MakeRow(
                     (i + 1).ToString(),
+                    name,
                     e.waveReached.ToString(),
                     e.score.ToString("N0"),
                     e.date,
@@ -88,17 +91,18 @@ namespace CrowdDefense.UI
             }
         }
 
-        private static VisualElement MakeRow(string rank, string wave, string score, string date, string cssClass)
+        private static VisualElement MakeRow(string rank, string name, string wave, string score, string date, string cssClass)
         {
             var row = new VisualElement();
             row.AddToClassList("leaderboard-row-base");
             foreach (var cls in cssClass.Split(' '))
                 if (!string.IsNullOrEmpty(cls)) row.AddToClassList(cls);
 
-            row.Add(MakeCell(rank, "leaderboard-cell leaderboard-cell-rank"));
-            row.Add(MakeCell(wave, "leaderboard-cell"));
+            row.Add(MakeCell(rank,  "leaderboard-cell leaderboard-cell-rank"));
+            row.Add(MakeCell(name,  "leaderboard-cell leaderboard-cell-name"));
+            row.Add(MakeCell(wave,  "leaderboard-cell"));
             row.Add(MakeCell(score, "leaderboard-cell"));
-            row.Add(MakeCell(date, "leaderboard-cell leaderboard-cell-date"));
+            row.Add(MakeCell(date,  "leaderboard-cell leaderboard-cell-date"));
             return row;
         }
 

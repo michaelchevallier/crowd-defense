@@ -31,9 +31,10 @@ namespace CrowdDefense.Systems
     [Serializable]
     public class LeaderboardEntry
     {
-        public int waveReached;
-        public int score;
-        public string date = "";
+        public int    waveReached;
+        public int    score;
+        public string date        = "";
+        public string playerName  = "";
     }
 
     [Serializable]
@@ -470,13 +471,33 @@ namespace CrowdDefense.Systems
         public static List<LeaderboardEntry> GetLeaderboard() =>
             Load().endlessLeaderboard;
 
-        public static void AddLeaderboardEntry(int waveReached, int score)
+        public static List<LeaderboardEntry> GetTopScores(int n)
+        {
+            var list = Load().endlessLeaderboard;
+            list.Sort((a, b) => b.score.CompareTo(a.score));
+            int count = System.Math.Min(n, list.Count);
+            var result = new List<LeaderboardEntry>(count);
+            for (int i = 0; i < count; i++)
+                result.Add(list[i]);
+            return result;
+        }
+
+        public static bool IsHighScore(int score)
+        {
+            var list = Load().endlessLeaderboard;
+            if (list.Count < 10) return true;
+            list.Sort((a, b) => b.score.CompareTo(a.score));
+            return score > list[list.Count - 1].score;
+        }
+
+        public static void AddLeaderboardEntry(int waveReached, int score, string playerName = "")
         {
             var list = Load().endlessLeaderboard;
             list.Add(new LeaderboardEntry
             {
                 waveReached = waveReached,
                 score       = score,
+                playerName  = playerName,
                 date        = System.DateTime.Now.ToString("yyyy-MM-dd"),
             });
             list.Sort((a, b) => b.score.CompareTo(a.score));

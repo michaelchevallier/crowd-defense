@@ -1,12 +1,18 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements"
          xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
          editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="LevelSummary.uss" />
     <ui:VisualElement name="summary-root" class="summary-root hidden">
         <ui:VisualElement class="summary-panel">
             <ui:Label text="VICTOIRE" name="summary-title" class="summary-title" />
             <ui:Label text="★★★" name="summary-stars" class="summary-stars" />
             <ui:Label text="" name="summary-stats" class="summary-stats" />
             <ui:Label text="" name="summary-gems" class="summary-gems" />
+            <ui:VisualElement name="summary-name-prompt" class="summary-name-prompt hidden">
+                <ui:Label text="Nouveau record !" name="summary-name-label" class="summary-name-label" />
+                <ui:TextField name="summary-name-field" class="summary-name-field" max-length="16" />
+                <ui:Button text="Valider" name="summary-name-confirm" class="summary-btn summary-btn-confirm" />
+            </ui:VisualElement>
             <ui:VisualElement class="summary-buttons">
                 <ui:Button text="Recommencer" name="summary-btn-retry" class="summary-btn" />
                 <ui:Button text="Suivant" name="summary-btn-next" class="summary-btn summary-btn-next" />

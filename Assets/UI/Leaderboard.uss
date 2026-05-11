@@ -85,6 +85,12 @@
     -unity-text-align: middle-center;
 }
 
+.leaderboard-cell-name {
+    flex-grow: 2;
+    min-width: 80px;
+    -unity-text-align: middle-left;
+}
+
 .leaderboard-cell-date {
     flex-grow: 0;
     min-width: 90px;
