@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Common;
+using CrowdDefense.Systems;
+using CrowdDefense.UI;
 
 namespace CrowdDefense.Visual
 {
@@ -30,11 +32,46 @@ namespace CrowdDefense.Visual
             _cam = Camera.main;
             if (_cam != null)
                 _baseCamPos = _cam.transform.position;
+
+            var em = EventManager.Instance;
+            if (em == null) return;
+            em.Subscribe<EnemyKilledEvent>(OnEnemyKilled);
+            em.Subscribe<BossDefeatedEvent>(OnBossDefeated);
+            em.Subscribe<LevelEndedEvent>(OnLevelEnded);
         }
 
-        // Trigger camera shake. Re-calling overrides current shake if stronger or same.
+        protected override void OnDestroySingleton()
+        {
+            var em = EventManager.Instance;
+            if (em == null) return;
+            em.Unsubscribe<EnemyKilledEvent>(OnEnemyKilled);
+            em.Unsubscribe<BossDefeatedEvent>(OnBossDefeated);
+            em.Unsubscribe<LevelEndedEvent>(OnLevelEnded);
+        }
+
+        // ── Event handlers ────────────────────────────────────────────────────
+
+        private void OnEnemyKilled(EnemyKilledEvent _) => Shake(0.04f, 120);
+
+        private void OnBossDefeated(BossDefeatedEvent _)
+        {
+            Shake(0.30f, 600);
+            SlowMo(0.05f, 100);
+        }
+
+        private void OnLevelEnded(LevelEndedEvent evt)
+        {
+            if (evt.Victory)
+                Flash(Color.white, 400);
+        }
+
+        // ── Public API ────────────────────────────────────────────────────────
+
+        // Trigger camera shake. Re-calling overrides current shake.
+        // Gated by Settings.ShakeEnabled.
         public void Shake(float intensity, int durationMs)
         {
+            if (SettingsRegistry.Instance != null && !SettingsRegistry.Instance.ShakeEnabled) return;
             float duration = Mathf.Max(0.016f, durationMs / 1000f);
             _shakeIntensity = intensity;
             _shakeEndTime = Time.unscaledTime + duration;
