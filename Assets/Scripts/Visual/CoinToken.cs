@@ -54,7 +54,6 @@ namespace CrowdDefense.Visual
             Vector3 p2 = Vector3.Lerp(start, end, 0.7f) + Vector3.up * arcHeight * 0.4f;
 
             float elapsed = 0f;
-            float halfDur = dur * 0.5f;
 
             while (elapsed < dur)
             {

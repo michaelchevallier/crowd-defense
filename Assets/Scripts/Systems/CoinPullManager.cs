@@ -1,12 +1,15 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Pool;
 using CrowdDefense.Common;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
-    // Registre des sources Magnet actives, mis à jour chaque frame par Tower.UpdateCoinPull().
-    // Enemy.TakeDamage() interroge GetCoinMulAt() pour booster la récompense.
+    // Registre des sources Magnet actives + animation CoinFlyTo (enemy death → HUD gold pill).
+    // Magnet tracking: Tower.UpdateCoinPull() registers each frame; Enemy.TakeDamage() queries.
+    // Coin fly: SpawnCoinFlyTo() pools CoinToken billboards that arc via bezier to the HUD.
     public class CoinPullManager : MonoSingleton<CoinPullManager>
     {
         private struct CoinSource
@@ -16,12 +19,13 @@ namespace CrowdDefense.Systems
             public float coinMul;
         }
 
+        // ── Magnet tracking ───────────────────────────────────────────────────
+
         // Réinitialisé en fin de frame via LateUpdate, reconstruit par les Magnets dans Update
         private readonly List<CoinSource> sources = new();
 
         private void LateUpdate()
         {
-            // Nettoyage en fin de frame : les Magnets re-remplissent au prochain frame
             sources.Clear();
         }
 
@@ -44,6 +48,66 @@ namespace CrowdDefense.Systems
                     best = Mathf.Max(best, s.coinMul);
             }
             return best;
+        }
+
+        // ── Coin fly-to animation ─────────────────────────────────────────────
+
+        private const int PoolCapacity = 20;
+        private const int PoolMaxSize = 60;
+        private const float FlyDurationSec = 0.72f;
+
+        private ObjectPool<CoinToken>? _tokenPool;
+
+        // World-space landing point derived from Camera + viewport position of gold pill.
+        // Fallback: camera position + slightly in front when HUD is not available.
+        private static readonly Vector3 _hudViewportPos = new Vector3(0.07f, 0.95f, 10f);
+
+        protected override void OnAwakeSingleton()
+        {
+            _tokenPool = new ObjectPool<CoinToken>(
+                createFunc: CreateToken,
+                actionOnGet: t => t.gameObject.SetActive(true),
+                actionOnRelease: t => t.gameObject.SetActive(false),
+                actionOnDestroy: t => { if (t != null) Destroy(t.gameObject); },
+                collectionCheck: false,
+                defaultCapacity: PoolCapacity,
+                maxSize: PoolMaxSize
+            );
+            PreWarm();
+        }
+
+        // Public entry point — called by Enemy after reward computation.
+        // worldPos: 3-D death position. amount: final coin reward.
+        public void SpawnCoinFlyTo(Vector3 worldPos, int amount)
+        {
+            if (_tokenPool == null) return;
+            var token = _tokenPool.Get();
+            Vector3 target = HudWorldTarget();
+            token.Fly(worldPos, target, amount, FlyDurationSec);
+        }
+
+        private Vector3 HudWorldTarget()
+        {
+            var cam = Camera.main;
+            if (cam == null) return Vector3.zero;
+            return cam.ViewportToWorldPoint(_hudViewportPos);
+        }
+
+        private CoinToken CreateToken()
+        {
+            var go = new GameObject("CoinToken");
+            go.SetActive(false);
+            var token = go.AddComponent<CoinToken>();
+            token.SetPool(_tokenPool!);
+            return token;
+        }
+
+        private void PreWarm()
+        {
+            if (_tokenPool == null) return;
+            var buf = new CoinToken[PoolCapacity];
+            for (int i = 0; i < PoolCapacity; i++) buf[i] = _tokenPool.Get();
+            for (int i = 0; i < PoolCapacity; i++) _tokenPool.Release(buf[i]);
         }
     }
 }
