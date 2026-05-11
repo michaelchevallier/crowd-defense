@@ -2,6 +2,7 @@
          xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
          editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
     <Style src="HUD.uss" />
+    <Style src="TowerToolbar.uss" />
     <Style src="RadialMenu.uss" />
     <Style src="TutorialOverlay.uss" />
     <ui:VisualElement name="hud-root" class="hud-root">
@@ -75,6 +76,10 @@
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:Button text="Skip Tutorial" name="tutorial-btn-skip" class="tutorial-btn-skip" />
+        </ui:VisualElement>
+
+        <!-- Tower toolbar (bottom) -->
+        <ui:VisualElement name="tower-toolbar" class="tower-toolbar">
         </ui:VisualElement>
 
         <!-- Game Over panel -->
