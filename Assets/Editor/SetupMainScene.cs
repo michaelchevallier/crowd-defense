@@ -95,6 +95,8 @@ namespace CrowdDefense.Editor
 
             // Generate AnimatorController assets for all GLTF models (idempotent — skips existing).
             BuildAnimatorControllers.Build();
+            // KayKit heroes use shared Rig_Medium animation GLBs — build dedicated controllers.
+            BuildAnimatorControllers.BuildKayKitHeroControllers();
 
             AssetDatabase.SaveAssets();
             return n;

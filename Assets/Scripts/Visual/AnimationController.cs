@@ -28,8 +28,14 @@ namespace CrowdDefense.Visual
             var animator = meshRoot.GetComponent<Animator>()
                 ?? meshRoot.AddComponent<Animator>();
 
-            string controllerPath = k_ControllerBasePath + meshRoot.name;
-            var controller = Resources.Load<RuntimeAnimatorController>(controllerPath);
+            // meshRoot.name may be "Mesh_knight" — strip "Mesh_" prefix, try exact then lowercase
+            string rawName = meshRoot.name;
+            if (rawName.StartsWith("Mesh_", System.StringComparison.OrdinalIgnoreCase))
+                rawName = rawName.Substring(5);
+
+            var controller =
+                Resources.Load<RuntimeAnimatorController>(k_ControllerBasePath + rawName)
+                ?? Resources.Load<RuntimeAnimatorController>(k_ControllerBasePath + rawName.ToLowerInvariant());
 
             if (controller != null)
             {
@@ -39,8 +45,8 @@ namespace CrowdDefense.Visual
             {
 #if UNITY_EDITOR
                 Debug.LogWarning(
-                    $"[AnimationController] Pas de controller pour '{meshRoot.name}' " +
-                    $"à Resources/{controllerPath} — run 'Tools/CrowdDefense/Build Animator Controllers'.");
+                    $"[AnimationController] Pas de controller pour '{rawName}' " +
+                    $"à Resources/{k_ControllerBasePath} — run 'Tools/CrowdDefense/Build Animator Controllers'.");
 #endif
             }
 

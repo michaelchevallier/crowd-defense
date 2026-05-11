@@ -163,6 +163,137 @@ namespace CrowdDefense.Editor
             Debug.Log($"[BuildAnimatorControllers] Terminé — {created} créés, {skipped} ignorés.");
         }
 
+        // Builds one AnimatorController per KayKit hero (knight, mage, ranger, barbarian,
+        // rogue, rogue_hooded) using shared Rig_Medium animation GLBs.
+        // Output : Assets/Resources/Animations/Controllers/{heroName}.controller
+        // Idempotent — skips existing controllers.
+        [MenuItem("Tools/CrowdDefense/Build KayKit Hero Controllers")]
+        public static void BuildKayKitHeroControllers()
+        {
+            const string generalGlbPath  = "Assets/Models/Heroes/KayKit/Animations/gltf/Rig_Medium/Rig_Medium_General.glb";
+            const string movementGlbPath = "Assets/Models/Heroes/KayKit/Animations/gltf/Rig_Medium/Rig_Medium_MovementBasic.glb";
+
+            Directory.CreateDirectory(k_OutputDir);
+
+            var generalClips  = AssetDatabase.LoadAllAssetsAtPath(generalGlbPath)
+                .OfType<AnimationClip>()
+                .Where(c => !c.name.StartsWith("__preview__"))
+                .ToArray();
+            var movementClips = AssetDatabase.LoadAllAssetsAtPath(movementGlbPath)
+                .OfType<AnimationClip>()
+                .Where(c => !c.name.StartsWith("__preview__"))
+                .ToArray();
+
+            if (generalClips.Length == 0 && movementClips.Length == 0)
+            {
+                Debug.LogWarning("[BuildAnimatorControllers] KayKit Rig_Medium GLBs not found or have no clips. Check paths:\n" +
+                    $"  {generalGlbPath}\n  {movementGlbPath}");
+                return;
+            }
+
+            AnimationClip? FindClip(AnimationClip[] pool, params string[] names)
+            {
+                foreach (var n in names)
+                    foreach (var c in pool)
+                        if (string.Equals(c.name, n, System.StringComparison.OrdinalIgnoreCase)) return c;
+                return null;
+            }
+
+            var idleClip   = FindClip(generalClips,  "Idle_A", "Idle_B");
+            var walkClip   = FindClip(movementClips, "Walking_A", "Walking_B", "Running_A");
+            var attackClip = FindClip(generalClips,  "Hit_A", "Hit_B", "Throw", "Use_Item", "Interact");
+            var deathClip  = FindClip(generalClips,  "Death_A", "Death_B");
+
+            string[] heroNames = { "knight", "mage", "ranger", "barbarian", "rogue", "rogue_hooded" };
+            int created = 0, skipped = 0;
+
+            foreach (var heroName in heroNames)
+            {
+                string controllerPath = $"{k_OutputDir}/{heroName}.controller";
+                if (File.Exists(controllerPath)) { skipped++; continue; }
+
+                var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
+                var rootSM = controller.layers[0].stateMachine;
+
+                AnimatorState? idleState   = null;
+                AnimatorState? walkState   = null;
+                AnimatorState? attackState = null;
+                AnimatorState? deathState  = null;
+
+                if (idleClip != null)
+                {
+                    idleState = rootSM.AddState("Idle");
+                    idleState.motion = idleClip;
+                    rootSM.defaultState = idleState;
+                }
+                if (walkClip != null)
+                {
+                    walkState = rootSM.AddState("Walk");
+                    walkState.motion = walkClip;
+                }
+                if (attackClip != null)
+                {
+                    attackState = rootSM.AddState("Attack");
+                    attackState.motion = attackClip;
+                }
+                if (deathClip != null)
+                {
+                    deathState = rootSM.AddState("Death");
+                    deathState.motion = deathClip;
+                }
+
+                if (idleState != null && walkState != null)
+                {
+                    controller.AddParameter("isWalking", AnimatorControllerParameterType.Bool);
+                    var toWalk = idleState.AddTransition(walkState);
+                    toWalk.hasExitTime = false; toWalk.duration = 0.2f;
+                    toWalk.AddCondition(AnimatorConditionMode.If, 0, "isWalking");
+                    var toIdle = walkState.AddTransition(idleState);
+                    toIdle.hasExitTime = false; toIdle.duration = 0.2f;
+                    toIdle.AddCondition(AnimatorConditionMode.IfNot, 0, "isWalking");
+                }
+
+                if (attackState != null)
+                {
+                    controller.AddParameter("attackTrigger", AnimatorControllerParameterType.Trigger);
+                    foreach (var src in new[] { idleState, walkState })
+                    {
+                        if (src == null) continue;
+                        var t = src.AddTransition(attackState);
+                        t.hasExitTime = false; t.duration = 0.1f;
+                        t.AddCondition(AnimatorConditionMode.If, 0, "attackTrigger");
+                    }
+                    if (idleState != null)
+                    {
+                        var back = attackState.AddTransition(idleState);
+                        back.hasExitTime = true; back.exitTime = 0.9f; back.duration = 0.2f;
+                    }
+                }
+
+                if (deathState != null)
+                {
+                    controller.AddParameter("dieTrigger", AnimatorControllerParameterType.Trigger);
+                    var src = idleState ?? walkState;
+                    if (src != null)
+                    {
+                        var t = src.AddTransition(deathState);
+                        t.hasExitTime = false; t.duration = 0.1f;
+                        t.AddCondition(AnimatorConditionMode.If, 0, "dieTrigger");
+                    }
+                }
+
+                EditorUtility.SetDirty(controller);
+                created++;
+                Debug.Log($"[BuildAnimatorControllers] KayKit hero '{heroName}' — " +
+                    $"idle={idleClip?.name ?? "-"} walk={walkClip?.name ?? "-"} " +
+                    $"attack={attackClip?.name ?? "-"} death={deathClip?.name ?? "-"}");
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[BuildAnimatorControllers] KayKit heroes — {created} créés, {skipped} ignorés.");
+        }
+
         // Assigne chaque .controller généré à l'Animator du GLTF importé correspondant.
         // Couvre Heroes + Enemies. Idempotent (safe à relancer).
         // Note : Unity interdit l'édition directe du prefab GLTF importé — on passe par
