@@ -105,16 +105,19 @@ namespace CrowdDefense.Systems
                 }
             }
 
-            int cost = selectedTowerType.Cost;
-            if (Economy.Instance == null || !Economy.Instance.TrySpend(cost))
+            var hero = LevelRunner.Instance?.Hero;
+            int cost = ComputeTowerCost(selectedTowerType.Cost, hero);
+            if (cost > 0 && (Economy.Instance == null || !Economy.Instance.TrySpend(cost)))
             {
 #if UNITY_EDITOR
                 Debug.Log($"[Place] reject : not enough gold ({Economy.Instance?.Gold ?? 0} < {cost})");
 #endif
                 return;
             }
+            if (cost == 0 && hero != null && hero.FirstTowerFree)
+                hero.FirstTowerFreeUsed = true;
 #if UNITY_EDITOR
-            Debug.Log($"[Place] cost={cost} gold, remaining={Economy.Instance.Gold}");
+            Debug.Log($"[Place] cost={cost} (base={selectedTowerType.Cost}) gold remaining={Economy.Instance?.Gold ?? 0}");
 #endif
 
             Vector3 cellWorld = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
@@ -156,6 +159,13 @@ namespace CrowdDefense.Systems
         }
 
         public TowerType? SelectedTowerType => selectedTowerType;
+
+        private static int ComputeTowerCost(int baseCost, Hero? hero)
+        {
+            if (hero == null) return baseCost;
+            if (hero.FirstTowerFree && !hero.FirstTowerFreeUsed) return 0;
+            return Mathf.Max(0, Mathf.RoundToInt(baseCost * hero.TowerCostMul));
+        }
 
         public void UnregisterTower(Tower t) => placedTowers.Remove(t);
 
