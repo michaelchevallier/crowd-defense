@@ -1,7 +1,7 @@
 ---
 name: level-designer
 description: Designs tower defense level layouts (maps + wave compositions) for Milan Crowd Defense V3. Outputs level specs with map grids, waves, briefings, theme assignments. Uses the existing grammar (01PCWL DR T B ~^) + new extensions if approved by D2-01. Validates against MapPathfinder + MapValidator constraints. Use AFTER game-designer has set difficulty targets.
-model: opus
+model: sonnet
 tools: Read, Glob, Grep, Write
 ---
 

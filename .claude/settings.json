@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_console_logs",
+      "mcp__Claude_Preview__preview_screenshot",
+      "mcp__claude-in-chrome__navigate",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "mcp__claude-in-chrome__read_console_messages",
+      "mcp__Claude_in_Chrome__read_console_messages",
+      "mcp__claude-in-chrome__find",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__claude_ai_Vercel__list_deployments",
+      "mcp__Claude_in_Chrome__tabs_context_mcp"
+    ]
+  }
+}

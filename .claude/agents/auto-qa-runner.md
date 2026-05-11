@@ -1,7 +1,7 @@
 ---
 name: auto-qa-runner
 description: Runs automated QA scenarios at the end of each sprint. Loads .claude/qa/scenarios/*.mjs, executes them via Chrome MCP on the /v5/ deployed game, captures metrics and screenshots, scores each assertion pass/fail, produces a sprint-gate report in .claude/qa/reports/. Acts as LLM judge for soft criteria (UX feeling, balance). ONLY invoked at sprint end, after all sprint tickets are merged.
-model: opus
+model: sonnet
 tools: Read, Glob, Grep, Write, Bash, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__javascript_tool, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__read_console_messages, mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__find, mcp__claude-in-chrome__gif_creator
 ---
 

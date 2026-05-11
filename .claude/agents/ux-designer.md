@@ -1,7 +1,7 @@
 ---
 name: ux-designer
 description: Designs UI/UX for HUD, controls, mobile, accessibility for the Milan Crowd Defense V3 game. Produces wireframes (ASCII markdown), CSS specs, keyboard shortcuts, mobile touch targets, animation timings. Use for any feature that affects player-visible interface.
-model: opus
+model: sonnet
 tools: Read, Glob, Grep, Write
 ---
 
