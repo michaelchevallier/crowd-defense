@@ -6,7 +6,7 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.Visual
 {
-    public sealed class CameraController : MonoBehaviour
+    public sealed class CameraController : MonoSingleton<CameraController>
     {
         // ── Inspector ─────────────────────────────────────────────────────────
         [SerializeField] private float panSpeed        = 20f;
@@ -45,7 +45,8 @@ namespace CrowdDefense.Visual
             _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
             EventManager.Instance?.Subscribe<BossEncounteredEvent>(OnBossSpawn);
         }
-        private void OnDestroy() => EventManager.Instance?.Unsubscribe<BossEncounteredEvent>(OnBossSpawn);
+        protected override void OnDestroySingleton() =>
+            EventManager.Instance?.Unsubscribe<BossEncounteredEvent>(OnBossSpawn);
 
         private void OnBossSpawn(BossEncounteredEvent e) => StartCoroutine(BossZoomIntro(e.BossPos));
 
@@ -245,6 +246,22 @@ namespace CrowdDefense.Visual
             var desired = new Vector3(target.x, transform.position.y, target.z - 12f);
             transform.position = Vector3.Lerp(transform.position, desired,
                 followLerpSpeed * Time.deltaTime);
+        }
+
+        // ── Screen shake ─────────────────────────────────────────────────────
+        public void Shake(float intensity, float duration) =>
+            StartCoroutine(ShakeRoutine(intensity, duration));
+
+        private IEnumerator ShakeRoutine(float intensity, float duration)
+        {
+            var origin = transform.position;
+            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            {
+                float remaining = 1f - t / duration;
+                transform.position = origin + (Vector3)Random.insideUnitCircle * intensity * remaining;
+                yield return null;
+            }
+            transform.position = origin;
         }
 
         // ── Clamp within map bounds ───────────────────────────────────────────

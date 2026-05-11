@@ -82,6 +82,20 @@ namespace CrowdDefense.Entities
         private float _freezeUntilTime = 0f;
         private bool  _frozenTinted    = false;
 
+        // ── Burn DOT (from Fireball L3 / synergy) ─────────────────────────────
+        private float _burnUntilTime = 0f;
+
+        // ── Debuff icons (world-space billboard quads above HP bar) ──────────
+        // Slots: 0=slow(cyan) 1=burn(orange) 2=freeze(ice blue) 3=armorBreak(purple)
+        private readonly GameObject?[] _debuffIcons = new GameObject?[4];
+        private static readonly Color[] DebuffColors =
+        {
+            new Color(0f,   1f,   1f),   // slow  — cyan
+            new Color(1f,   0.5f, 0f),   // burn  — orange
+            new Color(0.5f, 0.8f, 1f),   // freeze — ice blue
+            new Color(0.7f, 0f,   1f),   // armor break — purple
+        };
+
         // ── Boss aura (pulsing ring child GO) ─────────────────────────────────
         private GameObject?  _bossAuraGO;
         private MeshRenderer? _bossAuraMR;
@@ -273,6 +287,14 @@ namespace CrowdDefense.Entities
                 _freezeUntilTime = until;
         }
 
+        // Applied by Fireball L3 / synergy — burn DOT tracks active duration
+        public void ApplyBurn(float durationSec)
+        {
+            float until = Time.time + durationSec;
+            if (until > _burnUntilTime)
+                _burnUntilTime = until;
+        }
+
         // ── Init ──────────────────────────────────────────────────────────────
         public void Init(EnemyType type, int assignedPathIdx = 0)
         {
@@ -295,6 +317,7 @@ namespace CrowdDefense.Entities
             _hitFlashTimer    = 0f;
             _freezeUntilTime  = 0f;
             _frozenTinted     = false;
+            _burnUntilTime    = 0f;
             _bossEncounteredPublished = false;
             _bossPhase        = 0;
             _bossPhaseEmission = Color.black;
@@ -408,6 +431,7 @@ namespace CrowdDefense.Entities
 
             // World-space HP bar
             BuildHpBar();
+            BuildDebuffIcons();
 
             // Position + path setup
             pathManager = PathManager.Instance;
@@ -773,6 +797,7 @@ namespace CrowdDefense.Entities
             UpdateCharge();
             UpdateFireBreath();
             UpdateFreeze();
+            UpdateDebuffIcons();
 
             if (_dying)
             {
@@ -1102,6 +1127,53 @@ namespace CrowdDefense.Entities
             }
         }
 
+        private void BuildDebuffIcons()
+        {
+            if (_debuffIcons[0] != null) return; // already built (pool reuse)
+            float spread = 0.25f;
+            float startX = -spread * 1.5f;
+            for (int i = 0; i < 4; i++)
+            {
+                var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                quad.name = $"DebuffIcon{i}";
+                Object.Destroy(quad.GetComponent<Collider>());
+                quad.transform.SetParent(transform, false);
+                quad.transform.localPosition = new Vector3(startX + i * spread, 1.7f, 0f);
+                quad.transform.localScale    = Vector3.one * 0.2f;
+                var mr = quad.GetComponent<MeshRenderer>();
+                if (mr != null)
+                {
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+                    mat.color = DebuffColors[i];
+                    mr.material = mat;
+                    mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    mr.receiveShadows = false;
+                }
+                quad.SetActive(false);
+                _debuffIcons[i] = quad;
+            }
+        }
+
+        private void UpdateDebuffIcons()
+        {
+            if (_debuffIcons[0] == null) return;
+            float now = Time.time;
+            bool slow  = currentSpeedMul < 0.99f;
+            bool burn  = _burnUntilTime > 0f && now < _burnUntilTime;
+            bool freeze = _freezeUntilTime > 0f && now < _freezeUntilTime;
+            bool armor = _dmgTakenMulUntil > 0f && now < _dmgTakenMulUntil;
+            bool[] active = { slow, burn, freeze, armor };
+            for (int i = 0; i < 4; i++)
+            {
+                if (_debuffIcons[i] == null) continue;
+                bool show = active[i];
+                if (_debuffIcons[i].activeSelf != show)
+                    _debuffIcons[i].SetActive(show);
+                if (show && Camera.main != null)
+                    _debuffIcons[i].transform.rotation = Quaternion.LookRotation(Camera.main.transform.forward);
+            }
+        }
+
         // ── TakeDamage ────────────────────────────────────────────────────────
 
         public void TakeDamage(float dmg, Vector3 hitOrigin = default)
@@ -1324,6 +1396,37 @@ namespace CrowdDefense.Entities
                 StartCoroutine(RagdollThenRelease(_lastDamageDirection));
             else
                 ReleaseToPool();
+        }
+
+        // ── Boss death cinematic ──────────────────────────────────────────────
+
+        private System.Collections.IEnumerator BossCinematic()
+        {
+            const float CinematicDuration = 1.5f;
+
+            // Big triple-burst explosion — radius ×3, red-orange-gold colors
+            var pos = transform.position;
+            VfxPool.Instance?.SpawnExplosion(pos + Vector3.up * 0.5f, 3f);
+            VfxPool.Instance?.SpawnImpact(pos + Vector3.up * 0.8f, new Color(1f, 0.4f, 0f));
+            VfxPool.Instance?.SpawnImpact(pos + Vector3.up * 1.2f, new Color(1f, 0.85f, 0f));
+
+            // Screen shake + audio via CameraController
+            CameraController.Instance?.Shake(1.5f, CinematicDuration);
+            AudioController.Instance?.Play("boss_death_roar", 1f);
+
+            // "BOSS VAINCU !" popup — scaled punch
+            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                "BOSS VAINCU !", pos + Vector3.up * 2f, new Color(1f, 0.85f, 0f));
+
+            // Slow time (unscaled coroutine so it still ticks while timeScale is low)
+            Time.timeScale = 0.3f;
+            float elapsed = 0f;
+            while (elapsed < CinematicDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            Time.timeScale = 1f;
         }
 
         // ── Ragdoll ───────────────────────────────────────────────────────────
