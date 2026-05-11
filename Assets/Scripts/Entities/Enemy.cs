@@ -503,8 +503,15 @@ namespace CrowdDefense.Entities
             return fallback;
         }
 
-        private GameObject? SpawnSkinMeshChild(GameObject skinPrefab)
+        private GameObject? SpawnSkinMeshChild(GameObject? skinPrefab)
         {
+            if (skinPrefab == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning("[Enemy] SpawnSkinMeshChild called with null skinPrefab — skipping GLTF spawn");
+#endif
+                return null;
+            }
             if (_meshChild != null)
             {
                 _meshChild.SetActive(true);
@@ -1146,7 +1153,10 @@ namespace CrowdDefense.Entities
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);
 
-            StartCoroutine(RagdollThenRelease(_lastDamageDirection));
+            if (this != null && gameObject != null)
+                StartCoroutine(RagdollThenRelease(_lastDamageDirection));
+            else
+                ReleaseToPool();
         }
 
         // ── Ragdoll ───────────────────────────────────────────────────────────
