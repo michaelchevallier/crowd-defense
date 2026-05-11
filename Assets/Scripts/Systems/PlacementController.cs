@@ -1,15 +1,14 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
-    public class PlacementController : MonoBehaviour
+    public class PlacementController : MonoSingleton<PlacementController>
     {
-        public static PlacementController? Instance { get; private set; }
-
         [SerializeField] private TowerType? selectedTowerType;
         [SerializeField] private GameObject? towerPrefab;
         [SerializeField] private GameObject? projectilePrefab;
@@ -27,16 +26,9 @@ namespace CrowdDefense.Systems
         // Exposé pour radial menu CORE-20
         public Tower? SelectedTower => selectedTower;
 
-        private void Awake()
+        protected override void OnAwakeSingleton()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
             cam = Camera.main;
-        }
-
-        private void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
         }
 
         private void Update()
