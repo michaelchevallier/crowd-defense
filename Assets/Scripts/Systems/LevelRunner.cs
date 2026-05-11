@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
@@ -14,11 +15,13 @@ namespace CrowdDefense.Systems
     {
         [SerializeField] private LevelData? currentLevel;
         [SerializeField] private GameObject? castlePrefab;
+        [SerializeField] private GameObject? heroPrefab;
 
         public GameState State { get; private set; } = GameState.Play;
         public LevelData? CurrentLevel => currentLevel;
 
         public Castle? PrimaryCastle { get; private set; }
+        public Hero?   Hero           { get; private set; }
         public int TotalCastleHP => PrimaryCastle?.HP ?? 0;
         public int TotalCastleHPMax => PrimaryCastle?.HPMax ?? 0;
 
@@ -57,6 +60,8 @@ namespace CrowdDefense.Systems
                 WaveManager.Instance.OnAllWavesCompleted += OnVictory;
 
             SpawnCastle();
+            SpawnHeroFromPrefab();
+            ApplyRunStateToHero();
         }
 
         private void Update()
@@ -110,6 +115,36 @@ namespace CrowdDefense.Systems
 #endif
 
             OnTotalHPChanged?.Invoke(TotalCastleHP, TotalCastleHPMax);
+        }
+
+        private void SpawnHeroFromPrefab()
+        {
+            if (heroPrefab == null) return;
+            if (PathManager.Instance?.Grid == null) return;
+            var grid = PathManager.Instance.Grid;
+            float cx = grid.Width  * grid.CellSize * 0.5f;
+            float cz = grid.Height * grid.CellSize * 0.5f;
+            var go = Instantiate(heroPrefab, new Vector3(cx, 0f, cz), Quaternion.identity);
+            Hero = go.GetComponent<Hero>();
+        }
+
+        private void ApplyRunStateToHero()
+        {
+            if (Hero == null) return;
+            var rs = SaveSystem.GetRunState();
+            Hero.ApplyRunContext(
+                rs?.heroPerks ?? new List<string>(),
+                rs?.heroLevel ?? 1,
+                rs?.heroXP    ?? 0);
+
+            if (rs?.schoolId is { Length: > 0 } sid)
+                PerkSystem.Instance?.ApplyFreeSetBonus(Hero, sid);
+
+            if (PrimaryCastle != null && Hero.CastleHPMaxMul > 1f)
+            {
+                int bonus = Mathf.RoundToInt(PrimaryCastle.HPMax * (Hero.CastleHPMaxMul - 1f));
+                PrimaryCastle.GrantBonusHP(bonus);
+            }
         }
 
         public int ResolveCastleHP() => currentLevel?.CastleHP ?? 120;
