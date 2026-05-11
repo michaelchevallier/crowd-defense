@@ -100,6 +100,10 @@ namespace CrowdDefense.Entities
         // ── Dust trail ────────────────────────────────────────────────────────
         private float _dustTimer = 0f;
 
+        // ── Footstep audio ────────────────────────────────────────────────────
+        private const float StepInterval = 0.4f;
+        private float _stepTimer = 0f;
+
         // ── Fiery trail (imp, dragon, etc.) ───────────────────────────────────
         private float _fieryTimer = 0f;
         private const float FieryInterval = 0.08f;
@@ -194,6 +198,7 @@ namespace CrowdDefense.Entities
             _summonHordeTime  = 0f;
             _dustTimer        = 0f;
             _fieryTimer       = 0f;
+            _stepTimer        = 0f;
             _static           = false;
             _staticRotY       = 0f;
             _wasWalking       = false;
