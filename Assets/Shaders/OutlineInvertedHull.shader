@@ -1,59 +1,61 @@
-// Outline inverted hull — port du pattern cellShadingOutlineColor() ToonMaterial.js
-// Vertex extrudé le long de la normale × _OutlineWidth (world units).
-// Cull Front : seul le back-face visible → silhouette outline noire autour du mesh principal.
+// OutlineInvertedHull — URP port
+// Vertex extrudé le long de la normale × _OutlineWidth (object space).
+// Cull Front : seul le back-face visible → silhouette outline noire autour du mesh.
 Shader "CrowdDefense/OutlineInvertedHull"
 {
     Properties
     {
-        _OutlineColor ("Outline Color", Color) = (0,0,0,1)
-        _OutlineWidth ("Outline Width", Range(0.0, 0.1)) = 0.02
+        _OutlineColor ("Outline Color", Color)             = (0,0,0,1)
+        _OutlineWidth ("Outline Width", Range(0.0, 0.1))   = 0.02
     }
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Geometry+1" }
+        Tags { "RenderType"="Opaque" "Queue"="Geometry+1" "RenderPipeline"="UniversalPipeline" }
 
         Pass
         {
             Name "Outline"
-            // Inverted hull : cull front faces, seul le back-face est rendu
+            Tags { "LightMode"="UniversalForward" }
             Cull Front
             ZWrite On
             ZTest LEqual
 
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
 
-            struct appdata
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                half4  _OutlineColor;
+                float  _OutlineWidth;
+            CBUFFER_END
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
-                float3 normal : NORMAL;
+                float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 pos : SV_POSITION;
+                float4 positionCS : SV_POSITION;
             };
 
-            fixed4 _OutlineColor;
-            float  _OutlineWidth;
-
-            v2f vert(appdata v)
+            Varyings vert(Attributes v)
             {
-                v2f o;
-                // Extrude vertex along object-space normal, then to clip space
-                float3 extruded = v.vertex.xyz + v.normal * _OutlineWidth;
-                o.pos = UnityObjectToClipPos(float4(extruded, 1.0));
+                Varyings o;
+                float3 extruded = v.positionOS.xyz + v.normalOS * _OutlineWidth;
+                o.positionCS = TransformObjectToHClip(extruded);
                 return o;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            half4 frag(Varyings i) : SV_Target
             {
                 return _OutlineColor;
             }
-            ENDCG
+            ENDHLSL
         }
     }
 

@@ -1,24 +1,21 @@
-// Cel-shading toon shader — port de ToonMaterial.js (Three.js MeshToonMaterial)
-// 3-step gradient ramp : shadow (#888) / mid (#ccc) / bright (#fff)
-// Compatible Built-in Render Pipeline + fallback si URP non installé
-// Optional rim light (fresnel silhouette glow)
+// ToonCelShading — cel-shading 3-step ramp, URP port
+// Same feature set as Built-in version: shadow/mid/bright bands + rim light
 Shader "CrowdDefense/ToonCelShading"
 {
     Properties
     {
-        _BaseColor ("Base Color", Color) = (1,1,1,1)
-        _MainTex ("Main Texture", 2D) = "white" {}
-        _ShadowColor ("Shadow Color", Color) = (0.533,0.533,0.533,1)
-        _MidColor ("Mid Color", Color) = (0.8,0.8,0.8,1)
-        _BrightColor ("Bright Color", Color) = (1,1,1,1)
-        _ShadowThreshold ("Shadow Threshold", Range(0,1)) = 0.33
-        _MidThreshold ("Mid Threshold", Range(0,1)) = 0.66
-        _RimColor ("Rim Light Color", Color) = (1,1,1,0.4)
-        _RimPower ("Rim Power", Range(0.5,8.0)) = 3.0
-        _RimEnabled ("Rim Enabled", Float) = 1.0
-        // Transparency support (stealth enemies)
-        [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2
-        [Enum(Off,0,On,1)] _ZWrite ("ZWrite", Float) = 1
+        _BaseColor        ("Base Color",       Color)        = (1,1,1,1)
+        _MainTex          ("Main Texture",     2D)           = "white" {}
+        _ShadowColor      ("Shadow Color",     Color)        = (0.533,0.533,0.533,1)
+        _MidColor         ("Mid Color",        Color)        = (0.8,0.8,0.8,1)
+        _BrightColor      ("Bright Color",     Color)        = (1,1,1,1)
+        _ShadowThreshold  ("Shadow Threshold", Range(0,1))   = 0.33
+        _MidThreshold     ("Mid Threshold",    Range(0,1))   = 0.66
+        _RimColor         ("Rim Light Color",  Color)        = (1,1,1,0.4)
+        _RimPower         ("Rim Power",        Range(0.5,8)) = 3.0
+        _RimEnabled       ("Rim Enabled",      Float)        = 1.0
+        [Enum(UnityEngine.Rendering.CullMode)] _Cull   ("Cull",   Float) = 2
+        [Enum(Off,0,On,1)]                     _ZWrite ("ZWrite", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _SrcBlend ("Src Blend", Float) = 1
         [Enum(UnityEngine.Rendering.BlendMode)] _DstBlend ("Dst Blend", Float) = 0
         [HideInInspector] _Surface ("Surface", Float) = 0
@@ -26,123 +23,117 @@ Shader "CrowdDefense/ToonCelShading"
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Geometry" }
+        Tags { "RenderType"="Opaque" "Queue"="Geometry" "RenderPipeline"="UniversalPipeline" }
 
         Pass
         {
             Name "ToonForward"
-            Tags { "LightMode"="ForwardBase" }
+            Tags { "LightMode"="UniversalForward" }
 
             Cull [_Cull]
             ZWrite [_ZWrite]
             Blend [_SrcBlend] [_DstBlend]
 
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile_fwdbase
-            #include "UnityCG.cginc"
-            #include "Lighting.cginc"
-            #include "AutoLight.cginc"
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _SHADOWS_SOFT
 
-            struct appdata
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _MainTex_ST;
+                half4  _BaseColor;
+                half4  _ShadowColor;
+                half4  _MidColor;
+                half4  _BrightColor;
+                float  _ShadowThreshold;
+                float  _MidThreshold;
+                half4  _RimColor;
+                float  _RimPower;
+                float  _RimEnabled;
+            CBUFFER_END
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
-                float3 normal : NORMAL;
-                float2 uv     : TEXCOORD0;
+                float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
+                float2 uv         : TEXCOORD0;
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 pos      : SV_POSITION;
-                float2 uv       : TEXCOORD0;
-                float3 worldNormal : TEXCOORD1;
-                float3 worldPos    : TEXCOORD2;
-                LIGHTING_COORDS(3, 4)
+                float4 positionCS  : SV_POSITION;
+                float2 uv          : TEXCOORD0;
+                float3 normalWS    : TEXCOORD1;
+                float3 positionWS  : TEXCOORD2;
             };
 
-            sampler2D _MainTex;
-            float4 _MainTex_ST;
-            fixed4 _BaseColor;
-            fixed4 _ShadowColor;
-            fixed4 _MidColor;
-            fixed4 _BrightColor;
-            float _ShadowThreshold;
-            float _MidThreshold;
-            fixed4 _RimColor;
-            float _RimPower;
-            float _RimEnabled;
-
-            v2f vert(appdata v)
+            Varyings vert(Attributes v)
             {
-                v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                o.worldNormal = UnityObjectToWorldNormal(v.normal);
-                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-                TRANSFER_VERTEX_TO_FRAGMENT(o);
+                Varyings o;
+                VertexPositionInputs vpi = GetVertexPositionInputs(v.positionOS.xyz);
+                VertexNormalInputs   vni = GetVertexNormalInputs(v.normalOS);
+                o.positionCS = vpi.positionCS;
+                o.positionWS = vpi.positionWS;
+                o.normalWS   = vni.normalWS;
+                o.uv         = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            half4 frag(Varyings i) : SV_Target
             {
-                // Texture sample
-                fixed4 texColor = tex2D(_MainTex, i.uv) * _BaseColor;
+                half4 texColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv) * _BaseColor;
 
-                // Diffuse quantization — port du gradient 4x1 px (shadow/mid/bright)
-                float3 normal = normalize(i.worldNormal);
-                float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
-                float nDotL = max(0.0, dot(normal, lightDir));
+                float3 normalWS  = normalize(i.normalWS);
+                Light  mainLight = GetMainLight();
+                float  nDotL     = max(0.0, dot(normalWS, mainLight.direction));
+                float  lit       = nDotL * mainLight.distanceAttenuation;
 
-                // Attenuation (ombres)
-                UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
-                float lit = nDotL * atten;
+                half4 band;
+                if (lit < _ShadowThreshold)      band = _ShadowColor;
+                else if (lit < _MidThreshold)    band = _MidColor;
+                else                             band = _BrightColor;
 
-                // 3-step quantize : < shadowThreshold, < midThreshold, else bright
-                fixed4 band;
-                if (lit < _ShadowThreshold)
-                    band = _ShadowColor;
-                else if (lit < _MidThreshold)
-                    band = _MidColor;
-                else
-                    band = _BrightColor;
+                half4 color = texColor * band;
 
-                fixed4 color = texColor * band;
-
-                // Rim light (fresnel silhouette)
                 if (_RimEnabled > 0.5)
                 {
-                    float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos);
-                    float rim = 1.0 - saturate(dot(viewDir, normal));
-                    float rimFactor = pow(rim, _RimPower);
+                    float3 viewDir   = normalize(GetWorldSpaceViewDir(i.positionWS));
+                    float  rim       = 1.0 - saturate(dot(viewDir, normalWS));
+                    float  rimFactor = pow(rim, _RimPower);
                     color.rgb += _RimColor.rgb * _RimColor.a * rimFactor;
                 }
 
                 color.a = texColor.a * _BaseColor.a;
                 return color;
             }
-            ENDCG
+            ENDHLSL
         }
 
-        // Shadow caster pass pour que les tours/enemies castent ombre correctement
         Pass
         {
             Name "ShadowCaster"
             Tags { "LightMode"="ShadowCaster" }
             ZWrite On
             Cull Back
-            CGPROGRAM
-            #pragma vertex vert_shadow
-            #pragma fragment frag_shadow
+            ColorMask 0
+
+            HLSLPROGRAM
+            #pragma vertex vertShadow
+            #pragma fragment fragShadow
             #pragma multi_compile_shadowcaster
-            #include "UnityCG.cginc"
-            struct v_s { float4 vertex : POSITION; float3 normal : NORMAL; };
-            struct f_s { V2F_SHADOW_CASTER; };
-            f_s vert_shadow(v_s v) { f_s o; TRANSFER_SHADOW_CASTER_NORMALOFFSET(o); return o; }
-            float4 frag_shadow(f_s i) : SV_Target { SHADOW_CASTER_FRAGMENT(i); }
-            ENDCG
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
+            ENDHLSL
         }
     }
 
-    FallBack "Diffuse"
+    FallBack "Universal Render Pipeline/Lit"
 }

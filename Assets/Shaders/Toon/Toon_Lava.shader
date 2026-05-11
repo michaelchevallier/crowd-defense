@@ -1,64 +1,68 @@
-// Toon_Lava — tuile lave animée, port de createLavaMaterial() (Shaders.js V5)
-// UV scroll + glow pulse + emission (HDR)
+// Toon_Lava — tuile lave animée URP port
+// UV scroll + glow pulse + procedural crack noise
 Shader "CrowdDefense/Toon/Lava"
 {
     Properties
     {
-        _MainTex        ("Base Texture",     2D)           = "white" {}
-        _Tint           ("Lava Tint",        Color)        = (1,0.627,0.314,1)
-        _ScrollSpeedX   ("Scroll Speed X",   Range(-2,2))  = 0.08
-        _ScrollSpeedY   ("Scroll Speed Y",   Range(-2,2))  = 0.04
-        _GlowColor      ("Glow Color",       Color)        = (1,0.4,0,1)
-        _GlowPulseFreq  ("Glow Pulse Freq",  Range(0.1,5)) = 1.2
-        _GlowPulseAmp   ("Glow Pulse Amp",   Range(0,2))   = 0.6
-        _GlowBase       ("Glow Base",        Range(0,2))   = 0.8
-        _CrackScale     ("Crack Scale",      Range(1,30))  = 8.0
-        _CrackContrast  ("Crack Contrast",   Range(0,2))   = 1.4
-        _EmissionStrength("Emission Strength",Range(0,4))  = 1.5
+        _MainTex         ("Base Texture",      2D)           = "white" {}
+        _Tint            ("Lava Tint",         Color)        = (1,0.627,0.314,1)
+        _ScrollSpeedX    ("Scroll Speed X",    Range(-2,2))  = 0.08
+        _ScrollSpeedY    ("Scroll Speed Y",    Range(-2,2))  = 0.04
+        _GlowColor       ("Glow Color",        Color)        = (1,0.4,0,1)
+        _GlowPulseFreq   ("Glow Pulse Freq",   Range(0.1,5)) = 1.2
+        _GlowPulseAmp    ("Glow Pulse Amp",    Range(0,2))   = 0.6
+        _GlowBase        ("Glow Base",         Range(0,2))   = 0.8
+        _CrackScale      ("Crack Scale",       Range(1,30))  = 8.0
+        _CrackContrast   ("Crack Contrast",    Range(0,2))   = 1.4
+        _EmissionStrength("Emission Strength", Range(0,4))   = 1.5
     }
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Geometry" }
+        Tags { "RenderType"="Opaque" "Queue"="Geometry" "RenderPipeline"="UniversalPipeline" }
 
         Pass
         {
             Name "LavaForward"
-            Tags { "LightMode"="ForwardBase" }
+            Tags { "LightMode"="UniversalForward" }
             Cull Back
             ZWrite On
 
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
 
-            struct appdata
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _MainTex_ST;
+                half4  _Tint;
+                float  _ScrollSpeedX;
+                float  _ScrollSpeedY;
+                half4  _GlowColor;
+                float  _GlowPulseFreq;
+                float  _GlowPulseAmp;
+                float  _GlowBase;
+                float  _CrackScale;
+                float  _CrackContrast;
+                float  _EmissionStrength;
+            CBUFFER_END
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
-                float2 uv     : TEXCOORD0;
+                float4 positionOS : POSITION;
+                float2 uv         : TEXCOORD0;
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 pos : SV_POSITION;
-                float2 uv  : TEXCOORD0;
+                float4 positionCS : SV_POSITION;
+                float2 uv         : TEXCOORD0;
             };
 
-            sampler2D _MainTex;
-            float4    _MainTex_ST;
-            fixed4    _Tint;
-            float     _ScrollSpeedX;
-            float     _ScrollSpeedY;
-            fixed4    _GlowColor;
-            float     _GlowPulseFreq;
-            float     _GlowPulseAmp;
-            float     _GlowBase;
-            float     _CrackScale;
-            float     _CrackContrast;
-            float     _EmissionStrength;
-
-            // Hash-based 2D value noise — crée l'illusion de cracks de lave
             float hash21(float2 p)
             {
                 p = frac(p * float2(127.1, 311.7));
@@ -78,60 +82,56 @@ Shader "CrowdDefense/Toon/Lava"
                 return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
             }
 
-            v2f vert(appdata v)
+            Varyings vert(Attributes v)
             {
-                v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
-                o.uv  = TRANSFORM_TEX(v.uv, _MainTex);
+                Varyings o;
+                o.positionCS = TransformObjectToHClip(v.positionOS.xyz);
+                o.uv         = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            half4 frag(Varyings i) : SV_Target
             {
-                // Scrolling UV
                 float2 uv = i.uv;
                 uv.x += _Time.y * _ScrollSpeedX;
                 uv.y += _Time.y * _ScrollSpeedY;
 
-                fixed4 col = tex2D(_MainTex, uv) * _Tint;
+                half4 col = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, uv) * _Tint;
 
-                // Procedural crack noise (simule la texture V5 de lave)
-                float n1 = valueNoise(i.uv * _CrackScale);
-                float n2 = valueNoise(i.uv * (_CrackScale * 0.5) + float2(1.7, 3.3));
+                float n1    = valueNoise(i.uv * _CrackScale);
+                float n2    = valueNoise(i.uv * (_CrackScale * 0.5) + float2(1.7, 3.3));
                 float crack = pow(n1 * n2, _CrackContrast);
-                // Mélange: zones sombres (croûte) vs zones brillantes (lave en fusion)
-                fixed3 crustColor = _Tint.rgb * 0.25;
+                half3 crustColor = _Tint.rgb * 0.25;
                 col.rgb = lerp(crustColor, col.rgb, crack);
 
-                // Glow pulse (port du _GlowPulse V5)
-                float pulse = _GlowBase + sin(_Time.y * _GlowPulseFreq) * _GlowPulseAmp;
-                pulse = max(0.0, pulse);
-                // Emission: zones brillantes poussées vers la couleur de lueur
+                float pulse  = _GlowBase + sin(_Time.y * _GlowPulseFreq) * _GlowPulseAmp;
+                pulse        = max(0.0, pulse);
                 float hotMask = crack * pulse;
                 col.rgb += _GlowColor.rgb * hotMask * _EmissionStrength;
 
                 return col;
             }
-            ENDCG
+            ENDHLSL
         }
 
         Pass
         {
             Name "ShadowCaster"
             Tags { "LightMode"="ShadowCaster" }
-            ZWrite On Cull Back
-            CGPROGRAM
-            #pragma vertex vert_s
-            #pragma fragment frag_s
+            ZWrite On
+            Cull Back
+            ColorMask 0
+
+            HLSLPROGRAM
+            #pragma vertex vertShadow
+            #pragma fragment fragShadow
             #pragma multi_compile_shadowcaster
-            #include "UnityCG.cginc"
-            struct v_s { float4 vertex : POSITION; float3 normal : NORMAL; };
-            struct f_s { V2F_SHADOW_CASTER; };
-            f_s vert_s(v_s v) { f_s o; TRANSFER_SHADOW_CASTER_NORMALOFFSET(o); return o; }
-            float4 frag_s(f_s i) : SV_Target { SHADOW_CASTER_FRAGMENT(i); }
-            ENDCG
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
+            ENDHLSL
         }
     }
 
-    FallBack "Diffuse"
+    FallBack "Universal Render Pipeline/Lit"
 }

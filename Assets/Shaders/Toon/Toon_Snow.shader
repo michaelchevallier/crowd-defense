@@ -1,5 +1,5 @@
-// Toon_Snow — tuile neige scintillante, port V5 snow theme
-// Sparkle shimmer + normal-map style glint + cool-blue tint
+// Toon_Snow — tuile neige scintillante URP port
+// Sparkle shimmer + glint wave + fresnel cool-blue + 3-step cel bands
 Shader "CrowdDefense/Toon/Snow"
 {
     Properties
@@ -21,55 +21,60 @@ Shader "CrowdDefense/Toon/Snow"
 
     SubShader
     {
-        Tags { "RenderType"="Opaque" "Queue"="Geometry" }
+        Tags { "RenderType"="Opaque" "Queue"="Geometry" "RenderPipeline"="UniversalPipeline" }
 
         Pass
         {
             Name "SnowForward"
-            Tags { "LightMode"="ForwardBase" }
+            Tags { "LightMode"="UniversalForward" }
             Cull Back
             ZWrite On
 
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile_fwdbase
-            #include "UnityCG.cginc"
-            #include "Lighting.cginc"
-            #include "AutoLight.cginc"
+            #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE
+            #pragma multi_compile _ _SHADOWS_SOFT
 
-            struct appdata
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            TEXTURE2D(_MainTex);
+            SAMPLER(sampler_MainTex);
+            TEXTURE2D(_NormalTex);
+            SAMPLER(sampler_NormalTex);
+
+            CBUFFER_START(UnityPerMaterial)
+                float4 _MainTex_ST;
+                float4 _NormalTex_ST;
+                half4  _Tint;
+                float  _NormalStrength;
+                float  _SparkleScale;
+                float  _SparkleSpeed;
+                float  _SparkleThreshold;
+                half4  _SparkleColor;
+                float  _SparkleStrength;
+                float  _GlintFreq;
+                float  _GlintAmp;
+                float  _FresnelPower;
+                half4  _FresnelColor;
+            CBUFFER_END
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
-                float3 normal : NORMAL;
-                float2 uv     : TEXCOORD0;
+                float4 positionOS : POSITION;
+                float3 normalOS   : NORMAL;
+                float2 uv         : TEXCOORD0;
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 pos         : SV_POSITION;
-                float2 uv          : TEXCOORD0;
-                float3 worldNormal : TEXCOORD1;
-                float3 worldPos    : TEXCOORD2;
-                LIGHTING_COORDS(3, 4)
+                float4 positionCS : SV_POSITION;
+                float2 uv         : TEXCOORD0;
+                float3 normalWS   : TEXCOORD1;
+                float3 positionWS : TEXCOORD2;
             };
 
-            sampler2D _MainTex;
-            float4    _MainTex_ST;
-            sampler2D _NormalTex;
-            fixed4    _Tint;
-            float     _NormalStrength;
-            float     _SparkleScale;
-            float     _SparkleSpeed;
-            float     _SparkleThreshold;
-            fixed4    _SparkleColor;
-            float     _SparkleStrength;
-            float     _GlintFreq;
-            float     _GlintAmp;
-            float     _FresnelPower;
-            fixed4    _FresnelColor;
-
-            // Hash-based sparkle — each cell flickers independently
             float hash21(float2 p)
             {
                 p = frac(p * float2(127.1, 311.7));
@@ -79,85 +84,79 @@ Shader "CrowdDefense/Toon/Snow"
 
             float sparkle(float2 uv, float t)
             {
-                float2 cell = floor(uv * _SparkleScale);
-                float  h    = hash21(cell);
-                // Each cell flickers at its own phase/speed
+                float2 cell    = floor(uv * _SparkleScale);
+                float  h       = hash21(cell);
                 float  flicker = sin(t * _SparkleSpeed * (0.5 + h) + h * 6.28318) * 0.5 + 0.5;
                 return step(_SparkleThreshold, flicker * h);
             }
 
-            v2f vert(appdata v)
+            Varyings vert(Attributes v)
             {
-                v2f o;
-                o.pos = UnityObjectToClipPos(v.vertex);
-                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
-                o.worldNormal = UnityObjectToWorldNormal(v.normal);
-                o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
-                TRANSFER_VERTEX_TO_FRAGMENT(o);
+                Varyings o;
+                VertexPositionInputs vpi = GetVertexPositionInputs(v.positionOS.xyz);
+                VertexNormalInputs   vni = GetVertexNormalInputs(v.normalOS);
+                o.positionCS = vpi.positionCS;
+                o.positionWS = vpi.positionWS;
+                o.normalWS   = vni.normalWS;
+                o.uv         = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            half4 frag(Varyings i) : SV_Target
             {
-                fixed4 texColor = tex2D(_MainTex, i.uv) * _Tint;
+                half4 texColor = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, i.uv) * _Tint;
 
-                // Normal map perturbs light response for icy surface glints
-                fixed4 normalSample = tex2D(_NormalTex, i.uv);
+                half4  normalSample = SAMPLE_TEXTURE2D(_NormalTex, sampler_NormalTex, i.uv);
                 float3 tn = UnpackNormal(normalSample);
                 tn = normalize(float3(tn.xy * _NormalStrength, tn.z));
-                float3 worldN = normalize(i.worldNormal + tn.x * 0.1 + tn.y * 0.1);
+                float3 normalWS = normalize(i.normalWS + tn.x * 0.1 + tn.y * 0.1);
 
-                // Diffuse (basic lambert — snow is matte with sparkle exceptions)
-                float3 lightDir = normalize(_WorldSpaceLightPos0.xyz);
-                float  nDotL    = max(0.0, dot(worldN, lightDir));
-                UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
-                float  lit      = nDotL * atten;
+                Light  mainLight = GetMainLight();
+                float  nDotL     = max(0.0, dot(normalWS, mainLight.direction));
+                float  lit       = nDotL * mainLight.distanceAttenuation;
 
-                // 3-step cel-shading (comme Toon_Lit)
-                fixed3 band;
-                if      (lit < 0.3) band = fixed3(0.6, 0.65, 0.75);
-                else if (lit < 0.65) band = fixed3(0.85, 0.88, 0.95);
-                else                 band = fixed3(1.0, 1.0, 1.0);
-                fixed4 color = texColor * fixed4(band, 1.0);
+                half3 band;
+                if      (lit < 0.3)  band = half3(0.6, 0.65, 0.75);
+                else if (lit < 0.65) band = half3(0.85, 0.88, 0.95);
+                else                 band = half3(1.0, 1.0, 1.0);
+                half4 color = texColor * half4(band, 1.0);
 
-                // Sparkle flicker (port du sparkle V5)
                 float sp = sparkle(i.uv, _Time.y);
                 color.rgb += _SparkleColor.rgb * sp * _SparkleStrength;
 
-                // Rolling glint wave (ice crystal catch-light)
                 float glint = sin(i.uv.x * _GlintFreq * 6.28318 + _Time.y * 2.0)
                             * sin(i.uv.y * _GlintFreq * 6.28318 + _Time.y * 1.7);
                 glint = max(0.0, glint) * _GlintAmp;
                 color.rgb += glint;
 
-                // Fresnel (blue-white rim for icy feel)
-                float3 viewDir   = normalize(_WorldSpaceCameraPos - i.worldPos);
-                float  fresnel   = 1.0 - saturate(dot(viewDir, worldN));
+                float3 viewDir     = normalize(GetWorldSpaceViewDir(i.positionWS));
+                float  fresnel     = 1.0 - saturate(dot(viewDir, normalWS));
                 float  fresnelFactor = pow(fresnel, _FresnelPower);
                 color.rgb = lerp(color.rgb, _FresnelColor.rgb, fresnelFactor * 0.4);
 
                 return color;
             }
-            ENDCG
+            ENDHLSL
         }
 
         Pass
         {
             Name "ShadowCaster"
             Tags { "LightMode"="ShadowCaster" }
-            ZWrite On Cull Back
-            CGPROGRAM
-            #pragma vertex vert_s
-            #pragma fragment frag_s
+            ZWrite On
+            Cull Back
+            ColorMask 0
+
+            HLSLPROGRAM
+            #pragma vertex vertShadow
+            #pragma fragment fragShadow
             #pragma multi_compile_shadowcaster
-            #include "UnityCG.cginc"
-            struct v_s { float4 vertex : POSITION; float3 normal : NORMAL; };
-            struct f_s { V2F_SHADOW_CASTER; };
-            f_s vert_s(v_s v) { f_s o; TRANSFER_SHADOW_CASTER_NORMALOFFSET(o); return o; }
-            float4 frag_s(f_s i) : SV_Target { SHADOW_CASTER_FRAGMENT(i); }
-            ENDCG
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
+            ENDHLSL
         }
     }
 
-    FallBack "Diffuse"
+    FallBack "Universal Render Pipeline/Lit"
 }
