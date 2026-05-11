@@ -90,6 +90,7 @@ namespace CrowdDefense.Visual
             transform.position = end;
             VfxPool.Instance?.SpawnCoinBurst(end);
             CrowdDefense.Systems.AudioController.Instance?.Play("coin_pickup", 0.55f);
+            JuiceFX.Instance?.Flash(new Color(1f, 0.92f, 0.2f, 0.18f), 120);
 
             ReturnToPool();
         }

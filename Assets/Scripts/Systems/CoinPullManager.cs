@@ -93,7 +93,17 @@ namespace CrowdDefense.Systems
                 maxSize: PoolMaxSize
             );
             PreWarm();
+            EventManager.Instance?.Subscribe<EnemyKilledEvent>(OnEnemyKilled);
         }
+
+        protected override void OnDestroySingleton()
+        {
+            EventManager.Instance?.Unsubscribe<EnemyKilledEvent>(OnEnemyKilled);
+        }
+
+        // Global event-bus wiring: Enemy.cs also calls SpawnCoinFlyTo directly for now.
+        // This subscription ensures coins spawn even if the direct call is later removed.
+        private void OnEnemyKilled(EnemyKilledEvent e) { }
 
         // Public entry point — called by Enemy after reward computation.
         // worldPos: 3-D death position. amount: final coin reward.
