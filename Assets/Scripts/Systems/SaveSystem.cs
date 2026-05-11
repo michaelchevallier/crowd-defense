@@ -75,8 +75,12 @@ namespace CrowdDefense.Systems
             {
                 _cached = JsonUtility.FromJson<ProgressData>(json) ?? new ProgressData();
             }
-            catch
+            catch (Exception ex)
             {
+#if UNITY_EDITOR
+                PlayerPrefs.SetString(KEY + "_corrupted", json);
+                Debug.LogWarning($"[SaveSystem] Progression corrompue, reset silencieux: {ex.Message}");
+#endif
                 _cached = new ProgressData();
             }
             return _cached;
@@ -260,9 +264,6 @@ namespace CrowdDefense.Systems
             if (isFirstClear) reward += 2;
             return reward;
         }
-
-        private static bool IsStackable(string id) =>
-            id is "range" or "fire_rate" or "pierce" or "lifesteal" or "move_speed";
 
         // ── Skins ──
 

@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
@@ -12,6 +11,9 @@ namespace CrowdDefense.Systems
 {
     public class PerkSystem : MonoSingleton<PerkSystem>
     {
+        private const float ForteresseHPMul     = 1.5f;
+        private const float DefaultTowerAuraRange = 8f;
+
         private PerkRegistry? _registry;
 
         public event Action<Hero, PerkDef>?         OnPerkApplied;
@@ -182,12 +184,12 @@ namespace CrowdDefense.Systems
             if (def.towerFireRateAura != 1f)
             {
                 hero.TowerFireRateAuraMul = def.towerFireRateAura;
-                hero.TowerAuraRange = def.towerAuraRange > 0f ? def.towerAuraRange : 8f;
+                hero.TowerAuraRange = def.towerAuraRange > 0f ? def.towerAuraRange : DefaultTowerAuraRange;
             }
             if (def.combustion)     hero.Combustion = true;
             if (def.pyromancie)     hero.Pyromancie = true;
             if (def.glaciation)     hero.Glaciation = true;
-            if (def.forteressePerk) hero.CastleHPMaxMul *= 1.5f;
+            if (def.forteressePerk) hero.CastleHPMaxMul *= ForteresseHPMul;
 
             // Downsides
             if (def.downRange != 0f)      hero.RangeMul    *= 1f + def.downRange;
