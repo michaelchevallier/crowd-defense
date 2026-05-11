@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
+using CrowdDefense.UI;
 using CrowdDefense.Visual;
 
 namespace CrowdDefense.Entities
@@ -99,6 +100,7 @@ namespace CrowdDefense.Entities
         public IReadOnlyList<string> Perks => _perks;
         private readonly List<string> _perks = new();
         private readonly Dictionary<string, int> _activeTagsCount = new();
+        private bool _suppressPerkVfx;
 
         // ── Nth-projectile AoE counter ────────────────────────────────────────
         private int _projFiredCount;
@@ -311,10 +313,22 @@ namespace CrowdDefense.Entities
             Xp       = xp;
             if (cfg != null) XpToNext = cfg.XpToNext(level);
 
+            _suppressPerkVfx = true;
             PerkSystem.Instance?.ApplyPerkList(this, perkIds);
+            _suppressPerkVfx = false;
         }
 
-        internal void AddPerkId(string id) => _perks.Add(id);
+        internal void AddPerkId(string id)
+        {
+            _perks.Add(id);
+            if (_suppressPerkVfx) return;
+
+            var pos = transform.position;
+            VfxPool.Instance?.SpawnLevelUp(pos + Vector3.up * 1.5f);
+            AudioController.Instance?.Play("hero_levelup");
+            JuiceFX.Instance?.PunchScale(transform, 1.3f, 0.3f);
+            FloatingPopupController.Instance?.SpawnReward("LEVEL UP!", pos + Vector3.up * 2f, Color.yellow);
+        }
 
         /// <summary>
         /// Applique les bonus méta (méta-progression, run entre sessions).

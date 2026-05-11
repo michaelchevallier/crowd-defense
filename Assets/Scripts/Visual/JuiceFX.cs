@@ -94,6 +94,37 @@ namespace CrowdDefense.Visual
             _flashCoroutine = StartCoroutine(FlashRoutine(_flashOverlay, duration));
         }
 
+        // Punch-scale a transform (pop bounce: scale up then back to 1).
+        public void PunchScale(Transform target, float peakScale, float durationS)
+        {
+            if (target == null) return;
+            StartCoroutine(PunchScaleRoutine(target, peakScale, durationS));
+        }
+
+        private static IEnumerator PunchScaleRoutine(Transform target, float peakScale, float durationS)
+        {
+            if (target == null) yield break;
+            var original = target.localScale;
+            float half = durationS * 0.5f;
+            float t = 0f;
+            while (t < half)
+            {
+                t += Time.unscaledDeltaTime;
+                float s = Mathf.Lerp(1f, peakScale, t / half);
+                if (target != null) target.localScale = original * s;
+                yield return null;
+            }
+            t = 0f;
+            while (t < half)
+            {
+                t += Time.unscaledDeltaTime;
+                float s = Mathf.Lerp(peakScale, 1f, t / half);
+                if (target != null) target.localScale = original * s;
+                yield return null;
+            }
+            if (target != null) target.localScale = original;
+        }
+
         // Trigger slow-motion. Re-calling overrides current slow-mo.
         public void SlowMo(float timeScale, int durationMs)
         {

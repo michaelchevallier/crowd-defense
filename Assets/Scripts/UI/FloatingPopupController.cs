@@ -49,6 +49,27 @@ namespace CrowdDefense.UI
         public void SpawnGems(int amount, Vector3 worldPos)
             => Spawn($"+{amount}", "popup-gems", worldPos);
 
+        public void SpawnReward(string text, Vector3 worldPos, Color color)
+        {
+            if (_overlay == null) return;
+            var cam = Camera.main;
+            if (cam == null) return;
+            Vector3 vp = cam.WorldToViewportPoint(worldPos);
+            if (vp.z < 0f) return;
+            float sx = vp.x * Screen.width;
+            float sy = (1f - vp.y) * Screen.height;
+            var lbl = AcquireLabel("popup-reward");
+            lbl.text = text;
+            lbl.style.left      = new StyleLength(sx);
+            lbl.style.top       = new StyleLength(sy);
+            lbl.style.opacity   = 1f;
+            lbl.style.translate = new Translate(0, 0);
+            lbl.style.color     = new StyleColor(color);
+            _overlay.Add(lbl);
+            _active.Add(lbl);
+            StartCoroutine(AnimatePopup(lbl));
+        }
+
         private void SpawnStacked(int value, string cssClass, Vector3 worldPos, int enemyId, string prefix)
         {
             if (_overlay == null) return;
