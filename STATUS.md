@@ -238,9 +238,13 @@ Référence complète : `docs/decisions/Q1-Q18-arbitrages.md`.
 - `docs/research/R2-04..R2-07` : synergies, difficulty curve, milan audit, perf baseline
 - `docs/research/R3-01..R3-02` : tooling research, portability research (a abouti au pivot Unity)
 
-## 🛠 Backlog tooling autonomie (à setup quand besoin)
+## 🛠 Backlog tooling autonomie (à setup entre phases)
 
-Outils non installés pour maximiser autonomie Opus sur génération d'assets (3D / textures / audio / anims). Pas bloquant Phase 2. À setup au trigger correspondant.
+Outils non installés pour maximiser autonomie Opus sur génération d'assets (3D / textures / audio / anims). Pas bloquant Phase 2.
+
+**Timing recommandé Mike** : "plutôt tôt que tard, mais après une phase" → setup les T1 à chaque **transition entre phases** plutôt qu'au moment du blocker. T2/T3 quand vraiment besoin du feature.
+
+**State actuel** : Phase 2 terminée 2026-05-11 → fenêtre idéale pour setup T1 avant Phase 3.
 
 ### 1. Blender + Blender MCP — **T1**
 
@@ -253,7 +257,7 @@ Outils non installés pour maximiser autonomie Opus sur génération d'assets (3
   # + addon Python dans Blender (Preferences > Add-ons > Install from File)
   # + config ~/.claude.json mcpServers : "blender": { "command": "uvx", "args": ["blender-mcp"] }
   ```
-- **À faire quand** : démarrage Phase 3 visuels OU première fois qu'on veut un tower visuel non-primitive.
+- **À faire quand** : **MAINTENANT** (transition Phase 2 → Phase 3, before tower visuels non-primitive).
 
 ### 2. ComfyUI MCP — **T1**
 
@@ -265,7 +269,7 @@ Outils non installés pour maximiser autonomie Opus sur génération d'assets (3
   # + config ~/.claude.json mcpServers : "comfy": { "command": "npx", "args": ["-y", "comfy-mcp-server"], "env": { "COMFYUI_URL": "http://127.0.0.1:8188" } }
   ```
 - **Pipeline existant** : `python3 /Users/mike/Work/milan project/tools/gen_textures.py` (cf memory `reference_flux_local`).
-- **À faire quand** : besoin de gen textures fréquent (Phase 2 props + terrain, ou Phase 3 polish).
+- **À faire quand** : **MAINTENANT** (transition Phase 2 → Phase 3). Pipeline Flux Schnell déjà existant via `gen_textures.py`, wrapper MCP = QoL.
 
 ### 3. Hunyuan3D-2 local — **T2**
 
