@@ -295,12 +295,93 @@
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
 
+/* === Ult button (circular progress ring) === */
+.ult-btn {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    align-self: center;
+    margin-top: 8px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 32px;
+    cursor: link;
+}
+
+.ult-btn:hover .hero-ult-label {
+    color: white;
+}
+
+.ult-btn-ready {
+    background-color: rgba(80, 255, 120, 0.12);
+}
+
+.ult-btn-cooldown {
+    background-color: rgba(40, 40, 50, 0.5);
+}
+
+/* Track (grey background ring) */
+.ult-ring-track {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    border-width: 5px;
+    border-color: rgba(60, 60, 70, 0.85);
+    overflow: hidden;
+}
+
+/* Two-half masking containers — each clips one 180-degree arc */
+.ult-ring-half-mask {
+    position: absolute;
+    width: 32px;
+    height: 64px;
+    overflow: hidden;
+    top: 0;
+}
+
+.ult-ring-left-mask {
+    left: 0;
+}
+
+.ult-ring-right-mask {
+    left: 32px;
+}
+
+/* The actual coloured half-disc that rotates inside its mask */
+.ult-ring-half {
+    position: absolute;
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    border-width: 5px;
+    border-color: rgba(120, 255, 140, 0.9);
+    background-color: transparent;
+    top: 0;
+}
+
+.ult-ring-left {
+    left: 0;
+    transform-origin: right center;
+}
+
+.ult-ring-right {
+    left: -32px;
+    transform-origin: right center;
+}
+
+/* Ready state: bright full ring */
+.ult-btn-ready .ult-ring-left,
+.ult-btn-ready .ult-ring-right {
+    border-color: rgb(120, 255, 140);
+}
+
 .hero-ult-label {
     font-size: 11px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    margin-top: 4px;
     -unity-text-align: middle-center;
+    position: absolute;
 }
 
 .hero-ult-ready {

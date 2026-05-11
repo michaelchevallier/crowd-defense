@@ -147,10 +147,19 @@
                 <ui:VisualElement name="hero-xp-bar-fill" class="hero-bar-fill hero-xp-fill" />
             </ui:VisualElement>
             <ui:Label text="" name="hero-xp-value" class="hero-xp-value" />
-            <ui:VisualElement class="hero-panel-row">
-                <ui:Label text="Ult" class="hero-pill-label" />
+            <!-- Ult button with circular cooldown ring -->
+            <ui:VisualElement name="ult-btn" class="ult-btn ult-btn-cooldown">
+                <!-- Two-half circular progress ring -->
+                <ui:VisualElement class="ult-ring-track">
+                    <ui:VisualElement name="ult-ring-left-mask" class="ult-ring-half-mask ult-ring-left-mask">
+                        <ui:VisualElement name="ult-ring-left" class="ult-ring-half ult-ring-left" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="ult-ring-right-mask" class="ult-ring-half-mask ult-ring-right-mask">
+                        <ui:VisualElement name="ult-ring-right" class="ult-ring-half ult-ring-right" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label text="" name="hero-ult-label" class="hero-ult-label hero-ult-cooldown" />
             </ui:VisualElement>
-            <ui:Label text="" name="hero-ult-label" class="hero-ult-label hero-ult-cooldown" />
         </ui:VisualElement>
 
         <!-- Synergy badges (bottom-center, above toolbar) -->

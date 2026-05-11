@@ -46,6 +46,9 @@ namespace CrowdDefense.UI
         private Label? heroXpLabel;
         private Label? heroXpValue;
         private Label? heroUltLabel;
+        private VisualElement? ultBtn;
+        private VisualElement? ultRingLeft;
+        private VisualElement? ultRingRight;
 
         // BluePill button ref
         private Button? bluePillBtn;
@@ -96,6 +99,10 @@ namespace CrowdDefense.UI
             heroXpBarFill = root.Q<VisualElement>("hero-xp-bar-fill");
             heroXpValue = root.Q<Label>("hero-xp-value");
             heroUltLabel = root.Q<Label>("hero-ult-label");
+            ultBtn = root.Q<VisualElement>("ult-btn");
+            ultRingLeft = root.Q<VisualElement>("ult-ring-left");
+            ultRingRight = root.Q<VisualElement>("ult-ring-right");
+            ultBtn?.RegisterCallback<ClickEvent>(_ => TryCastUlt());
 
             bluePillBtn = root.Q<Button>("bluepill-btn");
             bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
@@ -181,6 +188,10 @@ namespace CrowdDefense.UI
             if (Input.GetKeyDown(KeyCode.N))
                 TryLaunchWave();
 
+            // Space — hero ultimate cast
+            if (Input.GetKeyDown(KeyCode.Space))
+                TryCastUlt();
+
             UpdateHeroPanel();
         }
 
@@ -228,7 +239,44 @@ namespace CrowdDefense.UI
                     heroUltLabel.RemoveFromClassList("hero-ult-ready");
                     heroUltLabel.AddToClassList("hero-ult-cooldown");
                 }
+
+                if (ultBtn != null)
+                {
+                    ultReady = hero.UltCooldownRemaining <= 0f;
+                    if (ultReady)
+                    {
+                        ultBtn.AddToClassList("ult-btn-ready");
+                        ultBtn.RemoveFromClassList("ult-btn-cooldown");
+                    }
+                    else
+                    {
+                        ultBtn.RemoveFromClassList("ult-btn-ready");
+                        ultBtn.AddToClassList("ult-btn-cooldown");
+                    }
+                    UpdateUltRing(1f - hero.UltCooldownFraction);
+                }
             }
+        }
+
+        // Hero ultimate cast (Space key + ult button click)
+        private void TryCastUlt()
+        {
+            var hero = LevelRunner.Instance?.Hero;
+            hero?.TryUlt();
+        }
+
+        // Drive two-half circular arc: progress 0..1 = empty..full
+        private void UpdateUltRing(float progress)
+        {
+            if (ultRingLeft == null || ultRingRight == null) return;
+            progress = Mathf.Clamp01(progress);
+
+            // Right half covers 0..0.5 (0..180 deg), left half covers 0.5..1 (180..360 deg)
+            float rightDeg = Mathf.Clamp01(progress * 2f) * 180f;
+            float leftDeg  = Mathf.Clamp01((progress - 0.5f) * 2f) * 180f;
+
+            ultRingRight.style.rotate = new Rotate(new Angle(rightDeg - 180f, AngleUnit.Degree));
+            ultRingLeft.style.rotate  = new Rotate(new Angle(leftDeg  - 180f, AngleUnit.Degree));
         }
 
         // Shared entry point for click + B key
