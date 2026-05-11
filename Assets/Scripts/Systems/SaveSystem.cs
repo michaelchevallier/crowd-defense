@@ -6,6 +6,13 @@ using UnityEngine;
 namespace CrowdDefense.Systems
 {
     [Serializable]
+    public class LevelStars
+    {
+        public string levelId = "";
+        public int stars = 0;
+    }
+
+    [Serializable]
     public class MetaUpgradeEntry
     {
         public string id = "";
@@ -17,6 +24,9 @@ namespace CrowdDefense.Systems
     {
         public List<string> clearedLevels = new();
         public List<string> unlockedLevels = new() { "world1-1" };
+        public List<LevelStars> levelStars = new();
+        public List<MetaUpgradeEntry> metaUpgradeLevels = new();
+        public int gems = 0;
         public int totalKills = 0;
         public float musicVolume = 1f;
         public float sfxVolume = 1f;
@@ -91,6 +101,105 @@ namespace CrowdDefense.Systems
             Save();
         }
 
+        // ── Stars ──
+
+        public static int GetStars(string levelId)
+        {
+            var data = Load();
+            for (int i = 0; i < data.levelStars.Count; i++)
+                if (data.levelStars[i].levelId == levelId) return data.levelStars[i].stars;
+            return 0;
+        }
+
+        public static void SetStars(string levelId, int stars)
+        {
+            var data = Load();
+            for (int i = 0; i < data.levelStars.Count; i++)
+            {
+                if (data.levelStars[i].levelId == levelId)
+                {
+                    if (stars > data.levelStars[i].stars) { data.levelStars[i].stars = stars; Save(); }
+                    return;
+                }
+            }
+            data.levelStars.Add(new LevelStars { levelId = levelId, stars = stars });
+            Save();
+        }
+
+        public static int TotalStars()
+        {
+            var data = Load();
+            int total = 0;
+            for (int i = 0; i < data.levelStars.Count; i++)
+                total += data.levelStars[i].stars;
+            return total;
+        }
+
+        // ── Gems ──
+
+        public static int GetGems() => Load().gems;
+
+        public static void AddGems(int amount)
+        {
+            if (amount <= 0) return;
+            Load().gems += amount;
+            Save();
+        }
+
+        public static bool SpendGems(int amount)
+        {
+            var data = Load();
+            if (data.gems < amount) return false;
+            data.gems -= amount;
+            Save();
+            return true;
+        }
+
+        // ── MetaUpgrades ──
+
+        public static int GetMetaUpgradeLevel(string id)
+        {
+            var list = Load().metaUpgradeLevels;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].id == id) return list[i].level;
+            return 0;
+        }
+
+        public static void SetMetaUpgradeLevel(string id, int level)
+        {
+            var list = Load().metaUpgradeLevels;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].id == id) { list[i].level = level; Save(); return; }
+            }
+            list.Add(new MetaUpgradeEntry { id = id, level = level });
+            Save();
+        }
+
+        public static void ResetMetaUpgrade(string id)
+        {
+            var list = Load().metaUpgradeLevels;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].id == id) { list[i].level = 0; Save(); return; }
+            }
+        }
+
+        // Counts how many worlds have at least 1 cleared level
+        public static int WorldsCleared()
+        {
+            var data = Load();
+            int count = 0;
+            for (int w = 1; w <= 10; w++)
+            {
+                for (int l = 1; l <= 8; l++)
+                {
+                    if (data.clearedLevels.Contains($"world{w}-{l}")) { count++; break; }
+                }
+            }
+            return count;
+        }
+
         public static void ResetAll()
         {
             _cached = new ProgressData();
@@ -109,7 +218,7 @@ namespace CrowdDefense.Systems
             return "";
         }
 
-        // ── Gems ──
+        // ── RunState ──
 
         public static int GetGems() => Load().gems;
 
@@ -176,5 +285,8 @@ namespace CrowdDefense.Systems
             if (isFirstClear) reward += 2;
             return reward;
         }
+
+        private static bool IsStackable(string id) =>
+            id is "range" or "fire_rate" or "pierce" or "lifesteal" or "move_speed";
     }
 }
