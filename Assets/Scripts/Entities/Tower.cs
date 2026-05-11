@@ -24,6 +24,17 @@ namespace CrowdDefense.Entities
         // Slow : tick rapide indépendant du cooldown standard
         private float _slowTickTimer;
 
+        // Upgrade state
+        public int UpgradeLevel { get; private set; } = 1;
+        // "dps" ou "utility" — null jusqu'à L2→L3 (CORE-20)
+        public string? UpgradeBranch { get; private set; }
+
+        // Coût cumulé pour le calcul du refund sell
+        public int CumulativeCost { get; private set; }
+
+        // Scale dégâts appliqué à ce niveau (ratio vs L1 Phaser convention)
+        private float _levelDmgScale = 1f;
+
         public TowerType? Config => cfg;
 
         public void Init(TowerType type, GameObject? projPrefab)
@@ -33,6 +44,13 @@ namespace CrowdDefense.Entities
             projectilePrefab = projPrefab;
             _clusterTimer = 0f;
             _slowTickTimer = 0f;
+            UpgradeLevel = 1;
+            UpgradeBranch = null;
+            CumulativeCost = type.Cost;
+            // L1 damage scale : Phaser LEVEL_SCALE[0] = 0.75
+            _levelDmgScale = BalanceConfig.Get().LevelScale.Length > 0
+                ? BalanceConfig.Get().LevelScale[0]
+                : 0.75f;
 
             var renderers = GetComponentsInChildren<MeshRenderer>();
             foreach (var rend in renderers)
@@ -42,6 +60,56 @@ namespace CrowdDefense.Entities
             }
 
             transform.localScale = Vector3.one * type.SizeMultiplier;
+        }
+
+        /// <summary>
+        /// Upgrade this tower to the given level (2 or 3).
+        /// branch is reserved for L2→L3 (CORE-20) : null = default.
+        /// Returns false if upgrade is invalid or not enough gold.
+        /// </summary>
+        public bool UpgradeTo(int level, string? branch = null)
+        {
+            if (cfg == null || Economy.Instance == null) return false;
+            if (level != UpgradeLevel + 1) return false;
+            if (level < 2 || level > 3) return false;
+
+            var bal = BalanceConfig.Get();
+            float mul = level == 2 ? bal.UpgradeMulL2 : bal.UpgradeMulL3;
+            int cost = Mathf.RoundToInt(cfg.Cost * mul);
+
+            if (!Economy.Instance.TrySpend(cost)) return false;
+
+            CumulativeCost += cost;
+            UpgradeLevel = level;
+            if (branch != null) UpgradeBranch = branch;
+
+            // Stats scaling — ratio vs L1 Phaser convention
+            // L1 scale = LevelScale[0] (0.75), L2 = LevelScale[1] (1.0), L3 = LevelScale[2] (1.30)
+            float[] scales = bal.LevelScale;
+            int scaleIdx = Mathf.Clamp(level - 1, 0, scales.Length - 1);
+            _levelDmgScale = scales.Length > scaleIdx ? scales[scaleIdx] : 1f;
+
+#if UNITY_EDITOR
+            Debug.Log($"[Tower] UpgradeTo L{level} cost={cost} cumul={CumulativeCost} dmgScale={_levelDmgScale:F2} branch={branch ?? "null"}");
+#endif
+            return true;
+        }
+
+        /// <summary>
+        /// Sell this tower : refund 80% of cumulative cost (Q8 BalanceConfig.SellRefundRatio).
+        /// Handles Economy refund, unregisters from PlacementController and destroys GameObject.
+        /// </summary>
+        public void Sell()
+        {
+            if (cfg == null) return;
+            var bal = BalanceConfig.Get();
+            int refund = Mathf.RoundToInt(CumulativeCost * bal.SellRefundRatio);
+            Economy.Instance?.AddGold(refund);
+            PlacementController.Instance?.UnregisterTower(this);
+#if UNITY_EDITOR
+            Debug.Log($"[Tower] Sell cumul={CumulativeCost} refund={refund} ratio={bal.SellRefundRatio:F2}");
+#endif
+            Destroy(gameObject);
         }
 
         private void Update()
@@ -215,7 +283,8 @@ namespace CrowdDefense.Entities
             var proj = go.GetComponent<Projectile>();
             if (proj != null)
             {
-                float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul;
+                // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
+                float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _levelDmgScale;
                 // Bonus dégâts flyer (Skyguard, Mage, Ballista, Arbalète)
                 if (cfg.FlyerDmgMul > 1f && t.IsFlyer && !t.ImmuneToFlyerBonus)
                     dmg *= cfg.FlyerDmgMul;

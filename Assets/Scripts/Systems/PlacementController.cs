@@ -17,6 +17,11 @@ namespace CrowdDefense.Systems
         private Camera? cam;
         private readonly Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
         private readonly List<Tower> placedTowers = new();
+        // Mapping tower → cumulative cost pour calcul sell (redondant avec Tower.CumulativeCost, garde sync)
+        private readonly Dictionary<Tower, int> towerCumulativeCost = new();
+
+        // Tour active (debug sell hotkey S, CORE-20 radial menu)
+        private Tower? selectedTower;
 
         public IReadOnlyList<Tower> PlacedTowers => placedTowers;
 
@@ -34,7 +39,31 @@ namespace CrowdDefense.Systems
 
         private void Update()
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // Hotkey S : sell la tour sélectionnée (debug, UI radial menu = CORE-20)
+            if (Input.GetKeyDown(KeyCode.S) && selectedTower != null)
+            {
+                selectedTower.Sell();
+                selectedTower = null;
+                return;
+            }
+            // Hotkey U : upgrade la tour sélectionnée au niveau suivant (debug)
+            if (Input.GetKeyDown(KeyCode.U) && selectedTower != null)
+            {
+                selectedTower.UpgradeTo(selectedTower.UpgradeLevel + 1);
+            }
+#endif
             if (cam == null || !Input.GetMouseButtonDown(0)) return;
+
+            // Right-click ou shift-click : sélectionner tour existante (debug)
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                TrySelectTowerAtMouse();
+                return;
+            }
+#endif
+
             if (selectedTowerType == null || towerPrefab == null) return;
             if (PathManager.Instance == null || PathManager.Instance.Grid == null) return;
 
@@ -71,9 +100,43 @@ namespace CrowdDefense.Systems
             {
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
+                towerCumulativeCost[tower] = tower.CumulativeCost;
             }
         }
 
-        public void UnregisterTower(Tower t) => placedTowers.Remove(t);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private void TrySelectTowerAtMouse()
+        {
+            if (cam == null) return;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (!groundPlane.Raycast(ray, out float dist)) return;
+            Vector3 hitPos = ray.GetPoint(dist);
+
+            Tower? closest = null;
+            float bestDist = 1.5f; // snap radius en world units
+            foreach (var t in placedTowers)
+            {
+                if (t == null) continue;
+                float d = (t.transform.position - hitPos).magnitude;
+                if (d < bestDist) { bestDist = d; closest = t; }
+            }
+            selectedTower = closest;
+#if UNITY_EDITOR
+            Debug.Log($"[Place] selectedTower={selectedTower?.Config?.Id ?? "none"} L{selectedTower?.UpgradeLevel}");
+#endif
+        }
+#endif
+
+        public void UnregisterTower(Tower t)
+        {
+            placedTowers.Remove(t);
+            towerCumulativeCost.Remove(t);
+        }
+
+        /// <summary>
+        /// Returns cumulative cost of a placed tower (for sell refund accounting).
+        /// </summary>
+        public int GetCumulativeCost(Tower t) =>
+            towerCumulativeCost.TryGetValue(t, out int v) ? v : t.CumulativeCost;
     }
 }
