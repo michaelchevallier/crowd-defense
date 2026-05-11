@@ -73,6 +73,9 @@ namespace CrowdDefense.Data
         [SerializeField] public float downFireRate;
         [SerializeField] public float downCoinReward;
 
+        // Hero level required to unlock this perk in the picker (0 = always available)
+        [SerializeField] public int unlockLevel;
+
         // Backwards-compat shims for PerkPickerController (Speed/RunMode agent expected simpler API)
         public string displayName { get => nameKey; set => nameKey = value; }
         public string description { get => descKey; set => descKey = value; }

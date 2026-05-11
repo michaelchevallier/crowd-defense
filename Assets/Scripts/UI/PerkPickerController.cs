@@ -13,6 +13,9 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class PerkPickerController : MonoBehaviour
     {
+        // Delay between each card slide-in (stagger)
+        private const float CardRevealStagger = 0.12f;
+
         private static readonly string[] PlaceholderIds =
         {
             "range", "fire_rate", "pierce", "lifesteal", "move_speed",
@@ -23,17 +26,26 @@ namespace CrowdDefense.UI
         private Label? titleLabel;
         private Label? subtitleLabel;
         private VisualElement? cardsRow;
+        private Button? rerollButton;
         private Action? onSelectionDone;
+
+        // Tracks current offers so reroll can re-roll them
+        private List<PerkDef?> currentOffers = new();
+        private int heroLevel = 1;
 
         private void Start()
         {
             var doc = GetComponent<UIDocument>();
-            root = doc.rootVisualElement.Q<VisualElement>("perk-picker-root");
-            titleLabel = doc.rootVisualElement.Q<Label>("perk-title");
+            root         = doc.rootVisualElement.Q<VisualElement>("perk-picker-root");
+            titleLabel   = doc.rootVisualElement.Q<Label>("perk-title");
             subtitleLabel = doc.rootVisualElement.Q<Label>("perk-subtitle");
-            cardsRow = doc.rootVisualElement.Q<VisualElement>("perk-cards-row");
+            cardsRow     = doc.rootVisualElement.Q<VisualElement>("perk-cards-row");
+            rerollButton = doc.rootVisualElement.Q<Button>("reroll-button");
 
             if (root != null) root.AddToClassList("hidden");
+
+            if (rerollButton != null)
+                rerollButton.RegisterCallback<ClickEvent>(_ => DoReroll());
 
             L.OnLocaleChanged += RefreshLabels;
             RefreshLabels();
@@ -51,8 +63,9 @@ namespace CrowdDefense.UI
 
         private void RefreshLabels()
         {
-            if (titleLabel != null) titleLabel.text = L.Get("perk.pick_title");
+            if (titleLabel != null)    titleLabel.text    = L.Get("perk.pick_title");
             if (subtitleLabel != null) subtitleLabel.text = L.Get("perk.pick_subtitle");
+            if (rerollButton != null)  rerollButton.text  = L.Get("perk.reroll");
         }
 
         private void HandleLevelComplete() =>
@@ -63,10 +76,37 @@ namespace CrowdDefense.UI
         public void ShowAndWait(Action onDone)
         {
             onSelectionDone = onDone;
+            heroLevel = LevelRunner.Instance?.Hero?.Level ?? 1;
+
             var offers = BuildOffers();
-            BuildCards(offers);
+            currentOffers = offers;
+            BuildCards(offers, animate: true);
+
+            SetRerollVisible(HasLuckyPerk());
+
             if (root != null) root.RemoveFromClassList("hidden");
             Time.timeScale = 0f;
+        }
+
+        private void DoReroll()
+        {
+            var offers = BuildOffers();
+            currentOffers = offers;
+            BuildCards(offers, animate: true);
+        }
+
+        private bool HasLuckyPerk()
+        {
+            var ctx = RunContext.Instance;
+            if (ctx == null) return false;
+            return ctx.ActivePerks.Contains("lucky");
+        }
+
+        private void SetRerollVisible(bool visible)
+        {
+            if (rerollButton == null) return;
+            if (visible) rerollButton.RemoveFromClassList("hidden");
+            else         rerollButton.AddToClassList("hidden");
         }
 
         private List<PerkDef?> BuildOffers()
@@ -90,37 +130,51 @@ namespace CrowdDefense.UI
                 int idx = UnityEngine.Random.Range(0, pool.Count);
                 string id = pool[idx];
                 pool.RemoveAt(idx);
-                // Create a transient PerkDef (not a SO asset) for display only
                 var def = ScriptableObject.CreateInstance<PerkDef>();
-                def.id = id;
+                def.id          = id;
                 def.displayName = L.Get("perk.placeholder_name");
                 def.description = L.Get("perk.placeholder_desc");
-                def.rarity = PerkRarity.Common;
+                def.rarity      = PerkRarity.Common;
                 fallback.Add(def);
             }
             return fallback;
         }
 
-        private void BuildCards(List<PerkDef?> offers)
+        private void BuildCards(List<PerkDef?> offers, bool animate)
         {
             if (cardsRow == null) return;
             cardsRow.Clear();
             for (int i = 0; i < offers.Count; i++)
             {
-                var def = offers[i];
-                var card = CreateCard(def);
+                var def  = offers[i];
+                bool locked = def != null && def.unlockLevel > heroLevel;
+                var card = CreateCard(def, locked);
                 cardsRow.Add(card);
+
+                if (animate)
+                {
+                    // Start hidden (offscreen left), schedule reveal with stagger via VisualElement scheduler
+                    card.AddToClassList("card-hidden");
+                    int capturedIndex = i;
+                    VisualElement capturedCard = card;
+                    card.schedule.Execute(() => {
+                        capturedCard.RemoveFromClassList("card-hidden");
+                        capturedCard.AddToClassList("card-visible");
+                    }).StartingIn((long)(capturedIndex * CardRevealStagger * 1000));
+                }
             }
         }
 
-        private VisualElement CreateCard(PerkDef? def)
+        private VisualElement CreateCard(PerkDef? def, bool locked)
         {
             var card = new VisualElement();
             card.AddToClassList("perk-card");
             if (def != null)
                 card.AddToClassList(RarityClass(def.rarity));
+            if (locked)
+                card.AddToClassList("locked");
 
-            // Icon placeholder
+            // Icon
             var icon = new VisualElement();
             icon.AddToClassList("perk-card-icon");
             if (def?.icon != null)
@@ -145,8 +199,22 @@ namespace CrowdDefense.UI
             descLabel.text = def?.description ?? L.Get("perk.placeholder_desc");
             card.Add(descLabel);
 
+            // Lock badge (shown over locked cards)
+            if (locked && def != null)
+            {
+                var lockBadge = new VisualElement();
+                lockBadge.AddToClassList("perk-card-lock-badge");
+                var lockText = new Label();
+                lockText.AddToClassList("perk-card-lock-text");
+                lockText.text = $"Lv{def.unlockLevel}";
+                lockBadge.Add(lockText);
+                card.Add(lockBadge);
+            }
+
             string perkId = def?.id ?? "";
-            card.RegisterCallback<ClickEvent>(_ => SelectPerk(perkId));
+            if (!locked)
+                card.RegisterCallback<ClickEvent>(_ => SelectPerk(perkId));
+
             return card;
         }
 
@@ -167,18 +235,18 @@ namespace CrowdDefense.UI
 
         private static string RarityClass(PerkRarity rarity) => rarity switch
         {
-            PerkRarity.Common => "rarity-common",
-            PerkRarity.Rare => "rarity-rare",
-            PerkRarity.Epic => "rarity-epic",
+            PerkRarity.Common    => "rarity-common",
+            PerkRarity.Rare      => "rarity-rare",
+            PerkRarity.Epic      => "rarity-epic",
             PerkRarity.Legendary => "rarity-legendary",
             _ => "rarity-common"
         };
 
         private static string RarityKey(PerkRarity rarity) => rarity switch
         {
-            PerkRarity.Common => "perk.rarity_common",
-            PerkRarity.Rare => "perk.rarity_rare",
-            PerkRarity.Epic => "perk.rarity_epic",
+            PerkRarity.Common    => "perk.rarity_common",
+            PerkRarity.Rare      => "perk.rarity_rare",
+            PerkRarity.Epic      => "perk.rarity_epic",
             PerkRarity.Legendary => "perk.rarity_legendary",
             _ => "perk.rarity_common"
         };
