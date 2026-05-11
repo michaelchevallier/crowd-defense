@@ -184,7 +184,7 @@ namespace CrowdDefense.Systems
             if (def.towerFireRateAura != 1f)
             {
                 hero.TowerFireRateAuraMul = def.towerFireRateAura;
-                hero.TowerAuraRange = def.towerAuraRange > 0f ? def.towerAuraRange : 8f;
+                hero.TowerAuraRange = def.towerAuraRange > 0f ? def.towerAuraRange : DefaultTowerAuraRange;
             }
             if (def.combustion)     hero.Combustion = true;
             if (def.pyromancie)     hero.Pyromancie = true;
