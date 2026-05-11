@@ -53,6 +53,11 @@ namespace CrowdDefense.Editor
             // (which would create an empty PerkRegistry.asset if none existed).
             BuildPerkAssets.Generate();
 
+            // Seed Cutscene / Event / Modifier assets from V5 data (idempotent).
+            BuildCutsceneAssets.Generate();
+            BuildEventAssets.Generate();
+            BuildModifierAssets.Generate();
+
             int n = 0;
             n += EnsureRegistry<PerkRegistry>("Assets/Resources/PerkRegistry.asset");
             n += EnsureRegistry<MetaUpgradeRegistry>("Assets/Resources/MetaUpgradeRegistry.asset");
@@ -60,6 +65,8 @@ namespace CrowdDefense.Editor
             n += EnsureRegistry<SkinRegistry>("Assets/Resources/SkinRegistry.asset");
             n += EnsureRegistry<TowerRegistry>("Assets/Resources/TowerRegistry.asset");
             n += EnsureRegistry<CutsceneRegistry>("Assets/Resources/CutsceneRegistry.asset");
+            n += EnsureRegistry<EventRegistry>("Assets/Resources/EventRegistry.asset");
+            n += EnsureRegistry<ModifierRegistry>("Assets/Resources/ModifierRegistry.asset");
             n += EnsureRegistry<AchievementRegistry>("Assets/Resources/AchievementRegistry.asset");
             // BossDefRegistry is not a type — BossSystem.registry is List<BossDef> wired via Inspector
 
@@ -69,6 +76,8 @@ namespace CrowdDefense.Editor
             PopulateSkinRegistry();
             PopulateAchievementRegistry();
             PopulateCutsceneRegistry();
+            PopulateEventRegistry();
+            PopulateModifierRegistry();
 
             AssetDatabase.SaveAssets();
             return n;
@@ -167,6 +176,26 @@ namespace CrowdDefense.Editor
             var guids = AssetDatabase.FindAssets("t:CutsceneDef", new[] { "Assets/ScriptableObjects/Cutscenes" });
             if (guids.Length > 0)
                 PopulateList(registry, "cutscenes", guids);
+        }
+
+        private static void PopulateEventRegistry()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<EventRegistry>("Assets/Resources/EventRegistry.asset");
+            if (registry == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:EventDef", new[] { "Assets/ScriptableObjects/Events" });
+            if (guids.Length > 0)
+                PopulateList(registry, "events", guids);
+        }
+
+        private static void PopulateModifierRegistry()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<ModifierRegistry>("Assets/Resources/ModifierRegistry.asset");
+            if (registry == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:ModifierDef", new[] { "Assets/ScriptableObjects/Modifiers" });
+            if (guids.Length > 0)
+                PopulateList(registry, "modifiers", guids);
         }
 
         private static int EnsureRegistry<T>(string path) where T : ScriptableObject
