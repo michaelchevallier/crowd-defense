@@ -29,6 +29,7 @@ namespace CrowdDefense.Systems
         private AudioSource? _musicSource;
         private int _nextIdx;
         private readonly Dictionary<string, float> _lastPlayedAt = new();
+        private readonly HashSet<string> _warned = new();
         private Coroutine? _musicFadeCo;
 
         protected override void OnAwakeSingleton()
@@ -83,13 +84,18 @@ namespace CrowdDefense.Systems
             }
             else
             {
-                // Fallback: procedural sine beep so no gameplay event is silent
+                if (!_warned.Contains(clipKey))
+                {
+                    _warned.Add(clipKey);
+                    Debug.LogWarning($"[AudioController] Missing clip: {clipKey}");
+                }
                 StartCoroutine(PlayProceduralBeepCo(volMul));
             }
         }
 
         private IEnumerator PlayProceduralBeepCo(float volMul)
         {
+            if (this == null) yield break;
             const int sampleRate = 44100;
             const float freq = 880f;
             const float duration = 0.07f;
@@ -108,14 +114,22 @@ namespace CrowdDefense.Systems
             source.volume = Mathf.Clamp01(volMul * 0.25f);
             source.Play();
             yield return new WaitForSeconds(duration + 0.05f);
-            Destroy(beep);
+            if (this != null) Destroy(beep);
         }
 
         public void Play3D(string clipKey, Vector3 worldPos, float volMul = 1f)
         {
             if (registry == null) LoadAudioRegistry();
             var clip = registry?.Get(clipKey);
-            if (clip == null) return;
+            if (clip == null)
+            {
+                if (!_warned.Contains(clipKey))
+                {
+                    _warned.Add(clipKey);
+                    Debug.LogWarning($"[AudioController] Missing clip: {clipKey}");
+                }
+                return;
+            }
             AudioSource.PlayClipAtPoint(clip, worldPos, Mathf.Clamp01(volMul));
         }
 
@@ -141,30 +155,32 @@ namespace CrowdDefense.Systems
 
         private IEnumerator FadeInMusicCo(AudioClip clip, float fadeSeconds)
         {
-            if (_musicSource == null) yield break;
+            if (this == null || _musicSource == null) yield break;
             if (_musicSource.isPlaying)
             {
                 yield return FadeMusicVolumeCo(0f, fadeSeconds * 0.5f);
+                if (this == null) yield break;
                 _musicSource.Stop();
             }
             _musicSource.clip = clip;
             _musicSource.volume = 0f;
             _musicSource.Play();
             yield return FadeMusicVolumeCo(1f, fadeSeconds);
-            _musicFadeCo = null;
+            if (this != null) _musicFadeCo = null;
         }
 
         private IEnumerator FadeOutMusicCo(float fadeSeconds)
         {
-            if (_musicSource == null) yield break;
+            if (this == null || _musicSource == null) yield break;
             yield return FadeMusicVolumeCo(0f, fadeSeconds);
+            if (this == null) yield break;
             _musicSource.Stop();
             _musicFadeCo = null;
         }
 
         private IEnumerator FadeMusicVolumeCo(float target, float duration)
         {
-            if (_musicSource == null) yield break;
+            if (this == null || _musicSource == null) yield break;
             float start = _musicSource.volume;
             if (duration <= 0f)
             {
@@ -174,11 +190,12 @@ namespace CrowdDefense.Systems
             float t = 0f;
             while (t < duration)
             {
+                if (this == null) yield break;
                 t += Time.unscaledDeltaTime;
                 _musicSource.volume = Mathf.Lerp(start, target, Mathf.Clamp01(t / duration));
                 yield return null;
             }
-            _musicSource.volume = target;
+            if (this != null) _musicSource.volume = target;
         }
 
         public void SetMasterVolume(float zeroToOne)
