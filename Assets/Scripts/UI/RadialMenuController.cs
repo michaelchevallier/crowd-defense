@@ -8,12 +8,15 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     /// <summary>
-    /// Gere le radial menu L3 upgrade (D1-03).
-    /// Ecoute PlacementController.SelectedTower chaque frame.
-    /// Visible seulement si tower L2 est selectionnee.
-    /// Tours signature : 2 boutons DPS/Utility.
-    /// Tours non-signature : 1 bouton upgrade standard (hidden — geree par HUD existant).
-    /// 1-click direct Q10 (pas de confirmation).
+    /// Gere le radial menu upgrade/sell (D1-03).
+    /// Ecoute PlacementController.OnTowerSelected (event).
+    /// Segments visibles par etat :
+    ///   L1 : Upgrade L2 (cost) | Sell
+    ///   L2 signature : Upgrade L3-DPS (cost) | Upgrade L3-Utility (cost) | Sell
+    ///   L2 non-signature : Upgrade L3 (cost) | Sell
+    ///   L3 : Sell uniquement
+    /// Position : Camera.WorldToScreenPoint sur la tour selectionnee.
+    /// Fermeture : outside-click (via OnTowerSelected null) ou ESC (PlacementController.DeselectTower).
     /// </summary>
     public class RadialMenuController : MonoBehaviour
     {
@@ -21,8 +24,12 @@ namespace CrowdDefense.UI
 
         private VisualElement? radialMenu;
         private Label? radialTitle;
+        private Button? btnUpgradeL2;
+        private Label? btnUpgradeL2Cost;
         private Button? btnDps;
         private Button? btnUtility;
+        private Button? btnUpgradeL3;
+        private Label? btnUpgradeL3Cost;
         private Button? btnSell;
         private Label? btnDpsLabel;
         private Label? btnDpsCost;
@@ -32,79 +39,147 @@ namespace CrowdDefense.UI
         private Label? btnUtilityHint;
         private Label? btnSellLabel;
 
-        private Tower? lastSelectedTower;
+        private Tower? currentTower;
 
         private void Start()
         {
             var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
             if (doc == null) { enabled = false; return; }
             var root = doc.rootVisualElement;
-            radialMenu       = root.Q<VisualElement>("radial-menu");
-            radialTitle      = root.Q<Label>("radial-title");
-            btnDps           = root.Q<Button>("btn-upgrade-dps");
-            btnUtility       = root.Q<Button>("btn-upgrade-utility");
-            btnSell          = root.Q<Button>("btn-sell");
-            btnDpsLabel      = root.Q<Label>("btn-dps-label");
-            btnDpsCost       = root.Q<Label>("btn-dps-cost");
-            btnDpsHint       = root.Q<Label>("btn-dps-hint");
-            btnUtilityLabel  = root.Q<Label>("btn-utility-label");
-            btnUtilityCost   = root.Q<Label>("btn-utility-cost");
-            btnUtilityHint   = root.Q<Label>("btn-utility-hint");
-            btnSellLabel     = root.Q<Label>("btn-sell-label");
 
-            btnDps?.RegisterCallback<ClickEvent>(_ => OnUpgradeClicked(TowerBranch.Dps));
-            btnUtility?.RegisterCallback<ClickEvent>(_ => OnUpgradeClicked(TowerBranch.Utility));
+            radialMenu        = root.Q<VisualElement>("radial-menu");
+            radialTitle       = root.Q<Label>("radial-title");
+            btnUpgradeL2      = root.Q<Button>("btn-upgrade-l2");
+            btnUpgradeL2Cost  = root.Q<Label>("btn-upgrade-l2-cost");
+            btnDps            = root.Q<Button>("btn-upgrade-dps");
+            btnUtility        = root.Q<Button>("btn-upgrade-utility");
+            btnUpgradeL3      = root.Q<Button>("btn-upgrade-l3");
+            btnUpgradeL3Cost  = root.Q<Label>("btn-upgrade-l3-cost");
+            btnSell           = root.Q<Button>("btn-sell");
+            btnDpsLabel       = root.Q<Label>("btn-dps-label");
+            btnDpsCost        = root.Q<Label>("btn-dps-cost");
+            btnDpsHint        = root.Q<Label>("btn-dps-hint");
+            btnUtilityLabel   = root.Q<Label>("btn-utility-label");
+            btnUtilityCost    = root.Q<Label>("btn-utility-cost");
+            btnUtilityHint    = root.Q<Label>("btn-utility-hint");
+            btnSellLabel      = root.Q<Label>("btn-sell-label");
+
+            btnUpgradeL2?.RegisterCallback<ClickEvent>(_ => OnUpgradeL2Clicked());
+            btnDps?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.Dps));
+            btnUtility?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.Utility));
+            btnUpgradeL3?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.None));
             btnSell?.RegisterCallback<ClickEvent>(_ => OnSellClicked());
+
+            if (PlacementController.Instance != null)
+                PlacementController.Instance.OnTowerSelected += OnTowerSelected;
 
             Hide();
         }
 
-        private void Update()
+        private void OnDestroy()
         {
-            if (PlacementController.Instance == null) { Hide(); return; }
-            var tower = PlacementController.Instance.SelectedTower;
-
-            if (tower != lastSelectedTower)
-            {
-                lastSelectedTower = tower;
-                RefreshMenu(tower);
-            }
+            if (PlacementController.Instance != null)
+                PlacementController.Instance.OnTowerSelected -= OnTowerSelected;
         }
 
-        private void RefreshMenu(Tower? tower)
+        private void OnTowerSelected(Tower? tower)
         {
-            if (tower == null || tower.UpgradeLevel != 2)
-            {
-                Hide();
-                return;
-            }
+            currentTower = tower;
+            if (tower == null) { Hide(); return; }
+            RefreshMenu(tower);
+        }
 
+        private void LateUpdate()
+        {
+            // Keep menu anchored to tower world position each frame while visible
+            if (currentTower == null || radialMenu == null) return;
+            if (radialMenu.ClassListContains("hidden")) return;
+            PositionMenuAtTower(currentTower);
+        }
+
+        private void PositionMenuAtTower(Tower tower)
+        {
+            if (radialMenu == null) return;
+            var cam = Camera.main;
+            if (cam == null) return;
+
+            Vector3 screenPos = cam.WorldToScreenPoint(tower.transform.position + Vector3.up * 1.2f);
+            if (screenPos.z < 0f) { Hide(); return; }
+
+            // UI Toolkit uses top-left origin; screen coords are bottom-left
+            var panel = radialMenu.panel;
+            if (panel == null) return;
+            float panelH = panel.visualTree.layout.height;
+            radialMenu.style.left = screenPos.x - radialMenu.layout.width * 0.5f;
+            radialMenu.style.top  = panelH - screenPos.y - radialMenu.layout.height * 0.5f;
+        }
+
+        private void RefreshMenu(Tower tower)
+        {
             var cfg = tower.Config;
             if (cfg == null) { Hide(); return; }
 
-            bool isSignature = IsSignature(cfg.Id);
-
-            // Pour les tours non-signature en L2, le radial menu ne s'affiche pas
-            // (upgrade standard geree par le HUD normal via hotkey U debug)
-            if (!isSignature) { Hide(); return; }
-
             string displayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Id : cfg.DisplayName;
-
-            if (radialTitle != null)
-                radialTitle.text = L.Get("hud.radial_title", displayName);
-
-            int l3Cost = Mathf.RoundToInt(cfg.Cost * BalanceConfig.Get().UpgradeMulL3);
+            bool isSignature = IsSignature(cfg.Id);
             int gold = Economy.Instance?.Gold ?? 0;
-            bool canAfford = gold >= l3Cost;
+            var bal = BalanceConfig.Get();
 
-            PopulateDpsButton(cfg.Id, l3Cost, canAfford);
-            PopulateUtilityButton(cfg.Id, l3Cost, canAfford);
+            int l2Cost = Mathf.RoundToInt(cfg.Cost * bal.UpgradeMulL2);
+            int l3Cost = Mathf.RoundToInt(cfg.Cost * bal.UpgradeMulL3);
+            int refund = Mathf.RoundToInt(tower.CumulativeCost * bal.SellRefundRatio);
 
-            int refund = Mathf.RoundToInt(tower.CumulativeCost * BalanceConfig.Get().SellRefundRatio);
+            // Hide all upgrade buttons, reveal only those relevant to current level
+            SetVisible(btnUpgradeL2, false);
+            SetVisible(btnDps, false);
+            SetVisible(btnUtility, false);
+            SetVisible(btnUpgradeL3, false);
+
+            switch (tower.UpgradeLevel)
+            {
+                case 1:
+                    if (radialTitle != null) radialTitle.text = displayName;
+                    PopulateL2Button(l2Cost, gold >= l2Cost);
+                    SetVisible(btnUpgradeL2, true);
+                    break;
+
+                case 2 when isSignature:
+                    if (radialTitle != null)
+                        radialTitle.text = L.Get("hud.radial_title", displayName);
+                    bool canAffordL3 = gold >= l3Cost;
+                    PopulateDpsButton(cfg.Id, l3Cost, canAffordL3);
+                    PopulateUtilityButton(cfg.Id, l3Cost, canAffordL3);
+                    SetVisible(btnDps, true);
+                    SetVisible(btnUtility, true);
+                    break;
+
+                case 2:
+                    if (radialTitle != null) radialTitle.text = displayName;
+                    PopulateL3StandardButton(l3Cost, gold >= l3Cost);
+                    SetVisible(btnUpgradeL3, true);
+                    break;
+
+                case 3:
+                    if (radialTitle != null) radialTitle.text = displayName;
+                    break;
+            }
+
             if (btnSellLabel != null)
                 btnSellLabel.text = L.Get("hud.radial_sell", refund);
 
             Show();
+            PositionMenuAtTower(tower);
+        }
+
+        private void PopulateL2Button(int cost, bool canAfford)
+        {
+            if (btnUpgradeL2Cost != null) btnUpgradeL2Cost.text = $"{cost}g";
+            btnUpgradeL2?.SetEnabled(canAfford);
+        }
+
+        private void PopulateL3StandardButton(int cost, bool canAfford)
+        {
+            if (btnUpgradeL3Cost != null) btnUpgradeL3Cost.text = $"{cost}g";
+            btnUpgradeL3?.SetEnabled(canAfford);
         }
 
         private void PopulateDpsButton(string towerId, int cost, bool canAfford)
@@ -128,12 +203,8 @@ namespace CrowdDefense.UI
                 _          => "hud.radial_dps_hint.default",
             };
             if (btnDpsLabel != null) btnDpsLabel.text = L.Get(labelKey);
-            if (btnDpsHint != null)  btnDpsHint.text = L.Get(hintKey);
-
-            if (btnDps != null)
-            {
-                btnDps.SetEnabled(canAfford);
-            }
+            if (btnDpsHint != null)  btnDpsHint.text  = L.Get(hintKey);
+            btnDps?.SetEnabled(canAfford);
         }
 
         private void PopulateUtilityButton(string towerId, int cost, bool canAfford)
@@ -157,46 +228,58 @@ namespace CrowdDefense.UI
                 _          => "hud.radial_util_hint.default",
             };
             if (btnUtilityLabel != null) btnUtilityLabel.text = L.Get(labelKey);
-            if (btnUtilityHint != null)  btnUtilityHint.text = L.Get(hintKey);
-
-            if (btnUtility != null)
-            {
-                btnUtility.SetEnabled(canAfford);
-            }
+            if (btnUtilityHint != null)  btnUtilityHint.text  = L.Get(hintKey);
+            btnUtility?.SetEnabled(canAfford);
         }
 
-        private void OnUpgradeClicked(TowerBranch branch)
+        private void OnUpgradeL2Clicked()
         {
-            var tower = lastSelectedTower;
+            var tower = currentTower;
+            if (tower == null) return;
+
+            bool ok = tower.UpgradeTo(2);
+            if (!ok) return;
+
+#if UNITY_EDITOR
+            Debug.Log($"[RadialMenu] Upgrade L2 sur {tower.Config?.Id} ok");
+#endif
+            RefreshMenu(tower);
+        }
+
+        private void OnUpgradeL3Clicked(TowerBranch branch)
+        {
+            var tower = currentTower;
             if (tower == null) return;
 
             bool ok = tower.UpgradeTo(3, branch);
             if (!ok) return;
 
-            // Appliquer tint visuel L3 immediatement (commit 4)
             tower.ApplyL3Tint();
-
-            // Sync cumulative cost dans PlacementController
-            PlacementController.Instance?.SyncCumulativeCost(tower);
 
 #if UNITY_EDITOR
             Debug.Log($"[RadialMenu] Upgrade L3 {branch} sur {tower.Config?.Id} ok");
 #endif
-            // Cacher le menu apres upgrade (plus de choix disponible)
-            Hide();
+            RefreshMenu(tower);
         }
 
         private void OnSellClicked()
         {
-            var tower = lastSelectedTower;
+            var tower = currentTower;
             if (tower == null) return;
-            lastSelectedTower = null;
+            currentTower = null;
             Hide();
+            PlacementController.Instance?.DeselectTower();
             tower.Sell();
         }
 
         private static bool IsSignature(string id) =>
             System.Array.IndexOf(SignatureIds, id) >= 0;
+
+        private static void SetVisible(VisualElement? el, bool visible)
+        {
+            if (el == null) return;
+            el.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+        }
 
         private void Show() => radialMenu?.RemoveFromClassList("hidden");
         private void Hide() => radialMenu?.AddToClassList("hidden");
