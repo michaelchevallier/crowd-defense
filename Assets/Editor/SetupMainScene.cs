@@ -34,6 +34,7 @@ namespace CrowdDefense.Editor
 
             int sys  = EnsureNewSingletons();
             int ui   = EnsureHudControllers();
+            BuildHeroPrefab.Build(silent: true);
             WireInspectorRefs();
 
             EditorSceneManager.MarkSceneDirty(scene);
