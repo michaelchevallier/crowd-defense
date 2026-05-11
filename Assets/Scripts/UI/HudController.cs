@@ -135,11 +135,26 @@ namespace CrowdDefense.UI
             OnBreakStateChanged();
         }
 
+        private bool _lateInitDone;
+
         private void Update()
         {
             // N hotkey — debounced, shared with click (Q7)
             if (Input.GetKeyDown(KeyCode.N))
                 TryLaunchWave();
+
+            // Safety net : si Start() avait WaveManager.Instance null (race condition)
+            // on retry l'init au premier frame où Instance devient disponible.
+            if (!_lateInitDone && WaveManager.Instance != null)
+            {
+                _lateInitDone = true;
+                WaveManager.Instance.OnWaveStart -= OnWaveStart;
+                WaveManager.Instance.OnWaveStart += OnWaveStart;
+                WaveManager.Instance.OnBreakStateChanged -= OnBreakStateChanged;
+                WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
+                OnBreakStateChanged();
+                OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
+            }
         }
 
         // Shared debounced launch entry point for click + N key
