@@ -115,8 +115,14 @@ namespace CrowdDefense.Editor
 
             var go = new GameObject("Main Camera");
             go.tag = "MainCamera";
-            go.AddComponent<Camera>();
+            var camera = go.AddComponent<Camera>();
             go.AddComponent<AudioListener>();
+
+            go.transform.position = new Vector3(0, 18, -12);
+            go.transform.eulerAngles = new Vector3(55, 0, 0);
+            camera.clearFlags = CameraClearFlags.Skybox;
+            camera.backgroundColor = Color.black;
+
             created++;
         }
 
