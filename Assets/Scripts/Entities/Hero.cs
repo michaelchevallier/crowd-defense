@@ -114,7 +114,7 @@ namespace CrowdDefense.Entities
         // ── Animator ──────────────────────────────────────────────────────────
         private Animator? _animator;
 
-        // ── Projectile pool (pooling pending — List for now) ──────────────────
+        // ── Active projectile tracking (pool manages lifetime, this list for IsDone poll) ──
         private readonly List<HeroProjectile> _projectiles = new();
 
         // ── Fire-trail (Combustion perk) ──────────────────────────────────────
@@ -655,23 +655,21 @@ namespace CrowdDefense.Entities
         {
             if (cfg == null) return;
 
-            GameObject go;
-            if (ProjectilePool.Instance != null)
+            HeroProjectile proj;
+            if (HeroProjectilePool.Instance != null)
             {
-                // Hero projectiles reuse the pool but with Hero-specific init — stub for now.
-                // Full integration in Phase 4 (HeroProjectile component).
-                go = new GameObject("HeroProj");
+                proj = HeroProjectilePool.Instance.Get(origin);
             }
             else
             {
-                go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = "HeroProj";
                 go.transform.localScale = Vector3.one * 0.22f;
+                go.transform.position   = origin;
                 Object.Destroy(go.GetComponent<Collider>());
+                proj = go.AddComponent<HeroProjectile>();
             }
 
-            go.transform.position = origin;
-
-            var proj = go.AddComponent<HeroProjectile>();
             proj.Init(
                 speed:          cfg.ProjectileSpeed,
                 dir:            dir,
@@ -798,13 +796,17 @@ namespace CrowdDefense.Entities
             _fireTrails.Clear();
         }
 
-        // ── OnDestroy — cleanup dangling projectiles (V5 destroy() parity) ───
+        // ── OnDestroy — return dangling projectiles to pool ──────────────────
         private void OnDestroy()
         {
             for (int i = _projectiles.Count - 1; i >= 0; i--)
             {
                 var p = _projectiles[i];
-                if (p != null) Destroy(p.gameObject);
+                if (p == null) continue;
+                if (HeroProjectilePool.Instance != null)
+                    HeroProjectilePool.Instance.Return(p);
+                else
+                    Destroy(p.gameObject);
             }
             _projectiles.Clear();
             _fireTrails.Clear();

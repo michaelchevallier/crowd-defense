@@ -11,10 +11,14 @@ namespace CrowdDefense.Entities
     /// Self-managed projectile spawned by Hero.
     /// Handles pierce, ricochet, fireball AoE, pierce-explode, glaciation, crits.
     /// Hero.UpdateProjectiles polls IsDone and removes from its list.
+    /// Pooled via HeroProjectilePool — do not Destroy directly.
     /// </summary>
     public class HeroProjectile : MonoBehaviour
     {
         public bool IsDone { get; private set; }
+
+        // Back-reference to the pool that owns this instance
+        internal HeroProjectilePool? Pool { get; set; }
 
         // Projectile data
         private float   _speed;
@@ -194,7 +198,40 @@ namespace CrowdDefense.Entities
         private void Expire()
         {
             IsDone = true;
-            Destroy(gameObject);
+            if (Pool != null)
+                Pool.Return(this);
+            else
+                Destroy(gameObject);
+        }
+
+        /// <summary>
+        /// Resets all state so the object can be reused from the pool.
+        /// Called by HeroProjectilePool.Get before handing the instance to Hero.
+        /// </summary>
+        internal void ResetState()
+        {
+            IsDone           = false;
+            _speed           = 0f;
+            _dir             = Vector3.forward;
+            _damage          = 0f;
+            _lifetime        = 0f;
+            _pierceLeft      = 0;
+            _ricochetLeft    = 0;
+            _ricochetDecay   = 0f;
+            _ricochetDmgMul  = 1f;
+            _aoeOnHit        = false;
+            _fireballRadius  = 0f;
+            _fireballDmgMul  = 0f;
+            _explodeOnConsume    = false;
+            _pierceExplodeRadius = 0f;
+            _pierceExplodeDmgMul = 0f;
+            _critChance      = 0f;
+            _critMul         = 1f;
+            _critStaggerMs   = 0;
+            _glaciation      = false;
+            _onEnemyKilled   = null;
+            _hitSet.Clear();
+            _trailFrame      = 0;
         }
     }
 }
