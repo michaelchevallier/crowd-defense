@@ -174,6 +174,30 @@ namespace CrowdDefense.Entities
                 var e = enemies[i];
                 if (e == null || e.IsDead) continue;
                 if ((e.transform.position - transform.position).sqrMagnitude > rangeSq) continue;
+
+                // FlyerOnly : ne cible que les ennemis volants (Skyguard)
+                if (cfg.FlyerOnly && !e.IsFlyer) continue;
+                // Sans CanHitFlyers ni FlyerOnly : skip les volants
+                if (e.IsFlyer && !cfg.FlyerOnly && !cfg.CanHitFlyers) continue;
+                // Stealth en phase basse opacité : untargetable
+                if (e.StealthAlpha < 0.4f) continue;
+
+                // Flyers : pas de waypoint counter → priorité par distance au castle
+                if (e.IsFlyer)
+                {
+                    float distSq = Castle.Instance != null
+                        ? (e.transform.position - Castle.Instance.transform.position).sqrMagnitude
+                        : float.MaxValue;
+                    // On utilise bestWp négatif comme proxy "le plus proche du castle"
+                    int flyerPriority = -(int)(distSq * 10f);
+                    if (best == null || flyerPriority > bestWp)
+                    {
+                        bestWp = flyerPriority;
+                        best = e;
+                    }
+                    continue;
+                }
+
                 if (e.CurrentWaypoint > bestWp)
                 {
                     bestWp = e.CurrentWaypoint;
@@ -191,6 +215,9 @@ namespace CrowdDefense.Entities
             if (proj != null)
             {
                 float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul;
+                // Bonus dégâts flyer (Skyguard, Mage, Ballista, Arbalète)
+                if (cfg.FlyerDmgMul > 1f && t.IsFlyer && !t.ImmuneToFlyerBonus)
+                    dmg *= cfg.FlyerDmgMul;
                 proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor);
             }
         }
