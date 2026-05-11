@@ -84,11 +84,17 @@ namespace CrowdDefense.Systems
         public int    runPerksAcquired = 0;
     }
 
+    public enum DiagnoseResult { Ok, Corrupted, MigrationAvailable, BackupCreated }
+
     public static class SaveSystem
     {
-        private const string KEY_PREFIX        = "cd_progression_v1_slot";
-        private const string RUN_KEY_PREFIX    = "cd_runstate_v1_slot";
-        private const string RUNMAP_KEY_PREFIX = "cd_runmap_v1_slot";
+        private const string KEY_PREFIX        = "cd_progression_v2_slot";
+        private const string RUN_KEY_PREFIX    = "cd_runstate_v2_slot";
+        private const string RUNMAP_KEY_PREFIX = "cd_runmap_v2_slot";
+        private const string KEY_PREFIX_V1        = "cd_progression_v1_slot";
+        private const string RUN_KEY_PREFIX_V1    = "cd_runstate_v1_slot";
+        private const string RUNMAP_KEY_PREFIX_V1 = "cd_runmap_v1_slot";
+        private const string BACKUP_SUFFIX     = "_backup_pre_v2";
         private const int    SLOT_COUNT        = 3;
 
         public static int CurrentSlot { get; private set; } = 0;
@@ -100,6 +106,69 @@ namespace CrowdDefense.Systems
         private static string ProgressKey(int slot) => $"{KEY_PREFIX}{slot}";
         private static string RunKey(int slot)      => $"{RUN_KEY_PREFIX}{slot}";
         private static string RunMapKey(int slot)   => $"{RUNMAP_KEY_PREFIX}{slot}";
+        private static string ProgressKeyV1(int slot) => $"{KEY_PREFIX_V1}{slot}";
+        private static string RunKeyV1(int slot)      => $"{RUN_KEY_PREFIX_V1}{slot}";
+        private static string RunMapKeyV1(int slot)   => $"{RUNMAP_KEY_PREFIX_V1}{slot}";
+
+        /// Checks all slots for v1 data, corruption, and migration readiness.
+        /// Migrates v1→v2 automatically (with backup) if v2 slot is empty.
+        /// Returns DiagnoseResult per slot (index 0-2).
+        public static DiagnoseResult[] Diagnose()
+        {
+            var results = new DiagnoseResult[SLOT_COUNT];
+            for (int s = 0; s < SLOT_COUNT; s++)
+            {
+                string v2Json = PlayerPrefs.GetString(ProgressKey(s), "");
+                string v1Json = PlayerPrefs.GetString(ProgressKeyV1(s), "");
+
+                // Check v2 corruption first
+                if (!string.IsNullOrEmpty(v2Json))
+                {
+                    try
+                    {
+                        var parsed = JsonUtility.FromJson<ProgressData>(v2Json);
+                        results[s] = (parsed == null || string.IsNullOrEmpty(parsed.lang))
+                            ? DiagnoseResult.Corrupted
+                            : DiagnoseResult.Ok;
+                    }
+                    catch { results[s] = DiagnoseResult.Corrupted; }
+                    continue;
+                }
+
+                // No v2 data — check if v1 migration is available
+                if (string.IsNullOrEmpty(v1Json)) { results[s] = DiagnoseResult.Ok; continue; }
+
+                try
+                {
+                    var parsed = JsonUtility.FromJson<ProgressData>(v1Json);
+                    if (parsed == null) { results[s] = DiagnoseResult.Corrupted; continue; }
+
+                    // Backup v1 raw JSON before migration
+                    PlayerPrefs.SetString(ProgressKeyV1(s) + BACKUP_SUFFIX, v1Json);
+                    string v1RunJson    = PlayerPrefs.GetString(RunKeyV1(s), "");
+                    string v1RunMapJson = PlayerPrefs.GetString(RunMapKeyV1(s), "");
+                    if (!string.IsNullOrEmpty(v1RunJson))
+                        PlayerPrefs.SetString(RunKeyV1(s) + BACKUP_SUFFIX, v1RunJson);
+                    if (!string.IsNullOrEmpty(v1RunMapJson))
+                        PlayerPrefs.SetString(RunMapKeyV1(s) + BACKUP_SUFFIX, v1RunMapJson);
+
+                    // Migrate: copy v1 → v2 keys
+                    PlayerPrefs.SetString(ProgressKey(s), v1Json);
+                    if (!string.IsNullOrEmpty(v1RunJson))
+                        PlayerPrefs.SetString(RunKey(s), v1RunJson);
+                    if (!string.IsNullOrEmpty(v1RunMapJson))
+                        PlayerPrefs.SetString(RunMapKey(s), v1RunMapJson);
+
+                    PlayerPrefs.Save();
+                    _cachedSlots[s]   = null;
+                    _cachedRuns[s]    = null;
+                    _cachedRunMaps[s] = null;
+                    results[s] = DiagnoseResult.BackupCreated;
+                }
+                catch { results[s] = DiagnoseResult.Corrupted; }
+            }
+            return results;
+        }
 
         public static void SelectSlot(int slot)
         {
