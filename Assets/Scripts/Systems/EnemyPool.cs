@@ -20,12 +20,30 @@ namespace CrowdDefense.Systems
         // Called by WaveManager instead of Get() + manual Init.
         public Enemy SpawnFromType(EnemyType type, Vector3 position, int pathIdx)
         {
+            // Fallback: if PathManager has no paths, inject a hardcoded straight-line path so
+            // enemies don't silently self-release and the bug is visible in play mode.
+            var pm = PathManager.Instance;
+            if (pm != null && pm.Paths.Count == 0)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning("[EnemyPool] PathManager has no paths — injecting fallback straight path (0,0,0)→(10,0,0)");
+#endif
+                pm.InjectFallbackPath();
+            }
+
             var pool = GetOrCreatePool(type.Id);
             var enemy = pool.Get();
             enemy._poolTypeId = type.Id;
             enemy.transform.position = position;
             enemy.transform.rotation = Quaternion.identity;
             enemy.Init(type, pathIdx);
+
+#if UNITY_EDITOR
+            Vector3 target = (pm != null && pm.WaypointCountOnPath(pathIdx) > 1)
+                ? pm.GetWaypointOnPath(pathIdx, 1)
+                : position + Vector3.forward * 10f;
+            Debug.Log($"[EnemyPool] SpawnFromType id={type.Id} pos={position} pathIdx={pathIdx} firstTarget={target}");
+#endif
             return enemy;
         }
 

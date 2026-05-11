@@ -107,6 +107,17 @@ namespace CrowdDefense.Systems
             return Paths[pathIdx].Count;
         }
 
+        // Called by EnemyPool when no real paths exist (missing LevelData / portal / castle).
+        // Injects a two-waypoint straight line so enemies can move and the issue is visible.
+        public void InjectFallbackPath()
+        {
+            var fallback = new List<Vector3> { Vector3.zero, new Vector3(10f, 0f, 0f) };
+            var paths = new List<IReadOnlyList<Vector3>> { fallback };
+            var meta  = new List<PathMeta> { new PathMeta(0, 0) };
+            Paths     = paths;
+            PathsMeta = meta;
+        }
+
         /// <summary>
         /// Returns all path indices whose castle end matches the given castle index.
         /// </summary>
