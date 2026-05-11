@@ -19,6 +19,50 @@ namespace CrowdDefense.Data
         [Header("Visual")]
         [SerializeField] private float scale = 0.55f;
         [SerializeField] private Color bodyColor = Color.red;
+        [SerializeField] private string walkAnim = "Walk";
+        [SerializeField] private string assetKey = "";
+
+        [Header("Movement")]
+        [SerializeField] private bool isFlyer = false;
+        [SerializeField] private float flyHeight = 0f;
+        [SerializeField] private bool ignorePath = false;
+
+        [Header("Stealth")]
+        [SerializeField] private bool isStealth = false;
+        [SerializeField] private int stealthCycleMs = 0;
+        [SerializeField] private float stealthOpacity = 0.25f;
+
+        [Header("Shield")]
+        [SerializeField] private float shieldHP = 0f;
+
+        [Header("Boss")]
+        [SerializeField] private bool isBoss = false;
+        [SerializeField] private bool isMidBoss = false;
+        [SerializeField] private bool isApocalypseBoss = false;
+        [SerializeField] private bool isBrigand = false;
+        [SerializeField] private bool isCorsair = false;
+        [SerializeField] private bool isFiery = false;
+        [SerializeField] private bool immuneToFlyerBonus = false;
+        [SerializeField] private string bossName = "";
+        [SerializeField] private Color bossAuraColor = Color.clear;
+
+        [Header("Charge (Brigand)")]
+        [SerializeField] private int chargeMs = 0;
+        [SerializeField] private int chargeCooldownMs = 0;
+        [SerializeField] private float chargeMul = 1f;
+
+        [Header("Summons")]
+        [SerializeField] private bool summonsMinions = false;
+        [SerializeField] private int summonCooldownMs = 0;
+        [SerializeField] private EnemyType? summonType = null;
+
+        [Header("AoE Blast")]
+        [SerializeField] private int aoeBlastMs = 0;
+        [SerializeField] private float aoeBlastRadius = 0f;
+        [SerializeField] private int aoeBlastDamage = 0;
+
+        [Header("Shader")]
+        [SerializeField] private string shaderOverlay = "";
 
         public string Id => id;
         public string DisplayName => displayName;
@@ -28,5 +72,33 @@ namespace CrowdDefense.Data
         public int Reward => reward;
         public float Scale => scale;
         public Color BodyColor => bodyColor;
+        public string WalkAnim => walkAnim;
+        public string AssetKey => assetKey;
+        public bool IsFlyer => isFlyer;
+        public float FlyHeight => flyHeight;
+        public bool IgnorePath => ignorePath;
+        public bool IsStealth => isStealth;
+        public int StealthCycleMs => stealthCycleMs;
+        public float StealthOpacity => stealthOpacity;
+        public float ShieldHP => shieldHP;
+        public bool IsBoss => isBoss;
+        public bool IsMidBoss => isMidBoss;
+        public bool IsApocalypseBoss => isApocalypseBoss;
+        public bool IsBrigand => isBrigand;
+        public bool IsCorsair => isCorsair;
+        public bool IsFiery => isFiery;
+        public bool ImmuneToFlyerBonus => immuneToFlyerBonus;
+        public string BossName => bossName;
+        public Color BossAuraColor => bossAuraColor;
+        public int ChargeMs => chargeMs;
+        public int ChargeCooldownMs => chargeCooldownMs;
+        public float ChargeMul => chargeMul;
+        public bool SummonsMinions => summonsMinions;
+        public int SummonCooldownMs => summonCooldownMs;
+        public EnemyType? SummonType => summonType;
+        public int AoeBlastMs => aoeBlastMs;
+        public float AoeBlastRadius => aoeBlastRadius;
+        public int AoeBlastDamage => aoeBlastDamage;
+        public string ShaderOverlay => shaderOverlay;
     }
 }
