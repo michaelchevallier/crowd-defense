@@ -87,7 +87,7 @@ namespace CrowdDefense.Editor
             var rend = castleGO.GetComponent<Renderer>();
             if (rend != null)
             {
-                var mat = new Material(ShaderUtil.GetLitShader());
+                var mat = new Material(CrowdDefense.Common.ShaderUtil.GetLitShader());
                 mat.color = new Color(0.4f, 0.25f, 0.1f, 1f);
                 rend.material = mat;
             }

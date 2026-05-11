@@ -1,5 +1,6 @@
 #nullable enable
 using CrowdDefense.Common;
+using CrowdDefense.Systems;
 using UnityEngine;
 
 namespace CrowdDefense.Entities
@@ -10,17 +11,25 @@ namespace CrowdDefense.Entities
         private Enemy? target;
         private float damage;
         private float speed;
-        private float lifetimeSec = 3f;
+        private float lifetimeSec;
+        private ProjectilePool? pool;
+        private MeshRenderer? rend;
+
+        // Called once by ProjectilePool after Instantiate to back-link the pool
+        public void SetPool(ProjectilePool p) => pool = p;
 
         public void Init(Enemy target, float damage, float speed, Color color)
         {
             this.target = target;
             this.damage = damage;
             this.speed = speed;
-            var rend = GetComponent<MeshRenderer>();
+            lifetimeSec = 3f;
+
+            rend = GetComponent<MeshRenderer>();
             if (rend != null)
             {
-                rend.material = new Material(ShaderUtil.GetLitShader());
+                if (rend.material == null)
+                    rend.material = new Material(ShaderUtil.GetLitShader());
                 rend.material.color = color;
                 rend.material.SetFloat("_Smoothness", 0.9f);
             }
@@ -31,7 +40,7 @@ namespace CrowdDefense.Entities
             lifetimeSec -= Time.deltaTime;
             if (lifetimeSec <= 0f || target == null || target.IsDead)
             {
-                Destroy(gameObject);
+                ReleaseToPool();
                 return;
             }
 
@@ -41,8 +50,16 @@ namespace CrowdDefense.Entities
             if ((transform.position - targetPos).sqrMagnitude < 0.04f)
             {
                 target.TakeDamage(damage);
-                Destroy(gameObject);
+                ReleaseToPool();
             }
+        }
+
+        private void ReleaseToPool()
+        {
+            if (pool != null)
+                pool.Release(this);
+            else
+                Destroy(gameObject); // fallback si pas de pool
         }
     }
 }
