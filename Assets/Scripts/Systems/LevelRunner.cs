@@ -462,6 +462,9 @@ namespace CrowdDefense.Systems
             Hero = heroGo.GetComponent<Hero>() ?? heroGo.AddComponent<Hero>();
             Hero.Init(heroType, spawnPos, maxX, maxZ);
 
+            Hero.OnLevelUp += (_, _, _) =>
+                VfxPool.Instance?.SpawnLevelUp(Hero.transform.position + Vector3.up * 1.2f);
+
             var rs = SaveSystem.GetRunState();
             Hero.ApplyRunContext(
                 rs?.heroPerks ?? new List<string>(),
