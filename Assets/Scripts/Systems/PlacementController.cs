@@ -5,6 +5,8 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.UI;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
@@ -132,6 +134,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
                 Debug.Log($"[Place] reject cell ({cell.x},{cell.y}) char='{grid.At(cell.x, cell.y)}' (not buildable)");
 #endif
+                ShowPlacementReject("Occupé", hitPos);
                 return;
             }
 
@@ -149,6 +152,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
                     Debug.Log($"[Place] reject : magnet cap reached ({count}/{cap})");
 #endif
+                    ShowPlacementReject("Occupé", hitPos);
                     return;
                 }
             }
@@ -160,6 +164,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
                 Debug.Log($"[Place] reject : not enough gold ({Economy.Instance?.Gold ?? 0} < {cost})");
 #endif
+                ShowPlacementReject("Gold!", hitPos);
                 return;
             }
             if (cost == 0 && hero != null && hero.FirstTowerFree)
@@ -178,6 +183,13 @@ namespace CrowdDefense.Systems
                 AudioController.Instance?.Play("tower_built", 0.7f);
                 OnTowerPlaced?.Invoke(tower);
             }
+        }
+
+        private static void ShowPlacementReject(string label, Vector3 worldPos)
+        {
+            FloatingPopupController.Instance?.SpawnReject(label, worldPos);
+            AudioController.Instance?.Play("error", 0.6f);
+            JuiceFX.Instance?.Flash(new Color(1f, 0.15f, 0.1f, 1f), 300);
         }
 
         // Selection de tour via click (production + debug) — utilisee par radial menu CORE-20

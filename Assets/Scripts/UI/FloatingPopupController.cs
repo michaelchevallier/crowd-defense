@@ -46,6 +46,9 @@ namespace CrowdDefense.UI
         public void SpawnHeal(int amount, Vector3 worldPos)
             => Spawn($"+{amount}", "popup-heal", worldPos);
 
+        public void SpawnReject(string text, Vector3 worldPos)
+            => Spawn(text, "popup-reject", worldPos);
+
         public void SpawnGems(int amount, Vector3 worldPos)
             => Spawn($"+{amount}", "popup-gems", worldPos);
 
