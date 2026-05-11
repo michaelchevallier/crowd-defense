@@ -31,6 +31,20 @@ namespace CrowdDefense.Systems
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+
+            if (!string.IsNullOrEmpty(LevelLoader.NextLevelId))
+            {
+                var reg = Data.LevelRegistry.Get();
+                if (reg != null)
+                {
+                    var found = reg.FindById(LevelLoader.NextLevelId!);
+                    if (found != null) currentLevel = found;
+#if UNITY_EDITOR
+                    else Debug.LogWarning($"[LevelRunner] LevelLoader.NextLevelId='{LevelLoader.NextLevelId}' not found in LevelRegistry.");
+#endif
+                }
+            }
+
             ApplyTimeScale();
         }
 
