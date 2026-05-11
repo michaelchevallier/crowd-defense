@@ -25,6 +25,7 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? perkPickupPrefab;
         [SerializeField] private GameObject? frostPrefab;
         [SerializeField] private GameObject? portalPrefab;
+        [SerializeField] private GameObject? fireBreathPrefab;
 
         private ObjectPool<ParticleSystem>? _impactPool;
         private ObjectPool<ParticleSystem>? _deathPool;
@@ -35,6 +36,7 @@ namespace CrowdDefense.Visual
         private ObjectPool<ParticleSystem>? _perkPickupPool;
         private ObjectPool<ParticleSystem>? _frostPool;
         private ObjectPool<ParticleSystem>? _portalPool;
+        private ObjectPool<ParticleSystem>? _fireBreathPool;
 
         private Transform? _root;
         private Material? _additiveMat;
@@ -54,6 +56,7 @@ namespace CrowdDefense.Visual
             perkPickupPrefab ??= BuildProceduralPrefab("PerkPickup", BuildPerkPickupModule);
             frostPrefab     ??= BuildProceduralPrefab("Frost",     BuildFrostModule);
             portalPrefab    ??= BuildProceduralPrefab("Portal",    BuildPortalModule);
+            fireBreathPrefab ??= BuildProceduralPrefab("FireBreath", BuildFireBreathModule);
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
@@ -64,6 +67,7 @@ namespace CrowdDefense.Visual
             _perkPickupPool = BuildPool(perkPickupPrefab, "PerkPickup", DefaultCapacity);
             _frostPool     = BuildPool(frostPrefab,     "Frost",     DefaultCapacity);
             _portalPool    = BuildPool(portalPrefab,    "Portal",    DefaultCapacity);
+            _fireBreathPool = BuildPool(fireBreathPrefab, "FireBreath", 8);
 
             PreWarm();
         }
@@ -172,7 +176,56 @@ namespace CrowdDefense.Visual
             StartCoroutine(PortalLightFlashRoutine(worldPos));
         }
 
-        private static IEnumerator PortalLightFlashRoutine(Vector3 worldPos)
+        // Cone de feu boss dragon/fire — orient via LookRotation, durée 0.7s, rateOverTime 200/sec.
+        // Un Transform pivot temporaire est créé pour aligner la shape Cone dans la direction voulue.
+        public void SpawnFireBreath(Vector3 origin, Vector3 direction, float distance)
+        {
+            if (!IsVfxEnabled() || _fireBreathPool == null) return;
+            if (direction.sqrMagnitude < 0.0001f) return;
+
+            var ps = _fireBreathPool.Get();
+
+            // Pivot temporaire aligné sur la direction — parente le PS pour orienter le cone
+            var pivot = new GameObject("FireBreath_Pivot");
+            pivot.transform.SetPositionAndRotation(origin, Quaternion.LookRotation(direction));
+            ps.transform.SetParent(pivot.transform, worldPositionStays: false);
+            ps.transform.localPosition = Vector3.zero;
+            ps.transform.localRotation = Quaternion.identity;
+
+            // Ajuster la longueur du cone à distance
+            var shape = ps.shape;
+            shape.length = distance;
+
+            ps.gameObject.SetActive(true);
+            ps.Play(true);
+            StartCoroutine(FireBreathReleaseRoutine(ps, pivot, _fireBreathPool, _root));
+        }
+
+        private IEnumerator FireBreathReleaseRoutine(ParticleSystem ps, GameObject pivot,
+                                                      ObjectPool<ParticleSystem> pool, Transform? root)
+        {
+            const float EmitDuration = 0.7f;
+            const float TailDuration = 1.0f; // lifetime max des particules
+            yield return new WaitForSeconds(EmitDuration);
+
+            // Arrêter l'émission, laisser les particules existantes se consumer
+            ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+
+            yield return new WaitForSeconds(TailDuration);
+
+            if (ps != null && ps.gameObject != null)
+            {
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                ps.transform.SetParent(root, worldPositionStays: false);
+                ps.transform.localScale = Vector3.one;
+                ps.gameObject.SetActive(false);
+                pool.Release(ps);
+            }
+            if (pivot != null)
+                Destroy(pivot);
+        }
+
+        private IEnumerator PortalLightFlashRoutine(Vector3 worldPos)
         {
             var lightGo = new GameObject("PortalLight_VFX");
             lightGo.transform.position = worldPos;
@@ -233,8 +286,9 @@ namespace CrowdDefense.Visual
             PreWarmPool(_hitFlashPool,  DefaultCapacity);
             PreWarmPool(_levelUpPool,   8);
             PreWarmPool(_perkPickupPool, DefaultCapacity);
-            PreWarmPool(_frostPool,     DefaultCapacity);
-            PreWarmPool(_portalPool,    DefaultCapacity);
+            PreWarmPool(_frostPool,      DefaultCapacity);
+            PreWarmPool(_portalPool,     DefaultCapacity);
+            PreWarmPool(_fireBreathPool, 4);
         }
 
         private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
@@ -518,11 +572,61 @@ namespace CrowdDefense.Visual
             var vol = ps.velocityOverLifetime;
             vol.enabled        = true;
             vol.space          = ParticleSystemSimulationSpace.Local;
-            vol.orbitalY       = new ParticleSystem.MinMaxCurve(180f * Mathf.Deg2Rad * 6f);
+            // orbitalY in Unity = radians/s; 3.14 ≈ π = 180°/s swirl speed.
+            vol.orbitalY       = new ParticleSystem.MinMaxCurve(Mathf.PI);
             vol.orbitalOffsetY = new ParticleSystem.MinMaxCurve(0f);
 
             SetSizeOverLifetimeFade(ps);
             SetColorAlphaFade(ps);
+        }
+
+        // Cone de particules feu boss dragon — rateOverTime 200/sec, shape Cone angle 20 deg.
+        // La couleur suit la ramp orange → rouge → fumée noire via colorOverLifetime gradient.
+        private static void BuildFireBreathModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.7f, 1.0f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(6f, 10f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.4f, 0.8f);
+            main.startColor     = new Color(1f, 0.5f, 0.1f);
+            main.maxParticles   = 300;
+            main.duration       = 0.7f;
+            main.gravityModifier = 0.05f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 200f;
+            emission.SetBursts(System.Array.Empty<ParticleSystem.Burst>());
+
+            // Cone aligné sur Z+ (le pivot parent sera orienté via LookRotation)
+            var shape = ps.shape;
+            shape.enabled         = true;
+            shape.shapeType       = ParticleSystemShapeType.Cone;
+            shape.angle           = 20f;
+            shape.length          = 8f;
+            shape.radius          = 0.15f;
+            shape.radiusThickness = 1f;
+
+            // Ramp couleur : orange → rouge → fumée sombre
+            var col = ps.colorOverLifetime;
+            col.enabled = true;
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(new Color(1f, 0.5f, 0.1f),    0f),
+                    new GradientColorKey(new Color(0.9f, 0.2f, 0.05f), 0.55f),
+                    new GradientColorKey(new Color(0.2f, 0.1f, 0.05f), 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(0.9f, 0f),
+                    new GradientAlphaKey(0.7f, 0.5f),
+                    new GradientAlphaKey(0f,   1f)
+                }
+            );
+            col.color = new ParticleSystem.MinMaxGradient(grad);
+
+            SetSizeOverLifetimeFade(ps);
         }
 
         // ── Shared curve helpers ──────────────────────────────────────────────
