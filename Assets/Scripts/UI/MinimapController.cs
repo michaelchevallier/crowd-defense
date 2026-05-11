@@ -16,7 +16,7 @@ namespace CrowdDefense.UI
     public class MinimapController : MonoBehaviour
     {
         private const int BASE_W = 200;
-        private const int BASE_H = 120;
+        private const int BASE_H = 200;
         private const int PAD    = 6;
 
         // Zoom: 1.0 = 100 %, range [0.5, 3.0], scroll-wheel driven
@@ -388,6 +388,22 @@ namespace CrowdDefense.UI
                             : new Color(1f, 0.25f, 0.25f, 1f);
                         DrawDot(painter, W2M(enemy.transform.position, grid, offX, offY, s), isBoss ? 5f : 3f);
                     }
+                }
+
+                // Hero (green)
+                var hero = LevelRunner.Instance?.Hero;
+                if (hero != null && hero.gameObject.activeInHierarchy)
+                {
+                    painter.fillColor = new Color(0.2f, 1f, 0.35f, 1f);
+                    DrawDot(painter, W2M(hero.transform.position, grid, offX, offY, s), 5f);
+                }
+
+                // Castle (yellow)
+                var castle = LevelRunner.Instance?.PrimaryCastle;
+                if (castle != null && !castle.IsDead)
+                {
+                    painter.fillColor = new Color(1f, 0.88f, 0.1f, 1f);
+                    DrawDot(painter, W2M(castle.transform.position, grid, offX, offY, s), 6f);
                 }
             }
         }
