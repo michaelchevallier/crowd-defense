@@ -28,6 +28,11 @@ namespace CrowdDefense.Entities
         // Child GO holding the spawned GLTF mesh (null = using capsule primitive)
         private GameObject? _meshChild;
 
+        // Animator configuré par AnimationController.SetupAnimator au Init.
+        private Animator? _animator;
+        // Flag dirty pour éviter SetBool chaque frame si state inchangé
+        private bool _wasWalking = false;
+
         public EnemyType? Config => cfg;
         public int CurrentWaypoint => currentWaypoint;
         public int PathIdx => pathIdx;
@@ -78,6 +83,14 @@ namespace CrowdDefense.Entities
             // If GLTF spawned, disable the root capsule MeshRenderer (keep collider)
             if (_meshChild != null && rend != null)
                 rend.enabled = false;
+
+            // Outline silhouette — applied after toon so outline mat is not overwritten
+            Outline.ApplyToHierarchy(toonRoot.transform);
+
+            // Animations Mechanim : Idle + Walk via bool isWalking.
+            // WalkAnim = nom de clip hint (ex: "Walking_A") — résolution dans le .controller.
+            _animator = AnimationController.SetupAnimator(toonRoot, "Idle", type.WalkAnim);
+            _wasWalking = false;
 
             var col = GetComponent<CapsuleCollider>();
             if (col != null)
@@ -214,6 +227,14 @@ namespace CrowdDefense.Entities
 
             if ((transform.position - target).sqrMagnitude < 0.01f)
                 currentWaypoint++;
+
+            // SetWalking avec dirty flag pour éviter SetBool inutile chaque frame
+            bool nowWalking = effectiveSpeed > 0.01f;
+            if (nowWalking != _wasWalking)
+            {
+                AnimationController.SetWalking(_animator, nowWalking);
+                _wasWalking = nowWalking;
+            }
         }
 
         private void UpdateFlyer()

@@ -128,6 +128,9 @@ namespace CrowdDefense.Entities
             var toonRoot = _meshChild != null ? _meshChild : gameObject;
             MaterialController.ApplyToon(toonRoot, type.BodyColor);
 
+            // Outline silhouette — applied after toon so outline mat is not overwritten
+            Outline.ApplyToHierarchy(toonRoot.transform);
+
             // Animations Mechanim : Idle uniquement pour les tours (pas de Walk, rotation vers cible = code).
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", null);
         }
