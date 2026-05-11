@@ -25,6 +25,9 @@ namespace CrowdDefense.Entities
         private float summonTimer = 0f;
         private float blastTimer = 0f;
 
+        // Child GO holding the spawned GLTF mesh (null = using capsule primitive)
+        private GameObject? _meshChild;
+
         public EnemyType? Config => cfg;
         public int CurrentWaypoint => currentWaypoint;
         public int PathIdx => pathIdx;
@@ -65,13 +68,16 @@ namespace CrowdDefense.Entities
 
             rend = GetComponent<MeshRenderer>();
             baseColor = type.BodyColor;
+
+            _meshChild = SpawnMeshChild(type.AssetKey);
+
             // Cel-shading toon material — port de applyToonToScene() ToonMaterial.js
-            MaterialController.ApplyToon(gameObject, type.BodyColor, type.IsStealth);
-            if (rend != null)
-            {
-                // Garde une ref au material actif pour UpdateStealth (alpha lerp)
-                // MaterialController a déjà initialisé le renderQueue stealth si IsStealth
-            }
+            // Apply on GLTF subtree if present, otherwise on root (capsule primitive)
+            var toonRoot = _meshChild != null ? _meshChild : gameObject;
+            MaterialController.ApplyToon(toonRoot, type.BodyColor, type.IsStealth);
+            // If GLTF spawned, disable the root capsule MeshRenderer (keep collider)
+            if (_meshChild != null && rend != null)
+                rend.enabled = false;
 
             var col = GetComponent<CapsuleCollider>();
             if (col != null)
@@ -119,6 +125,41 @@ namespace CrowdDefense.Entities
                 return;
             }
             transform.position = pathManager.GetWaypointOnPath(pathIdx, 0) + Vector3.up * 0.5f;
+        }
+
+        /// <summary>
+        /// Instancie le prefab GLTF depuis AssetRegistry si disponible.
+        /// Retourne le GO enfant spawné, ou null si fallback capsule primitive.
+        /// </summary>
+        private GameObject? SpawnMeshChild(string assetKey)
+        {
+            if (string.IsNullOrEmpty(assetKey)) return null;
+
+            var registry = Resources.Load<AssetRegistry>("AssetRegistry");
+            if (registry == null) return null;
+
+            var prefab = registry.Get(assetKey);
+            if (prefab == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning($"[Enemy] AssetRegistry missing key '{assetKey}' — fallback capsule");
+#endif
+                return null;
+            }
+
+            // Re-use existing GLTF child if same prefab (pool reuse: same cfg → keep mesh)
+            if (_meshChild != null)
+            {
+                _meshChild.SetActive(true);
+                return _meshChild;
+            }
+
+            var instance = Object.Instantiate(prefab, transform);
+            instance.name = "Mesh_" + assetKey;
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+            return instance;
         }
 
         private void BuildShieldHalo()
@@ -195,20 +236,25 @@ namespace CrowdDefense.Entities
 
         private void UpdateStealth()
         {
-            if (cfg == null || !cfg.IsStealth || rend == null) return;
+            if (cfg == null || !cfg.IsStealth) return;
             float cycleS = cfg.StealthCycleMs > 0 ? cfg.StealthCycleMs / 1000f : 2.2f;
             float alpha = cfg.StealthOpacity + (1f - cfg.StealthOpacity)
                 * Mathf.Abs(Mathf.Sin(Time.time / cycleS * Mathf.PI));
             StealthAlpha = alpha;
             var c = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
-            // ToonCelShading uses _BaseColor; fallback to .color for Standard shader
-            var mat = rend.material;
-            if (mat != null)
+
+            // Apply on active mesh: GLTF subtree if spawned, otherwise capsule root renderer
+            var stealthRoot = _meshChild != null ? _meshChild : gameObject;
+            foreach (var r in stealthRoot.GetComponentsInChildren<Renderer>())
             {
-                if (mat.HasProperty("_BaseColor"))
-                    mat.SetColor("_BaseColor", c);
-                else
-                    mat.color = c;
+                foreach (var mat in r.materials)
+                {
+                    if (mat == null) continue;
+                    if (mat.HasProperty("_BaseColor"))
+                        mat.SetColor("_BaseColor", c);
+                    else
+                        mat.color = c;
+                }
             }
         }
 
@@ -319,11 +365,16 @@ namespace CrowdDefense.Entities
         // Tint cyan pendant slow, retour couleur base à l'expiration — préserve alpha stealth
         public void SetSlowTint(bool slowed)
         {
-            if (rend == null) return;
             float a = (cfg?.IsStealth == true) ? StealthAlpha : 1f;
-            rend.material.color = slowed
+            Color tint = slowed
                 ? new Color(0.4f, 0.9f, 1.0f, a)
                 : new Color(baseColor.r, baseColor.g, baseColor.b, a);
+            var tintRoot = _meshChild != null ? _meshChild : gameObject;
+            foreach (var r in tintRoot.GetComponentsInChildren<Renderer>(true))
+            {
+                foreach (var mat in r.materials)
+                    if (mat != null) mat.color = tint;
+            }
         }
 
         private void OnReachedCastle()
