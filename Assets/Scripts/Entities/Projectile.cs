@@ -16,6 +16,9 @@ namespace CrowdDefense.Entities
         private ProjectilePool? pool;
         private MeshRenderer? rend;
 
+        // Source tower — used to apply synergy on-hit effects (slow / freeze)
+        private Tower? sourceTower;
+
         // Parabolic arc (Cannon)
         private bool parabolic;
         private Vector3 startPosition;
@@ -33,11 +36,6 @@ namespace CrowdDefense.Entities
         // Called once by ProjectilePool after Instantiate to back-link the pool
         public void SetPool(ProjectilePool p) => pool = p;
 
-        /// <param name="pierce">Number of additional enemies the projectile pierces (0 = no pierce).</param>
-        /// <param name="aoeRadius">Radius for area-of-effect damage on impact (0 = single target).</param>
-        /// <param name="isParabolic">True = quadratic Bezier arc (Cannon).</param>
-        /// <param name="flightDur">Total flight time in seconds (parabolic only).</param>
-        /// <param name="arcH">Arc peak height offset above midpoint (parabolic only).</param>
         public void Init(
             Enemy target,
             float damage,
@@ -47,11 +45,13 @@ namespace CrowdDefense.Entities
             float aoeRadius = 0f,
             bool isParabolic = false,
             float flightDur = 0f,
-            float arcH = 0f)
+            float arcH = 0f,
+            Tower? source = null)
         {
             this.target = target;
             this.damage = damage;
             this.speed = speed;
+            this.sourceTower = source;
             lifetimeSec = 5f;
 
             piercesRemaining = pierce;
@@ -122,6 +122,8 @@ namespace CrowdDefense.Entities
             else if (!alreadyHit.Contains(target))
                 target.TakeDamage(damage);
 
+            ApplyOnHitEffects(target);
+
             if (piercesRemaining > 0)
             {
                 piercesRemaining--;
@@ -130,7 +132,6 @@ namespace CrowdDefense.Entities
                 if (next != null)
                 {
                     target = next;
-                    // Reset parabolic flight segment toward next target
                     if (parabolic)
                     {
                         startPosition = transform.position;
@@ -139,11 +140,25 @@ namespace CrowdDefense.Entities
                         flightElapsed = 0f;
                         arcHeight = dist / 3f;
                     }
-                    return; // continue flying toward next target
+                    return;
                 }
             }
 
             ReleaseToPool();
+        }
+
+        private void ApplyOnHitEffects(Enemy e)
+        {
+            if (sourceTower == null || e.IsDead) return;
+            var slow = SlowEffectManager.Instance;
+            if (slow == null) return;
+
+            if (sourceTower._freezeOnHitActive)
+                e.ApplyFreeze(sourceTower._freezeDurMs / 1000f);
+            else if (sourceTower._slowOnHitActive)
+                slow.ApplySlow(e, sourceTower._slowOnHitMul, sourceTower._slowOnHitDurMs);
+            else if (sourceTower._appliesSlowActive)
+                slow.ApplySlow(e, sourceTower._appliesSlowMul, sourceTower._appliesSlowDurMs);
         }
 
         private void ApplyAoeDamage()
@@ -163,7 +178,7 @@ namespace CrowdDefense.Entities
         private Enemy? FindNextPierceTarget()
         {
             if (WaveManager.Instance == null) return null;
-            float searchRangeSq = 20f * 20f; // generous range for pierce continuation
+            float searchRangeSq = 20f * 20f;
             Enemy? best = null;
             float bestDist = float.MaxValue;
             var enemies = WaveManager.Instance.ActiveEnemies;
@@ -195,7 +210,7 @@ namespace CrowdDefense.Entities
             if (pool != null)
                 pool.Release(this);
             else
-                Destroy(gameObject); // fallback si pas de pool
+                Destroy(gameObject);
         }
     }
 }

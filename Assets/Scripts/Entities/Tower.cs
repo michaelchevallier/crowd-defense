@@ -595,7 +595,7 @@ namespace CrowdDefense.Entities
             proj.transform.position = transform.position + Vector3.up * 1.0f;
             proj.transform.rotation = Quaternion.identity;
             proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
-                effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH);
+                effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
 
             // Extra projectiles : synergy _multiShotBonus + L3MultiShot (cumulatifs)
             int extraShots = _multiShotBonus + L3MultiShot;
@@ -610,7 +610,7 @@ namespace CrowdDefense.Entities
                     proj2.transform.position = transform.position + Vector3.up * 1.0f;
                     proj2.transform.rotation = Quaternion.LookRotation(spread);
                     proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
-                        effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH);
+                        effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
                 }
             }
 
@@ -816,7 +816,7 @@ namespace CrowdDefense.Entities
             proj.transform.position = transform.position + Vector3.up * 1.0f;
             proj.transform.rotation = Quaternion.LookRotation(angledDir);
             proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
-                effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH);
+                effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
         }
 
         // ── UpgradeTo — hook pips after level change ──────────────────────────
