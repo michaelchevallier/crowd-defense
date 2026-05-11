@@ -60,14 +60,37 @@ HOT_ZONES=(
 
 # === Axis ownership zones (prefix-match against changed files) ===
 # Files matching any of these prefixes are within the axis's exclusive zone.
-declare -A OWNERSHIP_MAP
-OWNERSHIP_MAP[visual-core]="Assets/Scripts/Visual/ Assets/Shaders/ Assets/Materials/ Assets/Prefabs/VFX/"
-OWNERSHIP_MAP[audio]="Assets/Audio/ Assets/Scripts/Systems/AudioController.cs Assets/Scripts/Data/AudioClipRegistry.cs Assets/Editor/AudioClipRegistryTool.cs Assets/ScriptableObjects/Audio/ Assets/UI/SettingsPanel/"
-OWNERSHIP_MAP[asset-gen]="tools/blender/ tools/comfy/ tools/mixamo/ Assets/Models/Enemies/ Assets/Animations/"
-OWNERSHIP_MAP[content]="Assets/ScriptableObjects/Levels/ Assets/Resources/LevelRegistry.asset docs/specs/levels/"
-OWNERSHIP_MAP[build]="Assets/Editor/BuildScript Assets/Editor/CIBuilder.cs tools/ci/ .github/workflows/ ProjectSettings/Build Build/"
-OWNERSHIP_MAP[ux]="Assets/UI/ Assets/Scripts/UI/ Assets/Resources/Localization/ Assets/Fonts/ Assets/Scripts/UI/SettingsPanel.cs"
-OWNERSHIP_MAP[qa]=".claude/qa/ Assets/Tests/ Assets/Editor/TestRunner.cs Assets/Editor/SprintGateRunner.cs Assets/Scripts/Tests/"
+# (Bash 3.2 compat — no associative arrays; case statement instead.)
+get_ownership_zone() {
+    case "$1" in
+        visual-core)
+            echo "Assets/Scripts/Visual/ Assets/Shaders/ Assets/Materials/ Assets/Prefabs/VFX/"
+            ;;
+        audio)
+            echo "Assets/Audio/ Assets/Scripts/Systems/AudioController.cs Assets/Scripts/Data/AudioClipRegistry.cs Assets/Editor/AudioClipRegistryTool.cs Assets/ScriptableObjects/Audio/ Assets/UI/SettingsPanel/"
+            ;;
+        asset-gen)
+            echo "tools/blender/ tools/comfy/ tools/mixamo/ Assets/Models/Enemies/ Assets/Animations/"
+            ;;
+        content)
+            echo "Assets/ScriptableObjects/Levels/ Assets/Resources/LevelRegistry.asset docs/specs/levels/"
+            ;;
+        build)
+            echo "Assets/Editor/BuildScript Assets/Editor/CIBuilder.cs tools/ci/ .github/workflows/ ProjectSettings/Build Build/"
+            ;;
+        ux)
+            echo "Assets/UI/ Assets/Scripts/UI/ Assets/Resources/Localization/ Assets/Fonts/ Assets/Scripts/UI/SettingsPanel.cs"
+            ;;
+        qa)
+            echo ".claude/qa/ Assets/Tests/ Assets/Editor/TestRunner.cs Assets/Editor/SprintGateRunner.cs Assets/Scripts/Tests/"
+            ;;
+        *)
+            echo ""
+            ;;
+    esac
+}
+
+VALID_AXES="visual-core audio asset-gen content build ux qa"
 
 # Always-allowed paths (cross-axis meta files).
 ALWAYS_OK=(
@@ -77,9 +100,9 @@ ALWAYS_OK=(
     ".claude/coordination/axis-"
 )
 
-AXIS_ZONE="${OWNERSHIP_MAP[$AXIS]:-}"
+AXIS_ZONE=$(get_ownership_zone "$AXIS")
 if [[ -z "$AXIS_ZONE" ]]; then
-    echo "Unknown axis '$AXIS'. Valid : ${!OWNERSHIP_MAP[*]}" >&2
+    echo "Unknown axis '$AXIS'. Valid : $VALID_AXES" >&2
     exit 1
 fi
 
@@ -133,7 +156,12 @@ while IFS= read -r file; do
     fi
 
     # 3. Lint : Debug.Log without #if guard (warn, not block).
-    if [[ "$file" == *.cs ]] && [[ -f "$REPO_ROOT/$file" ]]; then
+    # Skip Editor-only paths (Editor/ + Tests/) — these never ship in player builds.
+    is_editor_only=false
+    case "$file" in
+        Assets/Editor/*|*/Editor/*|Assets/Tests/*) is_editor_only=true ;;
+    esac
+    if [[ "$file" == *.cs ]] && [[ -f "$REPO_ROOT/$file" ]] && ! $is_editor_only; then
         # Find Debug.Log lines that are NOT inside an #if UNITY_EDITOR or DEVELOPMENT_BUILD block.
         # Simple heuristic : look for Debug.Log without preceding #if line in the same paragraph.
         unguarded=$(grep -nE "^\s*(UnityEngine\.)?Debug\.Log" "$REPO_ROOT/$file" 2>/dev/null || true)
