@@ -13,6 +13,12 @@ namespace CrowdDefense.Systems
             SceneManager.LoadScene("Main");
         }
 
+        public static void GoToWorldMap()
+        {
+            NextLevelId = null;
+            SceneManager.LoadScene("WorldMap");
+        }
+
         public static void GoToMenu()
         {
             NextLevelId = null;
