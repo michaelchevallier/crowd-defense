@@ -116,3 +116,4 @@ env/
 secrets.json
 /.claude/scheduled_tasks.lock
 /.claude/internal/
+/.claude/worktrees/
