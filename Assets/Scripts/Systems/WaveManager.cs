@@ -26,6 +26,7 @@ namespace CrowdDefense.Systems
         private bool waitingForPlayerStart = false;
         private float skipWindowTimer = 0f;   // seconds remaining in the 5s skip bonus window
         private int streakCount = 0;           // consecutive skip-bonus claims
+        private int _lastBreakSecond = -1;     // throttle: last whole-second value fired to OnBreakStateChanged
 
         public IReadOnlyList<Enemy> ActiveEnemies => activeEnemies;
         public int CurrentWaveIdx => currentWaveIdx;
@@ -134,6 +135,7 @@ namespace CrowdDefense.Systems
                     nextWaveToStart = currentWaveIdx + 1;
                     waitingForPlayerStart = true;
                     skipWindowTimer = BalanceConfig.Get().SkipWindowSeconds;
+                    _lastBreakSecond = -1;
                     OnBreakStateChanged?.Invoke();
                 }
             }
@@ -151,8 +153,16 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
                         Debug.Log("[WaveManager] Skip window expired — streak reset");
 #endif
+                        // Window just expired — force one final fire regardless of second boundary
+                        _lastBreakSecond = -1;
                     }
-                    OnBreakStateChanged?.Invoke();
+                    // Fire only when the displayed countdown integer changes (saves ~60 repaints/s)
+                    int secondNow = Mathf.FloorToInt(skipWindowTimer);
+                    if (secondNow != _lastBreakSecond)
+                    {
+                        _lastBreakSecond = secondNow;
+                        OnBreakStateChanged?.Invoke();
+                    }
                 }
             }
         }
