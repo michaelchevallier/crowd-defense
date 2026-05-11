@@ -162,7 +162,7 @@ namespace CrowdDefense.UI
         {
             var panel = new VisualElement { name = "debug-hud" };
             panel.style.position        = Position.Absolute;
-            panel.style.left            = 8;
+            panel.style.right           = 8;
             panel.style.top             = 8;
             panel.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.70f));
             panel.style.paddingLeft     = 8;
