@@ -106,10 +106,10 @@ namespace CrowdDefense.UI
             sb.Append(name);
             sb.Append("  L");
             sb.Append(tower.UpgradeLevel);
-            if (tower.UpgradeBranch != null)
+            if (tower.UpgradeBranch != TowerBranch.None)
             {
                 sb.Append(" (");
-                sb.Append(tower.UpgradeBranch);
+                sb.Append(tower.UpgradeBranch == TowerBranch.Dps ? "DPS" : "Utility");
                 sb.Append(')');
             }
             sb.Append("  |  ");
