@@ -15,6 +15,7 @@ namespace CrowdDefense.Systems
         }
 
         private readonly Dictionary<Enemy, SlowRecord> slows = new();
+        private readonly List<Enemy?> _toRemove = new();
 
         public void ApplySlow(Enemy enemy, float mul, int durMs)
         {
@@ -27,7 +28,7 @@ namespace CrowdDefense.Systems
         private void Update()
         {
             float now = Time.time;
-            var toRemove = new List<Enemy?>();
+            _toRemove.Clear();
 
             foreach (var kv in slows)
             {
@@ -35,14 +36,14 @@ namespace CrowdDefense.Systems
                 // Unity may have destroyed the enemy object
                 if (enemy == null || enemy.IsDead)
                 {
-                    toRemove.Add(enemy);
+                    _toRemove.Add(enemy);
                     continue;
                 }
                 if (now >= kv.Value.untilTime)
                 {
                     enemy.currentSpeedMul = 1f;
                     enemy.SetSlowTint(false);
-                    toRemove.Add(enemy);
+                    _toRemove.Add(enemy);
                 }
                 else
                 {
@@ -51,7 +52,7 @@ namespace CrowdDefense.Systems
                 }
             }
 
-            foreach (var e in toRemove)
+            foreach (var e in _toRemove)
             {
                 if (e != null) slows.Remove(e);
             }
