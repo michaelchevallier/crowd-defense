@@ -1,14 +1,13 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
-    public class SlowEffectManager : MonoBehaviour
+    public class SlowEffectManager : MonoSingleton<SlowEffectManager>
     {
-        public static SlowEffectManager? Instance { get; private set; }
-
         private struct SlowRecord
         {
             public float untilTime;
@@ -16,17 +15,6 @@ namespace CrowdDefense.Systems
         }
 
         private readonly Dictionary<Enemy, SlowRecord> slows = new();
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
-        }
-
-        private void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
-        }
 
         public void ApplySlow(Enemy enemy, float mul, int durMs)
         {
