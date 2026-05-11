@@ -27,6 +27,9 @@ namespace CrowdDefense.Data
         [SerializeField] private bool overrideCastleHP = false;
         [SerializeField] private int castleHPOverride = 200;
 
+        [Header("Briefing")]
+        [SerializeField] private string briefing = "";
+
         [Header("Magnet (Q3)")]
         [SerializeField] private bool allowMultiMagnet = false;
 
@@ -43,6 +46,7 @@ namespace CrowdDefense.Data
         public int StartCoins => startCoins;
         public bool OverrideCastleHP => overrideCastleHP;
         public int CastleHPOverride => castleHPOverride;
+        public string Briefing => briefing;
         public bool AllowMultiMagnet => allowMultiMagnet;
         public IReadOnlyList<WaveDef> Waves => waves;
 

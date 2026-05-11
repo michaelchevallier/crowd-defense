@@ -147,6 +147,7 @@ namespace CrowdDefense.Editor
             SetBool(so, "overrideCastleHP", data.overrideCastleHP);
             SetInt(so, "castleHPOverride", data.castleHPOverride);
             SetBool(so, "allowMultiMagnet", data.allowMultiMagnet);
+            SetString(so, "briefing", data.briefing);
 
             // Map rows
             var mapRowsProp = so.FindProperty("mapRows");
@@ -277,6 +278,7 @@ namespace CrowdDefense.Editor
             public bool overrideCastleHP;
             public int castleHPOverride;
             public bool allowMultiMagnet;
+            public string briefing = "";
             public WaveJson[] waves = Array.Empty<WaveJson>();
         }
 
