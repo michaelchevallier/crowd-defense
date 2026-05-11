@@ -130,6 +130,9 @@ namespace CrowdDefense.Entities
         // Child GO holding the spawned GLTF mesh (null = using placeholder primitives)
         private GameObject? _meshChild;
 
+        // First child transform of _meshChild used as the rotating "head" (LookAt enemy)
+        private Transform? _headTransform;
+
         public void Init(TowerType type, GameObject? projPrefab)
         {
             cfg = type;
@@ -189,6 +192,11 @@ namespace CrowdDefense.Entities
 
             // Animations Mechanim : Idle uniquement pour les tours (pas de Walk, rotation vers cible = code).
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", null);
+
+            // Head = premier enfant du mesh child (canon/tourelle qui pivote vers la cible)
+            _headTransform = _meshChild != null && _meshChild.transform.childCount > 0
+                ? _meshChild.transform.GetChild(0)
+                : null;
 
             BuildRangeRing(type.Range);
             BuildSynergyHalo();
@@ -488,6 +496,17 @@ namespace CrowdDefense.Entities
 
             if (target == null || target.IsDead || OutOfRange(target))
                 target = AcquireTarget();
+
+            if (target != null && _headTransform != null)
+            {
+                Vector3 dir = (target.transform.position - _headTransform.position).normalized;
+                if (dir != Vector3.zero)
+                {
+                    Quaternion desired = Quaternion.LookRotation(dir);
+                    _headTransform.rotation = Quaternion.RotateTowards(
+                        _headTransform.rotation, desired, 8f * Time.deltaTime);
+                }
+            }
 
             if (target != null && cooldown <= 0f)
             {
