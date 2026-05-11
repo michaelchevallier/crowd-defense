@@ -11,7 +11,7 @@
     color: rgb(255, 210, 63);
     font-size: 36px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     margin-bottom: 24px;
     -unity-text-align: upper-center;
 }
@@ -36,7 +36,7 @@
     color: rgba(200, 200, 200, 0.8);
     font-size: 13px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     width: 60px;
     -unity-text-align: middle-left;
 }
@@ -52,7 +52,7 @@
     color: white;
     font-size: 13px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     -unity-text-align: middle-center;
     cursor: link;
 }

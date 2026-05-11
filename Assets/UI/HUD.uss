@@ -24,14 +24,14 @@
     color: rgba(220, 220, 220, 0.7);
     font-size: 12px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
 }
 
 .pill-value {
     color: white;
     font-size: 24px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
 }
 
 .pill-gold .pill-value {
@@ -78,14 +78,14 @@
     color: white;
     font-size: 72px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     margin-bottom: 8px;
 }
 
 .overlay-subtitle {
     color: rgba(220, 220, 220, 0.9);
     font-size: 24px;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     margin-bottom: 32px;
 }
 
@@ -95,7 +95,7 @@
     color: white;
     border-radius: 8px;
     font-size: 24px;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     border-width: 0;
 }
 
@@ -154,13 +154,13 @@
     color: rgb(26, 26, 26);
     font-size: 18px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
 }
 
 .wave-launch-sub {
     font-size: 12px;
     color: rgba(26, 26, 26, 0.75);
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     margin-top: 2px;
 }
 
@@ -179,7 +179,7 @@
     color: rgb(10, 26, 10);
     font-size: 12px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
 }
 
 /* Pill timer shown above the launch button during skip window */
@@ -201,7 +201,7 @@
     color: rgb(255, 210, 63);
     font-size: 13px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
 }
 
 /* === Tower tooltip (hover) === */
@@ -220,7 +220,7 @@
     color: rgb(220, 230, 255);
     font-size: 14px;
     -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     margin-bottom: 6px;
     white-space: normal;
 }
@@ -228,7 +228,7 @@
 .tooltip-stats {
     color: rgba(200, 210, 230, 0.85);
     font-size: 12px;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     margin-bottom: 4px;
     white-space: normal;
 }
@@ -236,6 +236,6 @@
 .tooltip-synergies {
     color: rgb(160, 220, 180);
     font-size: 12px;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     white-space: normal;
 }
