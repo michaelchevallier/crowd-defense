@@ -15,11 +15,16 @@ namespace CrowdDefense.Entities
         private int currentWaypoint;
         private int pathIdx;
         private PathManager? pathManager;
+        private MeshRenderer? rend;
+        private Color baseColor;
 
         public EnemyType? Config => cfg;
         public int CurrentWaypoint => currentWaypoint;
         public int PathIdx => pathIdx;
         public bool IsDead { get; private set; }
+
+        // Modifié par SlowEffectManager chaque frame
+        public float currentSpeedMul = 1f;
 
         public void Init(EnemyType type, int assignedPathIdx = 0)
         {
@@ -27,13 +32,15 @@ namespace CrowdDefense.Entities
             hp = type.Hp;
             pathIdx = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
+            currentSpeedMul = 1f;
             transform.localScale = Vector3.one * type.Scale;
 
-            var rend = GetComponent<MeshRenderer>();
+            rend = GetComponent<MeshRenderer>();
             if (rend != null)
             {
                 rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
                 rend.material.color = type.BodyColor;
+                baseColor = type.BodyColor;
             }
 
             var col = GetComponent<CapsuleCollider>();
@@ -74,7 +81,8 @@ namespace CrowdDefense.Entities
             }
 
             Vector3 target = pathManager.GetWaypointOnPath(pathIdx, currentWaypoint) + Vector3.up * 0.5f;
-            transform.position = Vector3.MoveTowards(transform.position, target, cfg.Speed * Time.deltaTime);
+            float effectiveSpeed = cfg.Speed * currentSpeedMul;
+            transform.position = Vector3.MoveTowards(transform.position, target, effectiveSpeed * Time.deltaTime);
 
             if ((transform.position - target).sqrMagnitude < 0.01f)
                 currentWaypoint++;
@@ -87,14 +95,25 @@ namespace CrowdDefense.Entities
             if (hp <= 0f)
             {
                 IsDead = true;
-                int reward = cfg?.Reward ?? 0;
+                int baseReward = cfg?.Reward ?? 0;
+                float coinMul = CoinPullManager.Instance != null
+                    ? CoinPullManager.Instance.GetCoinMulAt(transform.position)
+                    : 1f;
+                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul));
 #if UNITY_EDITOR
-                Debug.Log($"[Enemy] killed type={cfg?.Id} reward={reward}");
+                Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} reward={reward}");
 #endif
                 Economy.Instance?.AddGold(reward);
                 WaveManager.Instance?.NotifyEnemyDied(this);
                 Destroy(gameObject);
             }
+        }
+
+        // Tint cyan pendant slow, retour couleur base à l'expiration
+        public void SetSlowTint(bool slowed)
+        {
+            if (rend == null) return;
+            rend.material.color = slowed ? new Color(0.4f, 0.9f, 1.0f) : baseColor;
         }
 
         private void OnReachedCastle()
