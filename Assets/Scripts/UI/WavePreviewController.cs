@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -7,12 +8,17 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
     public class WavePreviewController : MonoBehaviour
     {
+        private const int MaxChips = 12;
+        private const float DisplaySeconds = 5f;
+        private const float FadeSeconds = 0.4f;
+
         private VisualElement? wavePreview;
         private Label? wavePreviewTitle;
         private VisualElement? wavePreviewRoster;
+
+        private Coroutine? _autoHideCoroutine;
 
         private void Start()
         {
@@ -24,7 +30,7 @@ namespace CrowdDefense.UI
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.OnBreakStateChanged += Refresh;
-                WaveManager.Instance.OnWaveStart += _ => Hide();
+                WaveManager.Instance.OnWaveStart += OnWaveStarted;
                 Refresh();
             }
         }
@@ -34,9 +40,11 @@ namespace CrowdDefense.UI
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.OnBreakStateChanged -= Refresh;
-                WaveManager.Instance.OnWaveStart -= _ => Hide();
+                WaveManager.Instance.OnWaveStart -= OnWaveStarted;
             }
         }
+
+        private void OnWaveStarted(int _) => HideImmediate();
 
         private void Refresh()
         {
@@ -44,14 +52,14 @@ namespace CrowdDefense.UI
 
             if (!WaveManager.Instance.IsWaitingForPlayerStart)
             {
-                Hide();
+                HideImmediate();
                 return;
             }
 
             var waveDef = WaveManager.Instance.GetNextWaveDef();
             if (waveDef == null || waveDef.Value.entries == null || waveDef.Value.entries.Count == 0)
             {
-                Hide();
+                HideImmediate();
                 return;
             }
 
@@ -59,12 +67,42 @@ namespace CrowdDefense.UI
                 wavePreviewTitle.text = L.Get("hud.wave_preview_title", WaveManager.Instance.NextWaveDisplayNumber);
 
             BuildRoster(waveDef.Value.entries);
+
+            if (_autoHideCoroutine != null) StopCoroutine(_autoHideCoroutine);
+            wavePreview.style.opacity = 1f;
             SetVisible(wavePreview, true);
+            _autoHideCoroutine = StartCoroutine(AutoHideAfterDelay());
         }
 
-        private void Hide()
+        private IEnumerator AutoHideAfterDelay()
         {
-            if (wavePreview != null) SetVisible(wavePreview, false);
+            yield return new WaitForSecondsRealtime(DisplaySeconds);
+            yield return FadeOut();
+        }
+
+        private IEnumerator FadeOut()
+        {
+            if (wavePreview == null) yield break;
+            float elapsed = 0f;
+            while (elapsed < FadeSeconds)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                wavePreview.style.opacity = Mathf.Lerp(1f, 0f, elapsed / FadeSeconds);
+                yield return null;
+            }
+            HideImmediate();
+        }
+
+        private void HideImmediate()
+        {
+            if (_autoHideCoroutine != null)
+            {
+                StopCoroutine(_autoHideCoroutine);
+                _autoHideCoroutine = null;
+            }
+            if (wavePreview == null) return;
+            wavePreview.style.opacity = 1f;
+            SetVisible(wavePreview, false);
         }
 
         private void BuildRoster(List<EnemySpawnEntry> entries)
@@ -72,7 +110,6 @@ namespace CrowdDefense.UI
             if (wavePreviewRoster == null) return;
             wavePreviewRoster.Clear();
 
-            // Aggregate counts per EnemyType (entries may list same type multiple times)
             var counts = new Dictionary<EnemyType, int>();
             foreach (var entry in entries)
             {
@@ -81,8 +118,19 @@ namespace CrowdDefense.UI
                 counts[entry.type] = existing + entry.count;
             }
 
-            foreach (var kvp in counts)
+            // Bosses first, then mid-bosses, then normals
+            var sorted = new List<KeyValuePair<EnemyType, int>>(counts);
+            sorted.Sort((a, b) =>
             {
+                int rankA = a.Key.IsBoss ? 0 : a.Key.IsMidBoss ? 1 : 2;
+                int rankB = b.Key.IsBoss ? 0 : b.Key.IsMidBoss ? 1 : 2;
+                return rankA.CompareTo(rankB);
+            });
+
+            int shown = 0;
+            foreach (var kvp in sorted)
+            {
+                if (shown >= MaxChips) break;
                 var type = kvp.Key;
                 int count = kvp.Value;
 
@@ -100,6 +148,7 @@ namespace CrowdDefense.UI
                 chip.Add(iconLabel);
                 chip.Add(countLabel);
                 wavePreviewRoster.Add(chip);
+                shown++;
             }
         }
 
