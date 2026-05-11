@@ -69,6 +69,10 @@ namespace CrowdDefense.Editor
         private static readonly Dictionary<string, string> HeroIdToKey = new()
         {
             { "knight", "knight" },
+            { "mage", "mage" },
+            { "ranger", "ranger" },
+            { "barbarian", "barbarian" },
+            { "rogue", "rogue" },
         };
 
         [MenuItem("Tools/CrowdDefense/Build AssetRegistry Mappings")]

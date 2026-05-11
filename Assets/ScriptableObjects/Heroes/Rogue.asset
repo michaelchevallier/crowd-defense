@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.HeroType
   id: rogue
   displayName: Rogue
-  assetKey: hero_rogue
+  assetKey: rogue
   damage: 0.6
   range: 10
   fireRateMs: 350

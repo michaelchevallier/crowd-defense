@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.HeroType
   id: knight
   displayName: Knight
-  assetKey: hero_knight
+  assetKey: knight
   damage: 0.45
   range: 12
   fireRateMs: 600

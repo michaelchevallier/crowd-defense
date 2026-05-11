@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.HeroType
   id: ranger
   displayName: Ranger
-  assetKey: hero_ranger
+  assetKey: ranger
   damage: 0.55
   range: 18
   fireRateMs: 500

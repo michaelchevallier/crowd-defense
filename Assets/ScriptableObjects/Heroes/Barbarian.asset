@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.HeroType
   id: barbarian
   displayName: Barbarian
-  assetKey: hero_barbarian
+  assetKey: barbarian
   damage: 0.9
   range: 8
   fireRateMs: 400
