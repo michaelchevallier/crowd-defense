@@ -30,6 +30,9 @@ namespace CrowdDefense.Editor
             // Scan Models/Enemies (populated by VISUAL-02)
             ScanDirectory($"{ModelsRoot}/Enemies", "Enemies", entries);
 
+            // Scan Models/Heroes
+            ScanDirectory($"{ModelsRoot}/Heroes", "Heroes", entries);
+
             var serialized = new SerializedObject(registry);
             var arrayProp = serialized.FindProperty("entries");
             arrayProp.arraySize = entries.Count;
@@ -83,7 +86,7 @@ namespace CrowdDefense.Editor
 
         private static void ReimportGLTFAssets()
         {
-            var gltfGuids = AssetDatabase.FindAssets("", new[] { $"{ModelsRoot}/Towers", $"{ModelsRoot}/Enemies" })
+            var gltfGuids = AssetDatabase.FindAssets("", new[] { $"{ModelsRoot}/Towers", $"{ModelsRoot}/Enemies", $"{ModelsRoot}/Heroes" })
                 .Where(g => {
                     var path = AssetDatabase.GUIDToAssetPath(g);
                     var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
