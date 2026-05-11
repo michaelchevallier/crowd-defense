@@ -182,6 +182,9 @@ namespace CrowdDefense.UI
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
                     ["settings.game_speed"] = "Game Speed",
+                    ["settings.fullscreen_on"] = "Fullscreen ON",
+                    ["settings.fullscreen_off"] = "Fullscreen OFF",
+                    ["settings.hud_btn"] = "Settings",
 
                     // ── Achievement toast ──────────────────────────────────────────
                     ["achievement.toast_header"] = "Achievement Unlocked!",
@@ -463,6 +466,9 @@ namespace CrowdDefense.UI
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
                     ["settings.game_speed"] = "Vitesse du jeu",
+                    ["settings.fullscreen_on"] = "Plein écran ON",
+                    ["settings.fullscreen_off"] = "Plein écran OFF",
+                    ["settings.hud_btn"] = "Réglages",
 
                     // ── Achievement toast ──────────────────────────────────────────
                     ["achievement.toast_header"] = "Succès débloqué !",

@@ -10,6 +10,7 @@ namespace CrowdDefense.UI
     {
         private VisualElement? _root;
         private VisualElement? _settingsRoot;
+        private Button? _fullscreenBtn;
 
         private Slider? _masterSlider;
         private Slider? _sfxSlider;
@@ -100,6 +101,7 @@ namespace CrowdDefense.UI
 
             _langDropdown = _root.Q<DropdownField>("lang-dropdown");
             _closeBtn = _root.Q<Button>("settings-close-btn");
+            _fullscreenBtn = _root.Q<Button>("settings-fullscreen-btn");
 
             _settingsTitleLabel  = _root.Q<Label>("settings-title");
             _audioSectionLabel   = _root.Q<Label>("audio-section-title");
@@ -276,6 +278,7 @@ namespace CrowdDefense.UI
             });
 
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Hide());
+            _fullscreenBtn?.RegisterCallback<ClickEvent>(_ => ToggleFullscreen());
 
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
         }
@@ -283,12 +286,27 @@ namespace CrowdDefense.UI
         public void Show()
         {
             SyncFromRegistry();
+            UpdateFullscreenLabel();
             _settingsRoot?.RemoveFromClassList("hidden");
         }
 
         public void Hide()
         {
             _settingsRoot?.AddToClassList("hidden");
+        }
+
+        private void ToggleFullscreen()
+        {
+            Screen.fullScreen = !Screen.fullScreen;
+            UpdateFullscreenLabel();
+        }
+
+        private void UpdateFullscreenLabel()
+        {
+            if (_fullscreenBtn == null) return;
+            _fullscreenBtn.text = Screen.fullScreen
+                ? L.Get("settings.fullscreen_off")
+                : L.Get("settings.fullscreen_on");
         }
 
         private void SyncFromRegistry()
