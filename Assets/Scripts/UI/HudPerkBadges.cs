@@ -1,7 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.UIElements;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 using CrowdDefense.Systems;
@@ -9,83 +9,195 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     // HUD row showing active perk badges + set bonus progress (X/3 per tag).
-    // TODO: Convert to UIToolkit (currently disabled — uses legacy uGUI Canvas/RectTransform/Text)
-    // This component is incompatible with the UIToolkit-only HUD.
-    // Kept as reference for future UIToolkit port.
-    [System.Obsolete("HudPerkBadges uses legacy uGUI — convert to UIToolkit to enable")]
+    // Attaches to the same GameObject as HudController / UIDocument.
+    [RequireComponent(typeof(UIDocument))]
     public class HudPerkBadges : MonoBehaviour
     {
-        [SerializeField] private RectTransform? badgeContainer;
-        [SerializeField] private GameObject?    badgePrefab;
-        [SerializeField] private Text?          setProgressText;
+        private VisualElement? _row;
+        private VisualElement? _setProgressRow;
+
+        // badge id -> (badge element, stack count label)
+        private readonly Dictionary<string, (VisualElement badge, Label count)> _badges = new();
 
         private Hero? _hero;
-        private PerkSystem? _system;
+        private PerkRegistry? _registry;
 
-        private void Start()
+        public void Init(VisualElement hudRoot, Hero hero)
         {
-            // Disabled — requires uGUI Canvas which isn't present in UIToolkit HUD
+            _hero = hero;
+            _registry = PerkRegistry.Load();
+            _row = hudRoot.Q<VisualElement>("perk-badges-row");
+            _setProgressRow = hudRoot.Q<VisualElement>("perk-set-progress-row");
+
+            if (_row == null)
+            {
 #if UNITY_EDITOR
-            Debug.LogWarning("[HudPerkBadges] Component disabled — uses legacy uGUI incompatible with UIToolkit HUD. Implement UIToolkit version.");
+                Debug.LogWarning("[HudPerkBadges] #perk-badges-row not found in HUD.uxml");
 #endif
-            enabled = false;
+                return;
+            }
+
+            SubscribeEvents();
+            RebuildAll();
         }
 
         private void OnDestroy()
         {
-            if (_system != null)
-            {
-                _system.OnPerkApplied        -= OnPerkApplied;
-                _system.OnSetBonusActivated  -= OnSetBonusActivated;
-            }
+            UnsubscribeEvents();
+        }
+
+        private void SubscribeEvents()
+        {
+            if (PerkSystem.Instance == null) return;
+            PerkSystem.Instance.OnPerkApplied       += OnPerkApplied;
+            PerkSystem.Instance.OnSetBonusActivated += OnSetBonusActivated;
+        }
+
+        private void UnsubscribeEvents()
+        {
+            if (PerkSystem.Instance == null) return;
+            PerkSystem.Instance.OnPerkApplied       -= OnPerkApplied;
+            PerkSystem.Instance.OnSetBonusActivated -= OnSetBonusActivated;
         }
 
         private void OnPerkApplied(Hero hero, PerkDef def)
         {
-            if (hero != _hero) return;
-            AddBadge(def.iconEmoji, def.nameKey);
+            if (hero != _hero || _row == null) return;
+            UpsertBadge(def);
             RefreshSetProgress();
         }
 
         private void OnSetBonusActivated(Hero hero, PerkSetBonusDef bonus)
         {
-            if (hero != _hero) return;
-            AddBadge("★", bonus.nameKey);
+            if (hero != _hero || _row == null) return;
+            UpsertSetBonusBadge(bonus);
             RefreshSetProgress();
         }
 
-        private void AddBadge(string emoji, string label)
+        private void UpsertBadge(PerkDef def)
         {
-            if (badgePrefab == null || badgeContainer == null) return;
-            var go   = Instantiate(badgePrefab, badgeContainer);
-            var txt  = go.GetComponentInChildren<Text>();
-            if (txt != null) txt.text = emoji;
-            var tip = go.GetComponent<Tooltip>();
-            if (tip != null) tip.Message = label;
+            if (_row == null) return;
+
+            if (_badges.TryGetValue(def.id, out var existing))
+            {
+                int stacks = 0;
+                if (_hero != null)
+                    foreach (var id in _hero.Perks)
+                        if (id == def.id) stacks++;
+                existing.count.text = stacks > 1 ? stacks.ToString() : "";
+                SetVisible(existing.count, stacks > 1);
+                return;
+            }
+
+            var badge = BuildBadge(def.iconEmoji, def.nameKey, def.descKey);
+            var countLabel = badge.Q<Label>("perk-badge-count");
+            _row.Add(badge);
+            _badges[def.id] = (badge, countLabel);
+        }
+
+        private void UpsertSetBonusBadge(PerkSetBonusDef bonus)
+        {
+            if (_row == null) return;
+            string key = "set_" + bonus.nameKey;
+            if (_badges.ContainsKey(key)) return;
+            var badge = BuildBadge("★", bonus.nameKey, "");
+            badge.AddToClassList("perk-badge-setbonus");
+            var countLabel = badge.Q<Label>("perk-badge-count");
+            _row.Add(badge);
+            _badges[key] = (badge, countLabel);
+        }
+
+        private static VisualElement BuildBadge(string emoji, string tooltipName, string tooltipDesc)
+        {
+            var badge = new VisualElement();
+            badge.AddToClassList("perk-badge");
+
+            var icon = new Label { text = emoji };
+            icon.AddToClassList("perk-badge-icon");
+            badge.Add(icon);
+
+            var count = new Label { text = "" };
+            count.name = "perk-badge-count";
+            count.AddToClassList("perk-badge-count");
+            SetVisible(count, false);
+            badge.Add(count);
+
+            if (!string.IsNullOrEmpty(tooltipName))
+            {
+                string tip = string.IsNullOrEmpty(tooltipDesc) ? tooltipName : $"{tooltipName}\n{tooltipDesc}";
+                badge.tooltip = tip;
+            }
+
+            return badge;
         }
 
         private void RefreshSetProgress()
         {
-            if (_hero == null || setProgressText == null) return;
-            var registry = PerkRegistry.Load();
-            if (registry == null) return;
+            if (_setProgressRow == null || _hero == null || _registry == null) return;
 
             var counts = new Dictionary<PerkTag, int>();
             foreach (var id in _hero.Perks)
             {
-                var def = registry.Get(id);
+                var def = _registry.Get(id);
                 if (def == null || def.tag == PerkTag.None) continue;
                 counts.TryGetValue(def.tag, out int c);
                 counts[def.tag] = c + 1;
             }
 
-            var parts = new List<string>();
+            _setProgressRow.Clear();
+
             foreach (var kv in counts)
             {
-                if (kv.Value > 0)
-                    parts.Add($"{TagEmoji(kv.Key)}{kv.Value}/3");
+                if (kv.Value <= 0) continue;
+                var bonus = _registry.GetBonus(kv.Key);
+                int threshold = bonus != null ? bonus.threshold : 3;
+
+                var chip = new VisualElement();
+                chip.AddToClassList("perk-set-chip");
+
+                var iconLbl = new Label { text = TagEmoji(kv.Key) };
+                iconLbl.AddToClassList("perk-set-chip-icon");
+                chip.Add(iconLbl);
+
+                var progressLbl = new Label { text = $"{kv.Value}/{threshold}" };
+                progressLbl.AddToClassList("perk-set-chip-count");
+                if (kv.Value >= threshold)
+                    progressLbl.AddToClassList("perk-set-chip-count--complete");
+                chip.Add(progressLbl);
+
+                _setProgressRow.Add(chip);
             }
-            setProgressText.text = string.Join("  ", parts);
+        }
+
+        private void RebuildAll()
+        {
+            if (_row == null || _hero == null || _registry == null) return;
+            _row.Clear();
+            _badges.Clear();
+
+            var stackCounts = new Dictionary<string, int>();
+            foreach (var id in _hero.Perks)
+            {
+                stackCounts.TryGetValue(id, out int c);
+                stackCounts[id] = c + 1;
+            }
+
+            var seen = new HashSet<string>();
+            foreach (var id in _hero.Perks)
+            {
+                if (!seen.Add(id)) continue;
+                var def = _registry.Get(id);
+                if (def == null) continue;
+                var badge = BuildBadge(def.iconEmoji, def.nameKey, def.descKey);
+                var countLabel = badge.Q<Label>("perk-badge-count");
+                int stacks = stackCounts[id];
+                countLabel.text = stacks > 1 ? stacks.ToString() : "";
+                SetVisible(countLabel, stacks > 1);
+                _row.Add(badge);
+                _badges[id] = (badge, countLabel);
+            }
+
+            RefreshSetProgress();
         }
 
         private static string TagEmoji(PerkTag tag) => tag switch
@@ -99,10 +211,10 @@ namespace CrowdDefense.UI
             _              => ""
         };
 
-        // Stub for tooltip component — may not exist yet, silently ignored
-        private sealed class Tooltip : MonoBehaviour
+        private static void SetVisible(VisualElement el, bool visible)
         {
-            public string Message = "";
+            if (visible) el.RemoveFromClassList("hidden");
+            else el.AddToClassList("hidden");
         }
     }
 }

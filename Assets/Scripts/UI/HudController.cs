@@ -47,6 +47,9 @@ namespace CrowdDefense.UI
         private Label? heroXpValue;
         private Label? heroUltLabel;
 
+        // Perk badges — sibling component wired after UIDocument root is ready
+        private HudPerkBadges? _perkBadges;
+
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
 
@@ -56,6 +59,7 @@ namespace CrowdDefense.UI
         private void Start()
         {
             _doctrineCtrl = GetComponent<DoctrineController>();
+            _perkBadges = GetComponent<HudPerkBadges>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;
             goldLabel = root.Q<Label>("gold-label");
@@ -124,6 +128,11 @@ namespace CrowdDefense.UI
                 // Sync initial break state (W1 waits for player)
                 OnBreakStateChanged();
             }
+
+            // Wire perk badges once hero is known
+            var hero = LevelRunner.Instance?.Hero;
+            if (_perkBadges != null && hero != null)
+                _perkBadges.Init(root, hero);
         }
 
         private void OnDestroy()
