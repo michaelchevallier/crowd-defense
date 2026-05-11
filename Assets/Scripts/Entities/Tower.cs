@@ -22,6 +22,9 @@ namespace CrowdDefense.Entities
         private float cooldown;
         private Enemy? target;
 
+        // Animator configuré par AnimationController.SetupAnimator au Init.
+        private Animator? _animator;
+
         // ── Synergy output fields (reset + recompute chaque tick par Synergies.cs) ──
 
         // BuffAura / Portal : reçoit un buff dmg d'un Portal voisin
@@ -98,6 +101,9 @@ namespace CrowdDefense.Entities
 
         public TowerType? Config => cfg;
 
+        // Child GO holding the spawned GLTF mesh (null = using placeholder primitives)
+        private GameObject? _meshChild;
+
         public void Init(TowerType type, GameObject? projPrefab)
         {
             cfg = type;
@@ -114,10 +120,53 @@ namespace CrowdDefense.Entities
                 ? BalanceConfig.Get().LevelScale[0]
                 : 0.75f;
 
-            // Cel-shading toon material — port de applyToonToScene() ToonMaterial.js
-            MaterialController.ApplyToon(gameObject, type.BodyColor);
-
             transform.localScale = Vector3.one * type.SizeMultiplier;
+
+            _meshChild = SpawnMeshChild(type.AssetKey);
+
+            // Cel-shading toon material on mesh subtree (or whole GO if no GLTF)
+            var toonRoot = _meshChild != null ? _meshChild : gameObject;
+            MaterialController.ApplyToon(toonRoot, type.BodyColor);
+
+            // Animations Mechanim : Idle uniquement pour les tours (pas de Walk, rotation vers cible = code).
+            _animator = AnimationController.SetupAnimator(toonRoot, "Idle", null);
+        }
+
+        /// <summary>
+        /// Instancie le prefab GLTF depuis AssetRegistry si disponible.
+        /// Désactive les primitives placeholder Base/Top quand GLTF spawné.
+        /// Retourne le GO enfant spawné, ou null si fallback primitives.
+        /// </summary>
+        private GameObject? SpawnMeshChild(string assetKey)
+        {
+            if (string.IsNullOrEmpty(assetKey)) return null;
+
+            var registry = Resources.Load<AssetRegistry>("AssetRegistry");
+            if (registry == null) return null;
+
+            var prefab = registry.Get(assetKey);
+            if (prefab == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning($"[Tower] AssetRegistry missing key '{assetKey}' — fallback primitive");
+#endif
+                return null;
+            }
+
+            // Disable placeholder primitives (Base + Top children)
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                if (child.name == "Base" || child.name == "Top")
+                    child.gameObject.SetActive(false);
+            }
+
+            var instance = Object.Instantiate(prefab, transform);
+            instance.name = "Mesh_" + assetKey;
+            instance.transform.localPosition = Vector3.zero;
+            instance.transform.localRotation = Quaternion.identity;
+            instance.transform.localScale = Vector3.one;
+            return instance;
         }
 
         /// <summary>
