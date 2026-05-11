@@ -50,11 +50,13 @@ namespace CrowdDefense.Systems
         {
             currentWaveIdx = idx;
             var wave = levelData!.Waves[idx];
+            float swarmMul = BalanceConfig.Get().SwarmMul;
             var list = new List<EnemyType>();
             foreach (var entry in wave.entries)
             {
                 if (entry.type == null) continue;
-                for (int i = 0; i < entry.count; i++) list.Add(entry.type);
+                int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul));
+                for (int i = 0; i < count; i++) list.Add(entry.type);
             }
             // Fisher-Yates
             var rng = new System.Random();
