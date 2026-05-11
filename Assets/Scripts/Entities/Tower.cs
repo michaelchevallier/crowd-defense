@@ -455,10 +455,16 @@ namespace CrowdDefense.Entities
                 if (flyMul > 1f) dmg *= flyMul;
             }
 
+            // Parabolic arc parameters (Cannon)
+            float dist = (t.transform.position - (transform.position + Vector3.up * 1.0f)).magnitude;
+            float flightDur = cfg.Parabolic ? dist / Mathf.Max(cfg.ProjectileSpeed, 1f) : 0f;
+            float arcH = cfg.Parabolic ? dist / 3f : 0f;
+
             var proj = ProjectilePool.Instance.Get();
             proj.transform.position = transform.position + Vector3.up * 1.0f;
             proj.transform.rotation = Quaternion.identity;
-            proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor);
+            proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
+                cfg.Parabolic, flightDur, arcH);
 
             // Extra projectiles : synergy _multiShotBonus + L3MultiShot (cumulatifs)
             int extraShots = _multiShotBonus + L3MultiShot;
@@ -472,7 +478,8 @@ namespace CrowdDefense.Entities
                     var proj2 = ProjectilePool.Instance.Get();
                     proj2.transform.position = transform.position + Vector3.up * 1.0f;
                     proj2.transform.rotation = Quaternion.LookRotation(spread);
-                    proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor);
+                    proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
+                        cfg.Parabolic, flightDur, arcH);
                 }
             }
 
