@@ -48,6 +48,11 @@ namespace CrowdDefense.Editor
 
         private static int EnsureRegistries()
         {
+            // Generate (or refresh) the 23 PerkDef SOs + PerkSetBonusDef SOs and wire them into
+            // PerkRegistry in one idempotent pass BEFORE the generic EnsureRegistry call below
+            // (which would create an empty PerkRegistry.asset if none existed).
+            BuildPerkAssets.Generate();
+
             int n = 0;
             n += EnsureRegistry<PerkRegistry>("Assets/Resources/PerkRegistry.asset");
             n += EnsureRegistry<MetaUpgradeRegistry>("Assets/Resources/MetaUpgradeRegistry.asset");
@@ -56,8 +61,46 @@ namespace CrowdDefense.Editor
             n += EnsureRegistry<TowerRegistry>("Assets/Resources/TowerRegistry.asset");
             n += EnsureRegistry<CutsceneRegistry>("Assets/Resources/CutsceneRegistry.asset");
             // BossDefRegistry is not a type — BossSystem.registry is List<BossDef> wired via Inspector
+
+            PopulatePerkRegistry();
+
             AssetDatabase.SaveAssets();
             return n;
+        }
+
+        private static void PopulatePerkRegistry()
+        {
+            const string registryPath = "Assets/Resources/PerkRegistry.asset";
+            var reg = AssetDatabase.LoadAssetAtPath<PerkRegistry>(registryPath);
+            if (reg == null) return;
+
+            var so = new SerializedObject(reg);
+            PopulateRegistryArray(so, "standard",    "t:PerkDef",        new[] { "Assets/ScriptableObjects/Perks/Standard" });
+            PopulateRegistryArray(so, "schoolPerks", "t:PerkDef",        new[] { "Assets/ScriptableObjects/Perks/School" });
+            PopulateRegistryArray(so, "setBonuses",  "t:PerkSetBonusDef",new[] { "Assets/ScriptableObjects/Perks/SetBonus" });
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(reg);
+        }
+
+        private static void PopulateRegistryArray(SerializedObject so, string propName, string filter, string[] searchFolders)
+        {
+            var guids = AssetDatabase.FindAssets(filter, searchFolders);
+            if (guids.Length == 0) return;
+
+            var prop = so.FindProperty(propName);
+            if (prop == null)
+            {
+                Debug.LogWarning($"[SetupMainScene] PerkRegistry.{propName} not found");
+                return;
+            }
+
+            prop.arraySize = guids.Length;
+            for (int i = 0; i < guids.Length; i++)
+            {
+                var path  = AssetDatabase.GUIDToAssetPath(guids[i]);
+                var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
+                prop.GetArrayElementAtIndex(i).objectReferenceValue = asset;
+            }
         }
 
         private static int EnsureRegistry<T>(string path) where T : ScriptableObject

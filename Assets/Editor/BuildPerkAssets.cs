@@ -13,13 +13,19 @@ namespace CrowdDefense.Editor
     // Menu : Tools > CrowdDefense > Generate Perk Assets
     public static class BuildPerkAssets
     {
-        private const string k_PerkDir     = "Assets/ScriptableObjects/Perks";
-        private const string k_ResourceDir = "Assets/Resources";
+        private const string k_PerkDir         = "Assets/ScriptableObjects/Perks";
+        private const string k_PerkStandardDir = "Assets/ScriptableObjects/Perks/Standard";
+        private const string k_PerkSchoolDir   = "Assets/ScriptableObjects/Perks/School";
+        private const string k_PerkSetBonusDir = "Assets/ScriptableObjects/Perks/SetBonus";
+        private const string k_ResourceDir     = "Assets/Resources";
 
         [MenuItem("Tools/CrowdDefense/Generate Perk Assets")]
         public static void Generate()
         {
             Directory.CreateDirectory(k_PerkDir);
+            Directory.CreateDirectory(k_PerkStandardDir);
+            Directory.CreateDirectory(k_PerkSchoolDir);
+            Directory.CreateDirectory(k_PerkSetBonusDir);
             Directory.CreateDirectory(k_ResourceDir);
 
             var standard    = BuildStandardPerks();
@@ -75,7 +81,7 @@ namespace CrowdDefense.Editor
                     stackable: false,  transform: true, pierceExplode: true, pierceExplodeRadius: 2f, pierceExplodeDmgMul: 1.0f),
             };
 
-            foreach (var p in perks) SaveAsset(p, $"{k_PerkDir}/Perk_{p.id}.asset");
+            foreach (var p in perks) SaveAsset(p, $"{k_PerkStandardDir}/Perk_{p.id}.asset");
             return perks;
         }
 
@@ -93,7 +99,7 @@ namespace CrowdDefense.Editor
                 MakeSchoolPerk("murs_pierre",   "Murs de Pierre",    "Tours stagger 0.5s/kill",    "🧱", PerkCategory.Transform, PerkTag.Pierre, "maconnerie", mursPierre: true),
             };
 
-            foreach (var p in perks) SaveAsset(p, $"{k_PerkDir}/SchoolPerk_{p.id}.asset");
+            foreach (var p in perks) SaveAsset(p, $"{k_PerkSchoolDir}/SchoolPerk_{p.id}.asset");
             return perks;
         }
 
@@ -111,7 +117,7 @@ namespace CrowdDefense.Editor
                 MakeBonus(PerkTag.Or,     "Pactole",    "+30% or par kill",    coinGainMul: 1.3f),
             };
 
-            foreach (var b in bonuses) SaveAsset(b, $"{k_PerkDir}/SetBonus_{b.tag}.asset");
+            foreach (var b in bonuses) SaveAsset(b, $"{k_PerkSetBonusDir}/SetBonus_{b.tag}.asset");
             return bonuses;
         }
 
