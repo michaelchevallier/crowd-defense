@@ -7,8 +7,10 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    // Minimap rendered at 10 Hz via IVisualElementScheduledItem into a VisualElement
-    // that draws itself with IGenerateVisualContent (no secondary camera, no RenderTexture).
+    // Minimap split into two VisualElement layers:
+    //   - StaticLayer  : background + path/castle/portal cells — painted ONCE on OnLevelStart, never again.
+    //   - DynamicLayer : enemy + tower dots                    — painted at 10 Hz.
+    // Eliminates ~3000 redundant Painter2D commands/second for geometry that never changes.
     // Port of src-v3/ui/Minimap.js.
     [RequireComponent(typeof(UIDocument))]
     public class MinimapController : MonoBehaviour
@@ -18,7 +20,9 @@ namespace CrowdDefense.UI
         private const int PAD  = 6;
 
         private VisualElement? _root;
-        private MinimapDrawer? _drawer;
+        private VisualElement?  _container;
+        private StaticLayer?    _staticLayer;
+        private DynamicLayer?   _dynamicLayer;
         private IVisualElementScheduledItem? _scheduledPaint;
 
         private bool _boundsReady;
@@ -42,21 +46,37 @@ namespace CrowdDefense.UI
             _root = doc.rootVisualElement.Q<VisualElement>("minimap-container");
             if (_root == null) return;
 
-            _drawer = new MinimapDrawer(MAP_W, MAP_H, PAD);
-            _drawer.style.width  = MAP_W;
-            _drawer.style.height = MAP_H;
-            _root.Add(_drawer);
+            // Container holding both layers at the same position
+            _container = new VisualElement();
+            _container.style.width  = MAP_W;
+            _container.style.height = MAP_H;
+            _container.style.position = Position.Relative;
+            _root.Add(_container);
 
-            // Hide until a level is loaded
+            _staticLayer = new StaticLayer(MAP_W, MAP_H, PAD);
+            _staticLayer.style.width    = MAP_W;
+            _staticLayer.style.height   = MAP_H;
+            _staticLayer.style.position = Position.Absolute;
+            _container.Add(_staticLayer);
+
+            _dynamicLayer = new DynamicLayer(MAP_W, MAP_H, PAD);
+            _dynamicLayer.style.width    = MAP_W;
+            _dynamicLayer.style.height   = MAP_H;
+            _dynamicLayer.style.position = Position.Absolute;
+            _container.Add(_dynamicLayer);
+
             SetVisible(false);
 
-            // 10 Hz repaint — low-freq is fine for a minimap
-            _scheduledPaint = _drawer.schedule.Execute(Repaint).Every(100);
+            // Only the dynamic layer repaints at 10 Hz
+            _scheduledPaint = _dynamicLayer.schedule.Execute(RepaintDynamic).Every(100);
         }
 
         private void OnLevelStart(LevelData levelData, Bounds gridBounds)
         {
             _boundsReady = true;
+            // Bake static layer once — grid + path + castle + portals never change mid-level
+            _staticLayer?.MarkDirtyRepaint();
+
             bool show = !Device.IsSmallScreen || !Device.IsPortrait;
             SetVisible(show);
         }
@@ -67,10 +87,10 @@ namespace CrowdDefense.UI
             _boundsReady = false;
         }
 
-        private void Repaint()
+        private void RepaintDynamic()
         {
-            if (!_boundsReady || _drawer == null) return;
-            _drawer.MarkDirtyRepaint();
+            if (!_boundsReady || _dynamicLayer == null) return;
+            _dynamicLayer.MarkDirtyRepaint();
         }
 
         private void SetVisible(bool v)
@@ -80,18 +100,49 @@ namespace CrowdDefense.UI
             else   _root.AddToClassList("hidden");
         }
 
-        // ─── Inner VisualElement that does the actual drawing ───────────────
+        // ─── Shared geometry helpers ─────────────────────────────────────────
 
-        private sealed class MinimapDrawer : VisualElement
+        private static (float offX, float offY, float s) ComputeLayout(
+            GridData grid, int w, int h, int pad)
+        {
+            float gw = grid.Width  * grid.CellSize;
+            float gh = grid.Height * grid.CellSize;
+            float usableW = w - pad * 2;
+            float usableH = h - pad * 2;
+            float s = Mathf.Min(usableW / Mathf.Max(1f, gw), usableH / Mathf.Max(1f, gh));
+            float offX = pad + (usableW - gw * s) / 2f;
+            float offY = pad + (usableH - gh * s) / 2f;
+            return (offX, offY, s);
+        }
+
+        private static Vector2 W2M(Vector3 world, GridData grid, float offX, float offY, float s)
+        {
+            float px = world.x / grid.CellSize + (grid.Width  - 1) / 2f;
+            float py = -(world.z / grid.CellSize) + (grid.Height - 1) / 2f;
+            return new Vector2(offX + px * s, offY + py * s);
+        }
+
+        private static void DrawDot(Painter2D p, Vector2 center, float r)
+        {
+            p.BeginPath();
+            p.Arc(center, r, 0f, 360f);
+            p.Fill();
+        }
+
+        // ─── Static layer: background + path/castle/portal cells ────────────
+        // MarkDirtyRepaint called exactly once per level load.
+
+        private sealed class StaticLayer : VisualElement
         {
             private readonly int _w;
             private readonly int _h;
             private readonly int _pad;
 
-            public MinimapDrawer(int w, int h, int pad)
+            public StaticLayer(int w, int h, int pad)
             {
                 _w = w; _h = h; _pad = pad;
                 generateVisualContent += OnGenerateVisualContent;
+                pickingMode = PickingMode.Ignore;
             }
 
             private void OnGenerateVisualContent(MeshGenerationContext ctx)
@@ -99,31 +150,10 @@ namespace CrowdDefense.UI
                 var grid = PathManager.Instance?.Grid;
                 if (grid == null) return;
 
-                float gw = grid.Width  * grid.CellSize;
-                float gh = grid.Height * grid.CellSize;
-
-                float usableW = _w - _pad * 2;
-                float usableH = _h - _pad * 2;
-                float sx = usableW / Mathf.Max(1f, gw);
-                float sy = usableH / Mathf.Max(1f, gh);
-                float s  = Mathf.Min(sx, sy);
-
-                // Center the scaled map in the available area
-                float offX = _pad + (usableW - gw * s) / 2f;
-                float offY = _pad + (usableH - gh * s) / 2f;
-
-                // World XZ → minimap UV (Y is row, inverted Z)
-                Vector2 W2M(Vector3 world)
-                {
-                    // GridCoords: origin at center, Z = -(row - (h-1)/2)*cellSize
-                    float px = world.x / grid.CellSize + (grid.Width  - 1) / 2f;
-                    float py = -(world.z / grid.CellSize) + (grid.Height - 1) / 2f;
-                    return new Vector2(offX + px * s, offY + py * s);
-                }
-
+                var (offX, offY, s) = ComputeLayout(grid, _w, _h, _pad);
                 var painter = ctx.painter2D;
 
-                // Background
+                // Background panel
                 painter.fillColor = new Color(0.08f, 0.11f, 0.14f, 0.88f);
                 painter.BeginPath();
                 painter.MoveTo(new Vector2(0, 0));
@@ -133,8 +163,9 @@ namespace CrowdDefense.UI
                 painter.ClosePath();
                 painter.Fill();
 
-                // Draw path cells as small yellow squares
+                // Path / walkable cells as small yellow squares
                 painter.fillColor = new Color(1f, 0.82f, 0.25f, 0.35f);
+                float sz = Mathf.Max(1.5f, s * 0.85f);
                 for (int row = 0; row < grid.Height; row++)
                 {
                     for (int col = 0; col < grid.Width; col++)
@@ -142,8 +173,7 @@ namespace CrowdDefense.UI
                         char c = grid.At(col, row);
                         if (!GridCoords.Walkable.Contains(c)) continue;
                         var pos = GridCoords.CellToWorld(col, row, grid.Width, grid.Height, grid.CellSize);
-                        var mp = W2M(pos);
-                        float sz = Mathf.Max(1.5f, s * 0.85f);
+                        var mp = W2M(pos, grid, offX, offY, s);
                         painter.BeginPath();
                         painter.MoveTo(mp + new Vector2(-sz / 2f, -sz / 2f));
                         painter.LineTo(mp + new Vector2(sz / 2f, -sz / 2f));
@@ -159,7 +189,7 @@ namespace CrowdDefense.UI
                 foreach (var cell in grid.Castles)
                 {
                     var pos = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
-                    DrawDot(painter, W2M(pos), 4f);
+                    DrawDot(painter, W2M(pos, grid, offX, offY, s), 4f);
                 }
 
                 // Portal cells (green)
@@ -167,8 +197,33 @@ namespace CrowdDefense.UI
                 foreach (var cell in grid.Portals)
                 {
                     var pos = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
-                    DrawDot(painter, W2M(pos), 3f);
+                    DrawDot(painter, W2M(pos, grid, offX, offY, s), 3f);
                 }
+            }
+        }
+
+        // ─── Dynamic layer: enemy + tower dots at 10 Hz ──────────────────────
+
+        private sealed class DynamicLayer : VisualElement
+        {
+            private readonly int _w;
+            private readonly int _h;
+            private readonly int _pad;
+
+            public DynamicLayer(int w, int h, int pad)
+            {
+                _w = w; _h = h; _pad = pad;
+                generateVisualContent += OnGenerateVisualContent;
+                pickingMode = PickingMode.Ignore;
+            }
+
+            private void OnGenerateVisualContent(MeshGenerationContext ctx)
+            {
+                var grid = PathManager.Instance?.Grid;
+                if (grid == null) return;
+
+                var (offX, offY, s) = ComputeLayout(grid, _w, _h, _pad);
+                var painter = ctx.painter2D;
 
                 // Placed towers (color from TowerType.BodyColor)
                 if (PlacementController.Instance != null)
@@ -176,9 +231,8 @@ namespace CrowdDefense.UI
                     foreach (var tower in PlacementController.Instance.PlacedTowers)
                     {
                         if (tower == null) continue;
-                        var mp = W2M(tower.transform.position);
                         painter.fillColor = tower.Config?.BodyColor ?? Color.cyan;
-                        DrawDot(painter, mp, 3.5f);
+                        DrawDot(painter, W2M(tower.transform.position, grid, offX, offY, s), 3.5f);
                     }
                 }
 
@@ -188,21 +242,13 @@ namespace CrowdDefense.UI
                     foreach (var enemy in WaveManager.Instance.ActiveEnemies)
                     {
                         if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
-                        var mp = W2M(enemy.transform.position);
                         bool isBoss = enemy.Config?.IsBoss ?? false;
                         painter.fillColor = isBoss
                             ? new Color(1f, 0.82f, 0.25f, 1f)
                             : new Color(1f, 0.25f, 0.25f, 1f);
-                        DrawDot(painter, mp, isBoss ? 5f : 3f);
+                        DrawDot(painter, W2M(enemy.transform.position, grid, offX, offY, s), isBoss ? 5f : 3f);
                     }
                 }
-            }
-
-            private static void DrawDot(Painter2D p, Vector2 center, float r)
-            {
-                p.BeginPath();
-                p.Arc(center, r, 0f, 360f);
-                p.Fill();
             }
         }
     }
