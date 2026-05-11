@@ -1,0 +1,78 @@
+#nullable enable
+using UnityEngine;
+
+namespace CrowdDefense.Visual
+{
+    // Port du pattern cellShadingOutlineColor() + inverted hull de ToonMaterial.js
+    // Duplique chaque MeshFilter du subtree en GO enfant "Outline" scale 1.02,
+    // material noir Cull Front (back-face only → silhouette noire autour du mesh).
+    public static class Outline
+    {
+        private static Material? _outlineMat;
+
+        public static void ResetCache() => _outlineMat = null;
+
+        /// <summary>
+        /// Ajoute l'effet outline inverted hull à tout le subtree du root.
+        /// Appeler après MaterialController.ApplyToon (outline pas tinté toon).
+        /// </summary>
+        public static void ApplyToHierarchy(Transform root, float scale = 1.02f, Color? color = null)
+        {
+            var outlineColor = color ?? Color.black;
+            var mat = GetOrCreateMaterial(outlineColor);
+            if (mat == null) return;
+
+            foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
+            {
+                if (mf.sharedMesh == null) continue;
+                // Skip existing outline GOs to avoid double-apply on pool reuse
+                if (mf.gameObject.name == "Outline") continue;
+
+                BuildOutlineGO(mf, mat, scale);
+            }
+        }
+
+        private static void BuildOutlineGO(MeshFilter sourceMf, Material mat, float scale)
+        {
+            var go = new GameObject("Outline");
+            go.transform.SetParent(sourceMf.transform, false);
+            // Scale slightly larger: inverted hull protrudes beyond the source mesh
+            go.transform.localScale = Vector3.one * scale;
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localRotation = Quaternion.identity;
+
+            // Share the mesh reference (no copy — read-only for outline)
+            var mf = go.AddComponent<MeshFilter>();
+            mf.sharedMesh = sourceMf.sharedMesh;
+
+            var mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = mat;
+            // Outline must not cast shadows (it is a silhouette pass only)
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+        }
+
+        private static Material? GetOrCreateMaterial(Color outlineColor)
+        {
+            if (_outlineMat != null)
+            {
+                _outlineMat.SetColor("_OutlineColor", outlineColor);
+                return _outlineMat;
+            }
+
+            var shader = Shader.Find("CrowdDefense/OutlineInvertedHull");
+            if (shader == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning("[Outline] Shader 'CrowdDefense/OutlineInvertedHull' introuvable");
+#endif
+                return null;
+            }
+
+            _outlineMat = new Material(shader);
+            _outlineMat.SetColor("_OutlineColor", outlineColor);
+            _outlineMat.SetFloat("_OutlineWidth", 0.02f);
+            return _outlineMat;
+        }
+    }
+}
