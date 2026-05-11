@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6305384fe0f484102b6321f8b6803721, type: 3}
+  m_Name: Imp
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.EnemyType
+  id: imp
+  displayName: Imp
+  hp: 4
+  speed: 1.5
+  damage: 8
+  reward: 5
+  scale: 0.55
+  bodyColor: {r: 1, g: 0.227, b: 0.063, a: 1}
+  walkAnim: Run
+  assetKey: goblin
+  isFlyer: 0
+  flyHeight: 0
+  ignorePath: 0
+  isStealth: 0
+  stealthCycleMs: 0
+  stealthOpacity: 0.25
+  shieldHP: 0
+  isBoss: 0
+  isMidBoss: 0
+  isApocalypseBoss: 0
+  isBrigand: 0
+  isCorsair: 0
+  isFiery: 1
+  immuneToFlyerBonus: 0
+  bossName:
+  bossAuraColor: {r: 0, g: 0, b: 0, a: 0}
+  chargeMs: 0
+  chargeCooldownMs: 0
+  chargeMul: 1
+  summonsMinions: 0
+  summonCooldownMs: 0
+  summonType: {fileID: 0}
+  aoeBlastMs: 0
+  aoeBlastRadius: 0
+  aoeBlastDamage: 0
+  shaderOverlay:

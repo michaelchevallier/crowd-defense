@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6305384fe0f484102b6321f8b6803721, type: 3}
+  m_Name: AiHub
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.EnemyType
+  id: ai_hub
+  displayName: AI Hub
+  hp: 1000
+  speed: 0.38
+  damage: 80
+  reward: 700
+  scale: 1.7
+  bodyColor: {r: 1, g: 0.251, b: 1, a: 1}
+  walkAnim: Walking_A
+  assetKey: boss_cyberpunk_hub_ia
+  isFlyer: 0
+  flyHeight: 0
+  ignorePath: 0
+  isStealth: 0
+  stealthCycleMs: 0
+  stealthOpacity: 0.25
+  shieldHP: 0
+  isBoss: 1
+  isMidBoss: 0
+  isApocalypseBoss: 1
+  isBrigand: 0
+  isCorsair: 0
+  isFiery: 0
+  immuneToFlyerBonus: 0
+  bossName: Hub IA
+  bossAuraColor: {r: 1, g: 0.251, b: 1, a: 1}
+  chargeMs: 0
+  chargeCooldownMs: 0
+  chargeMul: 1
+  summonsMinions: 1
+  summonCooldownMs: 3500
+  summonType: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+  aoeBlastMs: 0
+  aoeBlastRadius: 0
+  aoeBlastDamage: 0
+  shaderOverlay: hologram
