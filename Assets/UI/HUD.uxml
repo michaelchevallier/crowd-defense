@@ -4,6 +4,7 @@
     <Style src="HUD.uss" />
     <Style src="RadialMenu.uss" />
     <Style src="TutorialOverlay.uss" />
+    <Style src="Doctrine.uss" />
     <ui:VisualElement name="hud-root" class="hud-root">
         <!-- Top bar pills -->
         <ui:VisualElement class="top-bar">
@@ -22,6 +23,23 @@
                 <ui:Label text="120/120" name="hp-value" class="pill-value" />
                 <ui:VisualElement class="hp-bar-bg">
                     <ui:VisualElement name="hp-bar-fill" class="hp-bar-fill" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" />
+        </ui:VisualElement>
+
+        <!-- Doctrine panel (fullscreen modal, managed by DoctrineController) -->
+        <ui:VisualElement name="doctrine-root" class="doctrine-root hidden">
+            <ui:VisualElement name="doctrine-panel" class="doctrine-panel">
+                <ui:Label text="Doctrines" name="doctrine-title" class="doctrine-title" />
+                <ui:Label text="" name="doctrine-active-label" class="doctrine-active-label" />
+                <ui:ScrollView name="doctrine-scroll" class="doctrine-scroll">
+                    <ui:VisualElement name="doctrine-list" class="doctrine-list" />
+                </ui:ScrollView>
+                <ui:VisualElement class="doctrine-footer">
+                    <ui:Label text="" name="doctrine-gems-label" class="doctrine-gems-label" />
+                    <ui:Button text="Fermer" name="doctrine-close-btn" class="doctrine-btn doctrine-btn-close" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
