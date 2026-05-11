@@ -47,7 +47,7 @@ namespace CrowdDefense.Build
             PlayerSettings.WebGL.memorySize = 256;
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.WebGL.linkerTarget = WebGLLinkerTarget.Wasm;
-            PlayerSettings.WebGL.template = "PROJECT:Default";
+            PlayerSettings.WebGL.template = "APPLICATION:Default";
         }
     }
 }
