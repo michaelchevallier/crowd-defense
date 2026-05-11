@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using CrowdDefense.Common;
 using CrowdDefense.Systems;
 using UnityEngine;
@@ -22,9 +23,14 @@ namespace CrowdDefense.Entities
         private float flightElapsed;    // seconds since Init
         private float arcHeight;
 
+        // Pierce (Ballista / Crossbow)
+        private int piercesRemaining;
+        private readonly HashSet<Enemy> alreadyHit = new();
+
         // Called once by ProjectilePool after Instantiate to back-link the pool
         public void SetPool(ProjectilePool p) => pool = p;
 
+        /// <param name="pierce">Number of additional enemies the projectile pierces (0 = no pierce).</param>
         /// <param name="isParabolic">True = quadratic Bezier arc (Cannon).</param>
         /// <param name="flightDur">Total flight time in seconds (parabolic only).</param>
         /// <param name="arcH">Arc peak height offset above midpoint (parabolic only).</param>
@@ -33,6 +39,7 @@ namespace CrowdDefense.Entities
             float damage,
             float speed,
             Color color,
+            int pierce = 0,
             bool isParabolic = false,
             float flightDur = 0f,
             float arcH = 0f)
@@ -41,6 +48,9 @@ namespace CrowdDefense.Entities
             this.damage = damage;
             this.speed = speed;
             lifetimeSec = 5f;
+
+            piercesRemaining = pierce;
+            alreadyHit.Clear();
 
             parabolic = isParabolic;
             startPosition = transform.position;
@@ -100,8 +110,56 @@ namespace CrowdDefense.Entities
         private void ApplyHit()
         {
             if (target == null) { ReleaseToPool(); return; }
-            target.TakeDamage(damage);
+
+            if (!alreadyHit.Contains(target))
+                target.TakeDamage(damage);
+
+            if (piercesRemaining > 0)
+            {
+                piercesRemaining--;
+                alreadyHit.Add(target);
+                Enemy? next = FindNextPierceTarget();
+                if (next != null)
+                {
+                    target = next;
+                    // Reset parabolic flight segment toward next target
+                    if (parabolic)
+                    {
+                        startPosition = transform.position;
+                        float dist = (next.transform.position - startPosition).magnitude;
+                        flightDuration = dist / Mathf.Max(speed, 1f);
+                        flightElapsed = 0f;
+                        arcHeight = dist / 3f;
+                    }
+                    return; // continue flying toward next target
+                }
+            }
+
             ReleaseToPool();
+        }
+
+        private Enemy? FindNextPierceTarget()
+        {
+            if (WaveManager.Instance == null) return null;
+            float searchRangeSq = 20f * 20f; // generous range for pierce continuation
+            Enemy? best = null;
+            float bestDist = float.MaxValue;
+            var enemies = WaveManager.Instance.ActiveEnemies;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var e = enemies[i];
+                if (e == null || e.IsDead) continue;
+                if (alreadyHit.Contains(e)) continue;
+                float distSq = (e.transform.position - transform.position).sqrMagnitude;
+                if (distSq > searchRangeSq) continue;
+                float dist = Mathf.Sqrt(distSq);
+                if (dist < bestDist)
+                {
+                    bestDist = dist;
+                    best = e;
+                }
+            }
+            return best;
         }
 
         private static Vector3 QuadraticBezier(Vector3 a, Vector3 b, Vector3 c, float t)
