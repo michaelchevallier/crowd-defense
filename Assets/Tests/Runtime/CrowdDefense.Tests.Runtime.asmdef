@@ -4,8 +4,7 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "CrowdDefense",
-        "Unity.PerformanceTesting"
+        "CrowdDefense"
     ],
     "includePlatforms": [
         "Editor"
