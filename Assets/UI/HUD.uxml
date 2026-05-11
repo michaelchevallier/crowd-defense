@@ -134,6 +134,9 @@
         <ui:Button name="minimap-toggle-btn" class="minimap-toggle-btn" text="M" />
         <ui:VisualElement name="minimap-container" class="minimap-container hidden" />
 
+        <!-- BluePill button (bottom-left, above hero panel, visible when hero alive) -->
+        <ui:Button name="bluepill-btn" class="bluepill-btn hidden" text="BluePill [B]" />
+
         <!-- Hero panel (bottom-left) -->
         <ui:VisualElement name="hero-panel" class="hero-panel">
             <ui:VisualElement class="hero-panel-row">
