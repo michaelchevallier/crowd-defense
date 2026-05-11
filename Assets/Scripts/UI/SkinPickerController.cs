@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Data;
+using CrowdDefense.Entities;
 using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
@@ -185,7 +186,21 @@ namespace CrowdDefense.UI
         private void OnEquip(SkinDef skin)
         {
             if (SkinSystem.Instance == null) return;
-            SkinSystem.Instance.EquipSkin(skin.Id, skin.TargetType, skin.TargetId);
+            bool equipped = SkinSystem.Instance.EquipSkin(skin.Id, skin.TargetType, skin.TargetId);
+            if (!equipped) return;
+
+            // Live-apply to active scene entities
+            if (skin.TargetType == SkinTargetType.Hero)
+            {
+                var hero = LevelRunner.Instance?.Hero;
+                if (hero != null) SkinSystem.Instance.ApplyToHero(hero);
+            }
+            else if (skin.TargetType == SkinTargetType.Tower)
+            {
+                var towers = PlacementController.Instance?.PlacedTowers;
+                if (towers != null) SkinSystem.Instance.ApplyToTowers(towers);
+            }
+
             PopulateList(_activeTab);
         }
 

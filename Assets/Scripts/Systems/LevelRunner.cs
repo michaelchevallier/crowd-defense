@@ -481,6 +481,9 @@ namespace CrowdDefense.Systems
                 PrimaryCastle.GrantBonusHP(bonus);
             }
 
+            // Apply active hero skin at spawn (visual swap + stat bonuses)
+            SkinSystem.Instance?.ApplyToHero(Hero);
+
 #if UNITY_EDITOR
             Debug.Log($"[LevelRunner] spawned hero '{heroType.Id}' at {spawnPos}");
 #endif
