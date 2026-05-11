@@ -1,4 +1,5 @@
 #nullable enable
+using CrowdDefense.UI;
 using UnityEngine.SceneManagement;
 
 namespace CrowdDefense.Systems
@@ -14,26 +15,32 @@ namespace CrowdDefense.Systems
         {
             NextLevelId = levelId;
             NextDailySpec = null;
-            SceneManager.LoadScene("Main");
+            Fade("Main");
         }
 
         public static void LoadDailyLevel()
         {
             NextDailySpec = Daily.BuildDailyLevel();
             NextLevelId   = "daily";
-            SceneManager.LoadScene("Main");
+            Fade("Main");
         }
 
         public static void GoToWorldMap()
         {
             NextLevelId = null;
-            SceneManager.LoadScene("WorldMap");
+            Fade("WorldMap");
         }
 
         public static void GoToMenu()
         {
             NextLevelId = null;
-            SceneManager.LoadScene("Menu");
+            Fade("Menu");
+        }
+
+        static void Fade(string sceneName)
+        {
+            SceneTransition.EnsureExists();
+            SceneTransition.Instance?.LoadSceneFade(sceneName);
         }
     }
 }
