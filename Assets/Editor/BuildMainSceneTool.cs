@@ -146,10 +146,11 @@ namespace CrowdDefense.Editor
                 if (l.type == LightType.Directional) { existing++; return; }
             }
 
-            var go = new GameObject("Directional Light");
+            var go = new GameObject("Sun");
             var light = go.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.intensity = 1f;
+            light.intensity = 1.5f;
+            light.color = new Color(1f, 0.95f, 0.9f);
             go.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
             created++;
         }
