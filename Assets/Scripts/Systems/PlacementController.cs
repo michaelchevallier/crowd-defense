@@ -40,9 +40,15 @@ namespace CrowdDefense.Systems
             }
 
             int cost = selectedTowerType.Cost;
-            // TODO POC-06 : if (!Economy.Instance.TrySpend(cost)) { Debug.Log("[Place] not enough gold"); return; }
+            if (Economy.Instance == null || !Economy.Instance.TrySpend(cost))
+            {
 #if UNITY_EDITOR
-            Debug.Log($"[Place] cost={cost} gold (stub, free) at cell ({cell.x},{cell.y})");
+                Debug.Log($"[Place] reject : not enough gold ({Economy.Instance?.Gold ?? 0} < {cost})");
+#endif
+                return;
+            }
+#if UNITY_EDITOR
+            Debug.Log($"[Place] cost={cost} gold, remaining={Economy.Instance.Gold}");
 #endif
 
             Vector3 cellWorld = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);

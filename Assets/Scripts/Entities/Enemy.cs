@@ -81,7 +81,7 @@ namespace CrowdDefense.Entities
 #if UNITY_EDITOR
                 Debug.Log($"[Enemy] killed type={cfg?.Id} reward={reward}");
 #endif
-                // TODO POC-06 : Economy.Instance.AddGold(reward);
+                Economy.Instance?.AddGold(reward);
                 WaveManager.Instance?.NotifyEnemyDied(this);
                 Destroy(gameObject);
             }
@@ -93,7 +93,7 @@ namespace CrowdDefense.Entities
 #if UNITY_EDITOR
             Debug.Log($"[Enemy] reached castle type={cfg?.Id} dmg={dmg}");
 #endif
-            // TODO POC-06 : Castle.Instance.TakeDamage(dmg);
+            Castle.Instance?.TakeDamage(dmg);
             WaveManager.Instance?.NotifyEnemyDied(this);
             Destroy(gameObject);
         }
