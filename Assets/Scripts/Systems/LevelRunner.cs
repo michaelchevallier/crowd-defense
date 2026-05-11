@@ -111,6 +111,11 @@ namespace CrowdDefense.Systems
             Time.timeScale = State == GameState.Play ? targetSpeed : 0f;
         }
 
-        private void OnVictory() => SetState(GameState.Victory);
+        private void OnVictory()
+        {
+            if (currentLevel != null)
+                SaveSystem.MarkLevelCleared(currentLevel.Id);
+            SetState(GameState.Victory);
+        }
     }
 }
