@@ -43,6 +43,8 @@ namespace CrowdDefense.Systems
 
         private static void OnPoolDestroy(Projectile p) => Destroy(p.gameObject);
 
+        public int ActiveCount => pool?.CountActive ?? 0;
+
         public Projectile Get() => pool!.Get();
 
         public void Release(Projectile p) => pool!.Release(p);
