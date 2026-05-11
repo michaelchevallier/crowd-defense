@@ -16,6 +16,13 @@ namespace CrowdDefense.Editor
         [MenuItem("Tools/CrowdDefense/Setup Main Scene")]
         public static void Run()
         {
+            int regs = EnsureRegistries();
+
+            // BuildMainSceneTool opens its own scene and saves — must run FIRST,
+            // before our additions, because it re-opens the scene (would discard in-memory mods).
+            BuildMainSceneTool.BuildMainScene();
+
+            // NOW re-open the freshly-saved scene to add our extras
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
             // Purge any orphaned [Auto] GOs left over from previous play mode auto-create fallbacks
@@ -25,16 +32,16 @@ namespace CrowdDefense.Editor
                     Object.DestroyImmediate(rootGO);
             }
 
-            int regs = EnsureRegistries();
-            BuildMainSceneTool.BuildMainScene();
             int sys  = EnsureNewSingletons();
             int ui   = EnsureHudControllers();
             WireInspectorRefs();
 
             EditorSceneManager.MarkSceneDirty(scene);
-            EditorSceneManager.SaveScene(scene);
+            bool saved = EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
 
-            Debug.Log($"[SetupMainScene] OK — {sys} singletons, {ui} UI controllers, {regs} registries created/updated");
+            Debug.Log($"[SetupMainScene] OK — {sys} singletons, {ui} UI controllers, {regs} registries created/updated. SaveScene={saved}");
         }
 
         // ── 1. Registries SO ────────────────────────────────────────────────
