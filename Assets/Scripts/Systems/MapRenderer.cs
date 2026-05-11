@@ -80,12 +80,22 @@ namespace CrowdDefense.Systems
             if (ch == GridCoords.WATER)
             {
                 var waterMat = config?.GetWaterMat(theme);
-                if (waterMat != null) return waterMat;
+                if (waterMat != null)
+                {
+                    var cloned = new Material(waterMat);
+                    cloned.enableInstancing = true;
+                    return cloned;
+                }
             }
             else if (ch == GridCoords.LAVA)
             {
                 var lavaMat = config?.GetLavaMat(theme);
-                if (lavaMat != null) return lavaMat;
+                if (lavaMat != null)
+                {
+                    var cloned = new Material(lavaMat);
+                    cloned.enableInstancing = true;
+                    return cloned;
+                }
             }
 
             // Snow theme — static cells get snow material
@@ -94,7 +104,12 @@ namespace CrowdDefense.Systems
                 if (ch == GridCoords.GRASS || ch == GridCoords.GRASS_BLOCK)
                 {
                     var snowMat = Resources.Load<Material>("Materials/Toon_Snow");
-                    if (snowMat != null) return snowMat;
+                    if (snowMat != null)
+                    {
+                        var cloned = new Material(snowMat);
+                        cloned.enableInstancing = true;
+                        return cloned;
+                    }
                 }
             }
 
