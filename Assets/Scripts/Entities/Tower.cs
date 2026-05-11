@@ -61,6 +61,20 @@ namespace CrowdDefense.Entities
         // Visual indicator : au moins une synergie active
         public bool _synergyActive = false;
 
+        // Hero aura buff — applied by Synergies.cs or directly by Hero tick
+        private float _heroBuffDmgMul = 1f;
+
+        // Range ring + synergy halo GameObjects
+        private GameObject? _rangeRing;
+        private Renderer? _synergyHaloRenderer;
+
+        // Tier pip GameObjects (L2 = 2 pips, L3 = 3 pips)
+        private readonly List<GameObject> _tierPips = new();
+
+        // Idle animation phase (random offset per tower)
+        private float _idlePhase;
+        private float _lastFireAt;
+
         // Cluster (Mine) : timer spawn
         private float _clusterTimer;
 
@@ -111,6 +125,9 @@ namespace CrowdDefense.Entities
             projectilePrefab = projPrefab;
             _clusterTimer = 0f;
             _slowTickTimer = 0f;
+            _heroBuffDmgMul = 1f;
+            _idlePhase = Random.value * Mathf.PI * 2f;
+            _lastFireAt = 0f;
             UpgradeLevel = 1;
             UpgradeBranch = TowerBranch.None;
             CumulativeCost = type.Cost;
@@ -160,6 +177,9 @@ namespace CrowdDefense.Entities
 
             // Animations Mechanim : Idle uniquement pour les tours (pas de Walk, rotation vers cible = code).
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", null);
+
+            BuildRangeRing(type.Range);
+            BuildSynergyHalo();
         }
 
         /// <summary>
@@ -243,6 +263,8 @@ namespace CrowdDefense.Entities
 
             if (level == 3)
                 ApplyL3Branch(branch);
+
+            PostUpgradeVisuals(level);
 
             // Stage B integration hooks (audio + juice + vfx)
             AudioController.Instance?.Play("tower_upgrade", 0.8f);
@@ -389,6 +411,8 @@ namespace CrowdDefense.Entities
         private void Update()
         {
             if (cfg == null) return;
+
+            TickIdleAnim();
 
             // _buffMul et tous les champs synergy sont reset + recomputed par Synergies.LateUpdate.
             switch (cfg.Behavior)
@@ -544,10 +568,12 @@ namespace CrowdDefense.Entities
             JuiceFX.Instance?.Shake(0.05f, 100);
             VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 0.5f, cfg.ProjectileColor);
             if (_animator != null) _animator.SetTrigger("attackTrigger");
+            _lastFireAt = Time.time;
 
             // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
             // L3DmgMul applique la divergence de branche (D1-03)
-            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _levelDmgScale * L3DmgMul;
+            // _heroBuffDmgMul: aura du Hero (ApplyHeroBuff / ClearHeroBuff)
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
 
             if (t.IsFlyer && !t.ImmuneToFlyerBonus)
             {
@@ -591,6 +617,214 @@ namespace CrowdDefense.Entities
             // L3 slow on hit (mage Arcane / cannon Mega shell)
             if (L3SlowOnHit && SlowEffectManager.Instance != null)
                 SlowEffectManager.Instance.ApplySlow(t, L3SlowMul, L3SlowDurMs);
+        }
+
+        // ── Hero Buff Aura ────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Applied by Synergies.cs each tick when Hero is within aura range.
+        /// dmgMul multiplies final projectile damage independently of tower synergies.
+        /// </summary>
+        public void ApplyHeroBuff(float dmgMul)
+        {
+            _heroBuffDmgMul = Mathf.Max(1f, dmgMul);
+        }
+
+        /// <summary>
+        /// Resets hero aura buff — called by Synergies.cs when hero moves out of range.
+        /// </summary>
+        public void ClearHeroBuff()
+        {
+            _heroBuffDmgMul = 1f;
+        }
+
+        // ── Range Ring ────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Shows or hides the range ring circle (useful during placement).
+        /// </summary>
+        public void ShowRangeRing(bool visible)
+        {
+            if (_rangeRing != null)
+                _rangeRing.SetActive(visible);
+        }
+
+        private void BuildRangeRing(float range)
+        {
+            if (_rangeRing != null)
+                Destroy(_rangeRing);
+
+            var go = new GameObject("RangeRing");
+            go.transform.SetParent(transform);
+            go.transform.localPosition = new Vector3(0f, 0.03f, 0f);
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale    = Vector3.one;
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;
+            lr.loop = true;
+            lr.widthMultiplier = 0.08f;
+            lr.positionCount = 64;
+
+            var mat = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color"));
+            mat.color = new Color(0.4f, 0.87f, 1f, 0.38f);
+            lr.material = mat;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
+            for (int i = 0; i < 64; i++)
+            {
+                float a = i / 64f * Mathf.PI * 2f;
+                lr.SetPosition(i, new Vector3(Mathf.Cos(a) * range, 0f, Mathf.Sin(a) * range));
+            }
+
+            go.SetActive(false);
+            _rangeRing = go;
+        }
+
+        // ── Synergy Halo ──────────────────────────────────────────────────────
+
+        private void BuildSynergyHalo()
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            go.name = "SynergyHalo";
+            go.transform.SetParent(transform);
+            go.transform.localPosition = new Vector3(0f, 0.06f, 0f);
+            go.transform.localScale    = new Vector3(1.95f * 2f, 0.01f, 1.95f * 2f);
+            Object.Destroy(go.GetComponent<Collider>());
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+            mat.color = new Color(1f, 0.82f, 0.15f, 0f);
+            SetHaloTransparent(mat);
+            _synergyHaloRenderer = go.GetComponent<Renderer>();
+            if (_synergyHaloRenderer != null) _synergyHaloRenderer.material = mat;
+        }
+
+        private static void SetHaloTransparent(Material mat)
+        {
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 0f);
+            mat.SetFloat("_ZWrite", 0f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = 3000;
+        }
+
+        // ── Tier Pips ─────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Draws N small pip spheres around the tower base indicating upgrade level.
+        /// Called by UpgradeTo after each level change.
+        /// </summary>
+        public void DrawTierPips(int level)
+        {
+            for (int i = 0; i < _tierPips.Count; i++)
+            {
+                if (_tierPips[i] != null) Destroy(_tierPips[i]);
+            }
+            _tierPips.Clear();
+
+            if (level <= 1) return;
+
+            int count = level;
+            float radius = 0.72f;
+            float angleStep = 360f / count;
+
+            for (int i = 0; i < count; i++)
+            {
+                float angle = i * angleStep * Mathf.Deg2Rad;
+                var pos = new Vector3(Mathf.Cos(angle) * radius, 0.06f, Mathf.Sin(angle) * radius);
+
+                var pip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                pip.name = "TierPip_" + i;
+                pip.transform.SetParent(transform);
+                pip.transform.localPosition = pos;
+                pip.transform.localScale    = Vector3.one * 0.12f;
+                Object.Destroy(pip.GetComponent<Collider>());
+
+                var rend = pip.GetComponent<Renderer>();
+                if (rend != null)
+                {
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                    mat.color = level >= 3
+                        ? new Color(1f, 0.82f, 0.15f)    // gold L3
+                        : new Color(0.8f, 0.8f, 0.9f);   // silver L2
+                    rend.material = mat;
+                }
+
+                _tierPips.Add(pip);
+            }
+        }
+
+        // ── Idle Animation ────────────────────────────────────────────────────
+
+        private void TickIdleAnim()
+        {
+            TickSynergyHalo();
+
+            if (_meshChild == null) return;
+
+            bool recentFire = (Time.time - _lastFireAt) < 0.2f;
+            if (recentFire) return;
+
+            float t = Time.time;
+            float phase = _idlePhase;
+            _meshChild.transform.localPosition = new Vector3(
+                0f,
+                Mathf.Sin(t * 1.5f + phase) * 0.04f,
+                0f);
+            _meshChild.transform.localRotation = Quaternion.Euler(
+                0f,
+                0f,
+                Mathf.Sin(t * 0.8f + phase) * 1.7f);
+        }
+
+        private void TickSynergyHalo()
+        {
+            if (_synergyHaloRenderer == null) return;
+            float targetAlpha = _synergyActive
+                ? 0.30f + 0.20f * Mathf.Sin(Time.time * 5f)
+                : 0f;
+            var c = _synergyHaloRenderer.material.color;
+            c.a = Mathf.Lerp(c.a, targetAlpha, 0.15f);
+            _synergyHaloRenderer.material.color = c;
+        }
+
+        // ── Fire Angled ───────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Fires an extra projectile at angleDeg offset from main target direction.
+        /// Used by cannon L3-Utility barrage (multi-shot extra round).
+        /// </summary>
+        public void FireAngled(Enemy t, float angleDeg)
+        {
+            if (cfg == null) return;
+            if (ProjectilePool.Instance == null) return;
+
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+
+            Vector3 baseDir = (t.transform.position - transform.position).normalized;
+            Vector3 angledDir = Quaternion.Euler(0f, angleDeg, 0f) * baseDir;
+
+            float dist = (t.transform.position - transform.position).magnitude;
+            float flightDur = cfg.Parabolic ? dist / Mathf.Max(cfg.ProjectileSpeed, 1f) : 0f;
+            float arcH = cfg.Parabolic ? dist / 3f : 0f;
+
+            int effectivePierce = L3Pierce > 0 ? L3Pierce : cfg.Pierce + _pierceBonus;
+            float effectiveAoe = L3Aoe > 0f ? L3Aoe : cfg.Aoe;
+
+            var proj = ProjectilePool.Instance.Get();
+            proj.transform.position = transform.position + Vector3.up * 1.0f;
+            proj.transform.rotation = Quaternion.LookRotation(angledDir);
+            proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
+                effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH);
+        }
+
+        // ── UpgradeTo — hook pips after level change ──────────────────────────
+        // (called after ApplyL3Branch inside UpgradeTo)
+        private void PostUpgradeVisuals(int level)
+        {
+            DrawTierPips(level);
+            if (cfg != null) BuildRangeRing(cfg.Range);
         }
 
 #if UNITY_EDITOR

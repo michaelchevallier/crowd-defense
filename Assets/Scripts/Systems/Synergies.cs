@@ -151,6 +151,9 @@ namespace CrowdDefense.Systems
             // ── 3. Apply pull-to-tank after all cross-effects resolved ────────
             if (enemies != null)
                 ApplyPullActive(towers, enemies);
+
+            // ── 4. Apply Hero aura buff to nearby towers ──────────────────────
+            ApplyHeroAuraBuff(towers);
         }
 
         // ── Aura ──────────────────────────────────────────────────────────────
@@ -304,6 +307,32 @@ namespace CrowdDefense.Systems
                 t._buffMul = Mathf.Max(t._buffMul, cfg.BuffMul);
                 t._synergyActive  = true;
                 source._synergyActive = true;
+            }
+        }
+
+        // ── Hero aura buff on nearby towers ───────────────────────────────────
+        private static void ApplyHeroAuraBuff(IReadOnlyList<Tower> towers)
+        {
+            var hero = LevelRunner.Instance?.Hero;
+            if (hero == null)
+            {
+                for (int i = 0; i < towers.Count; i++)
+                    towers[i]?.ClearHeroBuff();
+                return;
+            }
+
+            var (dmgMul, _, auraRange) = hero.GetTowerAuraBuffs();
+            float r2 = auraRange * auraRange;
+            Vector3 heroPos = hero.transform.position;
+
+            for (int i = 0; i < towers.Count; i++)
+            {
+                var t = towers[i];
+                if (t == null) continue;
+                if ((t.transform.position - heroPos).sqrMagnitude <= r2)
+                    t.ApplyHeroBuff(dmgMul);
+                else
+                    t.ClearHeroBuff();
             }
         }
 
