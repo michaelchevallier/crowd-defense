@@ -1,0 +1,87 @@
+name: Deploy WebGL to gh-pages /v6/
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - '.github/workflows/deploy-webgl.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-webgl
+  cancel-in-progress: true
+
+jobs:
+  build-webgl:
+    name: Build WebGL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-WebGL-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-WebGL-
+            Library-
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+      - name: Build WebGL
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: WebGL
+          unityVersion: auto
+          buildMethod: CrowdDefense.Build.BuildScript.BuildWebGL
+          buildName: WebGL
+          buildsPath: Build
+
+      - name: Upload WebGL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webgl-build
+          path: Build/WebGL/
+          retention-days: 7
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy to gh-pages /v6/
+    needs: build-webgl
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download WebGL artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: webgl-build
+          path: webgl-build
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./webgl-build
+          destination_dir: v6
+          keep_files: false
+          commit_message: 'deploy(v6): WebGL build from ${{ github.sha }}'
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
