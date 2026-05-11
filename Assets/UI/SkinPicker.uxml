@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="SkinPicker.uss" />
+    <ui:VisualElement name="skin-picker-panel" class="skin-picker-panel hidden">
+        <ui:VisualElement class="skin-picker-backdrop" />
+        <ui:VisualElement class="skin-picker-window">
+
+            <ui:VisualElement class="skin-picker-header">
+                <ui:Label name="skin-title" class="skin-picker-title" text="Skins" />
+                <ui:Button name="skin-close-btn" class="skin-close-btn" text="X" />
+            </ui:VisualElement>
+
+            <ui:VisualElement name="skin-tab-bar" class="skin-tab-bar" />
+
+            <ui:ScrollView name="skin-list" class="skin-list" />
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
