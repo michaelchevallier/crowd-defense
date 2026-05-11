@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="PauseMenu.uss" />
+    <ui:VisualElement name="pause-root" class="pause-root hidden">
+        <ui:VisualElement class="pause-panel">
+            <ui:Label text="PAUSE" name="pause-title" class="pause-title" />
+            <ui:Button text="Reprendre" name="btn-resume" class="pause-btn" />
+            <ui:Button text="Recommencer" name="btn-restart" class="pause-btn pause-btn-secondary" />
+            <ui:Button text="Menu principal" name="btn-menu" class="pause-btn pause-btn-secondary" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

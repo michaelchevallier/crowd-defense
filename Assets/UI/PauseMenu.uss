@@ -1,0 +1,54 @@
+.pause-root {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.72);
+    align-items: center;
+    justify-content: center;
+}
+
+.pause-panel {
+    align-items: center;
+    min-width: 320px;
+}
+
+.pause-title {
+    color: rgb(255, 210, 0);
+    font-size: 80px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    margin-bottom: 40px;
+    letter-spacing: 8px;
+}
+
+.pause-btn {
+    width: 280px;
+    padding: 16px 0;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 8px;
+    font-size: 22px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    border-width: 0;
+    margin-bottom: 12px;
+}
+
+.pause-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.pause-btn-secondary {
+    background-color: rgba(80, 80, 80, 0.5);
+    color: rgba(200, 200, 200, 0.85);
+    font-size: 18px;
+}
+
+.pause-btn-secondary:hover {
+    background-color: rgba(100, 100, 100, 0.7);
+}
+
+.hidden {
+    display: none;
+}
