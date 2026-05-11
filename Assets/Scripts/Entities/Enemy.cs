@@ -477,6 +477,7 @@ namespace CrowdDefense.Entities
 #endif
                     // Publish first so ComboSystem updates ActiveMultiplier, then Economy applies it
                     EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
+                    CoinPullManager.Instance?.SpawnCoinFlyTo(transform.position, reward);
                     Economy.Instance?.AddGoldFromKill(reward);
                 }
 #if UNITY_EDITOR
