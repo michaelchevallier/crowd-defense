@@ -39,7 +39,8 @@ namespace CrowdDefense.Systems
         protected override void OnAwakeSingleton()
         {
             cam = Camera.main;
-            _ = TowerHoverController.Instance; // ensure hover controller exists
+            _ = TowerHoverController.Instance;    // ensure hover controller exists
+            _ = GhostPreviewController.Instance;  // ensure ghost preview exists
         }
 
         private void Update()

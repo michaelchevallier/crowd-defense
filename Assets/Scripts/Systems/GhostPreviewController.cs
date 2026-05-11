@@ -9,7 +9,7 @@ namespace CrowdDefense.Systems
     /// Vert = cellule buildable, rouge = cellule non-buildable ou hors-grille.
     /// S'abonne à PlacementController.OnHoverPlacementCell et surveille SelectedTowerType.
     /// </summary>
-    public class GhostPreviewController : MonoBehaviour
+    public class GhostPreviewController : MonoSingleton<GhostPreviewController>
     {
         private static readonly Color ColorValid   = new Color(0.20f, 0.85f, 0.20f, 0.45f);
         private static readonly Color ColorInvalid = new Color(0.85f, 0.20f, 0.20f, 0.45f);
@@ -23,19 +23,15 @@ namespace CrowdDefense.Systems
         private Vector3 lastMouseWorld;
         private readonly Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
 
-        private void Awake()
+        protected override void OnAwakeSingleton()
         {
             cam = Camera.main;
             BuildGhost();
-        }
-
-        private void Start()
-        {
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnHoverPlacementCell += OnHoverCell;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroySingleton()
         {
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnHoverPlacementCell -= OnHoverCell;
