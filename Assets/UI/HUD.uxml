@@ -27,6 +27,13 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
+            <!-- Speed control (×1, ×2, ×3) -->
+            <ui:VisualElement class="speed-control">
+                <ui:Button text="×1" name="speed-1" class="speed-btn speed-active" />
+                <ui:Button text="×2" name="speed-2" class="speed-btn" />
+                <ui:Button text="×3" name="speed-3" class="speed-btn" />
+            </ui:VisualElement>
+
             <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" />
         </ui:VisualElement>
 
@@ -125,6 +132,22 @@
 
         <!-- Minimap (top-right, 10 Hz update via MinimapController) -->
         <ui:VisualElement name="minimap-container" class="minimap-container hidden" />
+
+        <!-- Hero panel (bottom-left) -->
+        <ui:VisualElement name="hero-panel" class="hero-panel">
+            <ui:VisualElement class="hero-panel-row">
+                <ui:Label text="Hero" class="hero-pill-label" />
+                <ui:Label text="Lv. 1" name="hero-level" class="hero-level" />
+            </ui:VisualElement>
+            <ui:VisualElement class="hero-bar-bg">
+                <ui:VisualElement name="hero-xp-bar-fill" class="hero-bar-fill hero-xp-fill" />
+            </ui:VisualElement>
+            <ui:Label text="" name="hero-xp-value" class="hero-xp-value" />
+            <ui:VisualElement class="hero-panel-row">
+                <ui:Label text="Ult" class="hero-pill-label" />
+            </ui:VisualElement>
+            <ui:Label text="" name="hero-ult-label" class="hero-ult-label hero-ult-cooldown" />
+        </ui:VisualElement>
 
         <!-- Synergy badges (bottom-center, above toolbar) -->
         <ui:VisualElement name="synergy-badges" class="synergy-badges" />

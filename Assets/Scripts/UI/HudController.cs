@@ -84,6 +84,12 @@ namespace CrowdDefense.UI
             waveLaunchStreakText = root.Q<Label>("wave-launch-streak-text");
             waveLaunchPillText = root.Q<Label>("wave-launch-pill-text");
 
+            heroPanel = root.Q<VisualElement>("hero-panel");
+            heroLevelLabel = root.Q<Label>("hero-level");
+            heroXpBarFill = root.Q<VisualElement>("hero-xp-bar-fill");
+            heroXpValue = root.Q<Label>("hero-xp-value");
+            heroUltLabel = root.Q<Label>("hero-ult-label");
+
             btnRestartGo?.RegisterCallback<ClickEvent>(_ => Restart());
             btnRestartVictory?.RegisterCallback<ClickEvent>(_ => Restart());
             btnMenuGo?.RegisterCallback<ClickEvent>(_ => GoToMenu());

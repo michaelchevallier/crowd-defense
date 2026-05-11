@@ -43,8 +43,22 @@ namespace CrowdDefense.UI
         private void Start()
         {
             var doc = GetComponent<UIDocument>();
+            if (doc == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("[Minimap] No UIDocument component found.");
+#endif
+                return;
+            }
+
             _root = doc.rootVisualElement.Q<VisualElement>("minimap-container");
-            if (_root == null) return;
+            if (_root == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("[Minimap] minimap-container element not found.");
+#endif
+                return;
+            }
 
             // Container holding both layers at the same position
             _container = new VisualElement();

@@ -14,14 +14,31 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var doc = GetComponent<UIDocument>();
+            if (doc == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("[SpeedControl] No UIDocument component found.");
+#endif
+                return;
+            }
+
+            var root = doc.rootVisualElement;
             btn1 = root.Q<Button>("speed-1");
             btn2 = root.Q<Button>("speed-2");
             btn3 = root.Q<Button>("speed-3");
 
-            btn1?.RegisterCallback<ClickEvent>(_ => SetSpeed(1));
-            btn2?.RegisterCallback<ClickEvent>(_ => SetSpeed(2));
-            btn3?.RegisterCallback<ClickEvent>(_ => SetSpeed(3));
+            if (btn1 == null || btn2 == null || btn3 == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SpeedControl] Buttons not found: btn1={btn1}, btn2={btn2}, btn3={btn3}");
+#endif
+                return;
+            }
+
+            btn1.RegisterCallback<ClickEvent>(_ => SetSpeed(1));
+            btn2.RegisterCallback<ClickEvent>(_ => SetSpeed(2));
+            btn3.RegisterCallback<ClickEvent>(_ => SetSpeed(3));
 
             int saved = SettingsRegistry.Instance?.GameSpeed ?? 1;
             ApplySpeed(saved, persist: false);

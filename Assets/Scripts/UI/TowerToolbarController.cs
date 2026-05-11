@@ -36,13 +36,22 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var doc = GetComponent<UIDocument>();
+            if (doc == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("[TowerToolbar] No UIDocument component found.");
+#endif
+                return;
+            }
+
+            var root = doc.rootVisualElement;
             toolbarRoot = root.Q<VisualElement>("tower-toolbar");
 
             if (towerRegistry == null || toolbarRoot == null)
             {
 #if UNITY_EDITOR
-                Debug.LogWarning("[TowerToolbar] TowerRegistry or tower-toolbar element not found.");
+                Debug.LogWarning($"[TowerToolbar] TowerRegistry={towerRegistry}, toolbar-root={toolbarRoot}");
 #endif
                 return;
             }

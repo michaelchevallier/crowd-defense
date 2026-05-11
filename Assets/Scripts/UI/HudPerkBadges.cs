@@ -9,7 +9,10 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     // HUD row showing active perk badges + set bonus progress (X/3 per tag).
-    // Place under HudController Canvas. Requires badgeContainer + badgePrefab.
+    // TODO: Convert to UIToolkit (currently disabled — uses legacy uGUI Canvas/RectTransform/Text)
+    // This component is incompatible with the UIToolkit-only HUD.
+    // Kept as reference for future UIToolkit port.
+    [System.Obsolete("HudPerkBadges uses legacy uGUI — convert to UIToolkit to enable")]
     public class HudPerkBadges : MonoBehaviour
     {
         [SerializeField] private RectTransform? badgeContainer;
@@ -21,14 +24,11 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _hero   = LevelRunner.Instance?.Hero;
-            _system = PerkSystem.Instance;
-
-            if (_system != null)
-            {
-                _system.OnPerkApplied        += OnPerkApplied;
-                _system.OnSetBonusActivated  += OnSetBonusActivated;
-            }
+            // Disabled — requires uGUI Canvas which isn't present in UIToolkit HUD
+#if UNITY_EDITOR
+            Debug.LogWarning("[HudPerkBadges] Component disabled — uses legacy uGUI incompatible with UIToolkit HUD. Implement UIToolkit version.");
+#endif
+            enabled = false;
         }
 
         private void OnDestroy()
