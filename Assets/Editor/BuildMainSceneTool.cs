@@ -115,12 +115,20 @@ namespace CrowdDefense.Editor
         private static void EnsureCamera(ref int created, ref int existing)
         {
             var cam = Object.FindFirstObjectByType<Camera>();
-            if (cam != null) { existing++; return; }
+            if (cam != null)
+            {
+                // Ensure CameraController is present even on pre-existing camera
+                if (cam.GetComponent<CrowdDefense.Visual.CameraController>() == null)
+                    cam.gameObject.AddComponent<CrowdDefense.Visual.CameraController>();
+                existing++;
+                return;
+            }
 
             var go = new GameObject("Main Camera");
             go.tag = "MainCamera";
             var camera = go.AddComponent<Camera>();
             go.AddComponent<AudioListener>();
+            go.AddComponent<CrowdDefense.Visual.CameraController>();
 
             go.transform.position = new Vector3(0, 18, -12);
             go.transform.eulerAngles = new Vector3(55, 0, 0);

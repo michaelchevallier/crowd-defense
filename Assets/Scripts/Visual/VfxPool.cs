@@ -37,6 +37,7 @@ namespace CrowdDefense.Visual
 
         protected override void OnAwakeSingleton()
         {
+            if (transform.parent != null) transform.SetParent(null);
             _root = transform;
             _additiveMat = BuildAdditiveMaterial();
 

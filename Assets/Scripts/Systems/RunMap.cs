@@ -84,6 +84,7 @@ namespace CrowdDefense.Systems
 
         protected override void OnAwakeSingleton()
         {
+            if (transform.parent != null) transform.SetParent(null);
             UnityEngine.Object.DontDestroyOnLoad(gameObject);
             _state = SaveSystem.GetRunMapState();
         }
