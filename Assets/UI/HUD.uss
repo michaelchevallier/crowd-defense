@@ -24,12 +24,14 @@
     color: rgba(220, 220, 220, 0.7);
     font-size: 12px;
     -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
 }
 
 .pill-value {
     color: white;
     font-size: 24px;
     -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
 }
 
 .pill-gold .pill-value {
@@ -76,12 +78,14 @@
     color: white;
     font-size: 72px;
     -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
     margin-bottom: 8px;
 }
 
 .overlay-subtitle {
     color: rgba(220, 220, 220, 0.9);
     font-size: 24px;
+    -unity-font: resource("LegacyRuntime");
     margin-bottom: 32px;
 }
 
@@ -91,6 +95,7 @@
     color: white;
     border-radius: 8px;
     font-size: 24px;
+    -unity-font: resource("LegacyRuntime");
     border-width: 0;
 }
 
