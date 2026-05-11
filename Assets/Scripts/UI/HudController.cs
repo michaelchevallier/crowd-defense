@@ -135,38 +135,11 @@ namespace CrowdDefense.UI
             OnBreakStateChanged();
         }
 
-        private bool _lateInitDone;
-        private bool? _lastWaitingState;
-
         private void Update()
         {
             // N hotkey — debounced, shared with click (Q7)
             if (Input.GetKeyDown(KeyCode.N))
                 TryLaunchWave();
-
-            // Safety net 1 : late-init subscription if WaveManager.Instance was null at Start
-            if (!_lateInitDone && WaveManager.Instance != null)
-            {
-                _lateInitDone = true;
-                WaveManager.Instance.OnWaveStart -= OnWaveStart;
-                WaveManager.Instance.OnWaveStart += OnWaveStart;
-                WaveManager.Instance.OnBreakStateChanged -= OnBreakStateChanged;
-                WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
-                OnBreakStateChanged();
-                OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
-            }
-
-            // Safety net 2 : poll IsWaitingForPlayerStart chaque frame — si event subscription
-            // a raté un fire (race condition WaveManager.Start), on synchronise quand même.
-            if (WaveManager.Instance != null)
-            {
-                bool waiting = WaveManager.Instance.IsWaitingForPlayerStart;
-                if (_lastWaitingState != waiting)
-                {
-                    _lastWaitingState = waiting;
-                    OnBreakStateChanged();
-                }
-            }
         }
 
         // Shared debounced launch entry point for click + N key
