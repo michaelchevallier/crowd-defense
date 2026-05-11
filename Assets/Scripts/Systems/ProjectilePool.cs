@@ -27,8 +27,25 @@ namespace CrowdDefense.Systems
 
         private Projectile CreateProjectile()
         {
-            var go = Instantiate(projectilePrefab!);
+            GameObject go;
+            if (projectilePrefab != null)
+            {
+                go = Instantiate(projectilePrefab);
+            }
+            else
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning("[ProjectilePool] projectilePrefab is null — creating primitive sphere fallback");
+#endif
+                go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.transform.localScale = Vector3.one * 0.18f;
+                Object.Destroy(go.GetComponent<SphereCollider>());
+                go.AddComponent<Projectile>();
+            }
+
             var p = go.GetComponent<Projectile>();
+            if (p == null)
+                p = go.AddComponent<Projectile>();
             p.SetPool(this);
             return p;
         }

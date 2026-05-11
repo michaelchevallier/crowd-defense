@@ -594,6 +594,13 @@ namespace CrowdDefense.Entities
             float arcH = cfg.Parabolic ? dist / 3f : 0f;
 
             var proj = ProjectilePool.Instance.Get();
+            if (proj == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogError("[Tower] ProjectilePool.Get() returned null — skipping fire");
+#endif
+                return;
+            }
             proj.transform.position = transform.position + Vector3.up * 1.0f;
             proj.transform.rotation = Quaternion.identity;
             proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
@@ -609,6 +616,7 @@ namespace CrowdDefense.Entities
                     Vector3 dir = (t.transform.position - transform.position).normalized;
                     Vector3 spread = Quaternion.Euler(0f, spreadAngle, 0f) * dir;
                     var proj2 = ProjectilePool.Instance.Get();
+                    if (proj2 == null) continue;
                     proj2.transform.position = transform.position + Vector3.up * 1.0f;
                     proj2.transform.rotation = Quaternion.LookRotation(spread);
                     proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
@@ -819,6 +827,13 @@ namespace CrowdDefense.Entities
             float effectiveAoe = L3Aoe > 0f ? L3Aoe : cfg.Aoe;
 
             var proj = ProjectilePool.Instance.Get();
+            if (proj == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogError("[Tower] ProjectilePool.Get() returned null in FireAngled");
+#endif
+                return;
+            }
             proj.transform.position = transform.position + Vector3.up * 1.0f;
             proj.transform.rotation = Quaternion.LookRotation(angledDir);
             proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
