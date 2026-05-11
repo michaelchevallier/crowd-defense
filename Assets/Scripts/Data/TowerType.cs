@@ -111,6 +111,7 @@ namespace CrowdDefense.Data
         [SerializeField] private List<SynergyDef> synergies = new();
 
         [Header("Visual")]
+        [SerializeField] private string assetKey = "";
         [SerializeField] private Color bodyColor = Color.blue;
         [SerializeField] private Color projectileColor = Color.yellow;
         [SerializeField] private float sizeMultiplier = 1f;
@@ -141,6 +142,7 @@ namespace CrowdDefense.Data
         public bool HasArmorBreak => hasArmorBreak;
         public ArmorBreakDef ArmorBreak => armorBreak;
         public IReadOnlyList<SynergyDef> Synergies => synergies;
+        public string AssetKey => assetKey;
         public Color BodyColor => bodyColor;
         public Color ProjectileColor => projectileColor;
         public float SizeMultiplier => sizeMultiplier;
