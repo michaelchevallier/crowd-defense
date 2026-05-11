@@ -46,12 +46,14 @@ namespace CrowdDefense.Data
 
         [Header("Upgrade (D1-03)")]
         public float UpgradeMulL2 = 1.5f;
-        public float UpgradeMulL3 = 2.5f;
+        public float UpgradeMulL3 = 2.25f;   // baseCost × 1.5^2 (D1-01)
         public float SellRefundRatio = 0.8f;
 
         [Header("Treasure (D1-01 §3.6)")]
         public int TreasureValueMin = 50;
         public int TreasureValueMax = 150;
+        [Tooltip("Probability (0-1) that a treasure spawns on the path during a wave break.")]
+        public float BreakTreasureChance = 0.20f;
 
         [Header("Interest bank (D1-01 §3.5)")]
         public float BankInterestRate = 0.05f;

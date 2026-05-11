@@ -3,6 +3,7 @@ using System;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
@@ -86,12 +87,18 @@ namespace CrowdDefense.Systems
             }
             else
             {
-                int gain = Mathf.RoundToInt(Gold * BalanceConfig.Get().BankInterestRate);
+                // D1-01 §3.5: +5% gold, capped at +50¢ per break
+                int gain = Mathf.Min(Mathf.RoundToInt(Gold * BalanceConfig.Get().BankInterestRate), 50);
                 if (gain > 0)
                 {
                     TotalBankAccumulated += gain;
                     AddGold(gain);
                     OnBankTick?.Invoke(gain, TotalBankAccumulated);
+
+                    Vector3 popupPos = Castle.Instance != null
+                        ? Castle.Instance.transform.position + Vector3.up * 1.5f
+                        : Vector3.up * 1.5f;
+                    CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(gain, popupPos);
 #if UNITY_EDITOR
                     Debug.Log($"[Economy] Interest bank +{gain}¢ (total accumulated={TotalBankAccumulated})");
 #endif
