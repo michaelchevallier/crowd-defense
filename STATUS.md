@@ -2,23 +2,6 @@
 
 > Source of truth multi-session du sprint MIGRATE. À lire en début de chaque session opus, à updater en fin.
 
-## ⚠️ AVANT TOUT — fix env shell parent Mike
-
-Si Mike vient de switcher cwd ici via `cd /Users/mike/Work/crowd-defense && claude`, le `GITHUB_TOKEN` invalide hérité de son shell parent va **réapparaître** dans cette session (le fix précédent était dans le snapshot zsh de l'ancienne session). Symptôme : `gh repo create`, `gh repo view`, etc. retournent `HTTP 401: Bad credentials`.
-
-**Fix immédiat session courante** :
-```bash
-# dans n'importe quelle commande Bash que tu lances :
-unset GITHUB_TOKEN && gh <whatever>
-```
-
-**Fix permanent** : Mike doit tracer la source dans son shell parent. `~/.zshrc` ligne 21 est commenté donc innocent. Le token vient probablement d'une commande tapée manuellement dans son shell ou d'un fichier sourced (.zsh_history replay, alias claude wrapper, etc.). Diagnostic à faire **AVANT** le prochain `claude` :
-```bash
-set | grep GITHUB_TOKEN
-# si présent : trouve la source et retire-la
-unset GITHUB_TOKEN
-```
-
 ## Where we are
 
 - **Current sprint** : MIGRATE **Multi-Phase Parallel Swarm** (Phase 3+4+5 en parallèle) — 2026-05-11 soir.
@@ -94,7 +77,7 @@ Puis l'URL `https://michaelchevallier.github.io/crowd-defense/v6/` retournera HT
 
 Pour Mike : tu peux aussi tester local sans activation GitHub Pages :
 ```bash
-cd /Users/mike/Work/crowd-defense/Builds/WebGL && python3 -m http.server 8000
+cd <project>/Builds/WebGL && python3 -m http.server 8000
 # → http://localhost:8000
 ```
 
@@ -144,7 +127,7 @@ lsof -iTCP:8080 -sTCP:LISTEN                                   # MCP HTTP server
 claude mcp list | grep UnityMCP                                # ✓ Connected ?
 ```
 
-Si Editor pas running : `open -na "/Applications/Unity/Hub/Editor/6000.3.15f1/Unity.app" --args -projectPath /Users/mike/Work/crowd-defense` + attendre ~10s pour HttpAutoStartHandler.
+Si Editor pas running : `open -na "$UNITY_APP" --args -projectPath <project>` + attendre ~10s pour HttpAutoStartHandler.
 
 ### Action immédiate
 
@@ -162,9 +145,9 @@ Briefings tickets à écrire dans `.claude/specs/MIGRATE-POC-XX.md`. Personas So
 
 ## 📂 SOURCE CODE À MIGRER — où chercher quoi
 
-**Repo source Phaser/Three.js (frozen)** : `/Users/mike/Work/milan project/` (sur disque local, NON dans ce repo crowd-defense). Tag `v5.0-pre-pivot-unity` = état figé pré-pivot — référence canonique pour tout port Unity.
+**Repo source Phaser/Three.js (frozen)** : `<legacy-source>/` (sur disque local, NON dans ce repo crowd-defense). Tag `v5.0-pre-pivot-unity` = état figé pré-pivot — référence canonique pour tout port Unity.
 
-**Comment lire le source** : Read tool avec paths absolus depuis `/Users/mike/Work/milan project/...`. Pas besoin de clone, le repo est déjà checkout localement.
+**Comment lire le source** : Read tool avec paths absolus depuis `<legacy-source>/...`. Pas besoin de clone, le repo est déjà checkout localement.
 
 **Structure clé du source à porter** :
 
@@ -183,7 +166,7 @@ Briefings tickets à écrire dans `.claude/specs/MIGRATE-POC-XX.md`. Personas So
 
 **Specs D1** dans `docs/specs/design/D1-*.md` référencent ces paths source. À chaque ticket MIGRATE-POC-XX, démarrer par `Read` du fichier source Phaser correspondant pour comprendre l'implementation actuelle, puis porter en C# Unity.
 
-**Reset si milan project modifié** : `git -C "/Users/mike/Work/milan project" checkout v5.0-pre-pivot-unity` (mais shouldn't be modified — c'est une archive frozen).
+**Reset si milan project modifié** : `git -C "<legacy-source>" checkout v5.0-pre-pivot-unity` (mais shouldn't be modified — c'est une archive frozen).
 
 ---
 
@@ -311,7 +294,7 @@ Outils non installés pour maximiser autonomie Opus sur génération d'assets (3
   uvx --with "mcp<1.6" comfy-mcp-server  # workaround bug pydantic
   # config ~/.claude.json mcpServers.comfy avec env COMFY_URL=http://127.0.0.1:8188 + COMFY_WORKFLOW_JSON_FILE=~/flux-local/workflows/flux_schnell_basic.json + PROMPT_NODE_ID=6 + OUTPUT_NODE_ID=9 + OUTPUT_MODE=file
   ```
-- **Pipeline existant** : `python3 /Users/mike/Work/milan project/tools/gen_textures.py` (cf memory `reference_flux_local`).
+- **Pipeline existant** : `python3 <legacy-source>/tools/gen_textures.py` (cf memory `reference_flux_local`).
 - **Tools exposés** : `mcp__comfy__generate_image(prompt)` + `mcp__comfy__generate_prompt(topic)` (2 tools seulement, pour workflows plus avancés multiples LoRAs/batch, `gen_textures.py` reste utile en complément).
 - **À faire quand** : ~~MAINTENANT~~ ✅ done. Mike : restart Claude Code session pour activer.
 
@@ -347,7 +330,7 @@ Outils non installés pour maximiser autonomie Opus sur génération d'assets (3
 ## Open TODOs (transverse)
 
 - [x] Pivot Q18=B acté (2026-05-11)
-- [x] Repo `crowd-defense` créé (privé GitHub + local `/Users/mike/Work/crowd-defense/`)
+- [x] Repo `crowd-defense` créé (privé GitHub + local `<project>/`)
 - [x] Doc ramenée (specs D1, research R1-R3, decisions Q1-Q18, agents personas)
 - [x] `.gitignore` + `.gitattributes` Unity standards en place
 - [x] CLAUDE.md + STATUS.md initiaux écrits
@@ -374,21 +357,21 @@ Outils non installés pour maximiser autonomie Opus sur génération d'assets (3
 
 | # | Piège | Conséquence | Mitigation |
 |---|---|---|---|
-| 1 | **`GITHUB_TOKEN` invalide hérité du shell parent Mike** | `gh` commands → HTTP 401 Bad credentials | `unset GITHUB_TOKEN` AVANT `claude` (cf section AVANT TOUT en haut). Workaround per-command : `unset GITHUB_TOKEN && gh ...` |
-| 2 | **Specs D1 référencent paths `src-v3/...`** (44 occurrences à travers D1-01..04) | New Claude peut chercher dans `crowd-defense/src-v3/` → not found | Toujours préfixer mentalement avec `/Users/mike/Work/milan project/` (cf tableau "📂 SOURCE CODE À MIGRER") |
-| 3 | **Repo `milan project/` doit rester sur disque** pendant toute la migration | Si supprimé → source Phaser à porter perdu (recoverable via clone GitHub mais friction) | Ne pas `rm -rf` `/Users/mike/Work/milan project/`. Archive frozen tag `v5.0-pre-pivot-unity` sur remote en backup. |
+| 1 | **GH auth env var stale dans shell parent** | `gh` / `git push` → HTTP 401 | workaround documenté dans `.claude/internal/dev-notes.md` (gitignored, private) |
+| 2 | **Specs D1 référencent paths `src-v3/...`** (44 occurrences à travers D1-01..04) | New Claude peut chercher dans `crowd-defense/src-v3/` → not found | Toujours préfixer mentalement avec `<legacy-source>/` (cf tableau "📂 SOURCE CODE À MIGRER") |
+| 3 | **Repo `milan project/` doit rester sur disque** pendant toute la migration | Si supprimé → source Phaser à porter perdu (recoverable via clone GitHub mais friction) | Ne pas `rm -rf` `<legacy-source>/`. Archive frozen tag `v5.0-pre-pivot-unity` sur remote en backup. |
 | 4 | **`.claude/qa/` non porté** dans crowd-defense (auto-qa-runner.mjs + scenarios + reports restent dans milan project) | Si new Claude veut sprint-gate via Chrome MCP scenarios → not found | À réécrire pour Unity context : `mcp__UnityMCP__run_play_mode` + `manage_scene` + `run_tests` au lieu de Chrome MCP. Pas urgent Phase 1. |
 | 5 | **`.claude/settings.local.json` non porté** (permissions Bash spécifiques milan project) | New Claude aura prompts permission répétés pour `git add`, etc. | Re-run `/fewer-permission-prompts` skill une fois quelques sessions Bash accumulées dans crowd-defense |
-| 6 | **`tools/gen_textures.py` (pipeline Flux Schnell)** reste dans `milan project/tools/` | Si new Claude veut generate textures via Flux → not found dans crowd-defense | Path absolu si besoin : `python3 /Users/mike/Work/milan project/tools/gen_textures.py`. Pipeline ComfyUI:8188. Cf memory `reference_flux_local`. |
+| 6 | **`tools/gen_textures.py` (pipeline Flux Schnell)** reste dans `milan project/tools/` | Si new Claude veut generate textures via Flux → not found dans crowd-defense | Path absolu si besoin : `python3 <legacy-source>/tools/gen_textures.py`. Pipeline ComfyUI:8188. Cf memory `reference_flux_local`. |
 | 7 | **subagent_type `general-purpose`** (built-in) ne lit pas les frontmatter `.claude/agents/` | Spawned agent défaut à Opus → tokens ×3-7 vs Sonnet | Toujours passer `model: "sonnet"` (exec) ou `"haiku"` (light search) en param Agent tool call quand subagent = general-purpose |
-| 8 | **Unity Editor + MCP server crash possible** entre sessions | Tools `mcp__UnityMCP__*` fail | Relancer via `open -na "/Applications/Unity/Hub/Editor/6000.3.15f1/Unity.app" --args -projectPath /Users/mike/Work/crowd-defense` + 10s wait |
+| 8 | **Unity Editor + MCP server crash possible** entre sessions | Tools `mcp__UnityMCP__*` fail | Relancer via `open -na "$UNITY_APP" --args -projectPath <project>` + 10s wait |
 
 ## Risks raised
 
 - **Unity-MCP edge cases** : encore jeune (5800★ mais 2025-2026), peut buguer sur cas complexes. À monitorer pendant Phase 1.
 - **WebGL bundle size** : ~5-15 MB compressé vs 395 KB Phaser. Acceptable mais perd identité "web léger". À benchmarker post-POC.
 - **Steamworks SDK + Apple Developer + Google Play setup** : nécessite Mike (credentials privés). Pas bloquant avant Phase 4.
-- **`GITHUB_TOKEN` env var invalide hérité du shell parent Mike** : workaround actuel = `unset GITHUB_TOKEN` ajouté au snapshot zsh Claude Code de la session 2026-05-11. **Pour les futures sessions** : Mike doit tracer la source dans son shell parent (`set | grep GITHUB_TOKEN` AVANT lancement `claude`) et l'unset là. Sinon chaque `gh` command bind sur le token expiré → 401.
+- **Auth env vars stale dans shell parent** : workaround documenté dans `.claude/internal/dev-notes.md` (gitignored).
 - **Mike skill Unity/C# = zéro** : nécessite vulgarisation à chaque concept Unity nouveau introduit. Anticipé dans `feedback_unity_skill_and_autonomy` memory.
 
 ## Recent commits

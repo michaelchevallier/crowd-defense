@@ -1,0 +1,20 @@
+Copyright (c) 2026 Michael Chevallier. All Rights Reserved.
+
+This software and associated assets ("Crowd Defense") are proprietary and
+confidential. Unauthorized copying, modification, distribution, or use of
+this software, in source or binary form, via any medium, is strictly
+prohibited without prior written permission from the copyright holder.
+
+The contents of this repository — including but not limited to source code,
+design documents, game assets, balance configurations, and accompanying
+documentation — remain the exclusive intellectual property of Michael
+Chevallier.
+
+Third-party assets and dependencies bundled with this project retain their
+respective licenses. Notable inclusions:
+- Unity Engine (Unity Personal/Pro license per Unity Technologies terms)
+- UnityGLTF (Khronos Group, MIT license)
+- Quaternius 3D model packs (CC0 1.0 Universal)
+- Kenney asset packs (CC0 1.0 Universal)
+
+For licensing inquiries, contact the copyright holder via GitHub.

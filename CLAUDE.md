@@ -6,17 +6,13 @@ Jeu **tower defense** Unity 6 LTS (`6000.0.74f1`), C#, cible multi-platform (Ste
 
 ## 📂 Source code à migrer (référence canonique)
 
-**Path absolu disque local** : `/Users/mike/Work/milan project/` (repo séparé, archive frozen sur tag `v5.0-pre-pivot-unity`).
+**Paths legacy sources** : voir `.claude/internal/legacy-sources.md` (gitignored, dev notes privées avec mapping Phaser → Unity et locations disque locales).
 
-**Toujours porter en lisant le source** : `Read /Users/mike/Work/milan project/src-v3/entities/Tower.js`, etc. Les specs D1 dans `docs/specs/design/` référencent ces paths.
+**Source map détaillé** : voir `STATUS.md` section "📂 SOURCE CODE À MIGRER" (tableau Phaser → Unity per fichier).
 
-**Source map détaillé** : voir `STATUS.md` section "📂 SOURCE CODE À MIGRER — où chercher quoi" (tableau Phaser → Unity per fichier).
+**Note importante** : les agent personas dans `.claude/agents/` ont été adaptés Unity context. Quelques refs résiduelles aux paths legacy sources sont **volontaires** (source code à migrer, à lire mais pas à modifier).
 
-**Note importante** : les agent personas dans `.claude/agents/` ont été adaptés Unity context via sed batch le 2026-05-11. Quelques refs résiduelles à `src-v3/...` paths sont **volontaires** (source code à migrer, à lire mais pas à modifier).
-
-**Origines** : projet "Milan Park Defense — Foire en Lave" pivoté Phaser → Three.js → Unity 6 (2026-05-11). Le thème "Milan/lave/foire" est retiré pour ce repo : projet renommé **Crowd Defense** pour rester ouvert sur le thème final.
-
-Repo : https://github.com/michaelchevallier/crowd-defense (privé)
+**Origines** : projet pivoté Phaser → Three.js → Unity 6 (2026-05-11). Projet renommé **Crowd Defense** pour rester ouvert sur le thème final.
 
 ## Stack
 
@@ -107,10 +103,10 @@ Doit contenir :
 ## Tester en local
 
 ```bash
-# CLI Unity batch mode (no UI)
-Unity -batchmode -nographics -projectPath . -executeMethod BuildScript.BuildWebGL -quit
-Unity -batchmode -nographics -projectPath . -executeMethod BuildScript.BuildOSX -quit
-Unity -batchmode -nographics -projectPath . -executeMethod TestRunner.RunAll -quit
+# CLI Unity batch mode (no UI) — depuis la racine du projet
+"$UNITY_PATH" -batchmode -nographics -projectPath . -executeMethod CrowdDefense.Build.BuildScript.BuildWebGL -quit
+"$UNITY_PATH" -batchmode -nographics -projectPath . -executeMethod CrowdDefense.Build.BuildScript.BuildOSX -quit
+"$UNITY_PATH" -batchmode -nographics -projectPath . -executeMethod TestRunner.RunAll -quit
 ```
 
 Via Unity-MCP depuis Claude Code :
