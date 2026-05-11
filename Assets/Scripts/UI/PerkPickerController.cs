@@ -37,11 +37,16 @@ namespace CrowdDefense.UI
 
             L.OnLocaleChanged += RefreshLabels;
             RefreshLabels();
+
+            if (LevelRunner.Instance != null)
+                LevelRunner.Instance.OnLevelComplete += HandleLevelComplete;
         }
 
         private void OnDestroy()
         {
             L.OnLocaleChanged -= RefreshLabels;
+            if (LevelRunner.Instance != null)
+                LevelRunner.Instance.OnLevelComplete -= HandleLevelComplete;
         }
 
         private void RefreshLabels()
@@ -49,6 +54,9 @@ namespace CrowdDefense.UI
             if (titleLabel != null) titleLabel.text = L.Get("perk.pick_title");
             if (subtitleLabel != null) subtitleLabel.text = L.Get("perk.pick_subtitle");
         }
+
+        private void HandleLevelComplete() =>
+            ShowAndWait(() => LevelLoader.LoadNextOrMenu());
 
         // Called by LevelRunner (or HudController) on victory to show the picker.
         // onDone fires after a card is selected.

@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="FloatingPopup.uss" />
+    <!-- Full-screen overlay; FloatingPopupController injects Label children at runtime -->
+    <ui:VisualElement name="popup-overlay" class="popup-overlay" />
+</ui:UXML>

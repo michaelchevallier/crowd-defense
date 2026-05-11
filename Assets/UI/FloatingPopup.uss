@@ -1,0 +1,36 @@
+/* === Floating popup overlay (full-screen, pointer-events none) === */
+.popup-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+}
+
+/* === Individual floating label === */
+.floating-popup {
+    position: absolute;
+    font-size: 18px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgb(255, 240, 80);
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(0, 0, 0, 0.8);
+    /* pointer-events: none is the default for Label */
+}
+
+.popup-damage {
+    color: rgb(255, 90, 70);
+    font-size: 16px;
+}
+
+.popup-coin {
+    color: rgb(255, 210, 40);
+    font-size: 18px;
+}
+
+.popup-gems {
+    color: rgb(210, 150, 255);
+    font-size: 18px;
+}

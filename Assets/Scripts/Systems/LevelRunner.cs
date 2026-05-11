@@ -76,6 +76,15 @@ namespace CrowdDefense.Systems
             SpawnCastle();
             SpawnHero();
             TryPlayOpeningCutscene();
+
+            if (currentLevel != null && PathManager.Instance?.Grid != null)
+            {
+                var grid = PathManager.Instance.Grid;
+                float halfW = (grid.Width - 1) / 2f * grid.CellSize;
+                float halfH = (grid.Height - 1) / 2f * grid.CellSize;
+                var bounds = new Bounds(Vector3.zero, new Vector3(halfW * 2f, 100f, halfH * 2f));
+                LevelEvents.RaiseLevelStart(currentLevel, bounds);
+            }
         }
 
         private void Update()
@@ -225,6 +234,8 @@ namespace CrowdDefense.Systems
             State = s;
             ApplyTimeScale();
             OnStateChanged?.Invoke(State);
+            if (s == GameState.GameOver || s == GameState.Victory)
+                LevelEvents.RaiseLevelEnd();
 #if UNITY_EDITOR
             Debug.Log($"[LevelRunner] state → {s}");
 #endif
