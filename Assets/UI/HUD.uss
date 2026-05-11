@@ -393,6 +393,64 @@
 .combo-display.combo-level-3 .combo-label { color: rgb(255, 160, 30); }
 .combo-display.combo-level-4 .combo-label { color: rgb(255, 80, 30); }
 
+/* === Wave preview (above launch button, between waves) === */
+.wave-preview {
+    position: absolute;
+    left: 50%;
+    bottom: 240px;
+    translate: -50% 0;
+    background-color: rgba(14, 20, 30, 0.88);
+    border-color: rgba(160, 180, 220, 0.35);
+    border-width: 1px;
+    border-radius: 12px;
+    padding: 8px 16px;
+    flex-direction: column;
+    align-items: center;
+}
+
+.wave-preview-title {
+    color: rgba(200, 210, 230, 0.75);
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 6px;
+    -unity-text-align: middle-center;
+}
+
+.wave-preview-roster {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.wave-preview-chip {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    padding: 3px 8px;
+    margin: 2px 3px;
+}
+
+.wave-preview-chip-icon {
+    font-size: 16px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-right: 3px;
+}
+
+.wave-preview-chip-count {
+    color: rgba(220, 230, 255, 0.9);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.wave-preview-chip.boss-chip {
+    background-color: rgba(180, 40, 40, 0.25);
+    border-color: rgba(220, 80, 80, 0.5);
+    border-width: 1px;
+}
+
 /* === Debug HUD (top-left, editor / debug=1) === */
 #debug-hud {
     position: absolute;
