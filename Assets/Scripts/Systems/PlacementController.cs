@@ -58,8 +58,17 @@ namespace CrowdDefense.Systems
 #endif
             if (cam == null || !Input.GetMouseButtonDown(0)) return;
 
-            // Right-click ou shift-click : sélectionner tour existante (debug)
+            // Click sur tour existante : sélectionner pour radial menu (production + debug)
+            // Priorité : si selectedTowerType non set, tenter sélection tour.
+            // Si selectedTowerType set, placement a priorité (click place la tour).
+            if (selectedTowerType == null)
+            {
+                TrySelectTowerAtMouse();
+                return;
+            }
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // Shift-click : sélectionner tour même quand selectedTowerType est set (debug override)
             if (Input.GetKey(KeyCode.LeftShift))
             {
                 TrySelectTowerAtMouse();
@@ -67,7 +76,7 @@ namespace CrowdDefense.Systems
             }
 #endif
 
-            if (selectedTowerType == null || towerPrefab == null) return;
+            if (towerPrefab == null) return;
             if (PathManager.Instance == null || PathManager.Instance.Grid == null) return;
 
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -125,7 +134,7 @@ namespace CrowdDefense.Systems
             }
         }
 
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // Selection de tour via click (production + debug) — utilisee par radial menu CORE-20
         private void TrySelectTowerAtMouse()
         {
             if (cam == null) return;
@@ -146,7 +155,6 @@ namespace CrowdDefense.Systems
             Debug.Log($"[Place] selectedTower={selectedTower?.Config?.Id ?? "none"} L{selectedTower?.UpgradeLevel}");
 #endif
         }
-#endif
 
         public void UnregisterTower(Tower t)
         {
