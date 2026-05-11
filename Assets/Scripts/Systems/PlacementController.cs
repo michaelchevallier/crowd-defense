@@ -21,14 +21,6 @@ namespace CrowdDefense.Systems
         // Tour active (debug sell hotkey S, CORE-20 radial menu)
         private Tower? selectedTower;
 
-        // Ghost preview state
-        private GameObject? ghost;
-        private bool ghostIsValid;
-        private Material? ghostMatValid;
-        private Material? ghostMatInvalid;
-        private static readonly Color GhostValidColor   = new Color(0f,   0.85f, 1f,   0.45f);
-        private static readonly Color GhostInvalidColor = new Color(1f,   0.15f, 0.1f, 0.45f);
-
         public IReadOnlyList<Tower> PlacedTowers => placedTowers;
         // Exposé pour radial menu CORE-20
         public Tower? SelectedTower => selectedTower;
@@ -43,118 +35,15 @@ namespace CrowdDefense.Systems
         protected override void OnAwakeSingleton()
         {
             cam = Camera.main;
-            BuildGhostMaterials();
-        }
-
-        private void BuildGhostMaterials()
-        {
-            var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-            if (shader == null) return;
-
-            ghostMatValid = new Material(shader);
-            ghostMatValid.color = GhostValidColor;
-            ghostMatValid.SetFloat("_Surface", 1);   // URP Transparent
-            ghostMatValid.SetFloat("_Blend", 0);
-            ghostMatValid.renderQueue = 3000;
-            ghostMatValid.SetInt("_SrcBlend",  (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            ghostMatValid.SetInt("_DstBlend",  (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            ghostMatValid.SetInt("_ZWrite", 0);
-            ghostMatValid.EnableKeyword("_ALPHABLEND_ON");
-
-            ghostMatInvalid = new Material(ghostMatValid);
-            ghostMatInvalid.color = GhostInvalidColor;
-        }
-
-        private void SpawnGhost()
-        {
-            DestroyGhost();
-            if (towerPrefab == null) return;
-
-            ghost = Instantiate(towerPrefab);
-            ghost.name = "GhostTower";
-
-            // Disable all MonoBehaviours so ghost is inert (no shooting, no Init side-effects)
-            foreach (var mb in ghost.GetComponentsInChildren<MonoBehaviour>())
-                mb.enabled = false;
-
-            // Disable all colliders so ghost doesn't interfere with raycasts
-            foreach (var col in ghost.GetComponentsInChildren<Collider>())
-                col.enabled = false;
-
-            ApplyGhostMaterial(true);
-        }
-
-        private void DestroyGhost()
-        {
-            if (ghost != null)
-            {
-                Destroy(ghost);
-                ghost = null;
-            }
-        }
-
-        private void ApplyGhostMaterial(bool valid)
-        {
-            if (ghost == null) return;
-            ghostIsValid = valid;
-            var mat = valid ? ghostMatValid : ghostMatInvalid;
-            if (mat == null) return;
-
-            foreach (var r in ghost.GetComponentsInChildren<Renderer>())
-            {
-                var mats = new Material[r.sharedMaterials.Length];
-                for (int i = 0; i < mats.Length; i++) mats[i] = mat;
-                r.materials = mats;
-            }
-        }
-
-        private void UpdateGhost()
-        {
-            if (ghost == null || cam == null) return;
-
-            var grid = PathManager.Instance?.Grid;
-            if (grid == null) return;
-
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (!groundPlane.Raycast(ray, out float dist)) return;
-
-            Vector3 hitPos  = ray.GetPoint(dist);
-            Vector2Int cell = GridCoords.WorldToCell(hitPos, grid.Width, grid.Height, grid.CellSize);
-            Vector3 snapPos = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
-
-            ghost.transform.position = snapPos;
-
-            bool cellBuildable = grid.IsBuildable(cell.x, cell.y);
-            bool canAfford      = selectedTowerType == null
-                || Economy.Instance == null
-                || Economy.Instance.Gold >= selectedTowerType.Cost;
-
-            bool valid = cellBuildable && canAfford;
-            if (valid != ghostIsValid) ApplyGhostMaterial(valid);
         }
 
         private void Update()
         {
-            // Right-click cancels placement mode
-            if (Input.GetMouseButtonDown(1) && selectedTowerType != null)
+            // ESC deselects active tower (closes radial menu)
+            if (Input.GetKeyDown(KeyCode.Escape) && selectedTower != null)
             {
-                SelectTowerForPlacement(null);
+                SetSelectedTower(null);
                 return;
-            }
-
-            // ESC: cancel placement first, then deselect tower
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                if (selectedTowerType != null)
-                {
-                    SelectTowerForPlacement(null);
-                    return;
-                }
-                if (selectedTower != null)
-                {
-                    SetSelectedTower(null);
-                    return;
-                }
             }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -173,9 +62,6 @@ namespace CrowdDefense.Systems
             }
 #endif
             if (cam == null) return;
-
-            // Ghost preview update (every frame while in placement mode)
-            if (selectedTowerType != null) UpdateGhost();
 
             // Hover tracking for PathfinderVisualization (runs every frame in placement mode)
             if (OnHoverPlacementCell != null)
@@ -231,9 +117,9 @@ namespace CrowdDefense.Systems
             if (towerPrefab == null) return;
             if (PathManager.Instance == null || PathManager.Instance.Grid == null) return;
 
-            Ray placeRay = cam.ScreenPointToRay(Input.mousePosition);
-            if (!groundPlane.Raycast(placeRay, out float placeDist)) return;
-            Vector3 hitPos = placeRay.GetPoint(placeDist);
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (!groundPlane.Raycast(ray, out float dist)) return;
+            Vector3 hitPos = ray.GetPoint(dist);
 
             var grid = PathManager.Instance.Grid;
             Vector2Int cell = GridCoords.WorldToCell(hitPos, grid.Width, grid.Height, grid.CellSize);
@@ -285,18 +171,9 @@ namespace CrowdDefense.Systems
             {
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
-                DestroyGhost();
                 AudioController.Instance?.Play("tower_built", 0.7f);
                 OnTowerPlaced?.Invoke(tower);
             }
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            DestroyGhost();
-            if (ghostMatValid != null)   Destroy(ghostMatValid);
-            if (ghostMatInvalid != null) Destroy(ghostMatInvalid);
         }
 
         // Selection de tour via click (production + debug) — utilisee par radial menu CORE-20
@@ -333,10 +210,6 @@ namespace CrowdDefense.Systems
         public void SelectTowerForPlacement(TowerType? type)
         {
             selectedTowerType = type;
-            if (type != null)
-                SpawnGhost();
-            else
-                DestroyGhost();
         }
 
         public TowerType? SelectedTowerType => selectedTowerType;

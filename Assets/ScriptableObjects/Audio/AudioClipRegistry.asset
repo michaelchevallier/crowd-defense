@@ -53,5 +53,19 @@ MonoBehaviour:
     Clip: {fileID: 8300000, guid: da00b163e9c6e4e96a8dca439e468f62, type: 3}
   - Key: wave_start
     Clip: {fileID: 8300000, guid: 40a31f1789dc546ec938c15607c09aaf, type: 3}
+  - Key: hero_ult
+    Clip: {fileID: 0}
+  - Key: cancel
+    Clip: {fileID: 0}
+  - Key: castle_lost
+    Clip: {fileID: 0}
+  - Key: combo_up
+    Clip: {fileID: 0}
+  - Key: cutscene_start
+    Clip: {fileID: 0}
+  - Key: path_reveal
+    Clip: {fileID: 0}
+  - Key: set_bonus
+    Clip: {fileID: 0}
   - Key: music_ambient_w1
     Clip: {fileID: 8300000, guid: 6ba6dbd38230f411eb081e2eb911de19, type: 3}

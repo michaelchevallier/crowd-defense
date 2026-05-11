@@ -67,24 +67,47 @@ namespace CrowdDefense.Systems
         {
             if (registry == null) LoadAudioRegistry();
             var clip = registry?.Get(clipKey);
-            if (clip == null)
-            {
-#if UNITY_EDITOR
-                Debug.LogWarning($"[AudioController] Clip not found in registry: '{clipKey}'");
-#endif
-                return;
-            }
 
             if (_lastPlayedAt.TryGetValue(clipKey, out float last) &&
                 last + MinReplayInterval > Time.unscaledTime)
                 return;
-
-            var source = _sfxPool[_nextIdx++ % PoolSize];
-            source.clip = clip;
-            source.volume = Mathf.Clamp01(volMul);
-            source.Play();
-
             _lastPlayedAt[clipKey] = Time.unscaledTime;
+
+            if (clip != null)
+            {
+                var source = _sfxPool[_nextIdx++ % PoolSize];
+                source.clip = clip;
+                source.volume = Mathf.Clamp01(volMul);
+                source.Play();
+            }
+            else
+            {
+                // Fallback: procedural sine beep so no gameplay event is silent
+                StartCoroutine(PlayProceduralBeepCo(volMul));
+            }
+        }
+
+        private IEnumerator PlayProceduralBeepCo(float volMul)
+        {
+            const int sampleRate = 44100;
+            const float freq = 880f;
+            const float duration = 0.07f;
+            int samples = Mathf.RoundToInt(sampleRate * duration);
+            var data = new float[samples];
+            for (int i = 0; i < samples; i++)
+            {
+                float t = (float)i / sampleRate;
+                float env = 1f - t / duration;
+                data[i] = Mathf.Sin(2f * Mathf.PI * freq * t) * env;
+            }
+            var beep = AudioClip.Create("_beep", samples, 1, sampleRate, false);
+            beep.SetData(data, 0);
+            var source = _sfxPool[_nextIdx++ % PoolSize];
+            source.clip = beep;
+            source.volume = Mathf.Clamp01(volMul * 0.25f);
+            source.Play();
+            yield return new WaitForSeconds(duration + 0.05f);
+            Destroy(beep);
         }
 
         public void PlayRandom(string[] keys, float volMul = 1f)
