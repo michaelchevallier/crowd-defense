@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
@@ -7,12 +8,20 @@ namespace CrowdDefense.Entities
 {
     public class Tower : MonoBehaviour
     {
-
         [SerializeField] private GameObject? projectilePrefab;
 
         private TowerType? cfg;
         private float cooldown;
         private Enemy? target;
+
+        // BuffAura : reçoit un buff d'un Portal voisin chaque frame
+        public float _buffMul = 1f;
+
+        // Cluster (Mine) : timer spawn
+        private float _clusterTimer;
+
+        // Slow : tick rapide indépendant du cooldown standard
+        private float _slowTickTimer;
 
         public TowerType? Config => cfg;
 
@@ -21,6 +30,8 @@ namespace CrowdDefense.Entities
             cfg = type;
             cooldown = 0f;
             projectilePrefab = projPrefab;
+            _clusterTimer = 0f;
+            _slowTickTimer = 0f;
 
             var renderers = GetComponentsInChildren<MeshRenderer>();
             foreach (var rend in renderers)
@@ -35,6 +46,23 @@ namespace CrowdDefense.Entities
         private void Update()
         {
             if (cfg == null) return;
+
+            // Reset buff chaque frame — Portal le re-pose dans UpdateBuffAura
+            _buffMul = 1f;
+
+            switch (cfg.Behavior)
+            {
+                case TowerBehavior.Attack:   UpdateAttack();   break;
+                case TowerBehavior.Cluster:  UpdateCluster();  break;
+                case TowerBehavior.Slow:     UpdateSlow();     break;
+                case TowerBehavior.BuffAura: UpdateBuffAura(); break;
+                case TowerBehavior.CoinPull: UpdateCoinPull(); break;
+            }
+        }
+
+        // ── Attack ───────────────────────────────────────────────────────────
+        private void UpdateAttack()
+        {
             cooldown -= Time.deltaTime;
 
             if (target == null || target.IsDead || OutOfRange(target))
@@ -43,10 +71,91 @@ namespace CrowdDefense.Entities
             if (target != null && cooldown <= 0f)
             {
                 Fire(target);
-                cooldown = cfg.FireRateMs / 1000f;
+                cooldown = cfg!.FireRateMs / 1000f;
             }
         }
 
+        // ── Cluster (Mine) ───────────────────────────────────────────────────
+        private void UpdateCluster()
+        {
+            if (cfg == null) return;
+            _clusterTimer -= Time.deltaTime;
+            if (_clusterTimer <= 0f)
+            {
+                SpawnMineRing();
+                _clusterTimer = cfg.CooldownMs / 1000f;
+                if (_clusterTimer <= 0f) _clusterTimer = 12f; // fallback si CooldownMs non set
+            }
+        }
+
+        private void SpawnMineRing()
+        {
+            if (cfg == null) return;
+            int count = cfg.ClusterCount > 0 ? cfg.ClusterCount : 3;
+            float spawnRadius = cfg.Range / 2f;
+            float angleStep = 360f / count;
+
+            for (int i = 0; i < count; i++)
+            {
+                float angle = i * angleStep * Mathf.Deg2Rad;
+                Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * spawnRadius;
+                Vector3 pos = transform.position + offset;
+
+                var go = new GameObject("MineExplosive");
+                go.transform.position = pos;
+                var mine = go.AddComponent<MineExplosive>();
+                mine.Init(cfg.Damage, cfg.Aoe > 0f ? cfg.Aoe : 2.5f);
+            }
+        }
+
+        // ── Slow (Fan / Frost) ───────────────────────────────────────────────
+        private void UpdateSlow()
+        {
+            if (cfg == null) return;
+            _slowTickTimer -= Time.deltaTime;
+            if (_slowTickTimer > 0f) return;
+            _slowTickTimer = 0.15f; // tick toutes les 150 ms
+
+            if (WaveManager.Instance == null || SlowEffectManager.Instance == null) return;
+            float rangeSq = cfg.Range * cfg.Range;
+            var enemies = WaveManager.Instance.ActiveEnemies;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var e = enemies[i];
+                if (e == null || e.IsDead) continue;
+                if ((e.transform.position - transform.position).sqrMagnitude > rangeSq) continue;
+                SlowEffectManager.Instance.ApplySlow(e, cfg.SlowMul, cfg.SlowDurationMs);
+            }
+        }
+
+        // ── BuffAura (Portal) ────────────────────────────────────────────────
+        private void UpdateBuffAura()
+        {
+            if (cfg == null || PlacementController.Instance == null) return;
+            float rangeSq = cfg.Range * cfg.Range;
+            var towers = PlacementController.Instance.PlacedTowers;
+            for (int i = 0; i < towers.Count; i++)
+            {
+                var t = towers[i];
+                if (t == null || t == this) continue;
+                if ((t.transform.position - transform.position).sqrMagnitude > rangeSq) continue;
+                // _buffMul a été reset à 1 en début d'Update de CETTE tour
+                // On pose le buff sur les voisines (elles lisent _buffMul dans Fire())
+                t._buffMul = Mathf.Max(t._buffMul, cfg.BuffMul);
+            }
+        }
+
+        // ── CoinPull (Magnet) ────────────────────────────────────────────────
+        private void UpdateCoinPull()
+        {
+            if (cfg == null || CoinPullManager.Instance == null) return;
+            CoinPullManager.Instance.RegisterSource(
+                transform.position,
+                cfg.Range,
+                cfg.CoinMul > 0f ? cfg.CoinMul : BalanceConfig.Get().MagnetCoinMul);
+        }
+
+        // ── Helpers ──────────────────────────────────────────────────────────
         private bool OutOfRange(Enemy e)
         {
             if (cfg == null || e == null) return true;
@@ -81,7 +190,8 @@ namespace CrowdDefense.Entities
             var proj = go.GetComponent<Projectile>();
             if (proj != null)
             {
-                proj.Init(t, cfg.Damage * BalanceConfig.Get().TowerDamageMul, cfg.ProjectileSpeed, cfg.ProjectileColor);
+                float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul;
+                proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor);
             }
         }
 

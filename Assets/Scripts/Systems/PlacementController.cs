@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
@@ -7,16 +8,28 @@ namespace CrowdDefense.Systems
 {
     public class PlacementController : MonoBehaviour
     {
+        public static PlacementController? Instance { get; private set; }
+
         [SerializeField] private TowerType? selectedTowerType;
         [SerializeField] private GameObject? towerPrefab;
         [SerializeField] private GameObject? projectilePrefab;
 
         private Camera? cam;
         private readonly Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
+        private readonly List<Tower> placedTowers = new();
+
+        public IReadOnlyList<Tower> PlacedTowers => placedTowers;
 
         private void Awake()
         {
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
             cam = Camera.main;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
         }
 
         private void Update()
@@ -55,7 +68,12 @@ namespace CrowdDefense.Systems
             var go = Instantiate(towerPrefab, cellWorld, Quaternion.identity);
             var tower = go.GetComponent<Tower>();
             if (tower != null)
+            {
                 tower.Init(selectedTowerType, projectilePrefab);
+                placedTowers.Add(tower);
+            }
         }
+
+        public void UnregisterTower(Tower t) => placedTowers.Remove(t);
     }
 }
