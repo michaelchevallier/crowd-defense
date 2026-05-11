@@ -14,19 +14,29 @@ namespace CrowdDefense.Visual
         [Header("Weather Prefabs (assign Inspector or left null = no effect)")]
         [SerializeField] private GameObject? rainPrefab;
         [SerializeField] private GameObject? snowPrefab;
+        [SerializeField] private GameObject? windPrefab;
         [SerializeField] private GameObject? embersPrefab;
         [SerializeField] private GameObject? pollenPrefab;
         [SerializeField] private GameObject? dustPrefab;
+        [SerializeField] private GameObject? confettiPrefab;
+        [SerializeField] private GameObject? bubblesPrefab;
+        [SerializeField] private GameObject? starsPrefab;
+        [SerializeField] private GameObject? ashPrefab;
 
         // Fallback resource paths — loaded at runtime if the Inspector slots are empty.
         private const string PrefabRoot = "Prefabs/Weather/";
         private static readonly Dictionary<WeatherType, string> PrefabPaths = new()
         {
-            { WeatherType.Rain,   PrefabRoot + "Rain"   },
-            { WeatherType.Snow,   PrefabRoot + "Snow"   },
-            { WeatherType.Embers, PrefabRoot + "Embers" },
-            { WeatherType.Pollen, PrefabRoot + "Pollen" },
-            { WeatherType.Dust,   PrefabRoot + "Dust"   },
+            { WeatherType.Rain,     PrefabRoot + "Rain"     },
+            { WeatherType.Snow,     PrefabRoot + "Snow"     },
+            { WeatherType.Wind,     PrefabRoot + "Wind"     },
+            { WeatherType.Embers,   PrefabRoot + "Embers"   },
+            { WeatherType.Pollen,   PrefabRoot + "Pollen"   },
+            { WeatherType.Dust,     PrefabRoot + "Dust"     },
+            { WeatherType.Confetti, PrefabRoot + "Confetti" },
+            { WeatherType.Bubbles,  PrefabRoot + "Bubbles"  },
+            { WeatherType.Stars,    PrefabRoot + "Stars"    },
+            { WeatherType.Ash,      PrefabRoot + "Ash"      },
         };
 
         // Active ParticleSystems for the current level (may be more than one per theme)
@@ -35,17 +45,20 @@ namespace CrowdDefense.Visual
         // Theme → weather type(s) mapping (mirrors V5 theme.weather field)
         private static readonly Dictionary<LevelTheme, WeatherType[]> ThemeWeather = new()
         {
-            { LevelTheme.Plaine,     new[] { WeatherType.Pollen }           },
-            { LevelTheme.Foret,      new[] { WeatherType.Rain, WeatherType.Pollen } },
-            { LevelTheme.Desert,     new[] { WeatherType.Dust }             },
-            { LevelTheme.Volcan,     new[] { WeatherType.Embers }           },
-            { LevelTheme.Apocalypse, new[] { WeatherType.Dust }             },
-            { LevelTheme.Espace,     new[] { WeatherType.Snow }             },
-            { LevelTheme.Submarin,   System.Array.Empty<WeatherType>()      },
-            { LevelTheme.Medieval,   new[] { WeatherType.Rain }             },
-            { LevelTheme.Cyberpunk,  new[] { WeatherType.Snow }             },
-            { LevelTheme.Foire,      new[] { WeatherType.Pollen }           },
+            { LevelTheme.Plaine,     new[] { WeatherType.Pollen }                       },
+            { LevelTheme.Foret,      new[] { WeatherType.Rain, WeatherType.Pollen }     },
+            { LevelTheme.Desert,     new[] { WeatherType.Dust, WeatherType.Wind }       },
+            { LevelTheme.Volcan,     new[] { WeatherType.Embers, WeatherType.Ash }      },
+            { LevelTheme.Apocalypse, new[] { WeatherType.Ash, WeatherType.Dust }        },
+            { LevelTheme.Espace,     new[] { WeatherType.Stars, WeatherType.Snow }      },
+            { LevelTheme.Submarin,   new[] { WeatherType.Bubbles }                      },
+            { LevelTheme.Medieval,   new[] { WeatherType.Rain, WeatherType.Wind }       },
+            { LevelTheme.Cyberpunk,  new[] { WeatherType.Snow, WeatherType.Wind }       },
+            { LevelTheme.Foire,      new[] { WeatherType.Confetti, WeatherType.Pollen } },
         };
+
+        // Entry point named per brief spec; delegates to ApplyTheme.
+        public void SetWeather(LevelTheme theme) => ApplyTheme(theme);
 
         public void ApplyTheme(LevelTheme theme)
         {
@@ -96,11 +109,16 @@ namespace CrowdDefense.Visual
             // Inspector slot takes precedence
             var fromInspector = wt switch
             {
-                WeatherType.Rain   => rainPrefab,
-                WeatherType.Snow   => snowPrefab,
-                WeatherType.Embers => embersPrefab,
-                WeatherType.Pollen => pollenPrefab,
-                WeatherType.Dust   => dustPrefab,
+                WeatherType.Rain     => rainPrefab,
+                WeatherType.Snow     => snowPrefab,
+                WeatherType.Wind     => windPrefab,
+                WeatherType.Embers   => embersPrefab,
+                WeatherType.Pollen   => pollenPrefab,
+                WeatherType.Dust     => dustPrefab,
+                WeatherType.Confetti => confettiPrefab,
+                WeatherType.Bubbles  => bubblesPrefab,
+                WeatherType.Stars    => starsPrefab,
+                WeatherType.Ash      => ashPrefab,
                 _ => null
             };
             if (fromInspector != null) return fromInspector;
@@ -125,8 +143,13 @@ namespace CrowdDefense.Visual
     {
         Rain,
         Snow,
+        Wind,
         Embers,
         Pollen,
         Dust,
+        Confetti,
+        Bubbles,
+        Stars,
+        Ash,
     }
 }
