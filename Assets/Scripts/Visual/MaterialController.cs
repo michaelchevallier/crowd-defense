@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 using UnityEngine;
@@ -14,12 +15,18 @@ namespace CrowdDefense.Visual
         private static Material? _jellyfish;
         private static Material? _hologram;
 
+        // Cache toon material instances by (tint, transparent, sourceTexture) to avoid leaking
+        // a new Material per enemy Init/pool-reuse. Key includes Texture? so textured meshes
+        // also hit the cache rather than allocating on every spawn.
+        private static readonly Dictionary<(Color, bool, Texture?), Material> _toonCache = new();
+
         // Réinitialiser la ref cached si nécessaire (tests / hot-reload Editor)
         public static void ResetCache()
         {
             _toonBase = null;
             _jellyfish = null;
             _hologram = null;
+            _toonCache.Clear();
         }
 
         /// <summary>
@@ -45,27 +52,32 @@ namespace CrowdDefense.Visual
                 var newMats = new Material[srcMats.Length];
                 for (int i = 0; i < srcMats.Length; i++)
                 {
-                    var m = new Material(_toonBase);
-                    m.SetColor("_BaseColor", tint);
-
-                    // Conserve texture originale du mesh (port de opts.map dans ToonMaterial.js)
-                    var src = srcMats[i];
-                    if (src != null && src.mainTexture != null)
-                        m.mainTexture = src.mainTexture;
-
-                    if (transparent)
+                    Texture? srcTex = srcMats[i]?.mainTexture;
+                    var key = (tint, transparent, srcTex);
+                    if (!_toonCache.TryGetValue(key, out var m))
                     {
-                        // Stealth : transparent surface mode (cf Enemy stealth opacity)
-                        m.SetFloat("_Surface", 1f);
-                        m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                        m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                        m.SetFloat("_ZWrite", 0f);
-                        m.renderQueue = 3000;
-                        Color c = tint;
-                        c.a = 0.45f; // stealth initial opacity
-                        m.SetColor("_BaseColor", c);
-                    }
+                        m = new Material(_toonBase);
+                        m.SetColor("_BaseColor", tint);
 
+                        // Conserve texture originale du mesh (port de opts.map dans ToonMaterial.js)
+                        if (srcTex != null)
+                            m.mainTexture = srcTex;
+
+                        if (transparent)
+                        {
+                            // Stealth : transparent surface mode (cf Enemy stealth opacity)
+                            m.SetFloat("_Surface", 1f);
+                            m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                            m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                            m.SetFloat("_ZWrite", 0f);
+                            m.renderQueue = 3000;
+                            Color c = tint;
+                            c.a = 0.45f; // stealth initial opacity
+                            m.SetColor("_BaseColor", c);
+                        }
+
+                        _toonCache[key] = m;
+                    }
                     newMats[i] = m;
                 }
                 r.materials = newMats;

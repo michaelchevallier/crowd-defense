@@ -35,15 +35,17 @@ namespace CrowdDefense.UI
             L.OnLocaleChanged += ApplyLocalizedTexts;
 
             if (DoctrineSystem.Instance != null)
-                DoctrineSystem.Instance.OnDoctrineChanged += _ => RefreshCards();
+                DoctrineSystem.Instance.OnDoctrineChanged += HandleDoctrineChanged;
         }
 
         private void OnDestroy()
         {
             L.OnLocaleChanged -= ApplyLocalizedTexts;
             if (DoctrineSystem.Instance != null)
-                DoctrineSystem.Instance.OnDoctrineChanged -= _ => RefreshCards();
+                DoctrineSystem.Instance.OnDoctrineChanged -= HandleDoctrineChanged;
         }
+
+        private void HandleDoctrineChanged(DoctrineDef? _) => RefreshCards();
 
         private void ApplyLocalizedTexts()
         {

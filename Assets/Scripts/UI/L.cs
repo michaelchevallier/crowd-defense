@@ -179,6 +179,21 @@ namespace CrowdDefense.UI
                     ["doctrine.cost_label"] = "{0} gems",
                     ["doctrine.hud_btn"] = "Doctrines",
 
+                    // ── Synergy badge icons (text prefix per tower type) ────────────
+                    ["syn.icon.archer"]   = "[A]",
+                    ["syn.icon.mage"]     = "[M]",
+                    ["syn.icon.ballista"] = "[B]",
+                    ["syn.icon.cannon"]   = "[C]",
+                    ["syn.icon.crossbow"] = "[X]",
+                    ["syn.icon.frost"]    = "[F]",
+                    ["syn.icon.fan"]      = "[W]",
+                    ["syn.icon.acid"]     = "[Z]",
+                    ["syn.icon.mine"]     = "[N]",
+                    ["syn.icon.portal"]   = "[P]",
+                    ["syn.icon.magnet"]   = "[G]",
+                    ["syn.icon.skyguard"] = "[S]",
+                    ["syn.icon.tank"]     = "[T]",
+
                     // ── Tutorial ───────────────────────────────────────────────────
                     ["tutorial.btn_next"] = "Continue",
                     ["tutorial.btn_skip"] = "Skip Tutorial",
@@ -350,6 +365,21 @@ namespace CrowdDefense.UI
                     ["doctrine.btn_active"] = "Active",
                     ["doctrine.cost_label"] = "{0} gemmes",
                     ["doctrine.hud_btn"] = "Doctrines",
+
+                    // ── Synergy badge icons (same shortcodes in FR) ─────────────────
+                    ["syn.icon.archer"]   = "[A]",
+                    ["syn.icon.mage"]     = "[M]",
+                    ["syn.icon.ballista"] = "[B]",
+                    ["syn.icon.cannon"]   = "[C]",
+                    ["syn.icon.crossbow"] = "[X]",
+                    ["syn.icon.frost"]    = "[F]",
+                    ["syn.icon.fan"]      = "[W]",
+                    ["syn.icon.acid"]     = "[Z]",
+                    ["syn.icon.mine"]     = "[N]",
+                    ["syn.icon.portal"]   = "[P]",
+                    ["syn.icon.magnet"]   = "[G]",
+                    ["syn.icon.skyguard"] = "[S]",
+                    ["syn.icon.tank"]     = "[T]",
 
                     // ── Tutorial ───────────────────────────────────────────────────
                     ["tutorial.btn_next"] = "Continuer",

@@ -126,6 +126,9 @@
         <!-- Minimap (top-right, 10 Hz update via MinimapController) -->
         <ui:VisualElement name="minimap-container" class="minimap-container hidden" />
 
+        <!-- Synergy badges (bottom-center, above toolbar) -->
+        <ui:VisualElement name="synergy-badges" class="synergy-badges" />
+
         <!-- Tower toolbar (bottom) -->
         <ui:VisualElement name="tower-toolbar" class="tower-toolbar">
         </ui:VisualElement>
