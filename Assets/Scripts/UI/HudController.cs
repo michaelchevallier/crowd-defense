@@ -59,6 +59,9 @@ namespace CrowdDefense.UI
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
 
+        // Race condition: track if WaveManager was subscribed after delayed init
+        private bool _waveManagerSubscribed = false;
+
         // Doctrine panel controller — sibling component on same GameObject
         private DoctrineController? _doctrineCtrl;
 
@@ -135,6 +138,7 @@ namespace CrowdDefense.UI
 
             if (WaveManager.Instance != null)
             {
+                _waveManagerSubscribed = true;
                 WaveManager.Instance.OnWaveStart += OnWaveStart;
                 WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
                 OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
@@ -184,6 +188,16 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
+            // Resolve WaveManager race condition: if not subscribed in Start(), try again here
+            if (!_waveManagerSubscribed && WaveManager.Instance != null)
+            {
+                _waveManagerSubscribed = true;
+                WaveManager.Instance.OnWaveStart += OnWaveStart;
+                WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
+                OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
+                OnBreakStateChanged();
+            }
+
             // N hotkey — debounced, shared with click (Q7)
             if (Input.GetKeyDown(KeyCode.N))
                 TryLaunchWave();
