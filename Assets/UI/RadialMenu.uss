@@ -18,7 +18,7 @@
     color: rgba(200, 210, 240, 0.9);
     font-size: 13px;
     -unity-font-style: bold;
-    -unity-font: resource("LegacyRuntime");
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     margin-bottom: 8px;
 }
 
@@ -84,7 +84,7 @@
     color: white;
     font-size: 16px;
     -unity-font-style: bold;
-    -unity-font: resource("LegacyRuntime");
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     margin-bottom: 2px;
 }
 
@@ -92,13 +92,13 @@
     color: rgb(255, 210, 63);
     font-size: 13px;
     -unity-font-style: bold;
-    -unity-font: resource("LegacyRuntime");
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
 
 .radial-btn-hint {
     color: rgba(200, 200, 200, 0.75);
     font-size: 11px;
-    -unity-font: resource("LegacyRuntime");
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     margin-top: 2px;
     -unity-text-align: middle-center;
 }
@@ -124,7 +124,7 @@
 .radial-btn-sell-label {
     color: rgba(210, 210, 210, 0.85);
     font-size: 13px;
-    -unity-font: resource("LegacyRuntime");
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
 
 .hidden {
