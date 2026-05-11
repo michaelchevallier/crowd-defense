@@ -1282,6 +1282,8 @@ namespace CrowdDefense.Entities
             else Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
 #endif
 
+            Achievements.Instance?.Unlock("first_blood");
+            Achievements.Instance?.TrackEvent("enemy_killed", 1);
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);
 
