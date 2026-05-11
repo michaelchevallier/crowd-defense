@@ -48,7 +48,10 @@ namespace CrowdDefense.Systems
                 ComboLevel = newLevel;
                 ActiveMultiplier = MultiplierFor(newLevel);
                 if (ComboLevel >= BalanceConfig.Get().ComboMinKills)
+                {
                     EventManager.Instance?.Publish(new ComboUpdatedEvent(ComboLevel, ActiveMultiplier));
+                    AudioController.Instance?.Play("combo_up");
+                }
             }
         }
 
