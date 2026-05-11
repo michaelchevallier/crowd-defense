@@ -4,6 +4,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.UI;
 
 namespace CrowdDefense.Systems
 {
@@ -121,6 +122,7 @@ namespace CrowdDefense.Systems
             if (_defeatedPublished || _currentDef == null) return;
             _defeatedPublished = true;
             EventManager.Instance?.Publish(new BossDefeatedEvent(_currentDef.DisplayNameFr));
+            Toast.Show("Boss Defeated", _currentDef.DisplayNameFr, 4000, null);
         }
 
         private void ResetBoss()

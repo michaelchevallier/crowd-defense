@@ -259,6 +259,12 @@ namespace CrowdDefense.Systems
             SetState(GameState.Victory);
         }
 
-        private void OnWaveCleared(int _) => Hero?.OnWaveEnd();
+        private void OnWaveCleared(int waveIdx)
+        {
+            Hero?.OnWaveEnd();
+            int waveNumber = waveIdx + 1;
+            if (waveNumber % 5 == 0)
+                UI.Toast.Show($"Wave {waveNumber} cleared!", string.Empty, 3000, null);
+        }
     }
 }

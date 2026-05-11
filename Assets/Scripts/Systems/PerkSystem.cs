@@ -6,6 +6,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.UI;
 using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
@@ -212,6 +213,9 @@ namespace CrowdDefense.Systems
             }
 
             OnPerkApplied?.Invoke(hero, def);
+
+            string perkName = !string.IsNullOrEmpty(def.displayName) ? def.displayName : def.id;
+            Toast.Show("Perk Acquired", perkName, 3000, null);
 
             AudioController.Instance?.Play("perk_pick", 0.9f);
             JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.35f), 200);
