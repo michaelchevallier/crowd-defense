@@ -97,6 +97,8 @@ namespace CrowdDefense.Entities
         private float _invulUntilTime   = 0f;
         private bool  _summonHordePending = false;
         private float _summonHordeTime  = 0f;
+        private float _damageMul        = 1f;   // Phase 4 enrage: outgoing castle damage ×2
+        private float _aoePulseTimer    = 0f;   // Phase 4: AOE pulse every 3s
 
         // ── HP bar (world-space billboard) ────────────────────────────────────
         private Transform?    _hpBarRoot;
@@ -300,6 +302,8 @@ namespace CrowdDefense.Entities
             _invulUntilTime   = 0f;
             _summonHordePending = false;
             _summonHordeTime  = 0f;
+            _damageMul        = 1f;
+            _aoePulseTimer    = 0f;
             _dustTimer        = 0f;
             _fieryTimer       = 0f;
             _stepTimer        = 0f;
@@ -935,13 +939,28 @@ namespace CrowdDefense.Entities
         {
             if (cfg == null || !cfg.IsApocalypseBoss) return;
 
-            // Summon horde triggered from takeDamage phase transitions
+            // Phase 3 skeleton summons (delayed 1s after phase entry)
             if (_summonHordePending && Time.time >= _summonHordeTime)
             {
                 _summonHordePending = false;
-                for (int i = 0; i < 8; i++)
-                    SpawnMinionByType("imp");
+                for (int i = 0; i < 4; i++)
+                {
+                    float angle = i * 90f * Mathf.Deg2Rad;
+                    Vector3 offset = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * 2f;
+                    SpawnMinionAt(transform.position + offset);
+                }
                 VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.8f, 3f);
+            }
+
+            // Phase 4 AOE pulse timer (every 3s)
+            if (_apocPhase >= 4 && !_dying && !IsDead)
+            {
+                _aoePulseTimer -= Time.deltaTime;
+                if (_aoePulseTimer <= 0f)
+                {
+                    _aoePulseTimer = 3f;
+                    EmitAoePulse();
+                }
             }
 
             // Pulse aura harder during invulnerability window
@@ -1196,42 +1215,52 @@ namespace CrowdDefense.Entities
 
         private void TickApocalypseBossPhases(float ratio)
         {
+            // Phase 2 (HP 75-50%): invulnerable 2s, then speed ×1.5
             if (_apocPhase < 2 && ratio <= 0.75f)
             {
                 _apocPhase = 2;
-                _invulUntilTime = Time.time + 5f;
-                _summonHordePending = true;
-                _summonHordeTime = Time.time + 1f;
+                _invulUntilTime = Time.time + 2f;
+                StartCoroutine(ApplySpeedAfterInvul(2f, 1.5f));
                 VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 1f, 4f);
                 JuiceFX.Instance?.Shake(0.3f, 400);
                 EventManager.Instance?.Publish(new BossPhaseChangedEvent("L'Apocalypse — Phase 2 : Invulnérable !", 2));
             }
+            // Phase 3 (HP 50-25%): summon 4 skeletons in 2m radius circle
             if (_apocPhase < 3 && ratio <= 0.50f)
             {
                 _apocPhase = 3;
-                // Double speed — only apply once
-                pressureSpeedMul *= 2f;
+                _summonHordePending = true;
+                _summonHordeTime = Time.time + 1f;
                 VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 1f, 4.5f);
                 JuiceFX.Instance?.Shake(0.35f, 500);
-                EventManager.Instance?.Publish(new BossPhaseChangedEvent("L'Apocalypse — Phase 3 : Double vitesse !", 3));
+                EventManager.Instance?.Publish(new BossPhaseChangedEvent("L'Apocalypse — Phase 3 : Invocation !", 3));
             }
+            // Phase 4 (HP < 25%): damage ×2 + AOE pulse every 3s
             if (_apocPhase < 4 && ratio <= 0.25f)
             {
                 _apocPhase = 4;
+                _damageMul = 2f;
+                _aoePulseTimer = 0f; // fire immediately on next Update tick
                 VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 1f, 5f);
                 JuiceFX.Instance?.Shake(0.5f, 700);
                 EventManager.Instance?.Publish(new BossPhaseChangedEvent("L'Apocalypse — Phase 4 : ENRAGE FINAL !", 4));
-                // Phase 4: start repeating aoe pulse
-                InvokeRepeating(nameof(EmitAoePulse), 0f, 2f);
             }
+        }
+
+        private System.Collections.IEnumerator ApplySpeedAfterInvul(float delaySec, float speedMul)
+        {
+            yield return new WaitForSeconds(delaySec);
+            pressureSpeedMul *= speedMul;
         }
 
         private void EmitAoePulse()
         {
-            if (_dying || IsDead) { CancelInvoke(nameof(EmitAoePulse)); return; }
+            if (_dying || IsDead) return;
             if (PlacementController.Instance == null || cfg == null) return;
+            const float AoePulseRadius = 4f;
+            const int   AoePulseDamage = 30;
             var towers = PlacementController.Instance.PlacedTowers;
-            float radiusSq = 4f * 4f;
+            float radiusSq = AoePulseRadius * AoePulseRadius;
             for (int i = towers.Count - 1; i >= 0; i--)
             {
                 var tower = towers[i];
@@ -1239,7 +1268,10 @@ namespace CrowdDefense.Entities
                 if ((tower.transform.position - transform.position).sqrMagnitude < radiusSq)
                     PlacementController.Instance.RemoveTower(tower);
             }
-            VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.6f, 4f);
+            if (Castle.Instance != null
+                && (Castle.Instance.transform.position - transform.position).sqrMagnitude < radiusSq)
+                Castle.Instance.TakeDamage(AoePulseDamage);
+            VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.6f, AoePulseRadius);
         }
 
         private void HandleDeath()
@@ -1393,7 +1425,7 @@ namespace CrowdDefense.Entities
         private void OnReachedCastle()
         {
             if (IsDead || _dying) return;
-            int dmg = cfg?.Damage ?? 0;
+            int dmg = Mathf.RoundToInt((cfg?.Damage ?? 0) * _damageMul);
 #if UNITY_EDITOR
             Debug.Log($"[Enemy] reached castle type={cfg?.Id} dmg={dmg} pathIdx={pathIdx}");
 #endif
@@ -1424,6 +1456,17 @@ namespace CrowdDefense.Entities
             if (spawnType == null) return;
             Vector3 spawnPos = transform.position + Vector3.forward * 0.5f;
             var minion = EnemyPool.Instance.SpawnFromType(spawnType, spawnPos, pathIdx);
+            WaveManager.Instance?.RegisterSpawnedEnemy(minion);
+        }
+
+        // Spawns a skeleton minion at worldPos for phase 3.
+        // Uses cfg.SummonType (configured on the apocalypse boss SO as mob_skeleton).
+        private void SpawnMinionAt(Vector3 worldPos)
+        {
+            if (EnemyPool.Instance == null) return;
+            var spawnType = cfg?.SummonType;
+            if (spawnType == null) return;
+            var minion = EnemyPool.Instance.SpawnFromType(spawnType, worldPos, pathIdx);
             WaveManager.Instance?.RegisterSpawnedEnemy(minion);
         }
 

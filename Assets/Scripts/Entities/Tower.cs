@@ -16,6 +16,8 @@ namespace CrowdDefense.Entities
     /// </summary>
     public enum TowerBranch { None, Dps, Utility }
 
+    public enum TargetPriority { First, Last, Strongest, Weakest, Closest }
+
     public class Tower : MonoBehaviour
     {
         [SerializeField] private GameObject? projectilePrefab;
@@ -118,8 +120,36 @@ namespace CrowdDefense.Entities
         public float L3FinalExplosionAoe { get; private set; } = 0f;
         public float L3FinalExplosionDmg { get; private set; } = 0f;
 
+        // L3 Archer "Ranger Marksman" (Utility): critical hit chance + multiplier (D1-03)
+        public float L3CritChance { get; private set; } = 0f;   // 0–1 probability
+        public float L3CritMul { get; private set; } = 1f;      // damage multiplier on crit
+
+        // L3 Mage "Archmage" (DPS): chain lightning jumps on hit (D1-03)
+        public int   L3ChainLightningJumps { get; private set; } = 0;
+        public float L3ChainLightningRange { get; private set; } = 5f;
+
+        // L3 Mage "Frostmage" (Utility): freeze on hit duration (D1-03)
+        public bool L3FreezeOnHit { get; private set; } = false;
+        public int  L3FreezeDurMs { get; private set; } = 0;
+
+        // L3 Tank "Berserker" (DPS): damage ×2 when castle HP < 50% (D1-03)
+        public bool  L3BerserkerActive { get; private set; } = false;
+        public float L3BerserkerDmgMul { get; private set; } = 2f;
+        public float L3BerserkerHpThreshold { get; private set; } = 0.5f;
+
+        // L3 Tank "Bulwark" (Utility): -20% incoming damage to adjacent towers (D1-03)
+        public bool  L3BulwarkAura { get; private set; } = false;
+        public float L3BulwarkAuraRange { get; private set; } = 4f;
+        public float L3BulwarkDmgReduction { get; private set; } = 0.20f;
+
+        // Bulwark protection flag — set each frame by a nearby Bulwark tower.
+        public bool _bulwarkProtected = false;
+
         // Tint appliqué au L3 signature (rouge=DPS, cyan=Utility)
         private bool _l3TintApplied = false;
+
+        [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
+        public TargetPriority CurrentTargetPriority => _targetPriority;
 
         // Coût cumulé pour le calcul du refund sell
         public int CumulativeCost { get; private set; }
@@ -321,12 +351,15 @@ namespace CrowdDefense.Entities
             _levelDmgScale = scales.Length > scaleIdx ? scales[scaleIdx] : 1f;
 
             if (level == 3)
+            {
                 ApplyL3Branch(branch);
+                Achievements.Instance?.Unlock("max_upgrade_tower");
+            }
 
             PostUpgradeVisuals(level);
 
             // Upgrade VFX : burst doré + audio + punch scale + popup niveau
-            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 1.5f);
+            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 1.5f, Color.yellow);
             AudioController.Instance?.Play3D("tower_upgrade", transform.position);
             AudioController.Instance?.Play3D("powerup", transform.position);
             JuiceFX.Instance?.PunchScale(transform, 1.25f, 0.4f);
@@ -606,35 +639,46 @@ namespace CrowdDefense.Entities
             if (cfg == null || WaveManager.Instance == null) return null;
             float rangeSq = cfg.Range * cfg.Range;
             Enemy? best = null;
-            int bestWp = -1;
+            float bestScore = float.MinValue;
             var enemies = WaveManager.Instance.ActiveEnemies;
+            Vector3 myPos = transform.position;
+
             for (int i = 0; i < enemies.Count; i++)
             {
                 var e = enemies[i];
                 if (e == null || e.IsDead) continue;
-                if ((e.transform.position - transform.position).sqrMagnitude > rangeSq) continue;
+                float distSq = (e.transform.position - myPos).sqrMagnitude;
+                if (distSq > rangeSq) continue;
 
                 if (cfg.FlyerOnly && !e.IsFlyer) continue;
                 if (e.IsFlyer && !cfg.FlyerOnly && !cfg.CanHitFlyers) continue;
                 if (e.StealthAlpha < 0.4f) continue;
 
+                float score;
                 if (e.IsFlyer)
                 {
-                    float distSq = Castle.Instance != null
+                    // Flyers: always pick closest to castle regardless of player priority
+                    float castleDstSq = Castle.Instance != null
                         ? (e.transform.position - Castle.Instance.transform.position).sqrMagnitude
                         : float.MaxValue;
-                    int flyerPriority = -(int)(distSq * 10f);
-                    if (best == null || flyerPriority > bestWp)
+                    score = -castleDstSq;
+                }
+                else
+                {
+                    score = _targetPriority switch
                     {
-                        bestWp = flyerPriority;
-                        best = e;
-                    }
-                    continue;
+                        TargetPriority.First     => e.CurrentWaypoint,
+                        TargetPriority.Last      => -e.CurrentWaypoint,
+                        TargetPriority.Strongest => e.HpRatio,
+                        TargetPriority.Weakest   => -e.HpRatio,
+                        TargetPriority.Closest   => -distSq,
+                        _                         => e.CurrentWaypoint,
+                    };
                 }
 
-                if (e.CurrentWaypoint > bestWp)
+                if (best == null || score > bestScore)
                 {
-                    bestWp = e.CurrentWaypoint;
+                    bestScore = score;
                     best = e;
                 }
             }
@@ -738,6 +782,12 @@ namespace CrowdDefense.Entities
         public void ClearHeroBuff()
         {
             _heroBuffDmgMul = 1f;
+        }
+
+        public void SetTargetPriority(TargetPriority priority)
+        {
+            _targetPriority = priority;
+            target = null; // force re-acquire with new priority
         }
 
         // ── Range Ring ────────────────────────────────────────────────────────

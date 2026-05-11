@@ -76,13 +76,6 @@ namespace CrowdDefense.Systems
             TotalCount > 0 ? (float)UnlockedCount / TotalCount : 0f;
 
         // Event-based hook for deferred counters — called by game systems for cumulative tracking.
-        // Phase 5.B will wire these calls in hot zones:
-        //   Enemy.Die          → Achievements.Instance?.TrackEvent("enemy_killed", 1)
-        //   Tower.OnPlaced     → Achievements.Instance?.TrackEvent("tower_placed", 1)
-        //   WaveManager        → Achievements.Instance?.TrackEvent("wave_cleared", 1)
-        //   Economy            → Achievements.Instance?.TrackEvent("gold_earned", amount)
-        //   LevelRunner.Win    → Achievements.Instance?.TrackEvent("level_complete", 1, levelId)
-        //   Synergies.Activate → Achievements.Instance?.TrackEvent("synergy_activated", 1)
         // Keep counters in PlayerPrefs under "cd.ach.counter.<eventKey>" for persistence.
         public void TrackEvent(string eventKey, int delta, string? context = null)
         {
@@ -90,8 +83,14 @@ namespace CrowdDefense.Systems
             int current = PlayerPrefs.GetInt(prefsKey, 0) + delta;
             PlayerPrefs.SetInt(prefsKey, current);
 
-            // TODO Phase 5.B: evaluate achievement predicates against updated counters
-            // e.g. CheckCounterAchievements(eventKey, current, context);
+            if (registry == null) return;
+            foreach (var def in registry.All)
+            {
+                if (def == null || def.predicateType != AchievementPredicateType.Counter) continue;
+                if (def.eventKey != eventKey) continue;
+                if (current >= def.threshold)
+                    Unlock(def.id);
+            }
         }
 
         public int GetEventCount(string eventKey) =>

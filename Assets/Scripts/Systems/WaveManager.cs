@@ -102,6 +102,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
             Debug.Log($"[WaveManager] Wave {idx + 1}/{TotalWaves} start : {list.Count} enemies, streakRewardMul={StreakRewardMul:F2}");
 #endif
+            if (idx == 4) Achievements.Instance?.Unlock("wave_5_reached");
             OnWaveStart?.Invoke(idx);
         }
 
@@ -131,6 +132,7 @@ namespace CrowdDefense.Systems
                     AudioController.Instance?.Play("wave_clear", 0.7f);
                     JuiceFX.Instance?.Flash(new Color(0.4f, 1f, 0.4f, 0.25f), 300);
 
+                    Achievements.Instance?.TrackEvent("wave_cleared", 1);
                     OnWaveCleared?.Invoke(currentWaveIdx);
 #if UNITY_EDITOR
                     Debug.Log($"[WaveManager] Wave {currentWaveIdx + 1} cleared — awaiting player start");

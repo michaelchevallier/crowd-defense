@@ -291,6 +291,9 @@ namespace CrowdDefense.Systems
             JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.4f), 500);
             JuiceFX.Instance?.SlowMo(0.5f, 1200);
 
+            string worldAchId = $"world{currentLevel?.World ?? 1}_complete";
+            Achievements.Instance?.Unlock(worldAchId);
+
             // PerkPickerController subscribes to OnLevelComplete and calls ConfirmLevelComplete() when done.
             OnLevelComplete?.Invoke();
 
