@@ -3,7 +3,7 @@
          editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
     <Style src="MenuLevelSelect.uss" />
     <ui:VisualElement name="menu-root" class="menu-root">
-        <ui:Label text="CROWD DEFENSE" class="menu-title" />
+        <ui:Label text="CROWD DEFENSE" name="menu-title-label" class="menu-title" />
         <ui:ScrollView name="level-scroll" class="level-scroll" vertical-scroller-visibility="AlwaysVisible">
             <ui:VisualElement name="level-grid" class="level-grid" />
         </ui:ScrollView>
