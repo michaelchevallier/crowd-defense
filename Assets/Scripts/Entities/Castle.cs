@@ -66,5 +66,14 @@ namespace CrowdDefense.Entities
             HP = Mathf.Min(HPMax, HP + amount);
             OnHPChanged?.Invoke(HP, HPMax);
         }
+
+        // Increase max HP (forteresse_perk / set bonus "pierre") — also heals by the delta.
+        public void GrantBonusHP(int bonus)
+        {
+            if (bonus <= 0) return;
+            HPMax += bonus;
+            HP    += bonus;
+            OnHPChanged?.Invoke(HP, HPMax);
+        }
     }
 }
