@@ -148,9 +148,11 @@ namespace CrowdDefense.Systems
 
             SpawnCastle();
             SpawnHero();
+            UI.HeroPortraitController.Instance?.Wire();
             SpawnTreasureSystem();
             SpawnPathPreview();
             TryPlayOpeningCutscene();
+            UI.TutorialPopupController.TryShow(currentLevel?.Id);
 
             var bounds = default(Bounds);
             if (PathManager.Instance?.Grid != null)
