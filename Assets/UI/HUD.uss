@@ -106,3 +106,89 @@
 .hidden {
     display: none;
 }
+
+/* === Wave launch button (D1-02) === */
+.wave-launch-btn {
+    position: absolute;
+    left: 50%;
+    bottom: 110px;
+    translate: -50% 0;
+    width: 240px;
+    height: 60px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(240, 160, 32);
+    border-color: rgb(200, 138, 0);
+    border-width: 3px;
+    border-radius: 14px;
+    cursor: link;
+}
+
+.wave-launch-btn:hover {
+    background-color: rgb(255, 185, 40);
+}
+
+.wave-launch-btn:active {
+    background-color: rgb(200, 120, 10);
+    translate: -50% 2px;
+}
+
+.wave-launch-btn.skip-window {
+    border-color: rgb(255, 226, 115);
+    background-color: rgb(255, 185, 40);
+}
+
+.wave-launch-label {
+    color: rgb(26, 26, 26);
+    font-size: 18px;
+    -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
+}
+
+.wave-launch-sub {
+    font-size: 12px;
+    color: rgba(26, 26, 26, 0.75);
+    -unity-font: resource("LegacyRuntime");
+    margin-top: 2px;
+}
+
+.wave-launch-streak {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background-color: rgb(95, 224, 121);
+    border-color: rgb(10, 26, 10);
+    border-width: 2px;
+    border-radius: 10px;
+    padding: 2px 8px;
+}
+
+.wave-launch-streak-text {
+    color: rgb(10, 26, 10);
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
+}
+
+/* Pill timer shown above the launch button during skip window */
+.wave-launch-pill {
+    position: absolute;
+    left: 50%;
+    bottom: 180px;
+    translate: -50% 0;
+    background-color: rgba(20, 28, 36, 0.92);
+    border-color: rgb(255, 210, 63);
+    border-width: 2px;
+    border-radius: 14px;
+    padding: 4px 14px;
+    align-items: center;
+    justify-content: center;
+}
+
+.wave-launch-pill-text {
+    color: rgb(255, 210, 63);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
+}

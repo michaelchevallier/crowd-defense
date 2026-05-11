@@ -24,6 +24,18 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <!-- Wave launch button (visible between waves only) -->
+        <ui:VisualElement name="wave-launch-pill" class="wave-launch-pill hidden">
+            <ui:Label text="+30¢ · 5.0s" name="wave-launch-pill-text" class="wave-launch-pill-text" />
+        </ui:VisualElement>
+        <ui:VisualElement name="wave-launch-btn" class="wave-launch-btn hidden">
+            <ui:Label text="Lancer la vague (N)" name="wave-launch-label" class="wave-launch-label" />
+            <ui:Label text="Vague 1 / 4" name="wave-launch-sub" class="wave-launch-sub" />
+            <ui:VisualElement name="wave-launch-streak" class="wave-launch-streak hidden">
+                <ui:Label text="+5%" name="wave-launch-streak-text" class="wave-launch-streak-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
         <!-- Game Over panel -->
         <ui:VisualElement name="panel-game-over" class="overlay-panel overlay-game-over hidden">
             <ui:Label text="GAME OVER" class="overlay-title" />
