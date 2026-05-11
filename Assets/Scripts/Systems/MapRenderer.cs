@@ -15,7 +15,9 @@ namespace CrowdDefense.Systems
             var pm = PathManager.Instance;
             if (pm == null || pm.Grid == null)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogError("[MapRenderer] PathManager not ready");
+#endif
                 return;
             }
 

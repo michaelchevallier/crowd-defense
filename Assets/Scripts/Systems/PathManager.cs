@@ -46,7 +46,9 @@ namespace CrowdDefense.Systems
         {
             if (levelData == null)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogError("[PathManager] No LevelData assigned");
+#endif
                 return;
             }
 
@@ -56,7 +58,9 @@ namespace CrowdDefense.Systems
 
             if (Grid.Portals.Count == 0 || Grid.Castles.Count == 0)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogError($"[PathManager] No portal or castle (portals={Grid.Portals.Count}, castles={Grid.Castles.Count})");
+#endif
                 Paths = paths;
                 PathsMeta = meta;
                 return;

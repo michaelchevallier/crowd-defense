@@ -56,7 +56,9 @@ namespace CrowdDefense.Systems
         {
             if (levelData == null || levelData.Waves.Count == 0)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogError("[WaveManager] No LevelData or no waves");
+#endif
                 return;
             }
             // D1-02: first wave waits for player click/N — show button immediately

@@ -105,13 +105,17 @@ namespace CrowdDefense.Entities
 
             if (pathManager == null || pathManager.Paths.Count == 0)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogError("[Enemy] No PathManager or no paths");
+#endif
                 Destroy(gameObject);
                 return;
             }
             if (pathManager.WaypointCountOnPath(pathIdx) < 2)
             {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogError($"[Enemy] Path {pathIdx} too short");
+#endif
                 Destroy(gameObject);
                 return;
             }

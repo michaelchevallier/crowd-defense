@@ -25,7 +25,11 @@ namespace CrowdDefense.Data
             if (_instance != null) return _instance;
             _instance = Resources.Load<LevelRegistry>("LevelRegistry");
             if (_instance == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.LogError("[LevelRegistry] LevelRegistry.asset not found in Resources/. Run Tools/CrowdDefense/Build LevelRegistry.");
+#endif
+            }
             return _instance!;
         }
     }
