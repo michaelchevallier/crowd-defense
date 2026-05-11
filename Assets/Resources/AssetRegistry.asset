@@ -19,6 +19,8 @@ MonoBehaviour:
     Prefab: {fileID: -8843307070985724611, guid: b8bc617fe3cec4c049ef2489b154a175, type: 3}
   - Key: tower_archer_l3
     Prefab: {fileID: 7985712629288543768, guid: 962d54191df734ab0836ab1cf8234046, type: 3}
+  - Key: tower_skyguard
+    Prefab: {fileID: -2814452630812415425, guid: 44339fe6877dc4247a803119a18376af, type: 3}
   - Key: tower_ballista
     Prefab: {fileID: -2814452630812415425, guid: 44339fe6877dc4247a803119a18376af, type: 3}
   - Key: tower_ballista_l2
@@ -33,6 +35,8 @@ MonoBehaviour:
     Prefab: {fileID: 2107409826236812522, guid: 2590b8288025546ef89d17a2c8accbce, type: 3}
   - Key: tower_frost
     Prefab: {fileID: 2107409826236812522, guid: c524a48550e714a0780bc7b99a9b0cbf, type: 3}
+  - Key: tower_acid
+    Prefab: {fileID: 1132859227735928237, guid: c5968f0cea4774c3cbe16f2c2c87a2cd, type: 3}
   - Key: tower_mage
     Prefab: {fileID: 1132859227735928237, guid: c5968f0cea4774c3cbe16f2c2c87a2cd, type: 3}
   - Key: tower_mage_l2
@@ -111,3 +115,23 @@ MonoBehaviour:
     Prefab: {fileID: 8771091787928289351, guid: 72a3634548eb94d1a8d275d248538cc4, type: 3}
   - Key: boss_yeti
     Prefab: {fileID: 8771091787928289351, guid: f22a7f2d9eeab4254853b12c5fe4da55, type: 3}
+  - Key: goblin
+    Prefab: {fileID: 8771091787928289351, guid: 559caac04b2cf4b77b48ba54c625e290, type: 3}
+  - Key: zombie
+    Prefab: {fileID: 8771091787928289351, guid: 20855db26625c4b479920155d8a81989, type: 3}
+  - Key: pirate
+    Prefab: {fileID: 8771091787928289351, guid: 1cd3bc03f4055451eaaa507562786e37, type: 3}
+  - Key: soldier
+    Prefab: {fileID: 8771091787928289351, guid: 78d58d569669c4ee788c6f9d152feade, type: 3}
+  - Key: wizard
+    Prefab: {fileID: 8771091787928289351, guid: 77dd609fcc1254d439a8512ede927c51, type: 3}
+  - Key: knightgolden
+    Prefab: {fileID: 8771091787928289351, guid: 28c0ef994760b4e1394d4566ea26c068, type: 3}
+  - Key: mob_cyberpunk_character
+    Prefab: {fileID: 8771091787928289351, guid: 3bda886376dda438ebd2d15523dc8abb, type: 3}
+  - Key: mob_cyberpunk_large
+    Prefab: {fileID: 8771091787928289351, guid: 3347671ada1504ccbbd5a6dd2220f5f2, type: 3}
+  - Key: mob_cyberpunk_flying
+    Prefab: {fileID: 8771091787928289351, guid: 96aa538f7cc2140de9e9d4ec97f7de1a, type: 3}
+  - Key: mob_cyberpunk_2legs
+    Prefab: {fileID: 8771091787928289351, guid: 41cbc5975572c48a898cff465b97db54, type: 3}
