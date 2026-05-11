@@ -21,6 +21,10 @@ namespace CrowdDefense.Systems
         // Tour active (debug sell hotkey S, CORE-20 radial menu)
         private Tower? selectedTower;
 
+        // Double-tap detection
+        private float _lastTapTime = -1f;
+        private const float DoubleTapMaxInterval = 0.3f;
+
         public IReadOnlyList<Tower> PlacedTowers => placedTowers;
         // Exposé pour radial menu CORE-20
         public Tower? SelectedTower => selectedTower;
@@ -70,6 +74,17 @@ namespace CrowdDefense.Systems
             }
 #endif
             if (cam == null) return;
+
+            // Touch input — tap-to-select + double-tap upgrade
+            if (Input.touchSupported && Input.touchCount == 1)
+            {
+                Touch touch = Input.GetTouch(0);
+                if (touch.phase == TouchPhase.Began)
+                {
+                    HandleTouchTap(touch.position);
+                    return;
+                }
+            }
 
             // Hover tracking for PathfinderVisualization (runs every frame in placement mode)
             if (OnHoverPlacementCell != null)
@@ -184,11 +199,76 @@ namespace CrowdDefense.Systems
             }
         }
 
+        // Touch tap handler — single tap = select, double tap = upgrade selected tower
+        private void HandleTouchTap(Vector2 screenPos)
+        {
+            bool isDoubleTap = (Time.unscaledTime - _lastTapTime) < DoubleTapMaxInterval;
+            _lastTapTime = Time.unscaledTime;
+
+            if (isDoubleTap && selectedTower != null)
+            {
+                if (selectedTower.UpgradeTo(selectedTower.UpgradeLevel + 1))
+                    SyncCumulativeCost(selectedTower);
+                return;
+            }
+
+            if (selectedTowerType == null)
+            {
+                TrySelectTowerAt(screenPos);
+                return;
+            }
+
+            if (towerPrefab == null) return;
+            if (PathManager.Instance == null || PathManager.Instance.Grid == null) return;
+
+            Ray ray = cam!.ScreenPointToRay(screenPos);
+            if (!groundPlane.Raycast(ray, out float dist)) return;
+            Vector3 hitPos = ray.GetPoint(dist);
+
+            var grid = PathManager.Instance.Grid;
+            Vector2Int cell = GridCoords.WorldToCell(hitPos, grid.Width, grid.Height, grid.CellSize);
+            if (!grid.IsBuildable(cell.x, cell.y)) return;
+
+            if (selectedTowerType.Behavior == TowerBehavior.CoinPull)
+            {
+                var cfg = BalanceConfig.Get();
+                bool allowMulti = LevelRunner.Instance?.CurrentLevel?.AllowMultiMagnet ?? false;
+                int cap = allowMulti ? cfg.MagnetCapAllowMulti : cfg.MagnetCapDefault;
+                int count = 0;
+                foreach (var t in placedTowers)
+                    if (t != null && t.Config?.Behavior == TowerBehavior.CoinPull) count++;
+                if (count >= cap) return;
+            }
+
+            var hero = LevelRunner.Instance?.Hero;
+            int cost = ComputeTowerCost(selectedTowerType.Cost, hero);
+            if (cost > 0 && (Economy.Instance == null || !Economy.Instance.TrySpend(cost))) return;
+            if (cost == 0 && hero != null && hero.FirstTowerFree)
+                hero.FirstTowerFreeUsed = true;
+
+            Vector3 cellWorld = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
+            var go = Instantiate(towerPrefab, cellWorld, Quaternion.identity);
+            var tower = go.GetComponent<Tower>();
+            if (tower != null)
+            {
+                tower.Init(selectedTowerType, projectilePrefab);
+                placedTowers.Add(tower);
+                AudioController.Instance?.Play("tower_built", 0.7f);
+                OnTowerPlaced?.Invoke(tower);
+            }
+        }
+
         // Selection de tour via click (production + debug) — utilisee par radial menu CORE-20
         private void TrySelectTowerAtMouse()
         {
             if (cam == null) return;
-            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            TrySelectTowerAt(Input.mousePosition);
+        }
+
+        private void TrySelectTowerAt(Vector2 screenPos)
+        {
+            if (cam == null) return;
+            Ray ray = cam.ScreenPointToRay(screenPos);
             if (!groundPlane.Raycast(ray, out float dist)) return;
             Vector3 hitPos = ray.GetPoint(dist);
 
@@ -205,7 +285,7 @@ namespace CrowdDefense.Systems
             Debug.Log($"[Place] selectedTower={selectedTower?.Config?.Id ?? "none"} L{selectedTower?.UpgradeLevel}");
 #endif
 
-            // No tower found near click — check if cell is buildable and open select menu
+            // No tower found near tap/click — check if cell is buildable and open select menu
             if (closest == null && OnEmptyBuildableTileClick != null)
             {
                 var grid = PathManager.Instance?.Grid;

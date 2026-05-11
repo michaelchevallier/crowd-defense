@@ -32,6 +32,7 @@ namespace CrowdDefense.Visual
         private bool        _zooming;         // boss intro in progress
         private float       _baseY;           // Y at scene start — clamp = [baseY*0.5, baseY*2]
         private float       _prevPinchDist;   // touch pinch previous frame distance
+        private Vector2     _prevTouchPos;    // 1-finger pan previous frame position
 
         // ── Public API ────────────────────────────────────────────────────────
         public void SetHero(Transform hero)    => _hero   = hero;
@@ -80,6 +81,7 @@ namespace CrowdDefense.Visual
             if (_zooming) return;
             HandleZoom();
             HandlePinchZoom();
+            HandleTouchPan();
             HandleToggleFollow();
             HandlePan();
             HandleSpaceDrag();
@@ -97,6 +99,30 @@ namespace CrowdDefense.Visual
             float scroll = Input.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(scroll) < 0.0001f) return;
             ApplyZoomDelta(-scroll * zoomSpeed * 10f);
+        }
+
+        // ── 1-finger touch pan ───────────────────────────────────────────────
+        private void HandleTouchPan()
+        {
+            if (!Input.touchSupported || Input.touchCount != 1) { _prevTouchPos = Vector2.zero; return; }
+
+            Touch t = Input.GetTouch(0);
+            if (t.phase == TouchPhase.Began) { _prevTouchPos = t.position; return; }
+            if (t.phase != TouchPhase.Moved) return;
+            if (_followHero) return;
+
+            Vector2 delta = t.position - _prevTouchPos;
+            _prevTouchPos = t.position;
+
+            // Scale drag delta by camera height so pan feels consistent at all zoom levels
+            float scale = (transform.position.y / (_baseY > 0.001f ? _baseY : minY)) * 0.012f;
+
+            var right   = transform.right;   right.y = 0f; right.Normalize();
+            var forward = transform.forward; forward.y = 0f; forward.Normalize();
+
+            var pos = transform.position;
+            pos -= (right * delta.x + forward * delta.y) * scale;
+            transform.position = pos;
         }
 
         // ── Pinch zoom (2 fingers touch) ──────────────────────────────────────

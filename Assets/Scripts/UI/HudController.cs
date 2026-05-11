@@ -68,6 +68,9 @@ namespace CrowdDefense.UI
         // Doctrine panel controller — sibling component on same GameObject
         private DoctrineController? _doctrineCtrl;
 
+        // Settings panel controller — sibling component on same GameObject
+        private SettingsPanelController? _settingsCtrl;
+
         private void Start()
         {
             _doctrineCtrl = GetComponent<DoctrineController>();
@@ -75,6 +78,8 @@ namespace CrowdDefense.UI
 
             // Auto-add UI sibling controllers that share the HUD UIDocument (each Qs its own
             // elements out of HUD.uxml). Idempotent: only added when not already present.
+            EnsureSibling<SettingsPanelController>();
+            _settingsCtrl = GetComponent<SettingsPanelController>();
             EnsureSibling<PauseMenuController>();
             EnsureSibling<TowerToolbarController>();
             EnsureSibling<TowerTooltipController>();
@@ -82,6 +87,7 @@ namespace CrowdDefense.UI
             EnsureSibling<FloatingPopupController>();
             EnsureSibling<RadialMenuController>();
             EnsureSibling<TowerSelectMenuController>();
+            EnsureSibling<MuteToggleController>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;
             ApplyDeviceClasses(root);
@@ -135,6 +141,7 @@ namespace CrowdDefense.UI
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
 
             root.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
+            root.Q<Button>("btn-settings")?.RegisterCallback<ClickEvent>(_ => _settingsCtrl?.Show());
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";

@@ -23,6 +23,13 @@ namespace CrowdDefense.UI
         private Text?      _btnPrimaryLabel;
         private Text?      _btnSecondaryLabel;
 
+        // Stats grid (2 columns × 5 rows)
+        private Text?      _statKills;
+        private Text?      _statGold;
+        private Text?      _statTowers;
+        private Text?      _statTime;
+        private Text?      _statWaves;
+
         private bool _isVictory;
 
         // ── Colours ─────────────────────────────────────────────────────────────
@@ -93,19 +100,23 @@ namespace CrowdDefense.UI
                 if (isVictory)
                 {
                     var starsStr = new string('*', r.StarsEarned);
-                    var dotsStr = new string('.', 3 - r.StarsEarned);
-                    string stars = starsStr + dotsStr;
-                    _subtitleText.text = $"{stars}  Vagues : {r.WaveReached}  Kills : {r.Kills}";
+                    var dotsStr  = new string('.', 3 - r.StarsEarned);
+                    _subtitleText.text = starsStr + dotsStr;
                 }
                 else
                 {
-                    _subtitleText.text = $"Vague {r.WaveReached} - Chateau : {r.CastleHPRemaining}/{r.CastleHPMax} PV";
+                    _subtitleText.text = $"Chateau : {r.CastleHPRemaining}/{r.CastleHPMax} PV";
                 }
             }
             else if (_subtitleText != null)
             {
                 _subtitleText.text = isVictory ? "Toutes les vagues vaincues !" : "Le chateau est tombe.";
             }
+
+            if (r != null)
+                PopulateStats(r);
+            else
+                ClearStats();
 
             if (_btnPrimaryLabel  != null) _btnPrimaryLabel.text  = "Rejouer";
             if (_btnSecondaryLabel != null)
@@ -160,6 +171,13 @@ namespace CrowdDefense.UI
                     _subtitleText.color = new Color(c.r, c.g, c.b, eased);
                 }
 
+                foreach (var sl in new[] { _statKills, _statGold, _statTowers, _statTime, _statWaves })
+                {
+                    if (sl == null) continue;
+                    var c = sl.color;
+                    sl.color = new Color(c.r, c.g, c.b, eased);
+                }
+
                 elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
@@ -172,6 +190,13 @@ namespace CrowdDefense.UI
             }
             if (btnRect1 != null) btnRect1.anchoredPosition = btnFinal1;
             if (btnRect2 != null) btnRect2.anchoredPosition = btnFinal2;
+
+            foreach (var sl in new[] { _statKills, _statGold, _statTowers, _statTime, _statWaves })
+            {
+                if (sl == null) continue;
+                var c = sl.color;
+                sl.color = new Color(c.r, c.g, c.b, 1f);
+            }
         }
 
         private void OnPrimaryClicked()
@@ -210,6 +235,30 @@ namespace CrowdDefense.UI
             }
         }
 
+        // ── Stats helpers ───────────────────────────────────────────────────────
+
+        private void PopulateStats(LevelResult r)
+        {
+            int minutes = (int)(r.PlaytimeSeconds / 60f);
+            int seconds = (int)(r.PlaytimeSeconds % 60f);
+            int totalWaves = WaveManager.Instance?.TotalWaves > 0 ? WaveManager.Instance.TotalWaves : r.WaveReached;
+
+            if (_statKills  != null) _statKills.text  = $"Tues : {r.Kills}";
+            if (_statGold   != null) _statGold.text   = $"Or gagne : {r.GoldEarned}c";
+            if (_statTowers != null) _statTowers.text = $"Tours : {r.TowersPlaced}";
+            if (_statTime   != null) _statTime.text   = $"Temps : {minutes}m {seconds:D2}s";
+            if (_statWaves  != null) _statWaves.text  = $"Vagues : {r.WaveReached}/{totalWaves}";
+        }
+
+        private void ClearStats()
+        {
+            if (_statKills  != null) _statKills.text  = "";
+            if (_statGold   != null) _statGold.text   = "";
+            if (_statTowers != null) _statTowers.text = "";
+            if (_statTime   != null) _statTime.text   = "";
+            if (_statWaves  != null) _statWaves.text  = "";
+        }
+
         // ── UGUI construction ───────────────────────────────────────────────────
 
         private void BuildUI()
@@ -239,33 +288,57 @@ namespace CrowdDefense.UI
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot     = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(560f, 360f);
+            panelRect.sizeDelta = new Vector2(600f, 420f);
             var panelImg = panelGo.AddComponent<Image>();
             panelImg.color = VictoryPanelColor;
             _panel = panelGo;
 
+            var statColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+
             // Title
             _titleText = CreateLabel(panelGo.transform, "TitleLabel",
-                anchorMin: new Vector2(0f, 0.62f),
-                anchorMax: new Vector2(1f, 0.95f),
+                anchorMin: new Vector2(0f, 0.76f),
+                anchorMax: new Vector2(1f, 0.97f),
                 fontSize: 52, color: VictoryTitleColor);
 
-            // Subtitle / stats
+            // Subtitle (stars or castle HP)
             _subtitleText = CreateLabel(panelGo.transform, "SubtitleLabel",
-                anchorMin: new Vector2(0.05f, 0.38f),
-                anchorMax: new Vector2(0.95f, 0.62f),
-                fontSize: 22, color: new Color(0.85f, 0.85f, 0.85f, 1f));
+                anchorMin: new Vector2(0.05f, 0.64f),
+                anchorMax: new Vector2(0.95f, 0.77f),
+                fontSize: 22, color: statColor);
+
+            // Stats grid — 2 columns × 3 rows (col left: kills/towers/time, col right: gold/waves)
+            // Row anchors: 0.48–0.62 / 0.34–0.48 / 0.20–0.34
+            _statKills  = CreateLabel(panelGo.transform, "StatKills",
+                anchorMin: new Vector2(0.04f, 0.48f), anchorMax: new Vector2(0.50f, 0.63f),
+                fontSize: 18, color: statColor);
+            _statGold   = CreateLabel(panelGo.transform, "StatGold",
+                anchorMin: new Vector2(0.52f, 0.48f), anchorMax: new Vector2(0.97f, 0.63f),
+                fontSize: 18, color: statColor);
+            _statTowers = CreateLabel(panelGo.transform, "StatTowers",
+                anchorMin: new Vector2(0.04f, 0.34f), anchorMax: new Vector2(0.50f, 0.49f),
+                fontSize: 18, color: statColor);
+            _statWaves  = CreateLabel(panelGo.transform, "StatWaves",
+                anchorMin: new Vector2(0.52f, 0.34f), anchorMax: new Vector2(0.97f, 0.49f),
+                fontSize: 18, color: statColor);
+            _statTime   = CreateLabel(panelGo.transform, "StatTime",
+                anchorMin: new Vector2(0.04f, 0.20f), anchorMax: new Vector2(0.97f, 0.35f),
+                fontSize: 18, color: statColor);
+
+            // Left-align individual stat labels
+            foreach (var lbl in new[] { _statKills, _statGold, _statTowers, _statWaves, _statTime })
+                if (lbl != null) lbl.alignment = TextAnchor.MiddleLeft;
 
             // Primary button (Rejouer) — left
             (_btnPrimary, _btnPrimaryLabel) = CreateButton(panelGo.transform, "BtnPrimary",
-                anchorMin: new Vector2(0.05f, 0.04f),
-                anchorMax: new Vector2(0.47f, 0.32f));
+                anchorMin: new Vector2(0.05f, 0.03f),
+                anchorMax: new Vector2(0.47f, 0.18f));
             _btnPrimary.onClick.AddListener(OnPrimaryClicked);
 
             // Secondary button (Continuer / Menu) — right
             (_btnSecondary, _btnSecondaryLabel) = CreateButton(panelGo.transform, "BtnSecondary",
-                anchorMin: new Vector2(0.53f, 0.04f),
-                anchorMax: new Vector2(0.95f, 0.32f));
+                anchorMin: new Vector2(0.53f, 0.03f),
+                anchorMax: new Vector2(0.95f, 0.18f));
             _btnSecondary.onClick.AddListener(OnSecondaryClicked);
 
             _panel.SetActive(false);
