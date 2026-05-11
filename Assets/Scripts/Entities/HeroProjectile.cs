@@ -107,7 +107,7 @@ namespace CrowdDefense.Entities
 
             if (hitTarget == null) return;
 
-            bool isCrit = Random.value < _critChance;
+            bool isCrit = UnityEngine.Random.value < _critChance;
             float finalDmg = _damage * (isCrit ? _critMul : 1f) * _ricochetDmgMul;
 
             if (isCrit && _critStaggerMs > 0)
@@ -125,7 +125,7 @@ namespace CrowdDefense.Entities
                 hitTarget.TakeDamage(finalDmg);
                 _hitSet.Add(hitTarget);
 
-                if (_glaciation && Random.value < 0.3f)
+                if (_glaciation && UnityEngine.Random.value < 0.3f)
                     SlowEffectManager.Instance?.ApplySlow(hitTarget, 0.5f, 2000);
 
                 if (hitTarget.IsDead)
