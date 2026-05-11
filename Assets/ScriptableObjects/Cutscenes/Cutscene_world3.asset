@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44ed88e18cd8d4322aa8f076510cb765, type: 3}
+  m_Name: Cutscene_world3
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.CutsceneDef
+  id: world3
+  titleKey: L'Attraction Sahara
+  lines:
+  - speaker: Narrateur
+    textKey: L'attraction Sahara du parc est prise d'assaut par des corsaires assoiffes.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Ils surgissent des dunes en colonnes serrees, sabrant les oasis.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Leurs creatures volantes attaquent depuis le ciel - une baliste sera
+      essentielle.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Garde les oasis ouverts au public. Le Capitaine Corsaire approche.
+    portrait: {fileID: 0}
+    side: 0

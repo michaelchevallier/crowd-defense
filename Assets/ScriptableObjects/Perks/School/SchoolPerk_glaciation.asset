@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88c2a6e22b4e8435ca7b85c6c79b56ce, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.PerkDef
+  id: glaciation
+  nameKey: Glaciation
+  descKey: 30% slow 2s sur cible
+  iconEmoji: "\U0001F9CA"
+  icon: {fileID: 0}
+  category: 3
+  tag: 5
+  rarity: 0
+  stackable: 0
+  maxStacks: 0
+  school: givre
+  transform: 1
+  range: 0
+  fireRate: 0
+  damage: 0
+  moveSpeed: 0
+  moveAttackPierceBonus: 0
+  coinGain: 0
+  critChance: 0
+  critMul: 0
+  critStaggerMs: 0
+  multiShot: 0
+  pierceCount: 0
+  lifesteal: 0
+  waveRegen: 0
+  fireball: 0
+  fireballRadius: 2
+  fireballDmgMul: 0.8
+  ricochet: 0
+  ricochetBounces: 3
+  ricochetDecay: 0.85
+  lightning: 0
+  lightningTargets: 2
+  lightningDmgMul: 0.7
+  pierceExplode: 0
+  pierceExplodeRadius: 2
+  pierceExplodeDmgMul: 1
+  towerCostMul: 1
+  firstTowerFree: 0
+  towerFireRateAura: 1
+  towerAuraRange: 0
+  combustion: 0
+  pyromancie: 0
+  glaciation: 1
+  cristalGlace: 0
+  forteressePerk: 0
+  mursPierre: 0
+  downRange: 0
+  downDamage: 0
+  downFireRate: 0
+  downCoinReward: 0

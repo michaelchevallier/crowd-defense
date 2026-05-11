@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3969d623bce0145779de9a5199729b53, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.PerkSetBonusDef
+  tag: 3
+  threshold: 3
+  nameKey: Forteresse
+  descKey: "+20% PV ch\xE2teau max"
+  addCritChance: 0
+  addLifesteal: 0
+  castleHPMaxMul: 1.2
+  fireRateMul: 1
+  aoeOnNthProjectile: 0
+  coinGainMul: 1

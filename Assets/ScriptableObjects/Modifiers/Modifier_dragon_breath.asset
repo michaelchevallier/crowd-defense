@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ba7facd1e7c314df5b4cff0b9fe11928, type: 3}
+  m_Name: Modifier_dragon_breath
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.ModifierDef
+  id: dragon_breath
+  displayName: Souffle du Dragon
+  icon: {fileID: 0}
+  modifierType: 0
+  desc: -30% portee toutes tours
+  applyAction: towerRangeMul*0.7

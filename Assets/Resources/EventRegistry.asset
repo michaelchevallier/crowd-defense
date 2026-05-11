@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab5389c7c042147bd9b8affb20974d2e, type: 3}
+  m_Name: EventRegistry
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.EventRegistry
+  events:
+  - {fileID: 11400000, guid: 5d2541d058c7442efaf7c52012535932, type: 2}
+  - {fileID: 11400000, guid: 44a106270da5d4d4f8ced24b37a3a560, type: 2}
+  - {fileID: 11400000, guid: cc04eb81a2e624b9fb24ed0988702fe0, type: 2}
+  - {fileID: 11400000, guid: 1edb5d1ffef174cf2b228ba3a636606b, type: 2}
+  - {fileID: 11400000, guid: 93a15e8a96a794d5c91175c2b6489ace, type: 2}
+  - {fileID: 11400000, guid: d115a1c2987f44b399e81f4d6ef7a87f, type: 2}
+  - {fileID: 11400000, guid: 905c9a83ba7004d29b1159f7d170ba3f, type: 2}
+  - {fileID: 11400000, guid: 0d771b5db8bc54fd4985b1a45504e169, type: 2}
+  - {fileID: 11400000, guid: 02b49d94a12a94151a661880d8b4c108, type: 2}
+  - {fileID: 11400000, guid: 47e9e54feac854918a1a091d55930570, type: 2}
+  - {fileID: 11400000, guid: d4c8778209a984cd7b25a01739db2d8e, type: 2}
+  - {fileID: 11400000, guid: eb4c7c4b8ab5347f3810406caa5898f8, type: 2}

@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44ed88e18cd8d4322aa8f076510cb765, type: 3}
+  m_Name: Cutscene_world4
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.CutsceneDef
+  id: world4
+  titleKey: Le Volcan en Fureur - Foire en Lave !
+  lines:
+  - speaker: Narrateur
+    textKey: L'attraction phare du parc - le Volcan en Fureur - reveille un Dragon
+      endormi.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Des Imps de feu surgissent des crateres, transformant les allees en
+      coulees de lave.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Si le Dragon prend le controle, la Foire en Lave sera eternelle.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: C'est le combat pour sauver Milan Park. Ne laisse rien tomber.
+    portrait: {fileID: 0}
+    side: 0

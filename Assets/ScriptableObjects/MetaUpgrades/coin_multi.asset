@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c52984ca0bd8d453781481ccdc854551, type: 3}
+  m_Name: coin_multi
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.MetaUpgradeDef
+  id: coin_multi
+  displayName: Marchand prospere
+  description: +15/+30/+50% or par kill
+  icon: {fileID: 0}
+  iconEmoji: $+
+  category: 1
+  tier: 2
+  maxLevel: 3
+  costsPerLevel: 050000000f00000028000000
+  perLevelLabels:
+  - +15% or
+  - +30% or
+  - +50% or
+  effects:
+  - key: coinGainMul
+    valuePerLevel: 0.15

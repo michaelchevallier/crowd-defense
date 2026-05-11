@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0948903c0256841b284beb3603b9957d, type: 3}
+  m_Name: Event_starving_traveler
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.EventDef
+  id: starving_traveler
+  title: Voyageur Affame
+  body: Un voyageur affame demande a partager ton repas. Il connait bien le chemin.
+  choices:
+  - label: Partager (+5 PV chateau max permanent)
+    applyAction: castleHPMax+5
+  - label: Refuser (-5 or par perte de moral)
+    applyAction: coins-5

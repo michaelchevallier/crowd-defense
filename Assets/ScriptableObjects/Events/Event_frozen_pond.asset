@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0948903c0256841b284beb3603b9957d, type: 3}
+  m_Name: Event_frozen_pond
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.EventDef
+  id: frozen_pond
+  title: L'Etang Gele
+  body: Un etang etrangement gele reflete le ciel comme un miroir. Que vois-tu dans
+    ton reflet ?
+  choices:
+  - label: Plonger ta main (-10 PV chateau, +1 perk Givre)
+    applyAction: castleHP-10|pendingPerk=givre
+  - label: Marcher dessus (+30 or)
+    applyAction: coins+30

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44ed88e18cd8d4322aa8f076510cb765, type: 3}
+  m_Name: Cutscene_world8
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.CutsceneDef
+  id: world8
+  titleKey: Les Abysses - Plongee Totale
+  lines:
+  - speaker: Narrateur
+    textKey: Milan Park s'enfonce dans les profondeurs oceaniques inconnues.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Des creatures jamais vues remontent des abysses, attirees par la lumiere.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Les courants sous-marins brouillent tout repere - les colonnes arrivent
+      de partout.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Au plus profond dort le Kraken. Il se reveille. Defends ou disparais.
+    portrait: {fileID: 0}
+    side: 0

@@ -107,7 +107,6 @@
     white-space: normal;
 }
 
-.toolbar-tooltip--poor .toolbar-tooltip-name::after {
-    content: " — Pas assez d'or";
+.toolbar-tooltip--poor .toolbar-tooltip-name-suffix {
     color: rgb(220, 80, 60);
 }

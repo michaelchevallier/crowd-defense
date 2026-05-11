@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44ed88e18cd8d4322aa8f076510cb765, type: 3}
+  m_Name: Cutscene_world5
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.CutsceneDef
+  id: world5
+  titleKey: La Foire en Lave - Portes Ouvertes !
+  lines:
+  - speaker: Narrateur
+    textKey: La Foire en Lave ouvre ses grilles aux visiteurs...
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: ...mais quelque chose tourne mal. Les visiteurs deviennent fous.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Le Maitre de Ceremonie compte sur toi pour defendre la Grande Roue.
+    portrait: {fileID: 0}
+    side: 0

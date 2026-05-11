@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0948903c0256841b284beb3603b9957d, type: 3}
+  m_Name: Event_wandering_knight
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.EventDef
+  id: wandering_knight
+  title: Chevalier Errant
+  body: Un chevalier blesse demande de l'or pour soigner ses plaies.
+  choices:
+  - label: Donner 30 or (+15 PV chateau)
+    applyAction: coins-30|castleHP+15
+  - label: Refuser (sans effet)
+    applyAction: noop

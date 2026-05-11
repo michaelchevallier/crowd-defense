@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44ed88e18cd8d4322aa8f076510cb765, type: 3}
+  m_Name: Cutscene_world2
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.CutsceneDef
+  id: world2
+  titleKey: Le Sentier d'Aventure
+  lines:
+  - speaker: Narrateur
+    textKey: La billetterie tenue, tu t'enfonces dans le sentier d'aventure du parc.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Un sorcier des bois s'est installe dans la cabane des contes et invoque
+      ses sbires.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Ses Assassins se fondent dans les sous-bois - tu ne les verras pas venir.
+    portrait: {fileID: 0}
+    side: 0
+  - speaker: Narrateur
+    textKey: Chasse le sorcier avant qu'il ne transforme toute l'attraction en cauchemar.
+    portrait: {fileID: 0}
+    side: 0
