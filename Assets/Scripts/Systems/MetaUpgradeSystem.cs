@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
@@ -27,6 +28,28 @@ namespace CrowdDefense.Systems
         public RunBonuses ActiveBonuses { get; private set; } = new();
 
         protected override void OnAwakeSingleton() => ComputeBonuses();
+
+        private void Start()
+        {
+            // Apply castleHPMul once the level is fully set up (Castle.Init already ran).
+            // LevelEvents.OnLevelStart fires from LevelRunner.Start() after SpawnCastle().
+            LevelEvents.OnLevelStart += HandleLevelStart;
+        }
+
+        protected override void OnDestroySingleton()
+        {
+            LevelEvents.OnLevelStart -= HandleLevelStart;
+        }
+
+        private void HandleLevelStart(LevelData _, UnityEngine.Bounds __)
+        {
+            var castle = Castle.Instance;
+            if (castle == null) return;
+            float mul = ActiveBonuses.castleHPMul;
+            if (mul <= 1f) return;
+            int bonus = Mathf.RoundToInt(castle.HPMax * (mul - 1f));
+            if (bonus > 0) castle.GrantBonusHP(bonus);
+        }
 
         // Called once at run start (also called after shop purchase for immediate preview)
         public void ComputeBonuses()
