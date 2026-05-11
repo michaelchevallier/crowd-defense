@@ -46,6 +46,9 @@ namespace CrowdDefense.UI
                     ["hud.streak_text"] = "+{0}%",
                     ["hud.wave_preview_title"] = "Wave {0}:",
 
+                    // ── Keyboard hints bar ─────────────────────────────────────────
+                    ["hud.keyboard_hints"] = "N=wave  ESC=pause  Space=ult  F3=debug  M=minimap",
+
                     // ── Hero panel ──────────────────────────────────────────────────
                     ["hud.hero_hp_label"] = "HERO",
                     ["hud.hero_xp_label"] = "XP",
@@ -318,6 +321,9 @@ namespace CrowdDefense.UI
                     ["hud.pill_skip_text"] = "+30c  {0:F1}s  +{1}%",
                     ["hud.streak_text"] = "+{0}%",
                     ["hud.wave_preview_title"] = "Vague {0} :",
+
+                    // ── Barre raccourcis clavier ───────────────────────────────────
+                    ["hud.keyboard_hints"] = "N=vague  ESC=pause  Espace=ult  F3=debug  M=minimap",
 
                     // ── Hero panel ──────────────────────────────────────────────────
                     ["hud.hero_hp_label"] = "HÉROS",

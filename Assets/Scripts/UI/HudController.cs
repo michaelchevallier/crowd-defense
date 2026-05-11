@@ -56,6 +56,9 @@ namespace CrowdDefense.UI
         // Perk badges — sibling component wired after UIDocument root is ready
         private HudPerkBadges? _perkBadges;
 
+        // Keyboard hints footer label
+        private Label? keyboardHintsLabel;
+
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
 
@@ -107,6 +110,7 @@ namespace CrowdDefense.UI
             ultRingRight = root.Q<VisualElement>("ult-ring-right");
             ultBtn?.RegisterCallback<ClickEvent>(_ => TryCastUlt());
 
+            keyboardHintsLabel = root.Q<Label>("keyboard-hints-label");
             bluePillBtn = root.Q<Button>("bluepill-btn");
             bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
 
@@ -183,6 +187,7 @@ namespace CrowdDefense.UI
             if (btnMenuVictory != null) btnMenuVictory.text = L.Get("overlay.btn_menu");
             if (heroHpLabel != null) heroHpLabel.text = L.Get("hud.hero_hp_label");
             if (heroXpLabel != null) heroXpLabel.text = L.Get("hud.hero_xp_label");
+            if (keyboardHintsLabel != null) keyboardHintsLabel.text = L.Get("hud.keyboard_hints");
             OnBreakStateChanged();
         }
 

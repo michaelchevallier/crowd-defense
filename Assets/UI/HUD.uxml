@@ -29,12 +29,12 @@
 
             <!-- Speed control (×1, ×2, ×3) -->
             <ui:VisualElement class="speed-control">
-                <ui:Button text="×1" name="speed-1" class="speed-btn speed-active" />
-                <ui:Button text="×2" name="speed-2" class="speed-btn" />
-                <ui:Button text="×3" name="speed-3" class="speed-btn" />
+                <ui:Button text="×1" name="speed-1" class="speed-btn speed-active" tooltip="Vitesse x1" />
+                <ui:Button text="×2" name="speed-2" class="speed-btn" tooltip="Vitesse x2" />
+                <ui:Button text="×3" name="speed-3" class="speed-btn" tooltip="Vitesse x3" />
             </ui:VisualElement>
 
-            <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" />
+            <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines [D]" />
         </ui:VisualElement>
 
         <!-- Doctrine panel (fullscreen modal, managed by DoctrineController) -->
@@ -62,7 +62,7 @@
         <ui:VisualElement name="wave-launch-pill" class="wave-launch-pill hidden">
             <ui:Label text="+30¢ · 5.0s" name="wave-launch-pill-text" class="wave-launch-pill-text" />
         </ui:VisualElement>
-        <ui:VisualElement name="wave-launch-btn" class="wave-launch-btn hidden">
+        <ui:VisualElement name="wave-launch-btn" class="wave-launch-btn hidden" tooltip="Lancer la prochaine vague [N]">
             <ui:Label text="Lancer la vague (N)" name="wave-launch-label" class="wave-launch-label" />
             <ui:Label text="Vague 1 / 4" name="wave-launch-sub" class="wave-launch-sub" />
             <ui:VisualElement name="wave-launch-streak" class="wave-launch-streak hidden">
@@ -130,8 +130,33 @@
             <ui:Button text="Skip Tutorial" name="tutorial-btn-skip" class="tutorial-btn-skip" />
         </ui:VisualElement>
 
+        <!-- Tower stats panel (top-right, shown on tower select) -->
+        <ui:VisualElement name="tower-stats-panel" class="tower-stats-panel hidden">
+            <ui:VisualElement class="stats-header-row">
+                <ui:Label text="" name="stats-tower-name" class="stats-tower-name" />
+                <ui:Label text="" name="stats-tower-level" class="stats-tower-level" />
+            </ui:VisualElement>
+            <ui:VisualElement class="stats-row">
+                <ui:Label text="DPS" name="stats-dps-label" class="stats-label" />
+                <ui:Label text="" name="stats-dps-value" class="stats-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="stats-row">
+                <ui:Label text="Range" name="stats-range-label" class="stats-label" />
+                <ui:Label text="" name="stats-range-value" class="stats-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="stats-row">
+                <ui:Label text="Fire Rate" name="stats-firerate-label" class="stats-label" />
+                <ui:Label text="" name="stats-firerate-value" class="stats-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="stats-row">
+                <ui:Label text="Damage" name="stats-dmg-label" class="stats-label" />
+                <ui:Label text="" name="stats-dmg-value" class="stats-value" />
+            </ui:VisualElement>
+            <ui:Label text="" name="stats-special" class="stats-special" />
+        </ui:VisualElement>
+
         <!-- Minimap (top-right, 10 Hz update via MinimapController) -->
-        <ui:Button name="minimap-toggle-btn" class="minimap-toggle-btn" text="M" />
+        <ui:Button name="minimap-toggle-btn" class="minimap-toggle-btn" text="M" tooltip="Minimap [M]" />
         <ui:VisualElement name="minimap-container" class="minimap-container hidden" />
 
         <!-- BluePill button (bottom-left, above hero panel, visible when hero alive) -->
@@ -148,7 +173,7 @@
             </ui:VisualElement>
             <ui:Label text="" name="hero-xp-value" class="hero-xp-value" />
             <!-- Ult button with circular cooldown ring -->
-            <ui:VisualElement name="ult-btn" class="ult-btn ult-btn-cooldown">
+            <ui:VisualElement name="ult-btn" class="ult-btn ult-btn-cooldown" tooltip="Ultime heros [Espace]">
                 <!-- Two-half circular progress ring -->
                 <ui:VisualElement class="ult-ring-track">
                     <ui:VisualElement name="ult-ring-left-mask" class="ult-ring-half-mask ult-ring-left-mask">
@@ -171,6 +196,11 @@
 
         <!-- Tower toolbar (bottom) -->
         <ui:VisualElement name="tower-toolbar" class="tower-toolbar">
+        </ui:VisualElement>
+
+        <!-- Keyboard hints footer bar -->
+        <ui:VisualElement name="keyboard-hints" class="keyboard-hints">
+            <ui:Label name="keyboard-hints-label" class="key-hint" text="N=vague  ESC=pause  Espace=ult  F3=debug  M=minimap" />
         </ui:VisualElement>
 
         <!-- Toast stack (generic toasts: perk, synergy, combo, modifier, achievement) -->
