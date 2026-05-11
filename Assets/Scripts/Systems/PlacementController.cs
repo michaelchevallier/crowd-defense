@@ -24,6 +24,8 @@ namespace CrowdDefense.Systems
         private Tower? selectedTower;
 
         public IReadOnlyList<Tower> PlacedTowers => placedTowers;
+        // Exposé pour radial menu CORE-20
+        public Tower? SelectedTower => selectedTower;
 
         private void Awake()
         {
@@ -50,7 +52,8 @@ namespace CrowdDefense.Systems
             // Hotkey U : upgrade la tour sélectionnée au niveau suivant (debug)
             if (Input.GetKeyDown(KeyCode.U) && selectedTower != null)
             {
-                selectedTower.UpgradeTo(selectedTower.UpgradeLevel + 1);
+                if (selectedTower.UpgradeTo(selectedTower.UpgradeLevel + 1))
+                    SyncCumulativeCost(selectedTower);
             }
 #endif
             if (cam == null || !Input.GetMouseButtonDown(0)) return;
@@ -134,9 +137,19 @@ namespace CrowdDefense.Systems
         }
 
         /// <summary>
-        /// Returns cumulative cost of a placed tower (for sell refund accounting).
+        /// Sync le dict cumulativeCost après un upgrade (appelé par CORE-20 radial menu ou hotkey U debug).
+        /// Tower.CumulativeCost est déjà mis à jour dans Tower.UpgradeTo — ce sync garde le dict cohérent.
         /// </summary>
-        public int GetCumulativeCost(Tower t) =>
-            towerCumulativeCost.TryGetValue(t, out int v) ? v : t.CumulativeCost;
+        public void SyncCumulativeCost(Tower t)
+        {
+            if (placedTowers.Contains(t))
+                towerCumulativeCost[t] = t.CumulativeCost;
+        }
+
+        /// <summary>
+        /// Returns cumulative cost of a placed tower (for sell refund accounting).
+        /// Reads Tower.CumulativeCost directly — dict is kept in sync by SyncCumulativeCost.
+        /// </summary>
+        public int GetCumulativeCost(Tower t) => t.CumulativeCost;
     }
 }
