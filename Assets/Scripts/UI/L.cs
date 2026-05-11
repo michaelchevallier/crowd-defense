@@ -123,6 +123,15 @@ namespace CrowdDefense.UI
                     ["settings.close"] = "Close",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+
+                    // ── Tutorial W1-1 ──────────────────────────────────────────────
+                    ["tutorial.phase0.text"] = "Welcome! Place your first tower on a buildable cell.",
+                    ["tutorial.phase1.text"] = "Tower placed! Now launch the first wave with the button below.",
+                    ["tutorial.phase2.text"] = "Wave cleared! Upgrade your tower to level 2 when you have 50+ gold.",
+                    ["tutorial.phase3.text"] = "Two adjacent towers create a synergy bonus — try placing them side by side!",
+                    ["tutorial.phase4.text"] = "Congratulations! You are ready to defend the castle. Good luck!",
+                    ["tutorial.btn_next"] = "Next",
+                    ["tutorial.btn_skip"] = "Skip Tutorial",
                 },
                 ["fr"] = new()
                 {
@@ -230,6 +239,15 @@ namespace CrowdDefense.UI
                     ["settings.close"] = "Fermer",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+
+                    // ── Tutorial W1-1 ──────────────────────────────────────────────
+                    ["tutorial.phase0.text"] = "Bienvenue ! Placez votre première tour sur une cellule constructible.",
+                    ["tutorial.phase1.text"] = "Tour placée ! Lancez maintenant la première vague avec le bouton.",
+                    ["tutorial.phase2.text"] = "Vague terminée ! Améliorez votre tour au niveau 2 quand vous avez 50+ or.",
+                    ["tutorial.phase3.text"] = "Deux tours adjacentes créent un bonus de synergie — essayez de les placer côte à côte !",
+                    ["tutorial.phase4.text"] = "Félicitations ! Vous êtes prêt à défendre le château. Bonne chance !",
+                    ["tutorial.btn_next"] = "Suivant",
+                    ["tutorial.btn_skip"] = "Ignorer le tutoriel",
                 },
             },
 

@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Common;
@@ -25,6 +26,9 @@ namespace CrowdDefense.Systems
         public IReadOnlyList<Tower> PlacedTowers => placedTowers;
         // Exposé pour radial menu CORE-20
         public Tower? SelectedTower => selectedTower;
+
+        // Fired after a tower is successfully placed (tutorial + achievements hooks)
+        public event Action<Tower>? OnTowerPlaced;
 
         protected override void OnAwakeSingleton()
         {
@@ -123,6 +127,7 @@ namespace CrowdDefense.Systems
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
                 towerCumulativeCost[tower] = tower.CumulativeCost;
+                OnTowerPlaced?.Invoke(tower);
             }
         }
 
