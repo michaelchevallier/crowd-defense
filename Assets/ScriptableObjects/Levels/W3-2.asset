@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf15f4edfd5f404fa83a12c7a61fe34, type: 3}
+  m_Name: W3-2
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
+  id: world3-2
+  displayName: "D\u00e9sert \u2014 Bifurcation"
+  theme: desert
+  world: 3
+  level: 2
+  mapRows:
+  - 00000000R000D0
+  - P111111000R000
+  - 00000010000000
+  - 00D011111111C0
+  - 00001000000000
+  - P111100D0R0000
+  - 000000000R00D0
+  cellSize: 4
+  startCoins: 112
+  overrideCastleHP: 1
+  castleHPOverride: 155
+  lossMode: 0
+  allowMultiMagnet: 0
+  waves:
+  - entries:
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 36
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 6
+    spawnRateMs: 500
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 20
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 40
+    spawnRateMs: 470
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 28
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 20
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 10
+    spawnRateMs: 440
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 28
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 20
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 12
+    spawnRateMs: 420
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 28
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 14
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 12
+    spawnRateMs: 400
+    breakMs: 0
+    portalIdx: -1

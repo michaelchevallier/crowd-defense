@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf15f4edfd5f404fa83a12c7a61fe34, type: 3}
+  m_Name: W1-5
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
+  id: world1-5
+  displayName: "Plaine \u2014 5"
+  theme: plaine
+  world: 1
+  level: 5
+  mapRows:
+  - 00000W0000D0000
+  - P1111W000D00000
+  - 00001W000000000
+  - 00001~111111C00
+  - 00000W000000000
+  - 0D00TW000T0D000
+  - 00000W0D0000T00
+  cellSize: 4
+  startCoins: 130
+  overrideCastleHP: 1
+  castleHPOverride: 140
+  lossMode: 0
+  allowMultiMagnet: 0
+  waves:
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 36
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 16
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 4
+    spawnRateMs: 580
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 28
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 20
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 6
+    spawnRateMs: 540
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 24
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 24
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 8
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 6
+    spawnRateMs: 500
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 20
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 28
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 10
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 8
+    spawnRateMs: 470
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 1
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 24
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 8
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 16
+    spawnRateMs: 460
+    breakMs: 0
+    portalIdx: -1

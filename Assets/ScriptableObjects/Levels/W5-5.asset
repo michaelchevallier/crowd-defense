@@ -1,0 +1,116 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf15f4edfd5f404fa83a12c7a61fe34, type: 3}
+  m_Name: W5-5
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
+  id: world5-5
+  displayName: "Foire \u2014 Foire des Damn\u00e9s"
+  theme: foire
+  world: 5
+  level: 5
+  mapRows:
+  - 000000000D0D0D0
+  - P111110D0D0D0D0
+  - 00000100D0D0D0D
+  - 0D0001000D0D0D0
+  - 0000010D0000000
+  - 000001000000000
+  - 000001111111110
+  - 0D00000000000C0
+  - 0D0D0D0D0D0D000
+  cellSize: 4
+  startCoins: 221
+  overrideCastleHP: 1
+  castleHPOverride: 180
+  lossMode: 0
+  allowMultiMagnet: 0
+  waves:
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 31
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 34
+    - type: {fileID: 11400000, guid: 57b80134c2304d3884080285b6a9b5f4, type: 2}
+      count: 12
+    spawnRateMs: 330
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 46
+    - type: {fileID: 11400000, guid: 57b80134c2304d3884080285b6a9b5f4, type: 2}
+      count: 27
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 8
+    spawnRateMs: 300
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 57b80134c2304d3884080285b6a9b5f4, type: 2}
+      count: 42
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 38
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 12
+    spawnRateMs: 280
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 50
+    - type: {fileID: 11400000, guid: 57b80134c2304d3884080285b6a9b5f4, type: 2}
+      count: 31
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 12
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 8
+    spawnRateMs: 260
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 57b80134c2304d3884080285b6a9b5f4, type: 2}
+      count: 46
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 23
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 12
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 12
+    spawnRateMs: 250
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 57
+    - type: {fileID: 11400000, guid: 57b80134c2304d3884080285b6a9b5f4, type: 2}
+      count: 38
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 19
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 16
+    spawnRateMs: 240
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 57b80134c2304d3884080285b6a9b5f4, type: 2}
+      count: 53
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 31
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 19
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 16
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 1
+    spawnRateMs: 220
+    breakMs: 0
+    portalIdx: -1

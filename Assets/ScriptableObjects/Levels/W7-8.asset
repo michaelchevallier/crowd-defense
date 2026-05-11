@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf15f4edfd5f404fa83a12c7a61fe34, type: 3}
+  m_Name: W7-8
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
+  id: world7-8
+  displayName: "Espace \u2014 BOSS Galactique"
+  theme: espace
+  world: 7
+  level: 8
+  mapRows:
+  - 0000000000000000RR
+  - P11111111111110RRR
+  - 0000000000000100RR
+  - R0111111111111000R
+  - R010000000000000RR
+  - R01000000000000RRR
+  - 001111111111100RRR
+  - R000000000001000RR
+  - R01111111111111000
+  - R011111111111111C0
+  - R00000000000000000
+  cellSize: 4
+  startCoins: 272
+  overrideCastleHP: 1
+  castleHPOverride: 350
+  lossMode: 0
+  allowMultiMagnet: 0
+  waves:
+  - entries:
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 96
+    - type: {fileID: 11400000, guid: 53c26439f6ec4adcad7bc70ca2fd30dc, type: 2}
+      count: 34
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 20
+    spawnRateMs: 340
+    breakMs: 4800
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 112
+    - type: {fileID: 11400000, guid: 53c26439f6ec4adcad7bc70ca2fd30dc, type: 2}
+      count: 38
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 1
+    spawnRateMs: 310
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 94
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 56
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 2
+    spawnRateMs: 290
+    breakMs: 6000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 64e30f2e7d3a4ae2b24c7fcac6f068be, type: 2}
+      count: 1
+    spawnRateMs: 1500
+    breakMs: 0
+    portalIdx: -1

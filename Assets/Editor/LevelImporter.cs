@@ -152,14 +152,14 @@ namespace CrowdDefense.Editor
             var mapRowsProp = so.FindProperty("mapRows");
             if (mapRowsProp != null)
             {
-                mapRowsProp.arraySize = data.mapRows?.Length ?? 0;
-                for (int i = 0; i < (data.mapRows?.Length ?? 0); i++)
-                    mapRowsProp.GetArrayElementAtIndex(i).stringValue = data.mapRows![i];
+                mapRowsProp.arraySize = data.mapRows.Length;
+                for (int i = 0; i < data.mapRows.Length; i++)
+                    mapRowsProp.GetArrayElementAtIndex(i).stringValue = data.mapRows[i];
             }
 
             // Waves
             var wavesProp = so.FindProperty("waves");
-            if (wavesProp != null && data.waves != null)
+            if (wavesProp != null)
             {
                 wavesProp.arraySize = data.waves.Length;
                 for (int wi = 0; wi < data.waves.Length; wi++)
@@ -180,17 +180,14 @@ namespace CrowdDefense.Editor
                     if (entriesProp == null) continue;
 
                     var typeEntries = new List<(EnemyType type, int count)>();
-                    if (waveJson.typeKeys != null && waveJson.typeCounts != null)
+                    int pairCount = Math.Min(waveJson.typeKeys.Length, waveJson.typeCounts.Length);
+                    for (int ti = 0; ti < pairCount; ti++)
                     {
-                        int pairCount = Math.Min(waveJson.typeKeys.Length, waveJson.typeCounts.Length);
-                        for (int ti = 0; ti < pairCount; ti++)
-                        {
-                            string enemyId = waveJson.typeKeys[ti];
-                            int count = waveJson.typeCounts[ti];
-                            EnemyType? enemyType = ResolveEnemy(enemyId, missingEnemies);
-                            if (enemyType != null)
-                                typeEntries.Add((enemyType, count));
-                        }
+                        string enemyId = waveJson.typeKeys[ti];
+                        int count = waveJson.typeCounts[ti];
+                        EnemyType? enemyType = ResolveEnemy(enemyId, missingEnemies);
+                        if (enemyType != null)
+                            typeEntries.Add((enemyType, count));
                     }
 
                     entriesProp.arraySize = typeEntries.Count;
@@ -275,12 +272,12 @@ namespace CrowdDefense.Editor
             public int world;
             public int level;
             public float cellSize = 4f;
-            public string[]? mapRows;
+            public string[] mapRows = Array.Empty<string>();
             public int startCoins;
             public bool overrideCastleHP;
             public int castleHPOverride;
             public bool allowMultiMagnet;
-            public WaveJson[]? waves;
+            public WaveJson[] waves = Array.Empty<WaveJson>();
         }
 
         [Serializable]
@@ -290,8 +287,8 @@ namespace CrowdDefense.Editor
             public int spawnRateMs;
             public int breakMs;
             // Parallel arrays for types dict (JsonUtility can't deserialize Dictionary)
-            public string[]? typeKeys;
-            public int[]? typeCounts;
+            public string[] typeKeys = Array.Empty<string>();
+            public int[] typeCounts = Array.Empty<int>();
         }
     }
 }

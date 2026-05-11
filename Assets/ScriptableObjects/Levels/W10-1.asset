@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf15f4edfd5f404fa83a12c7a61fe34, type: 3}
+  m_Name: W10-1
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
+  id: world10-1
+  displayName: "N\u00e9o-Tokyo \u2014 Ruelle"
+  theme: cyberpunk
+  world: 10
+  level: 1
+  mapRows:
+  - 0000000000R0D0
+  - P11111110D0R00
+  - 000000010D0R00
+  - 000000010D0000
+  - 0R000001000000
+  - 000000011111C0
+  - 00D00000000000
+  cellSize: 4
+  startCoins: 240
+  overrideCastleHP: 1
+  castleHPOverride: 280
+  lossMode: 0
+  allowMultiMagnet: 0
+  waves:
+  - entries:
+    - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
+      count: 70
+    - type: {fileID: 11400000, guid: b6f92f3b26dc4606a8721936c4200d18, type: 2}
+      count: 48
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 32
+    spawnRateMs: 560
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
+      count: 80
+    - type: {fileID: 11400000, guid: b6f92f3b26dc4606a8721936c4200d18, type: 2}
+      count: 54
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 16
+    spawnRateMs: 500
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
+      count: 94
+    - type: {fileID: 11400000, guid: b6f92f3b26dc4606a8721936c4200d18, type: 2}
+      count: 40
+    - type: {fileID: 11400000, guid: 277d1bd3c17d42ff8ef7421a30b2d755, type: 2}
+      count: 16
+    spawnRateMs: 460
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 2186bca57c0a4a548f3ee9f451b424b1, type: 2}
+      count: 32
+    - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
+      count: 70
+    - type: {fileID: 11400000, guid: b6f92f3b26dc4606a8721936c4200d18, type: 2}
+      count: 48
+    spawnRateMs: 420
+    breakMs: 0
+    portalIdx: -1

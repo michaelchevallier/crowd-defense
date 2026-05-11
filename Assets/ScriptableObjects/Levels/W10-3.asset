@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf15f4edfd5f404fa83a12c7a61fe34, type: 3}
+  m_Name: W10-3
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
+  id: world10-3
+  displayName: "N\u00e9o-Tokyo \u2014 Datacenter"
+  theme: cyberpunk
+  world: 10
+  level: 3
+  mapRows:
+  - LLLLLLLLLLLLLLL
+  - P111110000000DL
+  - 000001000000DRL
+  - L0000100000000L
+  - L000011111111CL
+  - L0000000000000L
+  - L00000000R0DRRL
+  - LLLLLLLLLLLLLLL
+  cellSize: 4
+  startCoins: 270
+  overrideCastleHP: 1
+  castleHPOverride: 300
+  lossMode: 0
+  allowMultiMagnet: 0
+  waves:
+  - entries:
+    - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
+      count: 32
+    - type: {fileID: 11400000, guid: b6f92f3b26dc4606a8721936c4200d18, type: 2}
+      count: 32
+    - type: {fileID: 11400000, guid: 277d1bd3c17d42ff8ef7421a30b2d755, type: 2}
+      count: 24
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 16
+    spawnRateMs: 510
+    breakMs: 4800
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
+      count: 48
+    - type: {fileID: 11400000, guid: 2186bca57c0a4a548f3ee9f451b424b1, type: 2}
+      count: 16
+    - type: {fileID: 11400000, guid: 277d1bd3c17d42ff8ef7421a30b2d755, type: 2}
+      count: 32
+    - type: {fileID: 11400000, guid: 53c26439f6ec4adcad7bc70ca2fd30dc, type: 2}
+      count: 24
+    spawnRateMs: 450
+    breakMs: 4800
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 1
+    - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
+      count: 48
+    - type: {fileID: 11400000, guid: 2186bca57c0a4a548f3ee9f451b424b1, type: 2}
+      count: 24
+    - type: {fileID: 11400000, guid: 277d1bd3c17d42ff8ef7421a30b2d755, type: 2}
+      count: 40
+    spawnRateMs: 400
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 2186bca57c0a4a548f3ee9f451b424b1, type: 2}
+      count: 32
+    - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
+      count: 56
+    - type: {fileID: 11400000, guid: 277d1bd3c17d42ff8ef7421a30b2d755, type: 2}
+      count: 42
+    - type: {fileID: 11400000, guid: b6f92f3b26dc4606a8721936c4200d18, type: 2}
+      count: 20
+    spawnRateMs: 370
+    breakMs: 0
+    portalIdx: -1

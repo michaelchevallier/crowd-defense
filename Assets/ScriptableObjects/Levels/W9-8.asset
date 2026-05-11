@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf15f4edfd5f404fa83a12c7a61fe34, type: 3}
+  m_Name: W9-8
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
+  id: world9-8
+  displayName: "Royaume \u2014 BOSS Sorcier-Roi"
+  theme: medieval
+  world: 9
+  level: 8
+  mapRows:
+  - 00000WRRRRRRW00000R
+  - P1111W000000W111C00
+  - 00001W000000W100000
+  - 00001~111111~100000
+  - 00000W000000W100000
+  - R0000W000000W100000
+  - 00000W000000W100000
+  - 00001~111111~100000
+  - 00001W000000W100000
+  - P1111W000000W111C00
+  - 00000WRRRRRRW00000R
+  cellSize: 4
+  startCoins: 272
+  overrideCastleHP: 1
+  castleHPOverride: 400
+  lossMode: 0
+  allowMultiMagnet: 0
+  waves:
+  - entries:
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 96
+    - type: {fileID: 11400000, guid: 53c26439f6ec4adcad7bc70ca2fd30dc, type: 2}
+      count: 34
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 20
+    spawnRateMs: 340
+    breakMs: 4800
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 112
+    - type: {fileID: 11400000, guid: 53c26439f6ec4adcad7bc70ca2fd30dc, type: 2}
+      count: 38
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 1
+    spawnRateMs: 310
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 94
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 56
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 2
+    spawnRateMs: 290
+    breakMs: 6000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: 445c76c585f4497683e10135331c0d6d, type: 2}
+      count: 1
+    spawnRateMs: 1500
+    breakMs: 0
+    portalIdx: -1
