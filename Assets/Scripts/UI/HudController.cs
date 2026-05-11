@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using CrowdDefense.Systems;
-using CrowdDefense.Entities;
 
 namespace CrowdDefense.UI
 {
@@ -39,29 +38,34 @@ namespace CrowdDefense.UI
                 Economy.Instance.OnGoldChanged += OnGoldChanged;
                 OnGoldChanged(Economy.Instance.Gold);
             }
-            if (Castle.Instance != null)
+
+            // HP display via LevelRunner aggregator instead of Castle.Instance
+            if (LevelRunner.Instance != null)
             {
-                Castle.Instance.OnHPChanged += OnHPChanged;
-                OnHPChanged(Castle.Instance.HP, Castle.Instance.HPMax);
+                LevelRunner.Instance.OnTotalHPChanged += OnHPChanged;
+                LevelRunner.Instance.OnStateChanged += OnStateChanged;
+                // Initial values — LevelRunner fires OnTotalHPChanged in SpawnCastles(),
+                // but HUD may Start() before or after. Snapshot current totals defensively.
+                OnHPChanged(LevelRunner.Instance.TotalCastleHP, LevelRunner.Instance.TotalCastleHPMax);
+                OnStateChanged(LevelRunner.Instance.State);
             }
+
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.OnWaveStart += OnWaveStart;
                 OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
-            }
-            if (LevelRunner.Instance != null)
-            {
-                LevelRunner.Instance.OnStateChanged += OnStateChanged;
-                OnStateChanged(LevelRunner.Instance.State);
             }
         }
 
         private void OnDestroy()
         {
             if (Economy.Instance != null) Economy.Instance.OnGoldChanged -= OnGoldChanged;
-            if (Castle.Instance != null) Castle.Instance.OnHPChanged -= OnHPChanged;
+            if (LevelRunner.Instance != null)
+            {
+                LevelRunner.Instance.OnTotalHPChanged -= OnHPChanged;
+                LevelRunner.Instance.OnStateChanged -= OnStateChanged;
+            }
             if (WaveManager.Instance != null) WaveManager.Instance.OnWaveStart -= OnWaveStart;
-            if (LevelRunner.Instance != null) LevelRunner.Instance.OnStateChanged -= OnStateChanged;
         }
 
         private void OnGoldChanged(int gold)
