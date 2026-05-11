@@ -203,3 +203,39 @@
     -unity-font-style: bold;
     -unity-font: resource("LegacyRuntime");
 }
+
+/* === Tower tooltip (hover) === */
+.tower-tooltip {
+    position: absolute;
+    background-color: rgba(10, 14, 20, 0.92);
+    border-color: rgba(160, 180, 220, 0.45);
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 200px;
+    max-width: 280px;
+}
+
+.tooltip-header {
+    color: rgb(220, 230, 255);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
+    margin-bottom: 6px;
+    white-space: normal;
+}
+
+.tooltip-stats {
+    color: rgba(200, 210, 230, 0.85);
+    font-size: 12px;
+    -unity-font: resource("LegacyRuntime");
+    margin-bottom: 4px;
+    white-space: normal;
+}
+
+.tooltip-synergies {
+    color: rgb(160, 220, 180);
+    font-size: 12px;
+    -unity-font: resource("LegacyRuntime");
+    white-space: normal;
+}

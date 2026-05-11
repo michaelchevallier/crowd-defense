@@ -36,6 +36,13 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <!-- Tower tooltip (hover sur tower placée) -->
+        <ui:VisualElement name="tower-tooltip" class="tower-tooltip hidden">
+            <ui:Label text="" name="tooltip-header" class="tooltip-header" />
+            <ui:Label text="" name="tooltip-stats" class="tooltip-stats" />
+            <ui:Label text="" name="tooltip-synergies" class="tooltip-synergies" />
+        </ui:VisualElement>
+
         <!-- Game Over panel -->
         <ui:VisualElement name="panel-game-over" class="overlay-panel overlay-game-over hidden">
             <ui:Label text="GAME OVER" class="overlay-title" />
