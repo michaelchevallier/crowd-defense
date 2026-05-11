@@ -6,6 +6,7 @@ using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using CrowdDefense.Visual;
+using UnityEngine.Rendering.Universal;
 
 namespace CrowdDefense.Entities
 {
@@ -643,8 +644,8 @@ namespace CrowdDefense.Entities
             }
 
             // Stage B integration hooks (audio + juice + vfx + anim)
-            AudioController.Instance?.Play("tower_shoot", 0.55f);
-            AudioController.Instance?.Play("tower_fire", 0.60f);
+            AudioController.Instance?.Play3D("tower_shoot", transform.position, 0.55f);
+            AudioController.Instance?.Play3D("tower_fire", transform.position, 0.60f);
             JuiceFX.Instance?.Shake(0.05f, 100);
             Vector3 muzzlePos = _barrelTip != null
                 ? _barrelTip.position
@@ -748,26 +749,22 @@ namespace CrowdDefense.Entities
 
             var go = new GameObject("RangeRing");
             go.transform.SetParent(transform);
-            go.transform.localPosition = new Vector3(0f, 0.03f, 0f);
-            go.transform.localRotation = Quaternion.identity;
+            // Projector shoots along local -Z; rotate 90° on X so it points straight down.
+            go.transform.localPosition = new Vector3(0f, 2f, 0f);
+            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
             go.transform.localScale    = Vector3.one;
 
-            var lr = go.AddComponent<LineRenderer>();
-            lr.useWorldSpace = false;
-            lr.loop = true;
-            lr.widthMultiplier = 0.08f;
-            lr.positionCount = 64;
+            var dp = go.AddComponent<DecalProjector>();
+            float diameter = range * 2f;
+            dp.size        = new Vector3(diameter, diameter, 4f);
+            dp.fadeFactor  = 0.55f;
+            dp.scaleMode   = DecalScaleMode.ScaleInvariant;
 
-            var mat = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Color"));
-            mat.color = new Color(0.4f, 0.87f, 1f, 0.38f);
-            lr.material = mat;
-            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            lr.receiveShadows = false;
-
-            for (int i = 0; i < 64; i++)
+            var mat = new Material(Shader.Find("Shader Graphs/Decal") ?? Shader.Find("Universal Render Pipeline/Decal"));
+            if (mat.shader != null)
             {
-                float a = i / 64f * Mathf.PI * 2f;
-                lr.SetPosition(i, new Vector3(Mathf.Cos(a) * range, 0f, Mathf.Sin(a) * range));
+                mat.SetColor("_BaseColor", new Color(0.4f, 0.87f, 1f, 0.55f));
+                dp.material = mat;
             }
 
             go.SetActive(false);

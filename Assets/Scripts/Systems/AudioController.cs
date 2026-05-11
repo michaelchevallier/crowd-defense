@@ -111,6 +111,14 @@ namespace CrowdDefense.Systems
             Destroy(beep);
         }
 
+        public void Play3D(string clipKey, Vector3 worldPos, float volMul = 1f)
+        {
+            if (registry == null) LoadAudioRegistry();
+            var clip = registry?.Get(clipKey);
+            if (clip == null) return;
+            AudioSource.PlayClipAtPoint(clip, worldPos, Mathf.Clamp01(volMul));
+        }
+
         public void PlayRandom(string[] keys, float volMul = 1f)
         {
             if (keys == null || keys.Length == 0) return;

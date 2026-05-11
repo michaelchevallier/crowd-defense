@@ -42,6 +42,10 @@ namespace CrowdDefense.Entities
         private bool  _dying      = false;
         private float _dyingTimer = 0f;
 
+        // Ragdoll
+        private const float RagdollFadeDuration = 3f;
+        private Vector3 _lastDamageDirection = Vector3.back;
+
         // Set by BossSystem when enraged threshold is crossed (also by self-trigger 50% HP fallback)
         private float _enragedSpeedMul    = 1f;
         private float _enragedSummonCdMul = 1f;
@@ -193,6 +197,10 @@ namespace CrowdDefense.Entities
             _static           = false;
             _staticRotY       = 0f;
             _wasWalking       = false;
+            _lastDamageDirection = Vector3.back;
+
+            // Clean up any Rigidbodies/CapsuleColliders added by ragdoll on previous life
+            CleanupRagdoll();
 
             // D1-04 mob pressure: scale HP and speed by world pressure
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
@@ -308,6 +316,33 @@ namespace CrowdDefense.Entities
                 return;
             }
             transform.position = pathManager.GetWaypointOnPath(pathIdx, 0) + Vector3.up * 0.5f;
+        }
+
+        // ── Ragdoll cleanup (pool reuse) ──────────────────────────────────────
+
+        private void CleanupRagdoll()
+        {
+            // Re-enable root CapsuleCollider that was disabled for ragdoll
+            var rootCol = GetComponent<CapsuleCollider>();
+            if (rootCol != null)
+                rootCol.enabled = true;
+
+            // Re-enable Animator (will be reconfigured by AnimationController.SetupAnimator in Init)
+            if (_animator != null)
+                _animator.enabled = true;
+
+            // Remove Rigidbody + dynamic CapsuleColliders from bones added during ragdoll
+            // Only touch _meshChild subtree — root GO keeps its permanent CapsuleCollider
+            if (_meshChild == null) return;
+            var bones = _meshChild.GetComponentsInChildren<Rigidbody>(includeInactive: true);
+            foreach (var rb in bones)
+            {
+                // Remove the companion CapsuleCollider we added (bones have no static collider originally)
+                var bc = rb.GetComponent<CapsuleCollider>();
+                if (bc != null)
+                    Destroy(bc);
+                Destroy(rb);
+            }
         }
 
         // ── Spawn GLTF child ──────────────────────────────────────────────────
@@ -801,9 +836,13 @@ namespace CrowdDefense.Entities
 
         // ── TakeDamage ────────────────────────────────────────────────────────
 
-        public void TakeDamage(float dmg)
+        public void TakeDamage(float dmg, Vector3 hitOrigin = default)
         {
             if (IsDead || _dying) return;
+            if (hitOrigin != default)
+                _lastDamageDirection = (transform.position - hitOrigin).normalized;
+            else
+                _lastDamageDirection = -transform.forward;
 
             float actualDmg = dmg;
 
@@ -871,7 +910,7 @@ namespace CrowdDefense.Entities
 
             // Hit flash + particles
             TriggerHitFlash();
-            AudioController.Instance?.Play("enemy_hit", 0.4f);
+            AudioController.Instance?.Play3D("enemy_hit", transform.position, 0.4f);
             VfxPool.Instance?.SpawnHitFlash(transform);
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnDamage(
                 actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
@@ -939,13 +978,10 @@ namespace CrowdDefense.Entities
         private void HandleDeath()
         {
             _dying = true;
-            _dyingTimer = DeathDuration;
+            _dyingTimer = RagdollFadeDuration + 0.1f;
 
             bool isBoss   = cfg != null && (cfg.IsBoss || cfg.IsApocalypseBoss);
             bool isMedium = cfg != null && cfg.IsMidBoss;
-
-            if (_animator != null)
-                _animator.SetTrigger("dieTrigger");
 
             string deathClip = isBoss ? "enemy_die_boss" : (isMedium ? "enemy_die_medium" : "enemy_die_basic");
             AudioController.Instance?.Play(deathClip, isBoss ? 1f : 0.5f);
@@ -979,8 +1015,78 @@ namespace CrowdDefense.Entities
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);
 
-            // Delayed release (let death animation finish)
-            Invoke(nameof(ReleaseToPool), DeathDuration);
+            StartCoroutine(RagdollThenRelease(_lastDamageDirection));
+        }
+
+        // ── Ragdoll ───────────────────────────────────────────────────────────
+
+        private System.Collections.IEnumerator RagdollThenRelease(Vector3 hitDir)
+        {
+            var meshRoot = _meshChild != null ? _meshChild : gameObject;
+
+            // Disable Animator so physics drives the bones
+            if (_animator != null)
+                _animator.enabled = false;
+
+            // Disable root CapsuleCollider (was isTrigger) so it doesn't interfere with ragdoll
+            var rootCol = GetComponent<CapsuleCollider>();
+            if (rootCol != null)
+                rootCol.enabled = false;
+
+            // Add Rigidbodies + colliders to all sub-bones that have a Transform (skip root)
+            var bones = meshRoot.GetComponentsInChildren<Transform>(includeInactive: true);
+            float impulseStrength = 4.5f;
+            bool firstBone = true;
+            foreach (var bone in bones)
+            {
+                // Skip the meshRoot itself and bones without a visible renderer (attach anyway for structure)
+                if (bone == meshRoot.transform) continue;
+
+                var rb = bone.gameObject.GetComponent<Rigidbody>();
+                if (rb == null)
+                    rb = bone.gameObject.AddComponent<Rigidbody>();
+                rb.mass = 0.2f;
+                rb.linearDamping = 0.5f;
+                rb.angularDamping = 0.8f;
+                rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+                // Add a small capsule collider per bone to prevent floor clipping
+                if (bone.gameObject.GetComponent<Collider>() == null)
+                {
+                    var bc = bone.gameObject.AddComponent<CapsuleCollider>();
+                    bc.radius = 0.08f;
+                    bc.height = 0.22f;
+                }
+
+                // Primary impulse on the first (topmost) bone — others get a lesser scatter
+                Vector3 scatter = new Vector3(
+                    UnityEngine.Random.Range(-0.4f, 0.4f),
+                    UnityEngine.Random.Range(0.6f, 1.4f),
+                    UnityEngine.Random.Range(-0.4f, 0.4f));
+                float scale = firstBone ? 1f : 0.45f;
+                rb.AddForce((hitDir * 0.7f + scatter) * impulseStrength * scale, ForceMode.Impulse);
+
+                firstBone = false;
+            }
+
+            // Fade all renderers over RagdollFadeDuration
+            float elapsed = 0f;
+            while (elapsed < RagdollFadeDuration)
+            {
+                elapsed += Time.deltaTime;
+                float alpha = 1f - Mathf.Clamp01(elapsed / RagdollFadeDuration);
+                if (_cachedRenderers != null && _mpb != null)
+                {
+                    Color faded = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
+                    _mpb.SetColor(_baseColorId, faded);
+                    _mpb.SetColor(_colorId, faded);
+                    for (int i = 0; i < _cachedRenderers.Length; i++)
+                        _cachedRenderers[i].SetPropertyBlock(_mpb);
+                }
+                yield return null;
+            }
+
+            ReleaseToPool();
         }
 
         // ── Tint helpers ──────────────────────────────────────────────────────
