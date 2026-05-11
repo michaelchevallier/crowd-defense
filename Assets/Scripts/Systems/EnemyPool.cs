@@ -17,6 +17,11 @@ namespace CrowdDefense.Systems
         // Per-type sub-pools keyed by EnemyType.Id
         private readonly Dictionary<string, ObjectPool<Enemy>> _pools = new();
 
+        // Flat list of all currently active (live) enemies — used by EnemyPathingSystem
+        private readonly List<Enemy> _active = new();
+        public IReadOnlyList<Enemy> ActiveEnemies => _active;
+        public int ActiveCount => _active.Count;
+
         // Spawn, position, and Init an enemy of the given type in one call.
         // Called by WaveManager instead of Get() + manual Init.
         public Enemy SpawnFromType(EnemyType type, Vector3 position, int pathIdx)
@@ -37,6 +42,7 @@ namespace CrowdDefense.Systems
             enemy._poolTypeId = type.Id;
             enemy.transform.position = position;
             enemy.transform.rotation = Quaternion.identity;
+            VfxPool.Instance?.SpawnPortal(position);
             enemy.Init(type, pathIdx);
             if (Random.value < 0.05f) enemy.ApplyElite();
 
@@ -100,12 +106,17 @@ namespace CrowdDefense.Systems
             return e;
         }
 
-        private static void OnGet(Enemy e) => e.gameObject.SetActive(true);
+        private void OnGet(Enemy e)
+        {
+            e.gameObject.SetActive(true);
+            _active.Add(e);
+        }
 
-        private static void OnRelease(Enemy e)
+        private void OnRelease(Enemy e)
         {
             e.StopAllCoroutines();
             e.gameObject.SetActive(false);
+            _active.Remove(e);
         }
 
         private static void OnPoolDestroy(Enemy e) => Destroy(e.gameObject);
