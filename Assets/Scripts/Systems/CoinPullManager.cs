@@ -1,15 +1,14 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 
 namespace CrowdDefense.Systems
 {
     // Registre des sources Magnet actives, mis à jour chaque frame par Tower.UpdateCoinPull().
     // Enemy.TakeDamage() interroge GetCoinMulAt() pour booster la récompense.
-    public class CoinPullManager : MonoBehaviour
+    public class CoinPullManager : MonoSingleton<CoinPullManager>
     {
-        public static CoinPullManager? Instance { get; private set; }
-
         private struct CoinSource
         {
             public Vector3 position;
@@ -19,17 +18,6 @@ namespace CrowdDefense.Systems
 
         // Réinitialisé en fin de frame via LateUpdate, reconstruit par les Magnets dans Update
         private readonly List<CoinSource> sources = new();
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
-        }
-
-        private void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
-        }
 
         private void LateUpdate()
         {
