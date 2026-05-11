@@ -5,6 +5,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
@@ -47,6 +48,7 @@ namespace CrowdDefense.Systems
             cam = Camera.main;
             _ = TowerHoverController.Instance;    // ensure hover controller exists
             _ = GhostPreviewController.Instance;  // ensure ghost preview exists
+            _ = PlacementHighlight.Instance;      // ensure placement highlight exists
         }
 
         private void Update()
