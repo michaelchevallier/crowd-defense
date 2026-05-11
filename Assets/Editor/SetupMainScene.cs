@@ -34,7 +34,6 @@ namespace CrowdDefense.Editor
 
             int sys  = EnsureNewSingletons();
             int ui   = EnsureHudControllers();
-            BuildHeroPrefab.Build(silent: true);
             WireInspectorRefs();
 
             EditorSceneManager.MarkSceneDirty(scene);
@@ -61,9 +60,15 @@ namespace CrowdDefense.Editor
             n += EnsureRegistry<SkinRegistry>("Assets/Resources/SkinRegistry.asset");
             n += EnsureRegistry<TowerRegistry>("Assets/Resources/TowerRegistry.asset");
             n += EnsureRegistry<CutsceneRegistry>("Assets/Resources/CutsceneRegistry.asset");
+            n += EnsureRegistry<AchievementRegistry>("Assets/Resources/AchievementRegistry.asset");
             // BossDefRegistry is not a type — BossSystem.registry is List<BossDef> wired via Inspector
 
             PopulatePerkRegistry();
+            PopulateMetaUpgradeRegistry();
+            PopulateDoctrineRegistry();
+            PopulateSkinRegistry();
+            PopulateAchievementRegistry();
+            PopulateCutsceneRegistry();
 
             AssetDatabase.SaveAssets();
             return n;
@@ -102,6 +107,66 @@ namespace CrowdDefense.Editor
                 var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
                 prop.GetArrayElementAtIndex(i).objectReferenceValue = asset;
             }
+        }
+
+        private static void PopulateMetaUpgradeRegistry()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<MetaUpgradeRegistry>("Assets/Resources/MetaUpgradeRegistry.asset");
+            if (registry == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:MetaUpgradeDef", new[] { "Assets/ScriptableObjects/MetaUpgrades" });
+            if (guids.Length == 0)
+            {
+                MetaUpgradeSeedTool.SeedAll();
+                guids = AssetDatabase.FindAssets("t:MetaUpgradeDef", new[] { "Assets/ScriptableObjects/MetaUpgrades" });
+            }
+            if (guids.Length > 0)
+                PopulateList(registry, "defs", guids);
+        }
+
+        private static void PopulateDoctrineRegistry()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<DoctrineRegistry>("Assets/Resources/DoctrineRegistry.asset");
+            if (registry == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:DoctrineDef", new[] { "Assets/ScriptableObjects/Doctrines" });
+            if (guids.Length > 0)
+                PopulateList(registry, "defs", guids);
+        }
+
+        private static void PopulateSkinRegistry()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<SkinRegistry>("Assets/Resources/SkinRegistry.asset");
+            if (registry == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:SkinDef", new[] { "Assets/ScriptableObjects/Skins" });
+            if (guids.Length > 0)
+                PopulateList(registry, "skins", guids);
+        }
+
+        private static void PopulateAchievementRegistry()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<AchievementRegistry>("Assets/Resources/AchievementRegistry.asset");
+            if (registry == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:AchievementDef", new[] { "Assets/ScriptableObjects/Achievements" });
+            if (guids.Length == 0)
+            {
+                BuildAchievementAssets.Generate();
+                guids = AssetDatabase.FindAssets("t:AchievementDef", new[] { "Assets/ScriptableObjects/Achievements" });
+            }
+            if (guids.Length > 0)
+                PopulateList(registry, "defs", guids);
+        }
+
+        private static void PopulateCutsceneRegistry()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<CutsceneRegistry>("Assets/Resources/CutsceneRegistry.asset");
+            if (registry == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:CutsceneDef", new[] { "Assets/ScriptableObjects/Cutscenes" });
+            if (guids.Length > 0)
+                PopulateList(registry, "cutscenes", guids);
         }
 
         private static int EnsureRegistry<T>(string path) where T : ScriptableObject
