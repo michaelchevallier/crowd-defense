@@ -18,6 +18,7 @@ namespace CrowdDefense.Systems
         private float spawnTimerMs = 0f;
         private float breakTimerMs = 0f;
         private bool waveActive = false;
+        private int spawnCounter = 0;
         private Queue<EnemyType> pendingSpawns = new();
         private List<Enemy> activeEnemies = new();
 
@@ -49,6 +50,7 @@ namespace CrowdDefense.Systems
         private void BeginWave(int idx)
         {
             currentWaveIdx = idx;
+            spawnCounter = 0;
             var wave = levelData!.Waves[idx];
             float swarmMul = BalanceConfig.Get().SwarmMul;
             var list = new List<EnemyType>();
@@ -86,7 +88,7 @@ namespace CrowdDefense.Systems
                 if (spawnTimerMs >= wave.spawnRateMs && pendingSpawns.Count > 0)
                 {
                     spawnTimerMs = 0f;
-                    SpawnEnemy(pendingSpawns.Dequeue());
+                    SpawnEnemy(pendingSpawns.Dequeue(), wave.portalIdx);
                 }
                 if (pendingSpawns.Count == 0 && activeEnemies.Count == 0)
                 {
@@ -121,20 +123,47 @@ namespace CrowdDefense.Systems
             }
         }
 
-        private void SpawnEnemy(EnemyType type)
+        private void SpawnEnemy(EnemyType type, int wavePortalIdx)
         {
             if (enemyPrefab == null || PathManager.Instance == null) return;
-            Vector3 spawnPos = PathManager.Instance.GetWaypoint(0) + Vector3.up * 0.5f;
+            var pm = PathManager.Instance;
+            if (pm.Paths.Count == 0) return;
+
+            int resolvedPathIdx = ResolvePathIdx(wavePortalIdx);
+            Vector3 spawnPos = pm.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
             var go = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
             var enemy = go.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.Init(type);
+                enemy.Init(type, resolvedPathIdx);
                 activeEnemies.Add(enemy);
+                spawnCounter++;
 #if UNITY_EDITOR
-                Debug.Log($"[WaveManager] spawned {type.Id} active={activeEnemies.Count}");
+                Debug.Log($"[WaveManager] spawned {type.Id} pathIdx={resolvedPathIdx} active={activeEnemies.Count}");
 #endif
             }
+        }
+
+        /// <summary>
+        /// Resolves which path index to use.
+        /// wavePortalIdx == -1 → round-robin across all paths by spawnCounter.
+        /// wavePortalIdx >= 0  → pick first path whose PortalIdx matches; fallback round-robin.
+        /// </summary>
+        private int ResolvePathIdx(int wavePortalIdx)
+        {
+            var pm = PathManager.Instance!;
+            int pathCount = pm.Paths.Count;
+
+            if (wavePortalIdx < 0)
+                return spawnCounter % pathCount;
+
+            // Find first path that starts from the requested portal
+            var meta = pm.PathsMeta;
+            for (int i = 0; i < meta.Count; i++)
+                if (meta[i].PortalIdx == wavePortalIdx) return i;
+
+            // Fallback : round-robin
+            return spawnCounter % pathCount;
         }
 
         public void NotifyEnemyDied(Enemy e) => activeEnemies.Remove(e);

@@ -13,16 +13,19 @@ namespace CrowdDefense.Entities
         private EnemyType? cfg;
         private float hp;
         private int currentWaypoint;
-        private PathManager? path;
+        private int pathIdx;
+        private PathManager? pathManager;
 
         public EnemyType? Config => cfg;
         public int CurrentWaypoint => currentWaypoint;
+        public int PathIdx => pathIdx;
         public bool IsDead { get; private set; }
 
-        public void Init(EnemyType type)
+        public void Init(EnemyType type, int assignedPathIdx = 0)
         {
             cfg = type;
             hp = type.Hp;
+            pathIdx = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
             transform.localScale = Vector3.one * type.Scale;
 
@@ -44,26 +47,33 @@ namespace CrowdDefense.Entities
 
         private void Start()
         {
-            path = PathManager.Instance;
-            if (path == null || path.WaypointCount < 2)
+            pathManager = PathManager.Instance;
+            if (pathManager == null || pathManager.Paths.Count == 0)
             {
-                Debug.LogError("[Enemy] No PathManager or path too short");
+                Debug.LogError("[Enemy] No PathManager or no paths");
                 Destroy(gameObject);
                 return;
             }
-            transform.position = path.GetWaypoint(0) + Vector3.up * 0.5f;
+            if (pathManager.WaypointCountOnPath(pathIdx) < 2)
+            {
+                Debug.LogError($"[Enemy] Path {pathIdx} too short");
+                Destroy(gameObject);
+                return;
+            }
+            transform.position = pathManager.GetWaypointOnPath(pathIdx, 0) + Vector3.up * 0.5f;
         }
 
         private void Update()
         {
-            if (cfg == null || path == null || IsDead) return;
-            if (currentWaypoint >= path.WaypointCount)
+            if (cfg == null || pathManager == null || IsDead) return;
+            int wpCount = pathManager.WaypointCountOnPath(pathIdx);
+            if (currentWaypoint >= wpCount)
             {
                 OnReachedCastle();
                 return;
             }
 
-            Vector3 target = path.GetWaypoint(currentWaypoint) + Vector3.up * 0.5f;
+            Vector3 target = pathManager.GetWaypointOnPath(pathIdx, currentWaypoint) + Vector3.up * 0.5f;
             transform.position = Vector3.MoveTowards(transform.position, target, cfg.Speed * Time.deltaTime);
 
             if ((transform.position - target).sqrMagnitude < 0.01f)
@@ -91,9 +101,16 @@ namespace CrowdDefense.Entities
         {
             int dmg = cfg?.Damage ?? 0;
 #if UNITY_EDITOR
-            Debug.Log($"[Enemy] reached castle type={cfg?.Id} dmg={dmg}");
+            Debug.Log($"[Enemy] reached castle type={cfg?.Id} dmg={dmg} pathIdx={pathIdx}");
 #endif
-            Castle.Instance?.TakeDamage(dmg);
+            // Resolve castle from path meta
+            var runner = LevelRunner.Instance;
+            if (runner != null && pathManager != null)
+            {
+                var meta = pathManager.PathsMeta;
+                int castleIdx = pathIdx < meta.Count ? meta[pathIdx].CastleIdx : 0;
+                runner.GetCastle(castleIdx)?.TakeDamage(dmg);
+            }
             WaveManager.Instance?.NotifyEnemyDied(this);
             Destroy(gameObject);
         }
