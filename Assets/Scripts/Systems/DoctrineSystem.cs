@@ -22,6 +22,38 @@ namespace CrowdDefense.Systems
             string saved = PlayerPrefs.GetString(DOCTRINE_KEY, "");
             if (!string.IsNullOrEmpty(saved))
                 ActiveDoctrine = DoctrineRegistry.Get().Find(saved);
+
+            var em = EventManager.Instance;
+            if (em != null)
+            {
+                em.Subscribe<LevelEndedEvent>(OnLevelEnded);
+                em.Subscribe<BossDefeatedEvent>(OnBossDefeated);
+            }
+        }
+
+        protected override void OnDestroySingleton()
+        {
+            var em = EventManager.Instance;
+            if (em != null)
+            {
+                em.Unsubscribe<LevelEndedEvent>(OnLevelEnded);
+                em.Unsubscribe<BossDefeatedEvent>(OnBossDefeated);
+            }
+        }
+
+        private void OnLevelEnded(LevelEndedEvent e)
+        {
+            if (!e.Victory || ActiveDoctrine == null) return;
+            // Award gems equal to doctrine gem cost / 5, floored at 1, as run completion bonus.
+            int bonus = Mathf.Max(1, ActiveDoctrine.gemCost / 5);
+            AddGems(bonus);
+        }
+
+        private void OnBossDefeated(BossDefeatedEvent _)
+        {
+            if (ActiveDoctrine == null) return;
+            // Flat bonus gem per boss kill when a doctrine is active.
+            AddGems(1);
         }
 
         public int GetGems() => PlayerPrefs.GetInt(GEMS_KEY, 0);

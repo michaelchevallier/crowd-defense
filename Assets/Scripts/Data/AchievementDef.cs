@@ -15,6 +15,9 @@ namespace CrowdDefense.Data
         [SerializeField] public bool hidden = false;
         [SerializeField] public int points = 10;
         [SerializeField] public Sprite? icon;
+        // eventKey matches TrackEvent keys: "enemy_killed", "wave_cleared", "tower_placed",
+        // "gold_earned", "level_complete", "synergy_activated", "boss_killed"
+        [SerializeField] public string eventKey = "";
         [SerializeField] public AchievementPredicateType predicateType = AchievementPredicateType.Event;
         [SerializeField] public int threshold = 1;
     }
