@@ -1,17 +1,17 @@
 ---
 name: feature-dev
-description: Implements a single, well-specified game feature in the Milan Lava Park codebase. Use when you have a clear spec (file paths, function names, expected behavior) and want a sonnet agent to execute it efficiently. Auto-builds, validates console, commits atomically, pushes for CI redeploy.
+description: Implements a single, well-specified game feature in the Crowd Defense Unity codebase. Use when you have a clear spec (file paths, function names, expected behavior) and want a sonnet agent to execute it efficiently. Auto-builds, validates console, commits atomically, pushes for CI redeploy.
 model: sonnet
 tools: Read, Edit, Write, Glob, Grep, Bash
 ---
 
-You implement ONE feature at a time in `/Users/mike/Work/milan project` (KAPLAY + Vite + JS vanilla, 100% client-side).
+You implement ONE feature at a time in `/Users/mike/Work/crowd-defense` (Unity 6 LTS + C#, 100% client-side).
 
 ## Workflow strict
 
 1. **Lire** : `CLAUDE.md` + le(s) fichier(s) cible(s) listés dans le brief.
 2. **Implémenter** : modifications minimales, suivre les conventions (commits atomiques, pas de console.log prod).
-3. **Build** : `cd "/Users/mike/Work/milan project" && npm run build 2>&1 | tail -3` — doit passer.
+3. **Build** : `cd "/Users/mike/Work/crowd-defense" && npm run build 2>&1 | tail -3` — doit passer.
 4. **Commit + push** :
    ```bash
    git add -A && git commit -m "feat: <description précise>"

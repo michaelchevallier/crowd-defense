@@ -69,6 +69,33 @@ Mike décide après lecture de Phase 1 plan.
 
 Briefings tickets à écrire dans `.claude/specs/MIGRATE-POC-XX.md`. Personas Sonnet adaptés Unity context (feature-dev déjà sonnet, bug-fixer haiku, qa-tester haiku). Models override appliqués sur 3 agents (auto-qa-runner, level-designer, ux-designer) Opus→Sonnet.
 
+## 📂 SOURCE CODE À MIGRER — où chercher quoi
+
+**Repo source Phaser/Three.js (frozen)** : `/Users/mike/Work/milan project/` (sur disque local, NON dans ce repo crowd-defense). Tag `v5.0-pre-pivot-unity` = état figé pré-pivot — référence canonique pour tout port Unity.
+
+**Comment lire le source** : Read tool avec paths absolus depuis `/Users/mike/Work/milan project/...`. Pas besoin de clone, le repo est déjà checkout localement.
+
+**Structure clé du source à porter** :
+
+| Source path | Quoi | Target Unity |
+|---|---|---|
+| `milan project/src-v3/entities/Tower.js` | 12 TOWER_TYPES + Tower class | `Assets/Scripts/Data/TowerType.cs` (SO) + `Assets/Scripts/Entities/Tower.cs` (MonoB) |
+| `milan project/src-v3/entities/Enemy.js` | ~30 ENEMY_TYPES + Enemy class + behaviors | `Assets/Scripts/Data/EnemyType.cs` (SO) + `Assets/Scripts/Entities/Enemy.cs` (MonoB) |
+| `milan project/src-v3/entities/Projectile.js`, `Mine.js`, `MagnetBomb.js`, etc. | Projectiles + spec entities | `Assets/Scripts/Entities/Projectile.cs` etc. |
+| `milan project/src-v3/systems/LevelRunner.js` | Core game loop (waves, kills, gold, castleHP) | `Assets/Scripts/Systems/LevelRunner.cs` |
+| `milan project/src-v3/systems/MapGrid.js` + `MapPathfinder.js` | Grid + pathfinding | `Assets/Scripts/Systems/PathManager.cs` |
+| `milan project/src-v3/systems/Synergies.js` | Synergies passives | `Assets/Scripts/Systems/Synergies.cs` |
+| `milan project/src-v3/data/levels/world*.js` | 80 levels JSON | `Assets/ScriptableObjects/Levels/W*-*.asset` |
+| `milan project/src-v3/main.js:1097-1118` | `_upgradeCost` + radial menu | Cf spec D1-03 |
+| `milan project/src-v3/CLAUDE.md` | Grammar v5 + vocab design | Référence, déjà copié dans `docs/design/grammar-v5.md` |
+| `milan project/index.html` | HUD layout actuel | Unity UI Toolkit (UI Builder + USS) |
+
+**Specs D1** dans `docs/specs/design/D1-*.md` référencent ces paths source. À chaque ticket MIGRATE-POC-XX, démarrer par `Read` du fichier source Phaser correspondant pour comprendre l'implementation actuelle, puis porter en C# Unity.
+
+**Reset si milan project modifié** : `git -C "/Users/mike/Work/milan project" checkout v5.0-pre-pivot-unity` (mais shouldn't be modified — c'est une archive frozen).
+
+---
+
 ## 📋 Contexte pivot (référence)
 
 Repo né d'un pivot acté le 2026-05-11. Projet précédent (`milan project` Phaser/Three.js) archivé tag `v5.0-pre-pivot-unity`. Décision : passer à Unity 6 LTS + C# + Unity-MCP.

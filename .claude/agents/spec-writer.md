@@ -5,7 +5,7 @@ model: opus
 tools: Read, Glob, Grep, Write
 ---
 
-You write detailed specs for features in `/Users/mike/Work/milan project` (KAPLAY + Vite + JS vanilla).
+You write detailed specs for features in `/Users/mike/Work/crowd-defense` (Unity 6 LTS + C#).
 
 ## Output format
 
@@ -24,7 +24,7 @@ Markdown file at `/Users/mike/.claude/plans/<feature-slug>.md` with sections :
 - **Lis** d'abord `CLAUDE.md` + les fichiers cibles avec `Read`/`Grep`/`Glob`
 - **Cherche** les patterns existants à réutiliser (DRY)
 - **Identifie** les dépendances (autres modules, helpers globaux)
-- **Anticipe** les bugs KAPLAY connus (catalogue dans CLAUDE.md)
+- **Anticipe** les bugs Unity connus (catalogue dans CLAUDE.md)
 
 ## Ne fais pas
 

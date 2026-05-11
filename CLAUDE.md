@@ -4,6 +4,16 @@
 
 Jeu **tower defense** Unity 6 LTS (`6000.0.74f1`), C#, cible multi-platform (Steam Mac/Win/Linux, iOS, Android, WebGL). Migration depuis prototype web Phaser/Three.js (`milan project` repo, tag `v5.0-pre-pivot-unity`).
 
+## 📂 Source code à migrer (référence canonique)
+
+**Path absolu disque local** : `/Users/mike/Work/milan project/` (repo séparé, archive frozen sur tag `v5.0-pre-pivot-unity`).
+
+**Toujours porter en lisant le source** : `Read /Users/mike/Work/milan project/src-v3/entities/Tower.js`, etc. Les specs D1 dans `docs/specs/design/` référencent ces paths.
+
+**Source map détaillé** : voir `STATUS.md` section "📂 SOURCE CODE À MIGRER — où chercher quoi" (tableau Phaser → Unity per fichier).
+
+**Note importante** : les agent personas dans `.claude/agents/` ont été adaptés Unity context via sed batch le 2026-05-11. Quelques refs résiduelles à `src-v3/...` paths sont **volontaires** (source code à migrer, à lire mais pas à modifier).
+
 **Origines** : projet "Milan Park Defense — Foire en Lave" pivoté Phaser → Three.js → Unity 6 (2026-05-11). Le thème "Milan/lave/foire" est retiré pour ce repo : projet renommé **Crowd Defense** pour rester ouvert sur le thème final.
 
 Repo : https://github.com/michaelchevallier/crowd-defense (privé)

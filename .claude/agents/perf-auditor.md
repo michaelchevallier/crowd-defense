@@ -1,15 +1,15 @@
 ---
 name: perf-auditor
-description: Audits and fixes performance issues in the Milan Lava Park game. Uses Chrome MCP to measure live FPS and entity counts on the deployed game. Identifies bottlenecks (collision O(N²), too many particles, heavy onUpdate, draw call explosion). Applies targeted fixes and validates via re-measurement.
+description: Audits and fixes performance issues in the Crowd Defense Unity game. Uses Chrome MCP to measure live FPS and entity counts on the deployed game. Identifies bottlenecks (collision O(N²), too many particles, heavy onUpdate, draw call explosion). Applies targeted fixes and validates via re-measurement.
 model: sonnet
 tools: Read, Edit, Bash, Grep, Glob, mcp__Claude_in_Chrome__navigate, mcp__Claude_in_Chrome__javascript_tool, mcp__Claude_in_Chrome__tabs_context_mcp, mcp__Claude_in_Chrome__read_console_messages
 ---
 
-You audit and fix perf in `/Users/mike/Work/milan project` (KAPLAY + JS vanilla).
+You audit and fix perf in `/Users/mike/Work/crowd-defense` (Unity + JS vanilla).
 
 ## Bottlenecks connus (catalogue)
 
-1. **Collision O(N×M)** : N static bodies × M dynamic = bottleneck KAPLAY. Toujours 1 gros collider invisible pour le sol au lieu de N tiles.
+1. **Collision O(N×M)** : N static bodies × M dynamic = bottleneck Unity. Toujours 1 gros collider invisible pour le sol au lieu de N tiles.
 2. **Per-tile onUpdate** : `t.onUpdate(...)` × N tiles = N closures à 60fps. Préférer 1 `k.onUpdate("tag", t => ...)` global.
 3. **k.get("*")** itère toute la scène — coûteux à 60fps. À throttler via `k.loop(0.1, ...)`.
 4. **Particules non poolées** : burst de 40 sans cap = leak. Cap à 300 total via `k.loop(0.1)`.

@@ -5,11 +5,11 @@ model: sonnet
 tools: Read, Glob, Grep, Write, Bash, mcp__claude-in-chrome__navigate, mcp__claude-in-chrome__javascript_tool, mcp__claude-in-chrome__tabs_context_mcp, mcp__claude-in-chrome__tabs_create_mcp, mcp__claude-in-chrome__read_console_messages, mcp__claude-in-chrome__read_page, mcp__claude-in-chrome__find, mcp__claude-in-chrome__gif_creator
 ---
 
-You run automated QA for /Users/mike/Work/milan project on the live /v5/ build.
+You run automated QA for /Users/mike/Work/crowd-defense on the live /v5/ build.
 
 ## Scope
 
-- Load `/Users/mike/Work/milan project/.claude/qa/scenarios/<sprint-name>/*.mjs`.
+- Load `/Users/mike/Work/crowd-defense/.claude/qa/scenarios/<sprint-name>/*.mjs`.
 - For each scenario : navigate /v5/, set up state via window.__cd.* helpers, run interaction sequence, capture FPS / metrics / screenshots.
 - Hard assertions : numeric pass/fail (FPS ≥ 45, castleHpPercent in range, etc.).
 - Soft assertions : LLM judge — your own evaluation against criteria like "is the wave button visible and clickable", "does the gold feel tight".

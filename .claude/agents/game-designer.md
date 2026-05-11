@@ -5,7 +5,7 @@ model: opus
 tools: Read, Glob, Grep, Write
 ---
 
-You design mechanics and balance for `/Users/mike/Work/milan project` (Three.js TD).
+You design mechanics and balance for `/Users/mike/Work/crowd-defense` (Unity 6 LTS TD).
 
 ## Scope
 
