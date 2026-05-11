@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ab02600549904ae5a56528b74267997, type: 3}
+  m_Name: Skyguard
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerType
+  id: skyguard
+  displayName: Garde-Ciel
+  icon: "\U0001F680"
+  unlockWorld: 3
+  cost: 85
+  damage: 5.52
+  range: 12
+  fireRateMs: 600
+  projectileSpeed: 28
+  aoe: 0
+  pierce: 0
+  behavior: 0
+  clusterCount: 0
+  cooldownMs: 0
+  slowMul: 1
+  slowDurationMs: 0
+  buffMul: 1
+  coinMul: 1
+  pullSlow: 1
+  parabolic: 0
+  flyerOnly: 1
+  flyerDmgMul: 1.5
+  canHitFlyers: 1
+  hasArmorBreak: 0
+  armorBreak:
+    dmgTakenMul: 0
+    durMs: 0
+  synergies:
+  - type: 1
+    from: frost
+    effectKey: freezeOnHit_durMs
+    effectValue: 800
+    range: 4
+  bodyColor: {r: 0.2901961, g: 0.35294118, b: 0.41568628, a: 1}
+  projectileColor: {r: 0.53333336, g: 0.8, b: 1, a: 1}
+  sizeMultiplier: 1

@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ab02600549904ae5a56528b74267997, type: 3}
+  m_Name: Magnet
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerType
+  id: magnet
+  displayName: Aimant
+  icon: "\U0001F9F2"
+  unlockWorld: 4
+  cost: 100
+  damage: 0
+  range: 6.5
+  fireRateMs: 0
+  projectileSpeed: 0
+  aoe: 0
+  pierce: 0
+  behavior: 4
+  clusterCount: 0
+  cooldownMs: 0
+  slowMul: 1
+  slowDurationMs: 0
+  buffMul: 1
+  coinMul: 2
+  pullSlow: 0.7
+  parabolic: 0
+  flyerOnly: 0
+  flyerDmgMul: 1
+  canHitFlyers: 0
+  hasArmorBreak: 0
+  armorBreak:
+    dmgTakenMul: 0
+    durMs: 0
+  synergies:
+  - type: 3
+    from:
+    effectKey: coinMul
+    effectValue: 2
+    range: 6.5
+  - type: 1
+    from: tank
+    effectKey: pullToTank
+    effectValue: 1
+    range: 4
+  bodyColor: {r: 1, g: 0.26666668, b: 0.53333336, a: 1}
+  projectileColor: {r: 1, g: 0.4, b: 0.6666667, a: 1}
+  sizeMultiplier: 0.85

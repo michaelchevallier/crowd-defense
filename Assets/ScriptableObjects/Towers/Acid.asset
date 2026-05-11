@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ab02600549904ae5a56528b74267997, type: 3}
+  m_Name: Acid
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerType
+  id: acid
+  displayName: Acide
+  icon: "\U0001F9EA"
+  unlockWorld: 2
+  cost: 110
+  damage: 0.5
+  range: 7
+  fireRateMs: 800
+  projectileSpeed: 22
+  aoe: 0
+  pierce: 0
+  behavior: 0
+  clusterCount: 0
+  cooldownMs: 0
+  slowMul: 1
+  slowDurationMs: 0
+  buffMul: 1
+  coinMul: 1
+  pullSlow: 1
+  parabolic: 0
+  flyerOnly: 0
+  flyerDmgMul: 1
+  canHitFlyers: 0
+  hasArmorBreak: 1
+  armorBreak:
+    dmgTakenMul: 1.4
+    durMs: 8000
+  synergies:
+  - type: 1
+    from: ballista
+    effectKey: propagateDebuff
+    effectValue: 1
+    range: 5
+  bodyColor: {r: 0.4, g: 0.8, b: 0.13333334, a: 1}
+  projectileColor: {r: 0.53333336, g: 1, b: 0.26666668, a: 1}
+  sizeMultiplier: 0.85

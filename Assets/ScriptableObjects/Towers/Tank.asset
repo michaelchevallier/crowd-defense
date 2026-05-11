@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ab02600549904ae5a56528b74267997, type: 3}
+  m_Name: Tank
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerType
+  id: tank
+  displayName: Tank
+  icon: "\U0001F6E1️"
+  unlockWorld: 1
+  cost: 50
+  damage: 0.69
+  range: 5
+  fireRateMs: 220
+  projectileSpeed: 26
+  aoe: 0
+  pierce: 0
+  behavior: 0
+  clusterCount: 0
+  cooldownMs: 0
+  slowMul: 1
+  slowDurationMs: 0
+  buffMul: 1
+  coinMul: 1
+  pullSlow: 1
+  parabolic: 0
+  flyerOnly: 0
+  flyerDmgMul: 1
+  canHitFlyers: 0
+  hasArmorBreak: 0
+  armorBreak:
+    dmgTakenMul: 0
+    durMs: 0
+  synergies: []
+  bodyColor: {r: 0.5411765, g: 0.2901961, b: 0.13333334, a: 1}
+  projectileColor: {r: 1, g: 0.53333336, b: 0.33333334, a: 1}
+  sizeMultiplier: 0.85

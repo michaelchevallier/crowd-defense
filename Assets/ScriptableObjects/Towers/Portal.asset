@@ -1,0 +1,55 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ab02600549904ae5a56528b74267997, type: 3}
+  m_Name: Portal
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerType
+  id: portal
+  displayName: Portail
+  icon: "\U0001F30C"
+  unlockWorld: 4
+  cost: 130
+  damage: 0
+  range: 5.5
+  fireRateMs: 0
+  projectileSpeed: 0
+  aoe: 0
+  pierce: 0
+  behavior: 3
+  clusterCount: 0
+  cooldownMs: 0
+  slowMul: 1
+  slowDurationMs: 0
+  buffMul: 1.5
+  coinMul: 1
+  pullSlow: 1
+  parabolic: 0
+  flyerOnly: 0
+  flyerDmgMul: 1
+  canHitFlyers: 0
+  hasArmorBreak: 0
+  armorBreak:
+    dmgTakenMul: 0
+    durMs: 0
+  synergies:
+  - type: 0
+    from:
+    effectKey: pierceBonus
+    effectValue: 1
+    range: 5.5
+  - type: 0
+    from:
+    effectKey: dmgMul
+    effectValue: 1.5
+    range: 5.5
+  bodyColor: {r: 0.41568628, g: 0.22745098, b: 0.627451, a: 1}
+  projectileColor: {r: 0.6901961, g: 0.53333336, b: 1, a: 1}
+  sizeMultiplier: 1.04

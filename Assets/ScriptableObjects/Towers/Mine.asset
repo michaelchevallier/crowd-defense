@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ab02600549904ae5a56528b74267997, type: 3}
+  m_Name: Mine
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerType
+  id: mine
+  displayName: Mine
+  icon: "\U0001F4A3"
+  unlockWorld: 2
+  cost: 60
+  damage: 5.75
+  range: 1.8
+  fireRateMs: 0
+  projectileSpeed: 0
+  aoe: 2.5
+  pierce: 0
+  behavior: 1
+  clusterCount: 3
+  cooldownMs: 12000
+  slowMul: 1
+  slowDurationMs: 0
+  buffMul: 1
+  coinMul: 1
+  pullSlow: 1
+  parabolic: 0
+  flyerOnly: 0
+  flyerDmgMul: 1
+  canHitFlyers: 0
+  hasArmorBreak: 0
+  armorBreak:
+    dmgTakenMul: 0
+    durMs: 0
+  synergies:
+  - type: 1
+    from: cannon
+    effectKey: cascadeRadius
+    effectValue: 3
+    range: 5
+  bodyColor: {r: 0.6666667, g: 0.1254902, b: 0.1254902, a: 1}
+  projectileColor: {r: 1, g: 0.1882353, b: 0.1882353, a: 1}
+  sizeMultiplier: 1
