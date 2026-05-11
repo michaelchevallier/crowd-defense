@@ -16,9 +16,10 @@ namespace CrowdDefense.Editor
         [MenuItem("Tools/CrowdDefense/Build AssetRegistry")]
         public static void BuildAssetRegistry()
         {
-            // Re-import all GLTF/GLB files to ensure correct importer (UnityGLTF vs DefaultImporter)
-            // DISABLED: ForceUpdate triggers GLTFast Jobs threading bug on skeleton files — cached in Library/ already works
-            // ReimportGLTFAssets();
+            // Idempotence : convertit .meta DefaultImporter → ScriptedImporter UnityGLTF
+            // sinon AssetDatabase.LoadAssetAtPath<GameObject> retourne null pour ces fichiers
+            // → AssetRegistry vide pour les enemies/towers → fallback primitive in-game.
+            FixGltfImporters.RunInternal(verbose: false);
 
             var registry = LoadOrCreateRegistry();
 
