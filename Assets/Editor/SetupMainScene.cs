@@ -26,11 +26,13 @@ namespace CrowdDefense.Editor
             }
 
             int regs = EnsureRegistries();
+            BuildMainSceneTool.BuildMainScene();
+            int sys  = EnsureNewSingletons();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
-            Debug.Log($"[SetupMainScene] OK — 0 singletons, 0 UI controllers, {regs} registries created/updated");
+            Debug.Log($"[SetupMainScene] OK — {sys} singletons, 0 UI controllers, {regs} registries created/updated");
         }
 
         // ── 1. Registries SO ────────────────────────────────────────────────
@@ -56,6 +58,41 @@ namespace CrowdDefense.Editor
             var so = ScriptableObject.CreateInstance<T>();
             AssetDatabase.CreateAsset(so, path);
             return 1;
+        }
+
+        // ── 2. New Singletons under Systems/ ────────────────────────────────
+
+        private static int EnsureNewSingletons()
+        {
+            var systems = GameObject.Find("Systems") ?? new GameObject("Systems");
+            int created = 0, existing = 0;
+            EnsureChild<PerkSystem>(systems, "PerkSystem", ref created, ref existing);
+            EnsureChild<BossSystem>(systems, "BossSystem", ref created, ref existing);
+            EnsureChild<MetaUpgradeSystem>(systems, "MetaUpgradeSystem", ref created, ref existing);
+            EnsureChild<DoctrineSystem>(systems, "DoctrineSystem", ref created, ref existing);
+            EnsureChild<SkinSystem>(systems, "SkinSystem", ref created, ref existing);
+            EnsureChild<RunContext>(systems, "RunContext", ref created, ref existing);
+            return created;
+        }
+
+        private static T EnsureChild<T>(GameObject parent, string name, ref int created, ref int existing) where T : Component
+        {
+            var child = parent.transform.Find(name);
+            if (child == null)
+            {
+                var go = new GameObject(name);
+                go.transform.SetParent(parent.transform, false);
+                child = go.transform;
+                created++;
+            }
+            else
+            {
+                existing++;
+            }
+            var comp = child.GetComponent<T>();
+            if (comp == null)
+                comp = child.gameObject.AddComponent<T>();
+            return comp;
         }
     }
 }
