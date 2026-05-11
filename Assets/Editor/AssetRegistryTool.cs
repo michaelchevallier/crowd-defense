@@ -16,6 +16,9 @@ namespace CrowdDefense.Editor
         [MenuItem("Tools/CrowdDefense/Build AssetRegistry")]
         public static void BuildAssetRegistry()
         {
+            // Re-import all GLTF/GLB files to ensure correct importer (UnityGLTF vs DefaultImporter)
+            ReimportGLTFAssets();
+
             var registry = LoadOrCreateRegistry();
 
             var entries = new List<AssetRegistry.Entry>();
@@ -75,6 +78,31 @@ namespace CrowdDefense.Editor
                 entries.Add(new AssetRegistry.Entry { Key = assetKey, Prefab = prefab });
                 Debug.Log($"[AssetRegistryTool] Registered [{category}] {assetKey} → {unityPath}");
             }
+        }
+
+        private static void ReimportGLTFAssets()
+        {
+            var gltfGuids = AssetDatabase.FindAssets("", new[] { $"{ModelsRoot}/Towers", $"{ModelsRoot}/Enemies" })
+                .Where(g => {
+                    var path = AssetDatabase.GUIDToAssetPath(g);
+                    var ext = System.IO.Path.GetExtension(path).ToLowerInvariant();
+                    return ext == ".gltf" || ext == ".glb";
+                })
+                .ToList();
+
+            if (gltfGuids.Count == 0) return;
+
+            var pathsToReimport = gltfGuids.Select(g => AssetDatabase.GUIDToAssetPath(g)).ToArray();
+            Debug.Log($"[AssetRegistryTool] Re-importing {pathsToReimport.Length} GLTF/GLB files...");
+
+            AssetDatabase.StartAssetEditing();
+            foreach (var path in pathsToReimport)
+            {
+                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            }
+            AssetDatabase.StopAssetEditing();
+            AssetDatabase.Refresh();
+            Debug.Log($"[AssetRegistryTool] GLTF/GLB re-import complete");
         }
 
         private static AssetRegistry LoadOrCreateRegistry()
