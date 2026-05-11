@@ -34,10 +34,17 @@ namespace CrowdDefense.Entities
         // Modifié par SlowEffectManager chaque frame
         public float currentSpeedMul = 1f;
 
+        // World pressure scaling (D1-04) — set once in Init, persists for lifetime of enemy
+        private float pressureSpeedMul = 1f;
+
         public void Init(EnemyType type, int assignedPathIdx = 0)
         {
             cfg = type;
-            hp = type.Hp;
+            // D1-04 mob pressure : scale HP and speed by world pressure
+            int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
+            var pressure = BalanceConfig.Get().GetPressure(currentWorld);
+            hp = type.Hp * pressure.mobHpMul;
+            pressureSpeedMul = pressure.mobSpeedMul;
             shieldHp = type.ShieldHP;
             pathIdx = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
@@ -143,7 +150,7 @@ namespace CrowdDefense.Entities
             }
 
             Vector3 target = pathManager.GetWaypointOnPath(pathIdx, currentWaypoint) + Vector3.up * 0.5f;
-            float effectiveSpeed = cfg.Speed * currentSpeedMul;
+            float effectiveSpeed = cfg.Speed * currentSpeedMul * pressureSpeedMul;
             transform.position = Vector3.MoveTowards(transform.position, target, effectiveSpeed * Time.deltaTime);
 
             if ((transform.position - target).sqrMagnitude < 0.01f)
@@ -157,7 +164,7 @@ namespace CrowdDefense.Entities
 
             Vector3 castlePos = Castle.Instance.transform.position;
             Vector3 flyTarget = new Vector3(castlePos.x, cfg.FlyHeight, castlePos.z);
-            float effectiveSpeed = cfg.Speed * currentSpeedMul;
+            float effectiveSpeed = cfg.Speed * currentSpeedMul * pressureSpeedMul;
             transform.position = Vector3.MoveTowards(transform.position, flyTarget, effectiveSpeed * Time.deltaTime);
             // Lock Y at fly height during movement
             var pos = transform.position;
