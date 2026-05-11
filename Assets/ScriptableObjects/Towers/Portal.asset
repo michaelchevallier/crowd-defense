@@ -41,15 +41,62 @@ MonoBehaviour:
     durMs: 0
   synergies:
   - type: 0
-    from:
-    effectKey: pierceBonus
-    effectValue: 1
+    from: 
     range: 5.5
+    dmgMul: 0
+    pierceBonus: 0
+    pierceMega: 0
+    multiShotBonus: 0
+    flyerDmgBonus: 0
+    cascadeRadius: 0
+    knockbackOnHit: 0
+    pullToTank: 0
+    propagateDebuff: 0
+    freezeOnHit: 0
+    freezeDurMs: 0
+    slowOnHit:
+      mul: 0
+      durMs: 0
+    appliesSlow:
+      mul: 0
+      durMs: 0
+    propagateAoE:
+      radius: 0
+      dmg: 0
+    coinMul: 0
+    slowArea:
+      mul: 0
+      durMs: 0
+    filterPierceOrAoe: 0
   - type: 0
-    from:
-    effectKey: dmgMul
-    effectValue: 1.5
+    from: 
     range: 5.5
+    dmgMul: 0
+    pierceBonus: 0
+    pierceMega: 0
+    multiShotBonus: 0
+    flyerDmgBonus: 0
+    cascadeRadius: 0
+    knockbackOnHit: 0
+    pullToTank: 0
+    propagateDebuff: 0
+    freezeOnHit: 0
+    freezeDurMs: 0
+    slowOnHit:
+      mul: 0
+      durMs: 0
+    appliesSlow:
+      mul: 0
+      durMs: 0
+    propagateAoE:
+      radius: 0
+      dmg: 0
+    coinMul: 0
+    slowArea:
+      mul: 0
+      durMs: 0
+    filterPierceOrAoe: 0
+  assetKey: tower_portal
   bodyColor: {r: 0.41568628, g: 0.22745098, b: 0.627451, a: 1}
   projectileColor: {r: 0.6901961, g: 0.53333336, b: 1, a: 1}
   sizeMultiplier: 1.04

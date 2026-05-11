@@ -59,7 +59,10 @@ MonoBehaviour:
   cristalGlace: 0
   forteressePerk: 1
   mursPierre: 0
+  magnetRangeMul: 1
+  coinFlySpeedMul: 1
   downRange: 0
   downDamage: 0
   downFireRate: 0
   downCoinReward: 0
+  unlockLevel: 5

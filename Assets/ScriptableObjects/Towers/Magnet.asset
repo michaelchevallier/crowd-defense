@@ -41,15 +41,62 @@ MonoBehaviour:
     durMs: 0
   synergies:
   - type: 3
-    from:
-    effectKey: coinMul
-    effectValue: 1.3
+    from: 
     range: 5
+    dmgMul: 0
+    pierceBonus: 0
+    pierceMega: 0
+    multiShotBonus: 0
+    flyerDmgBonus: 0
+    cascadeRadius: 0
+    knockbackOnHit: 0
+    pullToTank: 0
+    propagateDebuff: 0
+    freezeOnHit: 0
+    freezeDurMs: 0
+    slowOnHit:
+      mul: 0
+      durMs: 0
+    appliesSlow:
+      mul: 0
+      durMs: 0
+    propagateAoE:
+      radius: 0
+      dmg: 0
+    coinMul: 0
+    slowArea:
+      mul: 0
+      durMs: 0
+    filterPierceOrAoe: 0
   - type: 1
     from: tank
-    effectKey: pullToTank
-    effectValue: 1
     range: 4
+    dmgMul: 0
+    pierceBonus: 0
+    pierceMega: 0
+    multiShotBonus: 0
+    flyerDmgBonus: 0
+    cascadeRadius: 0
+    knockbackOnHit: 0
+    pullToTank: 0
+    propagateDebuff: 0
+    freezeOnHit: 0
+    freezeDurMs: 0
+    slowOnHit:
+      mul: 0
+      durMs: 0
+    appliesSlow:
+      mul: 0
+      durMs: 0
+    propagateAoE:
+      radius: 0
+      dmg: 0
+    coinMul: 0
+    slowArea:
+      mul: 0
+      durMs: 0
+    filterPierceOrAoe: 0
+  assetKey: tower_magnet
   bodyColor: {r: 1, g: 0.26666668, b: 0.53333336, a: 1}
   projectileColor: {r: 1, g: 0.4, b: 0.6666667, a: 1}
   sizeMultiplier: 0.85

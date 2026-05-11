@@ -12,4 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 917d485b0b2ea471eb98b8207d92e642, type: 3}
   m_Name: CutsceneRegistry
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.CutsceneRegistry
-  cutscenes: []
+  cutscenes:
+  - {fileID: 11400000, guid: 4957e344eb000456fa5b5e77fe25b8e8, type: 2}
+  - {fileID: 11400000, guid: c82fda97cdd0a49ef9818cd9223d5127, type: 2}
+  - {fileID: 11400000, guid: 36dbfe538f22545ab95867299c7b6af7, type: 2}
+  - {fileID: 11400000, guid: ad747957c5e9348ae86015ea4e21509f, type: 2}
+  - {fileID: 11400000, guid: 996abb551bd0043a28393c79391a423a, type: 2}
+  - {fileID: 11400000, guid: 9e333bc097aaa41559e7fb300852c470, type: 2}
+  - {fileID: 11400000, guid: d7a40dca8a2424f2491c9440f67f06cd, type: 2}
+  - {fileID: 11400000, guid: e5429e822e01948518f177844bfa0b0f, type: 2}
+  - {fileID: 11400000, guid: c960b76f7e01d4e6cbac05cce3de2b5d, type: 2}
+  - {fileID: 11400000, guid: cf40ab0f40d8047a394cdbe9db4d79b7, type: 2}

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerType
   id: tank
   displayName: Tank
-  icon: "\U0001F6E1️"
+  icon: "\U0001F6E1\uFE0F"
   unlockWorld: 1
   cost: 50
   damage: 0.69
@@ -40,6 +40,7 @@ MonoBehaviour:
     dmgTakenMul: 0
     durMs: 0
   synergies: []
+  assetKey: tower_tank
   bodyColor: {r: 0.5411765, g: 0.2901961, b: 0.13333334, a: 1}
   projectileColor: {r: 1, g: 0.53333336, b: 0.33333334, a: 1}
   sizeMultiplier: 0.85

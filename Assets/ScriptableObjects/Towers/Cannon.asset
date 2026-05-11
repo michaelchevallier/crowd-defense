@@ -42,9 +42,33 @@ MonoBehaviour:
   synergies:
   - type: 1
     from: frost
-    effectKey: slowOnHit_mul
-    effectValue: 0.5
     range: 4
+    dmgMul: 0
+    pierceBonus: 0
+    pierceMega: 0
+    multiShotBonus: 0
+    flyerDmgBonus: 0
+    cascadeRadius: 0
+    knockbackOnHit: 0
+    pullToTank: 0
+    propagateDebuff: 0
+    freezeOnHit: 0
+    freezeDurMs: 0
+    slowOnHit:
+      mul: 0
+      durMs: 0
+    appliesSlow:
+      mul: 0
+      durMs: 0
+    propagateAoE:
+      radius: 0
+      dmg: 0
+    coinMul: 0
+    slowArea:
+      mul: 0
+      durMs: 0
+    filterPierceOrAoe: 0
+  assetKey: tower_cannon
   bodyColor: {r: 0.2901961, g: 0.2275, b: 0.1647059, a: 1}
   projectileColor: {r: 1, g: 0.45882353, b: 0.1882353, a: 1}
   sizeMultiplier: 1.2

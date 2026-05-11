@@ -97,23 +97,33 @@ namespace CrowdDefense.Editor
             const string panelPath = "Assets/UI/HUDPanelSettings.asset";
             const string tssPath = "Assets/UI/UnityDefaultRuntimeTheme.tss";
 
-            var panel = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.PanelSettings>(panelPath);
-            if (panel == null) { Debug.LogWarning($"[SetupMainScene] PanelSettings introuvable: {panelPath}"); return; }
+            try
+            {
+                AssetDatabase.ImportAsset(tssPath, ImportAssetOptions.ForceUpdate);
+                AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
 
-            var tss = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.ThemeStyleSheet>(tssPath);
-            if (tss == null) { Debug.LogWarning($"[SetupMainScene] ThemeStyleSheet introuvable: {tssPath}"); return; }
+                var panel = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.PanelSettings>(panelPath);
+                if (panel == null) { Debug.LogError($"[SetupMainScene] PanelSettings not found at {panelPath}"); return; }
 
-            var so = new SerializedObject(panel);
-            var prop = so.FindProperty("themeUss");
-            if (prop == null) { Debug.LogWarning("[SetupMainScene] PanelSettings.themeUss property non trouvée"); return; }
+                var tss = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.ThemeStyleSheet>(tssPath);
+                if (tss == null) { Debug.LogError($"[SetupMainScene] ThemeStyleSheet not found at {tssPath}"); return; }
 
-            if (prop.objectReferenceValue == tss) return;
+                var so = new SerializedObject(panel);
+                var prop = so.FindProperty("themeUss");
+                if (prop == null) { Debug.LogError("[SetupMainScene] PanelSettings.themeUss property not found"); return; }
 
-            prop.objectReferenceValue = tss;
-            so.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(panel);
-            AssetDatabase.SaveAssets();
-            Debug.Log("[SetupMainScene] HUDPanelSettings.themeUss → UnityDefaultRuntimeTheme.tss");
+                if (prop.objectReferenceValue == tss) { Debug.Log("[SetupMainScene] PanelSettings.themeUss already correctly set"); return; }
+
+                prop.objectReferenceValue = tss;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                EditorUtility.SetDirty(panel);
+                AssetDatabase.SaveAssets();
+                Debug.Log("[SetupMainScene] HUDPanelSettings.themeUss assigned to UnityDefaultRuntimeTheme.tss");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[SetupMainScene] EnsurePanelSettingsTheme failed: {ex.Message}");
+            }
         }
 
         private static void PopulatePerkRegistry()
@@ -329,15 +339,19 @@ namespace CrowdDefense.Editor
         private static void WireInspectorRefs()
         {
             WireLevelRunner();
+            AssetDatabase.SaveAssets();
             WireTowerToolbar();
+            AssetDatabase.SaveAssets();
             WireBossSystem();
+            AssetDatabase.SaveAssets();
             WireEnemyPool();
+            AssetDatabase.SaveAssets();
         }
 
         private static void WireLevelRunner()
         {
             var lr = Object.FindFirstObjectByType<LevelRunner>();
-            if (lr == null) return;
+            if (lr == null) { Debug.LogError("[SetupMainScene] LevelRunner not found in scene"); return; }
 
             var so   = new SerializedObject(lr);
             var hero = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Hero.prefab");
@@ -347,16 +361,24 @@ namespace CrowdDefense.Editor
             var heroTypeProp   = so.FindProperty("heroType");
 
             if (heroPrefabProp == null)
-                Debug.LogWarning("[SetupMainScene] LevelRunner.heroPrefab field not found — field renamed?");
-            else if (hero != null)
-                heroPrefabProp.objectReferenceValue = hero;
+                Debug.LogError("[SetupMainScene] LevelRunner.heroPrefab field not found — check field name in LevelRunner.cs");
+            else if (hero == null)
+                Debug.LogError("[SetupMainScene] Assets/Prefabs/Hero.prefab not found");
             else
-                Debug.LogWarning("[SetupMainScene] Assets/Prefabs/Hero.prefab not found — skipping heroPrefab wiring");
+            {
+                heroPrefabProp.objectReferenceValue = hero;
+                Debug.Log("[SetupMainScene] wired LevelRunner.heroPrefab");
+            }
 
             if (heroTypeProp == null)
-                Debug.LogWarning("[SetupMainScene] LevelRunner.heroType field not found — field renamed?");
-            else if (ht != null)
+                Debug.LogError("[SetupMainScene] LevelRunner.heroType field not found — check field name in LevelRunner.cs");
+            else if (ht == null)
+                Debug.LogError("[SetupMainScene] Assets/ScriptableObjects/Heroes/Knight.asset not found");
+            else
+            {
                 heroTypeProp.objectReferenceValue = ht;
+                Debug.Log("[SetupMainScene] wired LevelRunner.heroType");
+            }
 
             so.ApplyModifiedProperties();
         }
@@ -399,25 +421,26 @@ namespace CrowdDefense.Editor
         private static void WireEnemyPool()
         {
             var ep = Object.FindFirstObjectByType<EnemyPool>();
-            if (ep == null) return;
+            if (ep == null) { Debug.LogError("[SetupMainScene] EnemyPool not found in scene"); return; }
 
             var enemyPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/Enemy.prefab");
             if (enemyPrefab == null)
             {
-                Debug.LogWarning("[SetupMainScene] Assets/Prefabs/Enemies/Enemy.prefab not found — skipping enemyPrefab wiring");
+                Debug.LogError("[SetupMainScene] Assets/Prefabs/Enemies/Enemy.prefab not found");
                 return;
             }
 
             var so = new SerializedObject(ep);
-            var prop = so.FindProperty("enemyPrefab");
+            var prop = so.FindProperty("basePrefab");
             if (prop == null)
             {
-                Debug.LogWarning("[SetupMainScene] EnemyPool.enemyPrefab field not found — field renamed?");
+                Debug.LogError("[SetupMainScene] EnemyPool.basePrefab field not found — check field name in EnemyPool.cs");
                 return;
             }
 
             prop.objectReferenceValue = enemyPrefab;
             so.ApplyModifiedProperties();
+            Debug.Log("[SetupMainScene] wired EnemyPool.basePrefab");
         }
 
         private static void PopulateList(Object target, string fieldName, string[] guids)

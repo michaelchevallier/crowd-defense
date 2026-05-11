@@ -207,7 +207,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f00ea811342a4680a38c23a6e6873c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.EnemyPool
-  enemyPrefab: {fileID: 0}
+  basePrefab: {fileID: 9165968210432444067, guid: 0d48e58909bf7495bbaa9598a6f3609e, type: 3}
 --- !u!1 &188213257
 GameObject:
   m_ObjectHideFlags: 0
@@ -747,6 +747,8 @@ MonoBehaviour:
   explosionPrefab: {fileID: 0}
   coinBurstPrefab: {fileID: 0}
   hitFlashPrefab: {fileID: 0}
+  levelUpPrefab: {fileID: 0}
+  perkPickupPrefab: {fileID: 0}
 --- !u!1 &612914512
 GameObject:
   m_ObjectHideFlags: 0
@@ -792,7 +794,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.WaveManager
   levelData: {fileID: 11400000, guid: 7fb0ab0cdb28c435b84e820e174e969c, type: 2}
-  enemyPrefab: {fileID: 9165968210432444067, guid: 0d48e58909bf7495bbaa9598a6f3609e, type: 3}
 --- !u!1 &750000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1108,7 +1109,7 @@ MonoBehaviour:
   currentLevel: {fileID: 11400000, guid: 7fb0ab0cdb28c435b84e820e174e969c, type: 2}
   castlePrefab: {fileID: 0}
   heroType: {fileID: 11400000, guid: 3c4641cee42e4d76a819268661ed0544, type: 2}
-  heroPrefab: {fileID: 0}
+  heroPrefab: {fileID: 9143044602319728960, guid: 645f225a8bd5b452192022824d6d16f4, type: 3}
   spawnHero: 1
 --- !u!1 &921316393
 GameObject:
@@ -1497,6 +1498,7 @@ GameObject:
   - component: {fileID: 1881706284}
   - component: {fileID: 1881706283}
   - component: {fileID: 1881706282}
+  - component: {fileID: 1881706298}
   m_Layer: 0
   m_Name: HUD
   m_TagString: Untagged
@@ -1663,9 +1665,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fee697c0c7493434fb1c6dc425324b0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.UI.HudPerkBadges
-  badgeContainer: {fileID: 0}
-  badgePrefab: {fileID: 0}
-  setProgressText: {fileID: 0}
 --- !u!114 &1881706291
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1751,6 +1750,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.UI.TowerToolbarController
   towerRegistry: {fileID: 11400000, guid: 3809652591d6e4875bf7676c91363b20, type: 2}
+--- !u!114 &1881706298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1881706278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e2045cdd90fb474da8fb0c412b819b0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.UI.ToastController
 --- !u!1 &1973722760
 GameObject:
   m_ObjectHideFlags: 0

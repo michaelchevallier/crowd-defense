@@ -12,7 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 630f0306a74ca4988a2e9e10e5166bcd, type: 3}
   m_Name: MetaUpgradeRegistry
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.MetaUpgradeRegistry
-  defs: []
+  defs:
+  - {fileID: 11400000, guid: 71eaae6bf6f744e8c94ef5601fa9bb1b, type: 2}
+  - {fileID: 11400000, guid: ec64a83d39054410780e0b2081953034, type: 2}
+  - {fileID: 11400000, guid: 47fe21e017537472ba0e38acd653ebd6, type: 2}
+  - {fileID: 11400000, guid: 88e4fc085ad224230b655a58aa269d81, type: 2}
+  - {fileID: 11400000, guid: b7b3a05f88d2541ff805a6492b21d470, type: 2}
+  - {fileID: 11400000, guid: 19941ea35173c44a5b300da8687a8f3f, type: 2}
+  - {fileID: 11400000, guid: acbb4f70b78c943ea9808abea4820ea8, type: 2}
+  - {fileID: 11400000, guid: 3337e5a787f334f62996b7490feb78ec, type: 2}
+  - {fileID: 11400000, guid: dde1d8693410e424aad3f698bf90ed29, type: 2}
+  - {fileID: 11400000, guid: b1b4669abadd242e99fbe1d304255bcf, type: 2}
   tier2UnlockWorldsCleared: 1
   tier3UnlockWorldsCleared: 2
   resetCostGems: 10

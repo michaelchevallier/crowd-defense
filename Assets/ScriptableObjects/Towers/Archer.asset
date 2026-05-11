@@ -42,9 +42,33 @@ MonoBehaviour:
   synergies:
   - type: 1
     from: frost
-    effectKey: multiShotBonus
-    effectValue: 1
     range: 4
+    dmgMul: 0
+    pierceBonus: 0
+    pierceMega: 0
+    multiShotBonus: 0
+    flyerDmgBonus: 0
+    cascadeRadius: 0
+    knockbackOnHit: 0
+    pullToTank: 0
+    propagateDebuff: 0
+    freezeOnHit: 0
+    freezeDurMs: 0
+    slowOnHit:
+      mul: 0
+      durMs: 0
+    appliesSlow:
+      mul: 0
+      durMs: 0
+    propagateAoE:
+      radius: 0
+      dmg: 0
+    coinMul: 0
+    slowArea:
+      mul: 0
+      durMs: 0
+    filterPierceOrAoe: 0
+  assetKey: tower_archer
   bodyColor: {r: 0.2275, g: 0.4157, b: 0.749, a: 1}
   projectileColor: {r: 1, g: 0.8235, b: 0.2471, a: 1}
   sizeMultiplier: 1
