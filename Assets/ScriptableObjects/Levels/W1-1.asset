@@ -56,4 +56,11 @@ MonoBehaviour:
     - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
       count: 7
     spawnRateMs: 550
+    breakMs: 5000
+  - entries:
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 1
+    - type: {fileID: 11400000, guid: bf5f19f1e87a4f8fa2e35f878f01cb90, type: 2}
+      count: 1
+    spawnRateMs: 2000
     breakMs: 0
