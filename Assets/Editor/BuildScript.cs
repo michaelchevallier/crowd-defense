@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace CrowdDefense.Build
 {
@@ -17,6 +18,7 @@ namespace CrowdDefense.Build
         public static void BuildWebGL()
         {
             ApplyWebGLPlayerSettings();
+            EnsureAssetRegistryInclusion();
 
             string absOutput = Path.Combine(Directory.GetCurrentDirectory(), OutputFolder);
             if (Directory.Exists(absOutput))
@@ -53,6 +55,80 @@ namespace CrowdDefense.Build
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.WebGL.linkerTarget = WebGLLinkerTarget.Wasm;
             PlayerSettings.WebGL.template = "APPLICATION:Default";
+            EnsureRequiredShadersIncluded();
+        }
+
+        private static void EnsureRequiredShadersIncluded()
+        {
+            var requiredShaderNames = new[]
+            {
+                "CrowdDefense/Toon/Lit",
+                "CrowdDefense/Toon/Water",
+                "CrowdDefense/Toon/Lava",
+                "CrowdDefense/Toon/Snow",
+                "CrowdDefense/OutlineInvertedHull",
+            };
+
+            var so = new SerializedObject(UnityEditor.Rendering.GraphicsSettings.currentSettings);
+            var shadersProp = so.FindProperty("m_AlwaysIncludedShaders");
+
+            foreach (var shaderName in requiredShaderNames)
+            {
+                var shader = Shader.Find(shaderName);
+                if (shader == null)
+                {
+                    Debug.LogWarning($"[BuildScript] Required shader not found: {shaderName}");
+                    continue;
+                }
+
+                bool alreadyIncluded = false;
+                for (int i = 0; i < shadersProp.arraySize; i++)
+                {
+                    var elem = shadersProp.GetArrayElementAtIndex(i);
+                    if (elem.objectReferenceValue == shader)
+                    {
+                        alreadyIncluded = true;
+                        break;
+                    }
+                }
+
+                if (!alreadyIncluded)
+                {
+                    shadersProp.InsertArrayElementAtIndex(shadersProp.arraySize);
+                    shadersProp.GetArrayElementAtIndex(shadersProp.arraySize - 1).objectReferenceValue = shader;
+                    Debug.Log($"[BuildScript] Added shader to Always Included: {shaderName}");
+                }
+            }
+
+            so.ApplyModifiedProperties();
+        }
+
+        private static void EnsureAssetRegistryInclusion()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<CrowdDefense.Data.AssetRegistry>("Assets/Resources/AssetRegistry.asset");
+            if (registry == null)
+            {
+                Debug.LogWarning("[BuildScript] AssetRegistry not found");
+                return;
+            }
+
+            var preloaded = new System.Collections.Generic.List<UnityEngine.Object>(PlayerSettings.GetPreloadedAssets());
+            int added = 0;
+
+            foreach (var entry in registry.GetAllEntries())
+            {
+                if (entry.Prefab != null && !preloaded.Contains(entry.Prefab))
+                {
+                    preloaded.Add(entry.Prefab);
+                    added++;
+                }
+            }
+
+            if (added > 0)
+            {
+                PlayerSettings.SetPreloadedAssets(preloaded.ToArray());
+                Debug.Log($"[BuildScript] Added {added} assets to preloaded list (total: {preloaded.Count})");
+            }
         }
     }
 }

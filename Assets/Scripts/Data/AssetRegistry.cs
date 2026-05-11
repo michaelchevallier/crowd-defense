@@ -43,5 +43,9 @@ namespace CrowdDefense.Data
 
         // Called by Unity when the SO is loaded/reloaded in Editor
         private void OnEnable() => _cache = null;
+
+#if UNITY_EDITOR
+        public Entry[] GetAllEntries() => entries;
+#endif
     }
 }
