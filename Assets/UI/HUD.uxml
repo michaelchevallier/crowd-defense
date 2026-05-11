@@ -41,6 +41,7 @@
             <ui:Label text="GAME OVER" class="overlay-title" />
             <ui:Label text="Le castle est tombé." class="overlay-subtitle" />
             <ui:Button text="Recommencer" name="btn-restart-go" class="overlay-button" />
+            <ui:Button text="Retour au menu" name="btn-menu-go" class="overlay-button overlay-button-secondary" />
         </ui:VisualElement>
 
         <!-- Victory panel -->
@@ -48,6 +49,7 @@
             <ui:Label text="VICTOIRE" class="overlay-title" />
             <ui:Label text="W1-1 clear." class="overlay-subtitle" />
             <ui:Button text="Rejouer" name="btn-restart-victory" class="overlay-button" />
+            <ui:Button text="Retour au menu" name="btn-menu-victory" class="overlay-button overlay-button-secondary" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

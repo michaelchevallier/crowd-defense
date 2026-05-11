@@ -18,6 +18,8 @@ namespace CrowdDefense.UI
         private VisualElement? panelVictory;
         private Button? btnRestartGo;
         private Button? btnRestartVictory;
+        private Button? btnMenuGo;
+        private Button? btnMenuVictory;
 
         // D1-02 wave launch UI refs
         private VisualElement? waveLaunchBtn;
@@ -42,6 +44,8 @@ namespace CrowdDefense.UI
             panelVictory = root.Q<VisualElement>("panel-victory");
             btnRestartGo = root.Q<Button>("btn-restart-go");
             btnRestartVictory = root.Q<Button>("btn-restart-victory");
+            btnMenuGo = root.Q<Button>("btn-menu-go");
+            btnMenuVictory = root.Q<Button>("btn-menu-victory");
 
             waveLaunchBtn = root.Q<VisualElement>("wave-launch-btn");
             waveLaunchPill = root.Q<VisualElement>("wave-launch-pill");
@@ -53,6 +57,8 @@ namespace CrowdDefense.UI
 
             btnRestartGo?.RegisterCallback<ClickEvent>(_ => Restart());
             btnRestartVictory?.RegisterCallback<ClickEvent>(_ => Restart());
+            btnMenuGo?.RegisterCallback<ClickEvent>(_ => GoToMenu());
+            btnMenuVictory?.RegisterCallback<ClickEvent>(_ => GoToMenu());
 
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
 
@@ -208,6 +214,12 @@ namespace CrowdDefense.UI
         {
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        private static void GoToMenu()
+        {
+            Time.timeScale = 1f;
+            Systems.LevelLoader.GoToMenu();
         }
     }
 }

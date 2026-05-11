@@ -103,6 +103,17 @@
     background-color: rgba(255, 255, 255, 0.3);
 }
 
+.overlay-button-secondary {
+    background-color: rgba(80, 80, 80, 0.5);
+    border-color: rgba(160, 160, 160, 0.4);
+    color: rgba(200, 200, 200, 0.85);
+    margin-top: 8px;
+}
+
+.overlay-button-secondary:hover {
+    background-color: rgba(100, 100, 100, 0.7);
+}
+
 .hidden {
     display: none;
 }
