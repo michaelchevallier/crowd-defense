@@ -28,11 +28,12 @@ namespace CrowdDefense.Editor
             int regs = EnsureRegistries();
             BuildMainSceneTool.BuildMainScene();
             int sys  = EnsureNewSingletons();
+            int ui   = EnsureHudControllers();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
 
-            Debug.Log($"[SetupMainScene] OK — {sys} singletons, 0 UI controllers, {regs} registries created/updated");
+            Debug.Log($"[SetupMainScene] OK — {sys} singletons, {ui} UI controllers, {regs} registries created/updated");
         }
 
         // ── 1. Registries SO ────────────────────────────────────────────────
@@ -93,6 +94,39 @@ namespace CrowdDefense.Editor
             if (comp == null)
                 comp = child.gameObject.AddComponent<T>();
             return comp;
+        }
+
+        // ── 3. UI Controllers on HUD GO ──────────────────────────────────────
+
+        private static int EnsureHudControllers()
+        {
+            var hud = GameObject.Find("HUD");
+            if (hud == null)
+            {
+                Debug.LogError("[SetupMainScene] HUD GO missing — run BuildMainScene first");
+                return 0;
+            }
+            int c = 0;
+            c += EnsureComponent<TowerToolbarController>(hud);
+            c += EnsureComponent<DoctrineController>(hud);
+            c += EnsureComponent<ShopController>(hud);
+            c += EnsureComponent<BossUI>(hud);
+            c += EnsureComponent<MinimapController>(hud);
+            c += EnsureComponent<DebugHudController>(hud);
+            c += EnsureComponent<PerkPickerController>(hud);
+            c += EnsureComponent<HudPerkBadges>(hud);
+            c += EnsureComponent<SkinPickerController>(hud);
+            c += EnsureComponent<CutsceneController>(hud);
+            c += EnsureComponent<WorldMapController>(hud);
+            // PerkChoiceOverlay is Canvas-based — needs a separate GO, not added here
+            return c;
+        }
+
+        private static int EnsureComponent<T>(GameObject go) where T : Component
+        {
+            if (go.GetComponent<T>() != null) return 0;
+            go.AddComponent<T>();
+            return 1;
         }
     }
 }
