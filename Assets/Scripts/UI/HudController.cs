@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using CrowdDefense.Data;
 using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
@@ -18,6 +19,18 @@ namespace CrowdDefense.UI
         private Button? btnRestartGo;
         private Button? btnRestartVictory;
 
+        // D1-02 wave launch UI refs
+        private VisualElement? waveLaunchBtn;
+        private VisualElement? waveLaunchPill;
+        private Label? waveLaunchLabel;
+        private Label? waveLaunchSub;
+        private VisualElement? waveLaunchStreak;
+        private Label? waveLaunchStreakText;
+        private Label? waveLaunchPillText;
+
+        // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
+        private float lastLaunchInputTime = -1f;
+
         private void Start()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
@@ -30,8 +43,18 @@ namespace CrowdDefense.UI
             btnRestartGo = root.Q<Button>("btn-restart-go");
             btnRestartVictory = root.Q<Button>("btn-restart-victory");
 
+            waveLaunchBtn = root.Q<VisualElement>("wave-launch-btn");
+            waveLaunchPill = root.Q<VisualElement>("wave-launch-pill");
+            waveLaunchLabel = root.Q<Label>("wave-launch-label");
+            waveLaunchSub = root.Q<Label>("wave-launch-sub");
+            waveLaunchStreak = root.Q<VisualElement>("wave-launch-streak");
+            waveLaunchStreakText = root.Q<Label>("wave-launch-streak-text");
+            waveLaunchPillText = root.Q<Label>("wave-launch-pill-text");
+
             btnRestartGo?.RegisterCallback<ClickEvent>(_ => Restart());
             btnRestartVictory?.RegisterCallback<ClickEvent>(_ => Restart());
+
+            waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
 
             if (Economy.Instance != null)
             {
@@ -39,13 +62,10 @@ namespace CrowdDefense.UI
                 OnGoldChanged(Economy.Instance.Gold);
             }
 
-            // HP display via LevelRunner aggregator instead of Castle.Instance
             if (LevelRunner.Instance != null)
             {
                 LevelRunner.Instance.OnTotalHPChanged += OnHPChanged;
                 LevelRunner.Instance.OnStateChanged += OnStateChanged;
-                // Initial values — LevelRunner fires OnTotalHPChanged in SpawnCastles(),
-                // but HUD may Start() before or after. Snapshot current totals defensively.
                 OnHPChanged(LevelRunner.Instance.TotalCastleHP, LevelRunner.Instance.TotalCastleHPMax);
                 OnStateChanged(LevelRunner.Instance.State);
             }
@@ -53,7 +73,10 @@ namespace CrowdDefense.UI
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.OnWaveStart += OnWaveStart;
+                WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
                 OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
+                // Sync initial break state (W1 waits for player)
+                OnBreakStateChanged();
             }
         }
 
@@ -65,7 +88,29 @@ namespace CrowdDefense.UI
                 LevelRunner.Instance.OnTotalHPChanged -= OnHPChanged;
                 LevelRunner.Instance.OnStateChanged -= OnStateChanged;
             }
-            if (WaveManager.Instance != null) WaveManager.Instance.OnWaveStart -= OnWaveStart;
+            if (WaveManager.Instance != null)
+            {
+                WaveManager.Instance.OnWaveStart -= OnWaveStart;
+                WaveManager.Instance.OnBreakStateChanged -= OnBreakStateChanged;
+            }
+        }
+
+        private void Update()
+        {
+            // N hotkey — debounced, shared with click (Q7)
+            if (Input.GetKeyDown(KeyCode.N))
+                TryLaunchWave();
+        }
+
+        // Shared debounced launch entry point for click + N key
+        private void TryLaunchWave()
+        {
+            if (WaveManager.Instance == null || !WaveManager.Instance.IsWaitingForPlayerStart) return;
+            float now = Time.unscaledTime;
+            float debounceSec = BalanceConfig.Get().InputDebounceMs / 1000f;
+            if (now - lastLaunchInputTime < debounceSec) return;
+            lastLaunchInputTime = now;
+            WaveManager.Instance.StartNextWave();
         }
 
         private void OnGoldChanged(int gold)
@@ -92,12 +137,65 @@ namespace CrowdDefense.UI
         {
             if (waveValue == null || WaveManager.Instance == null) return;
             waveValue.text = $"{idx + 1}/{WaveManager.Instance.TotalWaves}";
+            // Hide launch button while wave is in progress
+            if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
+            if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
+        }
+
+        private void OnBreakStateChanged()
+        {
+            if (WaveManager.Instance == null) return;
+            var wm = WaveManager.Instance;
+            bool waiting = wm.IsWaitingForPlayerStart;
+            float secondsLeft = wm.SkipWindowSecondsRemaining;
+            int streak = wm.StreakCount;
+            bool inWindow = secondsLeft > 0f;
+
+            // Show/hide launch button
+            if (waveLaunchBtn != null)
+            {
+                SetVisible(waveLaunchBtn, waiting);
+
+                // Update label text — show +30¢ hint during skip window
+                if (waveLaunchLabel != null)
+                    waveLaunchLabel.text = inWindow ? "Lancer (+30c) [N]" : "Lancer la vague [N]";
+
+                if (waveLaunchSub != null)
+                    waveLaunchSub.text = $"Vague {wm.NextWaveDisplayNumber} / {wm.TotalWaves}";
+
+                // Skip window ring class
+                if (inWindow) waveLaunchBtn.AddToClassList("skip-window");
+                else waveLaunchBtn.RemoveFromClassList("skip-window");
+            }
+
+            // Show/hide streak badge
+            if (waveLaunchStreak != null)
+            {
+                bool showStreak = waiting && streak > 0;
+                SetVisible(waveLaunchStreak, showStreak);
+                if (showStreak && waveLaunchStreakText != null)
+                    waveLaunchStreakText.text = $"+{streak * 5}%";
+            }
+
+            // Show/hide pill timer
+            if (waveLaunchPill != null)
+            {
+                SetVisible(waveLaunchPill, waiting && inWindow);
+                if (inWindow && waveLaunchPillText != null)
+                    waveLaunchPillText.text = $"+30c  {secondsLeft:F1}s  +{Mathf.RoundToInt(streak * 5)}%";
+            }
         }
 
         private void OnStateChanged(GameState state)
         {
             if (panelGameOver != null) SetVisible(panelGameOver, state == GameState.GameOver);
             if (panelVictory != null) SetVisible(panelVictory, state == GameState.Victory);
+            // Hide wave button on game over / victory
+            if (state != GameState.Play)
+            {
+                if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
+                if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
+            }
         }
 
         private static void SetVisible(VisualElement el, bool visible)
