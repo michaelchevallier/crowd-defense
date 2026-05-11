@@ -81,6 +81,7 @@ namespace CrowdDefense.UI
             EnsureSibling<SynergyHudController>();
             EnsureSibling<FloatingPopupController>();
             EnsureSibling<RadialMenuController>();
+            EnsureSibling<TowerSelectMenuController>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;
             ApplyDeviceClasses(root);
