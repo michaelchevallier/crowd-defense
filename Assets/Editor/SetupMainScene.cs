@@ -88,6 +88,9 @@ namespace CrowdDefense.Editor
             // Wire TowerType / EnemyType / HeroType assetKey → GLTF key, then rebuild AssetRegistry entries
             BuildAssetRegistryMappings.Generate();
 
+            // Seed level assets from JSON + rebuild LevelRegistry (idempotent).
+            SeedLevelsTool.SeedAll();
+
             AssetDatabase.SaveAssets();
             return n;
         }
