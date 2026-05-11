@@ -17,11 +17,6 @@ namespace CrowdDefense.Systems
         [SerializeField] private GameObject? castlePrefab;
         [SerializeField] private GameObject? heroPrefab;
 
-        [Header("Hero")]
-        [SerializeField] private HeroType? heroType;
-        [SerializeField] private GameObject? heroPrefab;
-        [SerializeField] private bool spawnHero = true;
-
         public GameState State { get; private set; } = GameState.Play;
         public LevelData? CurrentLevel => currentLevel;
 

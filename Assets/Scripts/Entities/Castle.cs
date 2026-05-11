@@ -41,10 +41,11 @@ namespace CrowdDefense.Entities
             Economy.Instance?.FlagCastleDamaged();
             OnHPChanged?.Invoke(HP, HPMax);
 
-            // Stage B integration hooks (audio + juice)
+            // Stage B integration hooks (audio + juice + vfx)
             AudioController.Instance?.Play("castle_hit", 0.65f);
             JuiceFX.Instance?.Shake(0.1f, 200);
             JuiceFX.Instance?.Flash(new Color(1f, 0.2f, 0.2f, 0.4f), 150);
+            VfxPool.Instance?.SpawnHitFlash(transform);
 
             if (HP == 0)
             {
@@ -53,6 +54,7 @@ namespace CrowdDefense.Entities
                 AudioController.Instance?.Play("enemy_die_boss", 1f);
                 JuiceFX.Instance?.SlowMo(0.2f, 1500);
                 JuiceFX.Instance?.Flash(new Color(0f, 0f, 0f, 0.7f), 1000);
+                VfxPool.Instance?.SpawnExplosion(transform.position, 4f);
 #if UNITY_EDITOR
                 Debug.Log("[Castle] destroyed");
 #endif
