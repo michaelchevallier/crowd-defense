@@ -7,7 +7,6 @@ namespace CrowdDefense.Entities
 {
     public class Tower : MonoBehaviour
     {
-        private const float TOWER_DAMAGE_MUL = 1.6f;
 
         [SerializeField] private GameObject? projectilePrefab;
 
@@ -82,7 +81,7 @@ namespace CrowdDefense.Entities
             var proj = go.GetComponent<Projectile>();
             if (proj != null)
             {
-                proj.Init(t, cfg.Damage * TOWER_DAMAGE_MUL, cfg.ProjectileSpeed, cfg.ProjectileColor);
+                proj.Init(t, cfg.Damage * BalanceConfig.Get().TowerDamageMul, cfg.ProjectileSpeed, cfg.ProjectileColor);
             }
         }
 
