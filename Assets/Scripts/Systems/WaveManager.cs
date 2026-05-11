@@ -12,7 +12,6 @@ namespace CrowdDefense.Systems
     public class WaveManager : MonoSingleton<WaveManager>
     {
         [SerializeField] private LevelData? levelData;
-        [SerializeField] private GameObject? enemyPrefab;
 
         private int currentWaveIdx = 0;
         private int nextWaveToStart = 0;      // index of the wave that will begin on next StartNextWave()
@@ -225,10 +224,8 @@ namespace CrowdDefense.Systems
             }
 
             int resolvedPathIdx = ResolvePathIdx(wavePortalIdx);
-            var enemy = EnemyPool.Instance.Get();
-            enemy.transform.position = pm.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
-            enemy.transform.rotation = Quaternion.identity;
-            enemy.Init(type, resolvedPathIdx);
+            Vector3 spawnPos = pm.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
+            var enemy = EnemyPool.Instance.SpawnFromType(type, spawnPos, resolvedPathIdx);
             activeEnemies.Add(enemy);
             spawnCounter++;
             EventManager.Instance?.Publish(new EnemySpawnedEvent(enemy));

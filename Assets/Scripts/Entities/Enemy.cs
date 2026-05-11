@@ -113,6 +113,9 @@ namespace CrowdDefense.Entities
         // World pressure scaling (D1-04) — set once in Init
         private float pressureSpeedMul = 1f;
 
+        // Tracks which per-type sub-pool this instance belongs to (set by EnemyPool.SpawnFromType)
+        internal string _poolTypeId = "";
+
         // Called once by EnemyPool after Instantiate to back-link the pool
         public void SetPool(EnemyPool p) => pool = p;
 
@@ -941,10 +944,8 @@ namespace CrowdDefense.Entities
             if (EnemyPool.Instance == null) return;
             if (PathManager.Instance == null || PathManager.Instance.Paths.Count == 0) return;
 
-            var minion = EnemyPool.Instance.Get();
-            minion.transform.position = transform.position + Vector3.forward * 0.5f;
-            minion.transform.rotation = Quaternion.identity;
-            minion.Init(cfg.SummonType, pathIdx);
+            Vector3 spawnPos = transform.position + Vector3.forward * 0.5f;
+            var minion = EnemyPool.Instance.SpawnFromType(cfg.SummonType, spawnPos, pathIdx);
             WaveManager.Instance?.RegisterSpawnedEnemy(minion);
 #if UNITY_EDITOR
             Debug.Log($"[Enemy] boss {cfg.Id} summons {cfg.SummonType.Id}");
@@ -954,15 +955,10 @@ namespace CrowdDefense.Entities
         private void SpawnMinionByType(string typeId)
         {
             if (EnemyPool.Instance == null) return;
-            var minion = EnemyPool.Instance.Get();
-            if (minion == null) return;
-            // Try to find type by id from enemy pool's registry
-            // Best-effort: use summon type if available, else current summon type
             var spawnType = cfg?.SummonType;
             if (spawnType == null) return;
-            minion.transform.position = transform.position + Vector3.forward * 0.5f;
-            minion.transform.rotation = Quaternion.identity;
-            minion.Init(spawnType, pathIdx);
+            Vector3 spawnPos = transform.position + Vector3.forward * 0.5f;
+            var minion = EnemyPool.Instance.SpawnFromType(spawnType, spawnPos, pathIdx);
             WaveManager.Instance?.RegisterSpawnedEnemy(minion);
         }
 
@@ -996,7 +992,7 @@ namespace CrowdDefense.Entities
             CancelInvoke();
             IsDead = true;
             if (pool != null)
-                pool.Release(this);
+                pool.ReleaseTyped(this);
             else
                 Destroy(gameObject);
         }
