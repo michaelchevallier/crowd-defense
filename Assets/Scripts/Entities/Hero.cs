@@ -851,6 +851,13 @@ namespace CrowdDefense.Entities
         }
 
 #if UNITY_EDITOR
+        private void OnDrawGizmos()
+        {
+            // Always-visible red sphere so Hero is easy to spot in Scene view
+            Gizmos.color = new Color(1f, 0.1f, 0.1f, 0.8f);
+            Gizmos.DrawSphere(transform.position + Vector3.up * 1.2f, 0.35f);
+        }
+
         private void OnDrawGizmosSelected()
         {
             if (cfg == null) return;
