@@ -291,15 +291,21 @@ namespace CrowdDefense.Entities
             if (string.IsNullOrEmpty(assetKey)) return null;
 
             var registry = Resources.Load<AssetRegistry>("AssetRegistry");
-            if (registry == null) return null;
+            if (registry == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning($"[Enemy] AssetRegistry not found — fallback capsule");
+#endif
+                return null;
+            }
 
             var prefab = registry.Get(assetKey);
             if (prefab == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[Enemy] AssetRegistry missing key '{assetKey}' — fallback capsule");
+                Debug.LogWarning($"[Enemy] GLTF prefab missing for assetKey='{assetKey}' — using blue capsule fallback");
 #endif
-                return null;
+                return CreateColoredFallback(new Color(0f, 0f, 1f)); // Blue capsule
             }
 
             // Re-use existing GLTF child if same prefab (pool reuse: same cfg → keep mesh)
@@ -315,6 +321,24 @@ namespace CrowdDefense.Entities
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale    = Vector3.one;
             return instance;
+        }
+
+        private GameObject CreateColoredFallback(Color color)
+        {
+            var fallback = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            fallback.name = "FallbackCapsule";
+            fallback.transform.SetParent(transform);
+            fallback.transform.localPosition = Vector3.zero;
+            fallback.transform.localRotation = Quaternion.identity;
+            fallback.transform.localScale = Vector3.one;
+            var rend = fallback.GetComponent<MeshRenderer>();
+            if (rend != null)
+            {
+                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
+                    { color = color };
+            }
+            Object.Destroy(fallback.GetComponent<Collider>());
+            return fallback;
         }
 
         private GameObject? SpawnSkinMeshChild(GameObject skinPrefab)

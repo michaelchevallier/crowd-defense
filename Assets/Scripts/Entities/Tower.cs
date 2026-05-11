@@ -194,15 +194,21 @@ namespace CrowdDefense.Entities
             if (string.IsNullOrEmpty(assetKey)) return null;
 
             var registry = Resources.Load<AssetRegistry>("AssetRegistry");
-            if (registry == null) return null;
+            if (registry == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning($"[Tower] AssetRegistry not found — fallback primitive");
+#endif
+                return null;
+            }
 
             var prefab = registry.Get(assetKey);
             if (prefab == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[Tower] AssetRegistry missing key '{assetKey}' — fallback primitive");
+                Debug.LogWarning($"[Tower] GLTF prefab missing for assetKey='{assetKey}' — using red cube fallback");
 #endif
-                return null;
+                return CreateColoredFallback(new Color(1f, 0f, 0f)); // Red cube
             }
 
             // Disable placeholder primitives (Base + Top children)
@@ -219,6 +225,24 @@ namespace CrowdDefense.Entities
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale = Vector3.one;
             return instance;
+        }
+
+        private GameObject CreateColoredFallback(Color color)
+        {
+            var fallback = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            fallback.name = "FallbackCube";
+            fallback.transform.SetParent(transform);
+            fallback.transform.localPosition = Vector3.zero;
+            fallback.transform.localRotation = Quaternion.identity;
+            fallback.transform.localScale = Vector3.one;
+            var rend = fallback.GetComponent<MeshRenderer>();
+            if (rend != null)
+            {
+                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
+                    { color = color };
+            }
+            Object.Destroy(fallback.GetComponent<Collider>());
+            return fallback;
         }
 
         private GameObject? SpawnSkinMeshChild(GameObject skinPrefab)

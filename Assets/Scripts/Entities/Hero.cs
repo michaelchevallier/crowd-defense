@@ -160,12 +160,19 @@ namespace CrowdDefense.Entities
         {
             if (string.IsNullOrEmpty(assetKey)) return null;
             var registry = Resources.Load<AssetRegistry>("AssetRegistry");
-            if (registry == null) return null;
+            if (registry == null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogWarning("[Hero] AssetRegistry not found — using fallback primitives");
+#endif
+                BuildFallbackMesh();
+                return null;
+            }
             var prefab = registry.Get(assetKey);
             if (prefab == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[Hero] AssetRegistry missing key '{assetKey}' — fallback primitive");
+                Debug.LogWarning($"[Hero] GLTF prefab missing for assetKey='{assetKey}' — using colored fallback primitives");
 #endif
                 BuildFallbackMesh();
                 return null;
@@ -187,7 +194,7 @@ namespace CrowdDefense.Entities
             body.transform.localScale    = new Vector3(0.55f, 0.85f, 0.5f);
             var bodyRend = body.GetComponent<MeshRenderer>();
             if (bodyRend != null) bodyRend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
-                { color = new Color(0.227f, 0.416f, 0.749f) };
+                { color = new Color(0f, 1f, 0f) }; // Green cube for hero fallback
             Object.Destroy(body.GetComponent<Collider>());
 
             var head = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -197,7 +204,7 @@ namespace CrowdDefense.Entities
             head.transform.localScale    = new Vector3(0.38f, 0.35f, 0.38f);
             var headRend = head.GetComponent<MeshRenderer>();
             if (headRend != null) headRend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
-                { color = new Color(1f, 0.79f, 0.60f) };
+                { color = new Color(0f, 0.8f, 0f) }; // Dark green for head
             Object.Destroy(head.GetComponent<Collider>());
         }
 
