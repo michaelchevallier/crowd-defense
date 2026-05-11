@@ -21,6 +21,8 @@ namespace CrowdDefense.Entities
         private Color baseColor;
         private GameObject? shieldHalo;
         private EnemyPool? pool;
+        private float summonTimer = 0f;
+        private float blastTimer = 0f;
 
         public EnemyType? Config => cfg;
         public int CurrentWaypoint => currentWaypoint;
@@ -47,6 +49,8 @@ namespace CrowdDefense.Entities
             IsDead = false;
             currentSpeedMul = 1f;
             StealthAlpha = 1f;
+            summonTimer = 0f;
+            blastTimer = 0f;
 
             // D1-04 mob pressure : scale HP and speed by world pressure
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
@@ -154,6 +158,8 @@ namespace CrowdDefense.Entities
             if (cfg == null || IsDead) return;
 
             UpdateStealth();
+            UpdateSummons();
+            UpdateAoeBlast();
 
             if (cfg.IsFlyer)
             {
@@ -203,6 +209,66 @@ namespace CrowdDefense.Entities
                 * Mathf.Abs(Mathf.Sin(Time.time / cycleS * Mathf.PI));
             StealthAlpha = alpha;
             rend.material.color = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
+        }
+
+        private void UpdateSummons()
+        {
+            if (cfg == null || !cfg.SummonsMinions || cfg.SummonType == null) return;
+            summonTimer += Time.deltaTime * 1000f;
+            if (summonTimer >= cfg.SummonCooldownMs)
+            {
+                summonTimer = 0f;
+                SpawnMinion();
+            }
+        }
+
+        private void UpdateAoeBlast()
+        {
+            if (cfg == null || cfg.AoeBlastMs <= 0) return;
+            blastTimer += Time.deltaTime * 1000f;
+            if (blastTimer >= cfg.AoeBlastMs)
+            {
+                blastTimer = 0f;
+                EmitAoeBlast();
+            }
+        }
+
+        private void SpawnMinion()
+        {
+            if (cfg?.SummonType == null) return;
+            if (EnemyPool.Instance == null) return;
+            if (PathManager.Instance == null || PathManager.Instance.Paths.Count == 0) return;
+
+            var minion = EnemyPool.Instance.Get();
+            minion.transform.position = transform.position + Vector3.forward * 0.5f;
+            minion.transform.rotation = Quaternion.identity;
+            minion.Init(cfg.SummonType, pathIdx);
+            WaveManager.Instance?.RegisterSpawnedEnemy(minion);
+#if UNITY_EDITOR
+            Debug.Log($"[Enemy] boss {cfg.Id} summons {cfg.SummonType.Id}");
+#endif
+        }
+
+        private void EmitAoeBlast()
+        {
+            if (cfg == null) return;
+            if (PlacementController.Instance == null) return;
+            var towers = PlacementController.Instance.PlacedTowers;
+            float radiusSq = cfg.AoeBlastRadius * cfg.AoeBlastRadius;
+            int hit = 0;
+            for (int i = towers.Count - 1; i >= 0; i--)
+            {
+                var tower = towers[i];
+                if (tower == null) continue;
+                if ((tower.transform.position - transform.position).sqrMagnitude < radiusSq)
+                {
+                    PlacementController.Instance.RemoveTower(tower);
+                    hit++;
+                }
+            }
+#if UNITY_EDITOR
+            Debug.Log($"[Enemy] boss {cfg.Id} AoE blast radius={cfg.AoeBlastRadius} hit {hit} towers");
+#endif
         }
 
         public void TakeDamage(float dmg)

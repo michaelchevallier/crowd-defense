@@ -244,5 +244,8 @@ namespace CrowdDefense.Systems
         }
 
         public void NotifyEnemyDied(Enemy e) => activeEnemies.Remove(e);
+
+        // Called by boss enemies when they summon a minion mid-wave.
+        public void RegisterSpawnedEnemy(Enemy e) => activeEnemies.Add(e);
     }
 }
