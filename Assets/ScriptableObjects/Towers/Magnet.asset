@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: Aimant
   icon: "\U0001F9F2"
   unlockWorld: 4
-  cost: 100
+  cost: 130
   damage: 0
-  range: 6.5
+  range: 5
   fireRateMs: 0
   projectileSpeed: 0
   aoe: 0
@@ -29,7 +29,7 @@ MonoBehaviour:
   slowMul: 1
   slowDurationMs: 0
   buffMul: 1
-  coinMul: 2
+  coinMul: 1.3
   pullSlow: 0.7
   parabolic: 0
   flyerOnly: 0
@@ -43,8 +43,8 @@ MonoBehaviour:
   - type: 3
     from:
     effectKey: coinMul
-    effectValue: 2
-    range: 6.5
+    effectValue: 1.3
+    range: 5
   - type: 1
     from: tank
     effectKey: pullToTank
