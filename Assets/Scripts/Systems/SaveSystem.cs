@@ -83,17 +83,20 @@ namespace CrowdDefense.Systems
 
     public static class SaveSystem
     {
-        private const string KEY_PREFIX     = "cd_progression_v1_slot";
-        private const string RUN_KEY_PREFIX = "cd_runstate_v1_slot";
-        private const int    SLOT_COUNT     = 3;
+        private const string KEY_PREFIX        = "cd_progression_v1_slot";
+        private const string RUN_KEY_PREFIX    = "cd_runstate_v1_slot";
+        private const string RUNMAP_KEY_PREFIX = "cd_runmap_v1_slot";
+        private const int    SLOT_COUNT        = 3;
 
         public static int CurrentSlot { get; private set; } = 0;
 
-        private static ProgressData?[] _cachedSlots = new ProgressData?[SLOT_COUNT];
-        private static RunState?[]     _cachedRuns  = new RunState?[SLOT_COUNT];
+        private static ProgressData?[] _cachedSlots   = new ProgressData?[SLOT_COUNT];
+        private static RunState?[]     _cachedRuns    = new RunState?[SLOT_COUNT];
+        private static RunMapState?[]  _cachedRunMaps = new RunMapState?[SLOT_COUNT];
 
         private static string ProgressKey(int slot) => $"{KEY_PREFIX}{slot}";
         private static string RunKey(int slot)      => $"{RUN_KEY_PREFIX}{slot}";
+        private static string RunMapKey(int slot)   => $"{RUNMAP_KEY_PREFIX}{slot}";
 
         public static void SelectSlot(int slot)
         {
@@ -119,10 +122,12 @@ namespace CrowdDefense.Systems
         public static void DeleteSlot(int slot)
         {
             int s = Mathf.Clamp(slot, 0, SLOT_COUNT - 1);
-            _cachedSlots[s] = null;
-            _cachedRuns[s]  = null;
+            _cachedSlots[s]   = null;
+            _cachedRuns[s]    = null;
+            _cachedRunMaps[s] = null;
             PlayerPrefs.DeleteKey(ProgressKey(s));
             PlayerPrefs.DeleteKey(RunKey(s));
+            PlayerPrefs.DeleteKey(RunMapKey(s));
             PlayerPrefs.Save();
         }
 
@@ -467,6 +472,41 @@ namespace CrowdDefense.Systems
             list.Sort((a, b) => b.score.CompareTo(a.score));
             if (list.Count > 10) list.RemoveRange(10, list.Count - 10);
             Save();
+        }
+
+        // ── RunMap (roguelike graph) ──────────────────────────────────────────
+
+        public static RunMapState? GetRunMapState()
+        {
+            int s = CurrentSlot;
+            if (_cachedRunMaps[s] != null) return _cachedRunMaps[s];
+            string json = PlayerPrefs.GetString(RunMapKey(s), "");
+            if (string.IsNullOrEmpty(json)) return null;
+            try
+            {
+                _cachedRunMaps[s] = JsonUtility.FromJson<RunMapState>(json);
+            }
+            catch
+            {
+                _cachedRunMaps[s] = null;
+            }
+            return _cachedRunMaps[s];
+        }
+
+        public static void SetRunMapState(RunMapState state)
+        {
+            int s = CurrentSlot;
+            _cachedRunMaps[s] = state;
+            PlayerPrefs.SetString(RunMapKey(s), JsonUtility.ToJson(state));
+            PlayerPrefs.Save();
+        }
+
+        public static void ClearRunMapState()
+        {
+            int s = CurrentSlot;
+            _cachedRunMaps[s] = null;
+            PlayerPrefs.DeleteKey(RunMapKey(s));
+            PlayerPrefs.Save();
         }
 
     }

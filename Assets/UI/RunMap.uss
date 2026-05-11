@@ -1,0 +1,163 @@
+.runmap-root {
+    width: 100%;
+    height: 100%;
+    background-color: rgb(8, 10, 22);
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.runmap-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 28px 12px 28px;
+    background-color: rgb(12, 16, 34);
+    border-bottom-width: 1px;
+    border-color: rgba(130, 80, 255, 0.25);
+}
+
+.runmap-title {
+    color: rgb(200, 160, 255);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-left;
+}
+
+.runmap-act-label {
+    color: rgba(200, 160, 255, 0.7);
+    font-size: 16px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-right;
+}
+
+.runmap-scroll {
+    flex-grow: 1;
+}
+
+.runmap-graph {
+    flex-direction: column-reverse;
+    align-items: center;
+    padding: 24px 16px 32px 16px;
+}
+
+/* ── Graph row ──────────────────────────────────────────────────────── */
+
+.runmap-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    min-height: 72px;
+}
+
+/* ── Node base ──────────────────────────────────────────────────────── */
+
+.runmap-node {
+    width: 68px;
+    height: 68px;
+    margin: 0 10px;
+    border-radius: 12px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.18);
+    background-color: rgba(255, 255, 255, 0.08);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.runmap-node-icon {
+    font-size: 22px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(255, 255, 255, 0.9);
+    -unity-text-align: middle-center;
+}
+
+.runmap-node-label {
+    font-size: 10px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(255, 255, 255, 0.55);
+    -unity-text-align: middle-center;
+    margin-top: 2px;
+}
+
+/* ── Node type variants ─────────────────────────────────────────────── */
+
+.runmap-node.combat {
+    border-color: rgba(255, 120, 60, 0.65);
+    background-color: rgba(140, 50, 20, 0.35);
+}
+
+.runmap-node.elite {
+    border-color: rgba(255, 60, 60, 0.8);
+    background-color: rgba(160, 20, 20, 0.45);
+    border-width: 3px;
+}
+
+.runmap-node.mystery {
+    border-color: rgba(180, 100, 255, 0.75);
+    background-color: rgba(80, 30, 150, 0.4);
+}
+
+.runmap-node.shop {
+    border-color: rgba(255, 210, 63, 0.7);
+    background-color: rgba(120, 90, 10, 0.35);
+}
+
+.runmap-node.rest {
+    border-color: rgba(60, 200, 120, 0.65);
+    background-color: rgba(20, 90, 50, 0.35);
+}
+
+.runmap-node.boss {
+    width: 80px;
+    height: 80px;
+    border-width: 3px;
+    border-color: rgba(255, 40, 40, 0.95);
+    background-color: rgba(120, 15, 15, 0.6);
+    border-radius: 14px;
+}
+
+/* ── Node state variants ────────────────────────────────────────────── */
+
+.runmap-node.current {
+    border-color: rgb(255, 230, 80);
+    background-color: rgba(180, 140, 0, 0.45);
+}
+
+.runmap-node.available {
+    cursor: link;
+    opacity: 1;
+}
+
+.runmap-node.available:hover {
+    background-color: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 240, 120, 0.85);
+}
+
+.runmap-node.visited {
+    opacity: 0.38;
+    cursor: arrow;
+}
+
+.runmap-node.hidden {
+    opacity: 0.12;
+    cursor: arrow;
+}
+
+/* ── Footer hint ────────────────────────────────────────────────────── */
+
+.runmap-footer {
+    padding: 10px 24px;
+    background-color: rgb(12, 16, 34);
+    border-top-width: 1px;
+    border-color: rgba(130, 80, 255, 0.18);
+    align-items: center;
+}
+
+.runmap-node-hint {
+    font-size: 13px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(200, 180, 255, 0.65);
+    -unity-text-align: middle-center;
+}

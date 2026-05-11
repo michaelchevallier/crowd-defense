@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="RunMap.uss" />
+    <ui:VisualElement name="runmap-root" class="runmap-root">
+        <ui:VisualElement name="runmap-header" class="runmap-header">
+            <ui:Label text="PARCOURS" name="runmap-title" class="runmap-title" />
+            <ui:Label text="Act 1" name="runmap-act-label" class="runmap-act-label" />
+        </ui:VisualElement>
+        <ui:ScrollView name="runmap-scroll" class="runmap-scroll"
+                       horizontal-scroller-visibility="Hidden"
+                       vertical-scroller-visibility="AlwaysVisible">
+            <ui:VisualElement name="runmap-graph" class="runmap-graph" />
+        </ui:ScrollView>
+        <ui:VisualElement name="runmap-footer" class="runmap-footer">
+            <ui:Label text="" name="runmap-node-hint" class="runmap-node-hint" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
