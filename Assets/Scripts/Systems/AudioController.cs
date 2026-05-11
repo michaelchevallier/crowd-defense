@@ -198,6 +198,17 @@ namespace CrowdDefense.Systems
             if (this != null) _musicSource.volume = target;
         }
 
+        public void SetVolume(string bus, float zeroToOne)
+        {
+            switch (bus)
+            {
+                case "master": SetMasterVolume(zeroToOne); break;
+                case "sfx":    SetSFXVolume(zeroToOne);    break;
+                case "music":  SetMusicVolume(zeroToOne);  break;
+                case "ui":     SetUIVolume(zeroToOne);     break;
+            }
+        }
+
         public void SetMasterVolume(float zeroToOne)
         {
             if (mixer != null && mixer.SetFloat("MasterVol", LinearToDb(zeroToOne))) return;
@@ -206,20 +217,20 @@ namespace CrowdDefense.Systems
 
         public void SetSFXVolume(float zeroToOne)
         {
-            if (mixer == null) return;
-            mixer.SetFloat("SFXVol", LinearToDb(zeroToOne));
+            if (mixer != null && mixer.SetFloat("SFXVol", LinearToDb(zeroToOne))) return;
+            foreach (var src in _sfxPool) src.volume = Mathf.Clamp01(zeroToOne);
         }
 
         public void SetMusicVolume(float zeroToOne)
         {
-            if (mixer == null) return;
-            mixer.SetFloat("MusicVol", LinearToDb(zeroToOne));
+            if (mixer != null && mixer.SetFloat("MusicVol", LinearToDb(zeroToOne))) return;
+            if (_musicSource != null) _musicSource.volume = Mathf.Clamp01(zeroToOne);
+            MusicManager.Instance?.SetMusicVolume(zeroToOne);
         }
 
         public void SetUIVolume(float zeroToOne)
         {
-            if (mixer == null) return;
-            mixer.SetFloat("UIVol", LinearToDb(zeroToOne));
+            if (mixer != null && mixer.SetFloat("UIVol", LinearToDb(zeroToOne))) return;
         }
 
         public void SetMuted(bool muted) =>
