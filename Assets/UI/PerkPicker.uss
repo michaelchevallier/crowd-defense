@@ -34,6 +34,7 @@
     flex-wrap: nowrap;
 }
 
+/* ── Base card ── */
 .perk-card {
     flex-direction: column;
     align-items: center;
@@ -45,24 +46,78 @@
     margin: 0 12px;
     width: 200px;
     cursor: link;
+    transition-property: translate, scale, border-color;
+    transition-duration: 0.15s, 0.15s, 0.15s;
+    transition-timing-function: ease-out, ease-out, ease-out;
 }
 
+/* Slide-in animation state: cards start offscreen left, controller toggles this class */
+.perk-card.card-hidden {
+    translate: -120px 0;
+    opacity: 0;
+}
+
+.perk-card.card-visible {
+    translate: 0 0;
+    opacity: 1;
+    transition-property: translate, opacity;
+    transition-duration: 0.35s, 0.3s;
+    transition-timing-function: ease-out, ease-out;
+}
+
+/* ── Hover & active ── */
 .perk-card:hover {
-    background-color: rgba(28, 36, 50, 0.98);
-    border-color: rgba(180, 200, 240, 0.8);
+    scale: 1.06;
     translate: 0 -4px;
 }
 
 .perk-card:active {
+    scale: 1.02;
     translate: 0 0;
     background-color: rgba(40, 50, 70, 1);
 }
 
-.perk-card.rarity-common { border-color: rgba(160, 160, 160, 0.7); }
-.perk-card.rarity-rare { border-color: rgb(64, 156, 255); }
-.perk-card.rarity-epic { border-color: rgb(180, 80, 255); }
-.perk-card.rarity-legendary { border-color: rgb(255, 180, 30); }
+/* ── Rarity borders ── */
+.perk-card.rarity-common  { border-color: rgba(180, 180, 180, 0.7); }
+.perk-card.rarity-rare    { border-color: rgb(64, 156, 255); }
+.perk-card.rarity-epic    { border-color: rgb(180, 80, 255); }
+.perk-card.rarity-legendary { border-color: rgb(255, 185, 30); }
 
+/* ── Rarity glow on hover (brightened border = glow effect) ── */
+.perk-card.rarity-common:hover  { border-color: rgba(220, 220, 220, 1); border-width: 3px; }
+.perk-card.rarity-rare:hover    { border-color: rgb(120, 200, 255); border-width: 3px; }
+.perk-card.rarity-epic:hover    { border-color: rgb(220, 120, 255); border-width: 3px; }
+.perk-card.rarity-legendary:hover { border-color: rgb(255, 220, 80); border-width: 3px; }
+
+/* ── Locked card ── */
+.perk-card.locked {
+    opacity: 0.45;
+    cursor: arrow;
+}
+
+.perk-card.locked:hover {
+    scale: 1;
+    translate: 0 0;
+    border-width: 2px;
+}
+
+.perk-card-lock-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    padding: 2px 6px;
+}
+
+.perk-card-lock-text {
+    font-size: 10px;
+    color: rgba(255, 200, 80, 0.9);
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+/* ── Icon ── */
 .perk-card-icon {
     width: 64px;
     height: 64px;
@@ -71,6 +126,7 @@
     margin-bottom: 12px;
 }
 
+/* ── Rarity label ── */
 .perk-card-rarity {
     font-size: 11px;
     -unity-font-style: bold;
@@ -79,10 +135,11 @@
     color: rgba(200, 200, 200, 0.7);
 }
 
-.perk-card.rarity-rare .perk-card-rarity { color: rgb(64, 156, 255); }
-.perk-card.rarity-epic .perk-card-rarity { color: rgb(180, 80, 255); }
-.perk-card.rarity-legendary .perk-card-rarity { color: rgb(255, 180, 30); }
+.perk-card.rarity-rare .perk-card-rarity     { color: rgb(64, 156, 255); }
+.perk-card.rarity-epic .perk-card-rarity     { color: rgb(180, 80, 255); }
+.perk-card.rarity-legendary .perk-card-rarity { color: rgb(255, 185, 30); }
 
+/* ── Name ── */
 .perk-card-name {
     color: white;
     font-size: 16px;
@@ -93,10 +150,43 @@
     white-space: normal;
 }
 
+/* ── Description ── */
 .perk-card-desc {
     color: rgba(200, 210, 230, 0.8);
     font-size: 12px;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     -unity-text-align: upper-center;
     white-space: normal;
+}
+
+/* ── Reroll button ── */
+.reroll-button {
+    margin-top: 24px;
+    padding: 10px 32px;
+    background-color: rgba(60, 50, 20, 0.9);
+    border-color: rgb(200, 150, 40);
+    border-width: 2px;
+    border-radius: 12px;
+    color: rgb(255, 200, 60);
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    cursor: link;
+    transition-property: scale, background-color;
+    transition-duration: 0.12s, 0.12s;
+    transition-timing-function: ease-out, ease-out;
+}
+
+.reroll-button:hover {
+    scale: 1.05;
+    background-color: rgba(90, 70, 20, 0.95);
+    border-color: rgb(255, 210, 80);
+}
+
+.reroll-button:active {
+    scale: 0.98;
+}
+
+.hidden {
+    display: none;
 }
