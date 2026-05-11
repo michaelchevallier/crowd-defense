@@ -7,6 +7,12 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.Entities
 {
+    /// <summary>
+    /// Choix de branche L3 pour les 4 tours signature (D1-03).
+    /// None = tour non-signature ou pas encore upgradée L3.
+    /// </summary>
+    public enum TowerBranch { None, Dps, Utility }
+
     public class Tower : MonoBehaviour
     {
         [SerializeField] private GameObject? projectilePrefab;
@@ -59,8 +65,26 @@ namespace CrowdDefense.Entities
 
         // Upgrade state
         public int UpgradeLevel { get; private set; } = 1;
-        // "dps" ou "utility" — null jusqu'à L2→L3 (CORE-20)
-        public string? UpgradeBranch { get; private set; }
+        // Branche L3 — None jusqu'à L3 signature
+        public TowerBranch UpgradeBranch { get; private set; } = TowerBranch.None;
+
+        // L3 runtime overrides (branch divergence — D1-03)
+        // Ces valeurs surchargent cfg.X lors du calcul Fire/Update.
+        public float L3DmgMul { get; private set; } = 1f;       // multiplicateur dmg final
+        public float L3FireRateMul { get; private set; } = 1f;  // multiplicateur fireRate (>1 = plus lent)
+        public float L3Aoe { get; private set; } = 0f;          // aoe override (0 = utilise cfg)
+        public int L3Pierce { get; private set; } = 0;          // pierce override (0 = utilise cfg)
+        public int L3MultiShot { get; private set; } = 0;       // extra projectiles (0 = aucun)
+        public bool L3SlowOnHit { get; private set; } = false;
+        public float L3SlowMul { get; private set; } = 1f;
+        public int L3SlowDurMs { get; private set; } = 0;
+        public bool L3BurnDot { get; private set; } = false;
+        public float L3BurnDps { get; private set; } = 0f;
+        public int L3BurnDurMs { get; private set; } = 0;
+        public bool L3ArmorBreak { get; private set; } = false;
+        public float L3ArmorBreakMul { get; private set; } = 1f;
+        public int L3ArmorBreakDurMs { get; private set; } = 0;
+        public bool L3Knockback { get; private set; } = false;
 
         // Coût cumulé pour le calcul du refund sell
         public int CumulativeCost { get; private set; }
@@ -78,7 +102,7 @@ namespace CrowdDefense.Entities
             _clusterTimer = 0f;
             _slowTickTimer = 0f;
             UpgradeLevel = 1;
-            UpgradeBranch = null;
+            UpgradeBranch = TowerBranch.None;
             CumulativeCost = type.Cost;
             // L1 damage scale : Phaser LEVEL_SCALE[0] = 0.75
             _levelDmgScale = BalanceConfig.Get().LevelScale.Length > 0
@@ -114,7 +138,8 @@ namespace CrowdDefense.Entities
 
             CumulativeCost += cost;
             UpgradeLevel = level;
-            if (branch != null) UpgradeBranch = branch;
+            if (branch != null && System.Enum.TryParse<TowerBranch>(branch, true, out var parsed))
+                UpgradeBranch = parsed;
 
             // Stats scaling — ratio vs L1 Phaser convention
             // L1 scale = LevelScale[0] (0.75), L2 = LevelScale[1] (1.0), L3 = LevelScale[2] (1.30)
