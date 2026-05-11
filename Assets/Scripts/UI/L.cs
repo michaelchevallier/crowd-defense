@@ -56,6 +56,8 @@ namespace CrowdDefense.UI
                     // ── Radial menu ────────────────────────────────────────────────
                     ["hud.radial_title"] = "{0}  L2  — Choose L3 (irreversible except sell)",
                     ["hud.radial_sell"] = "Sell +{0}g",
+                    ["hud.radial_upgrade_l2"] = "Upgrade L2",
+                    ["hud.radial_upgrade_l3"] = "Upgrade L3",
                     ["hud.radial_branch_dps"] = "DPS",
                     ["hud.radial_branch_utility"] = "Utility",
 
@@ -205,6 +207,54 @@ namespace CrowdDefense.UI
                     ["tutorial.step4.text"] = "Place your hero on the map to assist the towers.",
                     ["tutorial.step5.text"] = "Collect coins dropped by defeated enemies.",
                     ["tutorial.done.text"] = "You are ready! Good luck, defender!",
+
+                    // ── Daily Challenge panel ──────────────────────────────────────
+                    ["daily.title"] = "Daily Challenge",
+                    ["daily.seed_label"] = "Seed",
+                    ["daily.challenge_label"] = "Challenge",
+                    ["daily.best_score_label"] = "Best Score",
+                    ["daily.best_score_none"] = "No score yet",
+                    ["daily.play_btn"] = "Play",
+                    ["daily.played_today"] = "Already played today",
+                    ["worldmap.btn_daily"] = "Daily",
+
+                    // ── BluePill panel ─────────────────────────────────────────────
+                    ["bluepill.title"] = "BluePill Mode",
+                    ["bluepill.description"] = "Channel for 2s without moving → teleport to castle. Matrix easter egg.",
+                    ["bluepill.toggle_label"] = "Enable BluePill mode",
+                    ["bluepill.kills_label"] = "BluePill kills",
+                    ["bluepill.levels_label"] = "BluePill uses",
+
+                    // ── Save slot screen ───────────────────────────────────────────
+                    ["saveslot.slot_label"]     = "Slot {0}",
+                    ["saveslot.empty"]          = "— Empty —",
+                    ["saveslot.continue"]       = "Continue",
+                    ["saveslot.new_game"]       = "New Game",
+                    ["saveslot.delete"]         = "Delete",
+                    ["saveslot.world_label"]    = "World {0}",
+                    ["saveslot.gems_label"]     = "{0} gems",
+                    ["saveslot.confirm_delete"] = "Delete this save?",
+                    ["saveslot.confirm_yes"]    = "Confirm",
+                    ["saveslot.confirm_no"]     = "Cancel",
+
+                    // ── Statistics screen ──────────────────────────────────────────
+                    ["stats.title"]             = "Statistics",
+                    ["stats.close"]             = "Close",
+                    ["stats.tab_run"]           = "Current Run",
+                    ["stats.tab_lifetime"]      = "Lifetime",
+                    ["stats.kills"]             = "Enemies Killed",
+                    ["stats.gold"]              = "Gold Earned",
+                    ["stats.waves"]             = "Waves Cleared",
+                    ["stats.streak"]            = "Best Streak",
+                    ["stats.playtime"]          = "Playtime",
+                    ["stats.towers"]            = "Towers Placed",
+                    ["stats.perks"]             = "Perks Acquired",
+                    ["stats.playtime_fmt"]      = "{0}h {1}m",
+                    ["stats.reset_btn"]         = "Reset Statistics",
+                    ["stats.reset_confirm"]     = "Reset all lifetime stats?",
+                    ["stats.reset_yes"]         = "Reset",
+                    ["stats.reset_no"]          = "Cancel",
+                    ["stats.no_run"]            = "No active run.",
                 },
                 ["fr"] = new()
                 {
@@ -245,6 +295,8 @@ namespace CrowdDefense.UI
                     // ── Radial menu ────────────────────────────────────────────────
                     ["hud.radial_title"] = "{0}  L2  — Choisir L3 (irréversible sauf vente)",
                     ["hud.radial_sell"] = "Vendre +{0}g",
+                    ["hud.radial_upgrade_l2"] = "Améliorer L2",
+                    ["hud.radial_upgrade_l3"] = "Améliorer L3",
                     ["hud.radial_branch_dps"] = "DPS",
                     ["hud.radial_branch_utility"] = "Utilitaire",
 
@@ -394,6 +446,54 @@ namespace CrowdDefense.UI
                     ["tutorial.step4.text"] = "Place ton heros sur la carte pour aider les tours.",
                     ["tutorial.step5.text"] = "Collecte les pieces laissees par les ennemis elimines.",
                     ["tutorial.done.text"] = "Tu es pret ! Bonne chance, defenseur !",
+
+                    // ── Daily Challenge panel ──────────────────────────────────────
+                    ["daily.title"] = "Defi Quotidien",
+                    ["daily.seed_label"] = "Graine",
+                    ["daily.challenge_label"] = "Defi",
+                    ["daily.best_score_label"] = "Meilleur score",
+                    ["daily.best_score_none"] = "Aucun score",
+                    ["daily.play_btn"] = "Jouer",
+                    ["daily.played_today"] = "Deja joue aujourd'hui",
+                    ["worldmap.btn_daily"] = "Defi du Jour",
+
+                    // ── BluePill panel ─────────────────────────────────────────────
+                    ["bluepill.title"] = "Mode Pilule Bleue",
+                    ["bluepill.description"] = "Canalise 2s sans bouger -> teleportation au chateau. Easter egg Matrix.",
+                    ["bluepill.toggle_label"] = "Activer le mode Pilule Bleue",
+                    ["bluepill.kills_label"] = "Victimes Pilule Bleue",
+                    ["bluepill.levels_label"] = "Utilisations Pilule Bleue",
+
+                    // ── Save slot screen ───────────────────────────────────────────
+                    ["saveslot.slot_label"]     = "Emplacement {0}",
+                    ["saveslot.empty"]          = "— Vide —",
+                    ["saveslot.continue"]       = "Continuer",
+                    ["saveslot.new_game"]       = "Nouvelle partie",
+                    ["saveslot.delete"]         = "Supprimer",
+                    ["saveslot.world_label"]    = "Monde {0}",
+                    ["saveslot.gems_label"]     = "{0} gemmes",
+                    ["saveslot.confirm_delete"] = "Supprimer cette sauvegarde ?",
+                    ["saveslot.confirm_yes"]    = "Confirmer",
+                    ["saveslot.confirm_no"]     = "Annuler",
+
+                    // ── Statistics screen ──────────────────────────────────────────
+                    ["stats.title"]             = "Statistiques",
+                    ["stats.close"]             = "Fermer",
+                    ["stats.tab_run"]           = "Partie en cours",
+                    ["stats.tab_lifetime"]      = "Total",
+                    ["stats.kills"]             = "Ennemis eliminés",
+                    ["stats.gold"]              = "Or gagné",
+                    ["stats.waves"]             = "Vagues terminées",
+                    ["stats.streak"]            = "Meilleure série",
+                    ["stats.playtime"]          = "Temps de jeu",
+                    ["stats.towers"]            = "Tours placées",
+                    ["stats.perks"]             = "Bonus acquis",
+                    ["stats.playtime_fmt"]      = "{0}h {1}m",
+                    ["stats.reset_btn"]         = "Réinitialiser les statistiques",
+                    ["stats.reset_confirm"]     = "Réinitialiser toutes les stats ?",
+                    ["stats.reset_yes"]         = "Réinitialiser",
+                    ["stats.reset_no"]          = "Annuler",
+                    ["stats.no_run"]            = "Aucune partie en cours.",
                 },
             },
 

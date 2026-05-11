@@ -1,0 +1,206 @@
+.stats-root {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.72);
+    align-items: center;
+    justify-content: center;
+}
+
+.hidden {
+    display: none;
+}
+
+.stats-panel {
+    width: 480px;
+    max-height: 82%;
+    background-color: rgba(20, 26, 38, 0.97);
+    border-color: rgba(160, 180, 220, 0.45);
+    border-width: 1px;
+    border-radius: 12px;
+    padding: 18px 22px;
+    flex-direction: column;
+}
+
+.stats-title {
+    color: rgb(255, 210, 63);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    margin-bottom: 12px;
+    -unity-text-align: middle-center;
+}
+
+.stats-tabs {
+    flex-direction: row;
+    margin-bottom: 14px;
+    border-bottom-color: rgba(160, 180, 220, 0.2);
+    border-bottom-width: 1px;
+    padding-bottom: 8px;
+}
+
+.tab-btn {
+    flex: 1;
+    height: 32px;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-color: rgba(160, 180, 220, 0.2);
+    border-width: 1px;
+    border-radius: 6px;
+    color: rgba(200, 210, 240, 0.7);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    margin: 0 4px;
+    cursor: link;
+}
+
+.tab-btn:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: rgb(230, 240, 255);
+}
+
+.tab-btn-active {
+    background-color: rgba(60, 100, 200, 0.4);
+    border-color: rgba(100, 150, 255, 0.6);
+    color: rgb(200, 220, 255);
+}
+
+.tab-content {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.stats-no-run {
+    color: rgba(160, 170, 200, 0.6);
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    padding: 20px 0;
+}
+
+.stats-list {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.stat-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    border-bottom-color: rgba(160, 180, 220, 0.1);
+    border-bottom-width: 1px;
+}
+
+.stat-label {
+    color: rgba(200, 210, 240, 0.8);
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-left;
+}
+
+.stat-value {
+    color: rgb(255, 255, 255);
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-right;
+}
+
+.stats-reset-btn {
+    height: 34px;
+    margin-top: 16px;
+    border-radius: 6px;
+    border-width: 1px;
+    background-color: rgba(160, 40, 40, 0.6);
+    border-color: rgb(200, 60, 60);
+    color: rgb(255, 210, 210);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    cursor: link;
+}
+
+.stats-reset-btn:hover {
+    background-color: rgba(200, 55, 55, 0.8);
+}
+
+.stats-reset-dialog {
+    position: absolute;
+    width: 300px;
+    background-color: rgba(15, 18, 28, 0.97);
+    border-color: rgba(200, 60, 60, 0.7);
+    border-width: 2px;
+    border-radius: 10px;
+    padding: 18px 22px;
+    align-items: center;
+    align-self: center;
+}
+
+.confirm-label {
+    color: rgb(255, 210, 100);
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    margin-bottom: 14px;
+}
+
+.confirm-actions {
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+}
+
+.tab-action-btn {
+    flex: 1;
+    height: 32px;
+    margin: 0 5px;
+    border-radius: 6px;
+    border-width: 1px;
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    background-color: rgba(40, 160, 40, 0.75);
+    border-color: rgb(60, 200, 60);
+    color: rgb(220, 255, 220);
+    cursor: link;
+}
+
+.tab-action-btn:hover {
+    background-color: rgba(50, 190, 50, 0.9);
+}
+
+.tab-action-btn-danger {
+    background-color: rgba(160, 40, 40, 0.75);
+    border-color: rgb(200, 60, 60);
+    color: rgb(255, 220, 220);
+}
+
+.tab-action-btn-danger:hover {
+    background-color: rgba(200, 55, 55, 0.9);
+}
+
+.stats-footer {
+    margin-top: 14px;
+    align-items: flex-end;
+}
+
+.stats-close-btn {
+    height: 34px;
+    padding: 0 20px;
+    border-radius: 6px;
+    border-width: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(160, 180, 220, 0.35);
+    color: rgb(200, 215, 255);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    cursor: link;
+}
+
+.stats-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.18);
+}

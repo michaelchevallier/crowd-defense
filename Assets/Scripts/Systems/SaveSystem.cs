@@ -36,10 +36,18 @@ namespace CrowdDefense.Systems
         public List<MetaUpgradeEntry> metaUpgradeLevels = new();
         public int gems = 0;
         public int totalKills = 0;
+        public int totalGoldEarned = 0;
+        public int totalWavesCleared = 0;
+        public int bestStreak = 0;
+        public float playtime = 0f;
+        public int towersPlaced = 0;
+        public int perksAcquired = 0;
         public float musicVolume = 1f;
         public float sfxVolume = 1f;
         public string lang = "fr";
         public bool tutorialCompleted = false;
+        public string lastPlayedDate = "";
+        public int worldReached = 1;
         // Skins — owned ids (default skins are always owned)
         public List<string> ownedSkins = new();
         // Active equipped skin per (targetType+targetId) key — flat list for JsonUtility
@@ -53,45 +61,95 @@ namespace CrowdDefense.Systems
         public int    heroLevel = 1;
         public int    heroXP    = 0;
         public string schoolId  = "";
+        // Run-scoped stats (accumulated this run, merged to lifetime on victory/game-over)
+        public int    runKills       = 0;
+        public int    runGoldEarned  = 0;
+        public int    runWavesCleared = 0;
+        public int    runStreak      = 0;
+        public float  runPlaytime    = 0f;
+        public int    runTowersPlaced = 0;
+        public int    runPerksAcquired = 0;
     }
 
     public static class SaveSystem
     {
-        private const string KEY     = "cd_progression_v1";
-        private const string RUN_KEY = "cd_runstate_v1";
-        private static ProgressData? _cached;
-        private static RunState?     _cachedRun;
+        private const string KEY_PREFIX     = "cd_progression_v1_slot";
+        private const string RUN_KEY_PREFIX = "cd_runstate_v1_slot";
+        private const int    SLOT_COUNT     = 3;
+
+        public static int CurrentSlot { get; private set; } = 0;
+
+        private static ProgressData?[] _cachedSlots = new ProgressData?[SLOT_COUNT];
+        private static RunState?[]     _cachedRuns  = new RunState?[SLOT_COUNT];
+
+        private static string ProgressKey(int slot) => $"{KEY_PREFIX}{slot}";
+        private static string RunKey(int slot)      => $"{RUN_KEY_PREFIX}{slot}";
+
+        public static void SelectSlot(int slot)
+        {
+            CurrentSlot = Mathf.Clamp(slot, 0, SLOT_COUNT - 1);
+        }
+
+        public static bool SlotHasData(int slot)
+        {
+            int s = Mathf.Clamp(slot, 0, SLOT_COUNT - 1);
+            return !string.IsNullOrEmpty(PlayerPrefs.GetString(ProgressKey(s), ""));
+        }
+
+        public static ProgressData? PeekSlot(int slot)
+        {
+            int s = Mathf.Clamp(slot, 0, SLOT_COUNT - 1);
+            if (_cachedSlots[s] != null) return _cachedSlots[s];
+            string json = PlayerPrefs.GetString(ProgressKey(s), "");
+            if (string.IsNullOrEmpty(json)) return null;
+            try { return JsonUtility.FromJson<ProgressData>(json); }
+            catch { return null; }
+        }
+
+        public static void DeleteSlot(int slot)
+        {
+            int s = Mathf.Clamp(slot, 0, SLOT_COUNT - 1);
+            _cachedSlots[s] = null;
+            _cachedRuns[s]  = null;
+            PlayerPrefs.DeleteKey(ProgressKey(s));
+            PlayerPrefs.DeleteKey(RunKey(s));
+            PlayerPrefs.Save();
+        }
 
         public static ProgressData Load()
         {
-            if (_cached != null) return _cached;
-            string json = PlayerPrefs.GetString(KEY, "");
+            int s = CurrentSlot;
+            if (_cachedSlots[s] != null) return _cachedSlots[s]!;
+            string json = PlayerPrefs.GetString(ProgressKey(s), "");
             if (string.IsNullOrEmpty(json))
             {
-                _cached = new ProgressData();
+                _cachedSlots[s] = new ProgressData();
                 Save();
-                return _cached;
+                return _cachedSlots[s]!;
             }
             try
             {
-                _cached = JsonUtility.FromJson<ProgressData>(json) ?? new ProgressData();
+                _cachedSlots[s] = JsonUtility.FromJson<ProgressData>(json) ?? new ProgressData();
             }
             catch (Exception ex)
             {
 #if UNITY_EDITOR
-                PlayerPrefs.SetString(KEY + "_corrupted", json);
-                Debug.LogWarning($"[SaveSystem] Progression corrompue, reset silencieux: {ex.Message}");
+                PlayerPrefs.SetString(ProgressKey(s) + "_corrupted", json);
+                Debug.LogWarning($"[SaveSystem] Progression slot{s} corrompue, reset silencieux: {ex.Message}");
 #endif
-                _cached = new ProgressData();
+                _cachedSlots[s] = new ProgressData();
             }
-            return _cached;
+            return _cachedSlots[s]!;
         }
 
         public static void Save()
         {
-            if (_cached == null) return;
-            string json = JsonUtility.ToJson(_cached);
-            PlayerPrefs.SetString(KEY, json);
+            int s = CurrentSlot;
+            if (_cachedSlots[s] == null) return;
+            var data = _cachedSlots[s]!;
+            data.lastPlayedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+            string json = JsonUtility.ToJson(data);
+            PlayerPrefs.SetString(ProgressKey(s), json);
             PlayerPrefs.Save();
         }
 
@@ -116,12 +174,73 @@ namespace CrowdDefense.Systems
             string nextLevel = ComputeNextLevelId(levelId);
             if (!string.IsNullOrEmpty(nextLevel) && !data.unlockedLevels.Contains(nextLevel))
                 data.unlockedLevels.Add(nextLevel);
+            // Track highest world reached
+            if (levelId.StartsWith("world"))
+            {
+                var parts = levelId.Substring(5).Split('-');
+                if (parts.Length == 2 && int.TryParse(parts[0], out int w))
+                    if (w > data.worldReached) data.worldReached = w;
+            }
             Save();
         }
 
         public static void AddKills(int count)
         {
             Load().totalKills += count;
+            Save();
+        }
+
+        public static void AddGoldEarned(int amount)
+        {
+            if (amount <= 0) return;
+            Load().totalGoldEarned += amount;
+            Save();
+        }
+
+        public static void AddWavesCleared(int count)
+        {
+            if (count <= 0) return;
+            Load().totalWavesCleared += count;
+            Save();
+        }
+
+        public static void UpdateBestStreak(int streak)
+        {
+            var data = Load();
+            if (streak > data.bestStreak) { data.bestStreak = streak; Save(); }
+        }
+
+        public static void AddPlaytime(float seconds)
+        {
+            if (seconds <= 0) return;
+            Load().playtime += seconds;
+            Save();
+        }
+
+        public static void AddTowersPlaced(int count)
+        {
+            if (count <= 0) return;
+            Load().towersPlaced += count;
+            Save();
+        }
+
+        public static void AddPerksAcquired(int count)
+        {
+            if (count <= 0) return;
+            Load().perksAcquired += count;
+            Save();
+        }
+
+        public static void ResetLifetimeStats()
+        {
+            var data = Load();
+            data.totalKills       = 0;
+            data.totalGoldEarned  = 0;
+            data.totalWavesCleared = 0;
+            data.bestStreak       = 0;
+            data.playtime         = 0f;
+            data.towersPlaced     = 0;
+            data.perksAcquired    = 0;
             Save();
         }
 
@@ -161,7 +280,7 @@ namespace CrowdDefense.Systems
 
         public static void ResetAll()
         {
-            _cached = new ProgressData();
+            _cachedSlots[CurrentSlot] = new ProgressData();
             Save();
         }
 
@@ -181,16 +300,18 @@ namespace CrowdDefense.Systems
 
         public static RunState GetRunState()
         {
-            if (_cachedRun != null) return _cachedRun;
-            string json = PlayerPrefs.GetString(RUN_KEY, "");
-            _cachedRun = string.IsNullOrEmpty(json) ? new RunState() : JsonUtility.FromJson<RunState>(json) ?? new RunState();
-            return _cachedRun;
+            int s = CurrentSlot;
+            if (_cachedRuns[s] != null) return _cachedRuns[s]!;
+            string json = PlayerPrefs.GetString(RunKey(s), "");
+            _cachedRuns[s] = string.IsNullOrEmpty(json) ? new RunState() : JsonUtility.FromJson<RunState>(json) ?? new RunState();
+            return _cachedRuns[s]!;
         }
 
         public static void SetRunState(RunState rs)
         {
-            _cachedRun = rs;
-            PlayerPrefs.SetString(RUN_KEY, JsonUtility.ToJson(rs));
+            int s = CurrentSlot;
+            _cachedRuns[s] = rs;
+            PlayerPrefs.SetString(RunKey(s), JsonUtility.ToJson(rs));
             PlayerPrefs.Save();
         }
 
@@ -198,13 +319,15 @@ namespace CrowdDefense.Systems
         {
             var rs = GetRunState();
             rs.heroPerks.Add(perkId);
+            rs.runPerksAcquired++;
             SetRunState(rs);
         }
 
         public static void ClearRunState()
         {
-            _cachedRun = new RunState();
-            PlayerPrefs.DeleteKey(RUN_KEY);
+            int s = CurrentSlot;
+            _cachedRuns[s] = new RunState();
+            PlayerPrefs.DeleteKey(RunKey(s));
             PlayerPrefs.Save();
         }
 

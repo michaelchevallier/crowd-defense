@@ -1,0 +1,184 @@
+.saveslot-root {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(15, 20, 35);
+}
+
+.hidden {
+    display: none;
+}
+
+.saveslot-overlay {
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 32px 24px;
+}
+
+.saveslot-title {
+    color: rgb(255, 210, 63);
+    font-size: 40px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    margin-bottom: 32px;
+    -unity-text-align: middle-center;
+}
+
+.slots-container {
+    flex-direction: row;
+    justify-content: center;
+    align-items: stretch;
+    width: 100%;
+    max-width: 900px;
+}
+
+.slot-card {
+    flex: 1;
+    margin: 0 12px;
+    background-color: rgba(20, 26, 38, 0.97);
+    border-color: rgba(160, 180, 220, 0.3);
+    border-width: 1px;
+    border-radius: 12px;
+    padding: 18px 16px;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 220px;
+}
+
+.slot-card:hover {
+    border-color: rgba(255, 210, 63, 0.5);
+}
+
+.slot-label {
+    color: rgba(200, 210, 255, 0.9);
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    margin-bottom: 10px;
+}
+
+.slot-info {
+    flex-direction: column;
+    margin-bottom: 8px;
+    flex-grow: 1;
+}
+
+.slot-date {
+    color: rgba(180, 190, 220, 0.7);
+    font-size: 12px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+
+.slot-world {
+    color: rgb(220, 230, 255);
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+
+.slot-gems {
+    color: rgb(255, 210, 63);
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+}
+
+.slot-empty {
+    color: rgba(120, 130, 160, 0.6);
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    flex-grow: 1;
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+.slot-actions {
+    flex-direction: column;
+    align-items: stretch;
+    margin-top: 12px;
+}
+
+.slot-btn {
+    height: 36px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    border-width: 1px;
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    cursor: link;
+}
+
+.slot-btn-continue {
+    background-color: rgba(40, 120, 220, 0.85);
+    border-color: rgba(80, 160, 255, 0.6);
+    color: rgb(220, 235, 255);
+}
+
+.slot-btn-continue:hover {
+    background-color: rgba(55, 140, 240, 0.95);
+}
+
+.slot-btn-new {
+    background-color: rgba(40, 160, 40, 0.75);
+    border-color: rgb(60, 200, 60);
+    color: rgb(220, 255, 220);
+}
+
+.slot-btn-new:hover {
+    background-color: rgba(50, 190, 50, 0.9);
+}
+
+.slot-btn-delete {
+    background-color: rgba(160, 40, 40, 0.75);
+    border-color: rgb(200, 60, 60);
+    color: rgb(255, 220, 220);
+}
+
+.slot-btn-delete:hover {
+    background-color: rgba(200, 55, 55, 0.9);
+}
+
+.confirm-dialog {
+    position: absolute;
+    width: 320px;
+    background-color: rgba(15, 18, 28, 0.97);
+    border-color: rgba(200, 60, 60, 0.7);
+    border-width: 2px;
+    border-radius: 10px;
+    padding: 20px 24px;
+    align-items: center;
+}
+
+.confirm-label {
+    color: rgb(255, 210, 100);
+    font-size: 18px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    margin-bottom: 16px;
+}
+
+.confirm-actions {
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+}
+
+.confirm-actions .slot-btn {
+    flex: 1;
+    margin: 0 6px;
+    margin-bottom: 0;
+}

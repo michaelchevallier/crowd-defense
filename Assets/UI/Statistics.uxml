@@ -1,0 +1,102 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="Statistics.uss" />
+    <ui:VisualElement name="stats-root" class="stats-root hidden">
+        <ui:VisualElement name="stats-panel" class="stats-panel">
+
+            <ui:Label text="Statistics" name="stats-title" class="stats-title" />
+
+            <!-- Tabs -->
+            <ui:VisualElement name="stats-tabs" class="stats-tabs">
+                <ui:Button text="Current Run" name="tab-run-btn" class="tab-btn tab-btn-active" />
+                <ui:Button text="Lifetime" name="tab-lifetime-btn" class="tab-btn" />
+            </ui:VisualElement>
+
+            <!-- Run tab content -->
+            <ui:VisualElement name="tab-run-content" class="tab-content">
+                <ui:Label text="No active run." name="stats-no-run-label" class="stats-no-run" />
+                <ui:VisualElement name="run-stats-list" class="stats-list">
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Enemies Killed" name="run-kills-label" class="stat-label" />
+                        <ui:Label text="0" name="run-kills-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Gold Earned" name="run-gold-label" class="stat-label" />
+                        <ui:Label text="0" name="run-gold-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Waves Cleared" name="run-waves-label" class="stat-label" />
+                        <ui:Label text="0" name="run-waves-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Best Streak" name="run-streak-label" class="stat-label" />
+                        <ui:Label text="0" name="run-streak-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Playtime" name="run-playtime-label" class="stat-label" />
+                        <ui:Label text="0h 0m" name="run-playtime-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Towers Placed" name="run-towers-label" class="stat-label" />
+                        <ui:Label text="0" name="run-towers-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Perks Acquired" name="run-perks-label" class="stat-label" />
+                        <ui:Label text="0" name="run-perks-value" class="stat-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <!-- Lifetime tab content -->
+            <ui:VisualElement name="tab-lifetime-content" class="tab-content hidden">
+                <ui:VisualElement name="lifetime-stats-list" class="stats-list">
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Enemies Killed" name="lt-kills-label" class="stat-label" />
+                        <ui:Label text="0" name="lt-kills-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Gold Earned" name="lt-gold-label" class="stat-label" />
+                        <ui:Label text="0" name="lt-gold-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Waves Cleared" name="lt-waves-label" class="stat-label" />
+                        <ui:Label text="0" name="lt-waves-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Best Streak" name="lt-streak-label" class="stat-label" />
+                        <ui:Label text="0" name="lt-streak-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Playtime" name="lt-playtime-label" class="stat-label" />
+                        <ui:Label text="0h 0m" name="lt-playtime-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Towers Placed" name="lt-towers-label" class="stat-label" />
+                        <ui:Label text="0" name="lt-towers-value" class="stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="stat-row">
+                        <ui:Label text="Perks Acquired" name="lt-perks-label" class="stat-label" />
+                        <ui:Label text="0" name="lt-perks-value" class="stat-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <ui:Button text="Reset Statistics" name="stats-reset-btn" class="stats-reset-btn" />
+            </ui:VisualElement>
+
+            <!-- Reset confirmation -->
+            <ui:VisualElement name="stats-reset-dialog" class="stats-reset-dialog hidden">
+                <ui:Label text="Reset all lifetime stats?" name="stats-reset-confirm-label" class="confirm-label" />
+                <ui:VisualElement class="confirm-actions">
+                    <ui:Button text="Reset" name="stats-reset-yes-btn" class="tab-action-btn tab-action-btn-danger" />
+                    <ui:Button text="Cancel" name="stats-reset-no-btn" class="tab-action-btn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="stats-footer">
+                <ui:Button text="Close" name="stats-close-btn" class="stats-close-btn" />
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
