@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CrowdDefense.Data;
@@ -11,32 +12,33 @@ namespace CrowdDefense.Editor
     {
         private const string RegistryPath = "Assets/ScriptableObjects/Audio/AudioClipRegistry.asset";
         private const string SfxRoot = "Assets/Audio/SFX";
+        private const string MusicRoot = "Assets/Audio/Music";
 
         [MenuItem("Tools/CrowdDefense/Build AudioClipRegistry")]
         public static void BuildAudioClipRegistry()
         {
             var registry = LoadOrCreateRegistry();
 
-            if (!Directory.Exists(SfxRoot))
-            {
-                Debug.LogWarning($"[AudioClipRegistryTool] SFX directory not found: {SfxRoot}");
-                return;
-            }
+            var files = new List<string>();
 
-            var files = Directory.GetFiles(SfxRoot, "*.ogg", SearchOption.TopDirectoryOnly)
-                .Concat(Directory.GetFiles(SfxRoot, "*.wav", SearchOption.TopDirectoryOnly))
-                .Concat(Directory.GetFiles(SfxRoot, "*.mp3", SearchOption.TopDirectoryOnly))
-                .ToArray();
+            if (Directory.Exists(SfxRoot))
+                files.AddRange(EnumerateAudioFiles(SfxRoot));
+            else
+                Debug.LogWarning($"[AudioClipRegistryTool] SFX directory not found: {SfxRoot}");
+
+            if (Directory.Exists(MusicRoot))
+                files.AddRange(EnumerateAudioFiles(MusicRoot));
 
             var serialized = new SerializedObject(registry);
             var arrayProp = serialized.FindProperty("entries");
-            arrayProp.arraySize = files.Length;
+            arrayProp.arraySize = files.Count;
 
             int populated = 0;
-            for (int i = 0; i < files.Length; i++)
+            for (int i = 0; i < files.Count; i++)
             {
                 var unityPath = files[i].Replace('\\', '/');
-                var key = Path.GetFileNameWithoutExtension(unityPath).ToLowerInvariant();
+                var baseName = Path.GetFileNameWithoutExtension(unityPath).ToLowerInvariant();
+                var key = unityPath.StartsWith(MusicRoot) ? $"music_{baseName}" : baseName;
                 var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(unityPath);
 
                 var elem = arrayProp.GetArrayElementAtIndex(i);
@@ -54,8 +56,13 @@ namespace CrowdDefense.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            Debug.Log($"[AudioClipRegistryTool] Built registry with {populated}/{files.Length} entries.");
+            Debug.Log($"[AudioClipRegistryTool] Built registry with {populated}/{files.Count} entries (SFX + Music).");
         }
+
+        private static IEnumerable<string> EnumerateAudioFiles(string root) =>
+            Directory.GetFiles(root, "*.ogg", SearchOption.TopDirectoryOnly)
+                .Concat(Directory.GetFiles(root, "*.wav", SearchOption.TopDirectoryOnly))
+                .Concat(Directory.GetFiles(root, "*.mp3", SearchOption.TopDirectoryOnly));
 
         private static AudioClipRegistry LoadOrCreateRegistry()
         {
