@@ -1,0 +1,197 @@
+.doctrine-root {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+}
+
+.hidden {
+    display: none;
+}
+
+.doctrine-panel {
+    width: 560px;
+    max-height: 80%;
+    background-color: rgba(20, 26, 38, 0.97);
+    border-color: rgba(160, 180, 220, 0.45);
+    border-width: 1px;
+    border-radius: 12px;
+    padding: 18px 22px;
+    flex-direction: column;
+}
+
+.doctrine-title {
+    color: rgb(255, 210, 63);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    margin-bottom: 6px;
+    -unity-text-align: middle-center;
+}
+
+.doctrine-active-label {
+    color: rgba(180, 240, 180, 0.9);
+    font-size: 13px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+    margin-bottom: 12px;
+}
+
+.doctrine-scroll {
+    flex-grow: 1;
+    margin-bottom: 10px;
+}
+
+.doctrine-list {
+    flex-direction: column;
+}
+
+.doctrine-card {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(40, 50, 70, 0.6);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(100, 120, 160, 0.3);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+}
+
+.doctrine-card:hover {
+    background-color: rgba(60, 75, 110, 0.75);
+}
+
+.doctrine-card--active {
+    border-color: rgba(100, 220, 100, 0.7);
+    background-color: rgba(30, 80, 40, 0.6);
+}
+
+.doctrine-card--locked {
+    opacity: 0.5;
+}
+
+.doctrine-card-emoji {
+    font-size: 22px;
+    width: 36px;
+    flex-shrink: 0;
+    -unity-text-align: middle-center;
+}
+
+.doctrine-card-body {
+    flex-grow: 1;
+    flex-direction: column;
+    margin: 0 10px;
+}
+
+.doctrine-card-name {
+    color: rgb(220, 230, 255);
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    margin-bottom: 2px;
+}
+
+.doctrine-card-desc {
+    color: rgba(180, 190, 210, 0.85);
+    font-size: 12px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    white-space: normal;
+}
+
+.doctrine-card-action {
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.doctrine-btn-select {
+    padding: 6px 14px;
+    background-color: rgba(80, 120, 200, 0.6);
+    color: white;
+    border-radius: 6px;
+    font-size: 13px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    border-width: 0;
+    cursor: link;
+}
+
+.doctrine-btn-select:hover {
+    background-color: rgba(100, 150, 240, 0.75);
+}
+
+.doctrine-btn-active {
+    padding: 6px 14px;
+    background-color: rgba(30, 160, 60, 0.6);
+    color: rgb(180, 255, 180);
+    border-radius: 6px;
+    font-size: 13px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    border-width: 0;
+}
+
+.doctrine-cost-label {
+    color: rgb(255, 210, 63);
+    font-size: 11px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-right;
+    margin-top: 2px;
+}
+
+.doctrine-footer {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top-color: rgba(100, 120, 160, 0.25);
+    border-top-width: 1px;
+}
+
+.doctrine-gems-label {
+    color: rgb(255, 210, 63);
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+}
+
+.doctrine-btn {
+    padding: 8px 28px;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: white;
+    border-radius: 6px;
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    border-width: 0;
+    cursor: link;
+}
+
+.doctrine-btn:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.doctrine-btn-close {
+    background-color: rgba(80, 100, 140, 0.5);
+}
+
+.doctrine-btn-close:hover {
+    background-color: rgba(100, 130, 180, 0.65);
+}
+
+/* === Doctrine HUD button (in top-bar) === */
+.hud-doctrine-btn {
+    padding: 6px 14px;
+    background-color: rgba(80, 50, 160, 0.75);
+    color: rgb(220, 200, 255);
+    border-radius: 10px;
+    border-width: 1px;
+    border-color: rgba(180, 150, 255, 0.4);
+    font-size: 14px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    cursor: link;
+    align-self: center;
+}
+
+.hud-doctrine-btn:hover {
+    background-color: rgba(110, 70, 200, 0.85);
+}

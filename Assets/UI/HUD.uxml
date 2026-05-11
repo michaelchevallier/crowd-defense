@@ -5,6 +5,7 @@
     <Style src="TowerToolbar.uss" />
     <Style src="RadialMenu.uss" />
     <Style src="TutorialOverlay.uss" />
+    <Style src="Doctrine.uss" />
     <ui:VisualElement name="hud-root" class="hud-root">
         <!-- Top bar pills -->
         <ui:VisualElement class="top-bar">
@@ -26,28 +27,22 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <!-- Speed control -->
-            <ui:VisualElement class="speed-control">
-                <ui:Button text="x1" name="speed-1" class="speed-btn speed-active" />
-                <ui:Button text="x2" name="speed-2" class="speed-btn" />
-                <ui:Button text="x3" name="speed-3" class="speed-btn" />
-            </ui:VisualElement>
+            <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" />
         </ui:VisualElement>
 
-        <!-- Hero status panel (bottom-left, hidden when no hero) -->
-        <ui:VisualElement name="hero-panel" class="hero-panel hidden">
-            <ui:VisualElement class="hero-panel-row">
-                <ui:Label text="HERO" name="hero-hp-label" class="hero-pill-label" />
-                <ui:Label text="Lv1" name="hero-level" class="hero-level" />
+        <!-- Doctrine panel (fullscreen modal, managed by DoctrineController) -->
+        <ui:VisualElement name="doctrine-root" class="doctrine-root hidden">
+            <ui:VisualElement name="doctrine-panel" class="doctrine-panel">
+                <ui:Label text="Doctrines" name="doctrine-title" class="doctrine-title" />
+                <ui:Label text="" name="doctrine-active-label" class="doctrine-active-label" />
+                <ui:ScrollView name="doctrine-scroll" class="doctrine-scroll">
+                    <ui:VisualElement name="doctrine-list" class="doctrine-list" />
+                </ui:ScrollView>
+                <ui:VisualElement class="doctrine-footer">
+                    <ui:Label text="" name="doctrine-gems-label" class="doctrine-gems-label" />
+                    <ui:Button text="Fermer" name="doctrine-close-btn" class="doctrine-btn doctrine-btn-close" />
+                </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement class="hero-bar-bg">
-                <ui:VisualElement name="hero-xp-bar-fill" class="hero-bar-fill hero-xp-fill" />
-            </ui:VisualElement>
-            <ui:VisualElement class="hero-panel-row">
-                <ui:Label text="XP" name="hero-xp-label" class="hero-pill-label" />
-                <ui:Label text="0/20" name="hero-xp-value" class="hero-xp-value" />
-            </ui:VisualElement>
-            <ui:Label text="ULT READY" name="hero-ult-label" class="hero-ult-label hero-ult-ready" />
         </ui:VisualElement>
 
         <!-- Wave launch button (visible between waves only) -->
