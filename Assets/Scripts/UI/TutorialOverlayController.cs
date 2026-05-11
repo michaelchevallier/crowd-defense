@@ -1,6 +1,7 @@
 #nullable enable
 using UnityEngine;
 using UnityEngine.UIElements;
+using CrowdDefense.Entities;
 using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
@@ -101,7 +102,7 @@ namespace CrowdDefense.UI
 
         // ── Event handlers ─────────────────────────────────────────────────────────
 
-        private void OnTowerPlaced(Entities.Tower _)
+        private void OnTowerPlaced(Tower _)
         {
             if (TutorialState.Instance == null || !TutorialState.Instance.IsTutorialActive) return;
             if (TutorialState.Instance.CurrentPhase == 0)
