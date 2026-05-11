@@ -54,19 +54,26 @@ namespace CrowdDefense.Editor
                 return;
             }
 
-            var guids = AssetDatabase.FindAssets("t:GameObject", new[] { dir });
-            foreach (var guid in guids)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var ext = Path.GetExtension(path).ToLowerInvariant();
-                if (ext != ".glb" && ext != ".gltf" && ext != ".fbx") continue;
+            // Scan filesystem directly + load via AssetDatabase (t:GameObject filter ne match pas les GLTF importés Unity)
+            var allFiles = Directory.GetFiles(dir, "*.*", SearchOption.AllDirectories)
+                .Where(p => {
+                    var e = Path.GetExtension(p).ToLowerInvariant();
+                    return e == ".glb" || e == ".gltf" || e == ".fbx";
+                });
 
-                var assetKey = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
-                if (prefab == null) continue;
+            foreach (var path in allFiles)
+            {
+                var unityPath = path.Replace('\\', '/');
+                var assetKey = Path.GetFileNameWithoutExtension(unityPath).ToLowerInvariant();
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(unityPath);
+                if (prefab == null)
+                {
+                    Debug.LogWarning($"[AssetRegistryTool] Skipped (load failed) [{category}] {unityPath}");
+                    continue;
+                }
 
                 entries.Add(new AssetRegistry.Entry { Key = assetKey, Prefab = prefab });
-                Debug.Log($"[AssetRegistryTool] Registered [{category}] {assetKey} → {path}");
+                Debug.Log($"[AssetRegistryTool] Registered [{category}] {assetKey} → {unityPath}");
             }
         }
 
