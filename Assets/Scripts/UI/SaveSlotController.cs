@@ -28,6 +28,7 @@ namespace CrowdDefense.UI
             public Label Date;
             public Label World;
             public Label Gems;
+            public Label Time;
             public Label Empty;
             public Button Continue;
             public Button NewGame;
@@ -55,6 +56,7 @@ namespace CrowdDefense.UI
                     Date     = _root.Q<Label>($"slot-date-{i}"),
                     World    = _root.Q<Label>($"slot-world-{i}"),
                     Gems     = _root.Q<Label>($"slot-gems-{i}"),
+                    Time     = _root.Q<Label>($"slot-time-{i}"),
                     Empty    = _root.Q<Label>($"slot-empty-{i}"),
                     Continue = _root.Q<Button>($"slot-continue-{i}"),
                     NewGame  = _root.Q<Button>($"slot-new-{i}"),
@@ -94,19 +96,23 @@ namespace CrowdDefense.UI
             var data = SaveSystem.PeekSlot(slot);
             bool hasData = data != null;
 
-            if (refs.Info != null)
-                refs.Info.style.display = hasData ? DisplayStyle.Flex : DisplayStyle.None;
-            if (refs.Empty != null)
-                refs.Empty.style.display = hasData ? DisplayStyle.None : DisplayStyle.Flex;
+            if (refs.Info  != null) refs.Info.style.display  = hasData ? DisplayStyle.Flex : DisplayStyle.None;
+            if (refs.Empty != null) refs.Empty.style.display = hasData ? DisplayStyle.None : DisplayStyle.Flex;
 
             if (hasData && data != null)
             {
                 if (refs.Date  != null) refs.Date.text  = data.lastPlayedDate;
                 if (refs.World != null) refs.World.text = L.Get("saveslot.world_label", data.worldReached);
                 if (refs.Gems  != null) refs.Gems.text  = L.Get("saveslot.gems_label", data.gems);
+                if (refs.Time  != null)
+                {
+                    int totalMin = Mathf.RoundToInt(data.playtime / 60f);
+                    refs.Time.text = L.Get("saveslot.time_label", totalMin / 60, totalMin % 60);
+                }
             }
 
             if (refs.Continue != null) refs.Continue.style.display = hasData ? DisplayStyle.Flex : DisplayStyle.None;
+            if (refs.NewGame  != null) refs.NewGame.style.display  = hasData ? DisplayStyle.None : DisplayStyle.Flex;
             if (refs.Delete   != null) refs.Delete.style.display   = hasData ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
@@ -117,14 +123,10 @@ namespace CrowdDefense.UI
                 var label = _root?.Q<Label>($"slot-label-{i}");
                 if (label != null) label.text = L.Get("saveslot.slot_label", i + 1);
 
-                if (_slots[i].Empty != null)
-                    _slots[i].Empty.text = L.Get("saveslot.empty");
-                if (_slots[i].Continue != null)
-                    _slots[i].Continue.text = L.Get("saveslot.continue");
-                if (_slots[i].NewGame != null)
-                    _slots[i].NewGame.text = L.Get("saveslot.new_game");
-                if (_slots[i].Delete != null)
-                    _slots[i].Delete.text = L.Get("saveslot.delete");
+                if (_slots[i].Empty    != null) _slots[i].Empty.text    = L.Get("saveslot.empty");
+                if (_slots[i].Continue != null) _slots[i].Continue.text = L.Get("saveslot.continue");
+                if (_slots[i].NewGame  != null) _slots[i].NewGame.text  = L.Get("saveslot.new_game");
+                if (_slots[i].Delete   != null) _slots[i].Delete.text   = L.Get("saveslot.delete");
             }
 
             if (_confirmLabel != null) _confirmLabel.text = L.Get("saveslot.confirm_delete");

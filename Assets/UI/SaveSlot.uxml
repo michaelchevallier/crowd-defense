@@ -16,6 +16,7 @@
                         <ui:Label text="" name="slot-date-0" class="slot-date" />
                         <ui:Label text="" name="slot-world-0" class="slot-world" />
                         <ui:Label text="" name="slot-gems-0" class="slot-gems" />
+                        <ui:Label text="" name="slot-time-0" class="slot-time" />
                     </ui:VisualElement>
                     <ui:Label text="— Empty —" name="slot-empty-0" class="slot-empty" />
                     <ui:VisualElement class="slot-actions">
@@ -32,6 +33,7 @@
                         <ui:Label text="" name="slot-date-1" class="slot-date" />
                         <ui:Label text="" name="slot-world-1" class="slot-world" />
                         <ui:Label text="" name="slot-gems-1" class="slot-gems" />
+                        <ui:Label text="" name="slot-time-1" class="slot-time" />
                     </ui:VisualElement>
                     <ui:Label text="— Empty —" name="slot-empty-1" class="slot-empty" />
                     <ui:VisualElement class="slot-actions">
@@ -48,6 +50,7 @@
                         <ui:Label text="" name="slot-date-2" class="slot-date" />
                         <ui:Label text="" name="slot-world-2" class="slot-world" />
                         <ui:Label text="" name="slot-gems-2" class="slot-gems" />
+                        <ui:Label text="" name="slot-time-2" class="slot-time" />
                     </ui:VisualElement>
                     <ui:Label text="— Empty —" name="slot-empty-2" class="slot-empty" />
                     <ui:VisualElement class="slot-actions">
