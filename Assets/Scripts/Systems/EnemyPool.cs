@@ -1,22 +1,19 @@
 #nullable enable
 using UnityEngine;
 using UnityEngine.Pool;
+using CrowdDefense.Common;
 using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
-    public class EnemyPool : MonoBehaviour
+    public class EnemyPool : MonoSingleton<EnemyPool>
     {
-        public static EnemyPool? Instance { get; private set; }
-
         [SerializeField] private GameObject? enemyPrefab;
 
         private ObjectPool<Enemy>? pool;
 
-        private void Awake()
+        protected override void OnAwakeSingleton()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
             pool = new ObjectPool<Enemy>(
                 createFunc: CreateEnemy,
                 actionOnGet: OnGet,
@@ -26,11 +23,6 @@ namespace CrowdDefense.Systems
                 defaultCapacity: 50,
                 maxSize: 200
             );
-        }
-
-        private void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
         }
 
         private Enemy CreateEnemy()
