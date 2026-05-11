@@ -53,8 +53,9 @@ namespace CrowdDefense.Systems
         public GameState State { get; private set; } = GameState.Lobby;
         public LevelData? CurrentLevel => currentLevel;
 
-        public Castle? PrimaryCastle { get; private set; }
-        public Hero?   Hero           { get; private set; }
+        public Castle?   PrimaryCastle { get; private set; }
+        public Hero?     Hero           { get; private set; }
+        public HeroType? HeroTypeDef    => heroType;
         public int TotalCastleHP    => PrimaryCastle?.HP    ?? 0;
         public int TotalCastleHPMax => PrimaryCastle?.HPMax ?? 0;
 
@@ -317,6 +318,9 @@ namespace CrowdDefense.Systems
         {
             if (currentLevel != null)
                 SaveSystem.MarkLevelCleared(currentLevel.Id);
+
+            if (Hero != null)
+                RunContext.Instance?.SnapshotHero(Hero);
 
             TransitionTo(GameState.LevelComplete);
         }

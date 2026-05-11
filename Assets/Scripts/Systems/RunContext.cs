@@ -88,5 +88,21 @@ namespace CrowdDefense.Systems
         public string? NextLevelId => CurrentLevelIndex + 1 < LevelChain.Count
             ? LevelChain[CurrentLevelIndex + 1]
             : null;
+
+        // Persist hero level + xp into RunState so the next level load restores them.
+        public void SnapshotHero(CrowdDefense.Entities.Hero hero)
+        {
+            var rs = SaveSystem.LoadRunState();
+            rs.heroLevel = hero.Level;
+            rs.heroXP    = hero.Xp;
+            SaveSystem.SaveRunState(rs);
+        }
+
+        // Restore hero stats + perks from RunState. Delegates to Hero.ApplyRunContext.
+        public void ApplyToHero(CrowdDefense.Entities.Hero hero)
+        {
+            var rs = SaveSystem.LoadRunState();
+            hero.ApplyRunContext(rs.heroPerks, rs.heroLevel, rs.heroXP);
+        }
     }
 }
