@@ -153,12 +153,12 @@ namespace CrowdDefense.Systems
 #endif
         }
 
-        private static int ComputeTowerCost(int baseCost, Hero? hero)
+        public void SelectTowerForPlacement(TowerType? type)
         {
-            if (hero == null) return baseCost;
-            if (hero.FirstTowerFree && !hero.FirstTowerFreeUsed) return 0;
-            return Mathf.Max(0, Mathf.RoundToInt(baseCost * hero.TowerCostMul));
+            selectedTowerType = type;
         }
+
+        public TowerType? SelectedTowerType => selectedTowerType;
 
         public void UnregisterTower(Tower t) => placedTowers.Remove(t);
 

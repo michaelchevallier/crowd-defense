@@ -6,6 +6,13 @@ using UnityEngine;
 namespace CrowdDefense.Systems
 {
     [Serializable]
+    public class MetaUpgradeEntry
+    {
+        public string id = "";
+        public int level = 0;
+    }
+
+    [Serializable]
     public class ProgressData
     {
         public List<string> clearedLevels = new();
@@ -14,6 +21,9 @@ namespace CrowdDefense.Systems
         public float musicVolume = 1f;
         public float sfxVolume = 1f;
         public string lang = "fr";
+        public int gems = 0;
+        // JsonUtility doesn't support Dictionary — flat list serialized instead
+        public List<MetaUpgradeEntry> metaUpgradeLevels = new();
     }
 
     [Serializable]
@@ -99,47 +109,72 @@ namespace CrowdDefense.Systems
             return "";
         }
 
-        // ── RunState (hero perks, level, xp, school — per-run, reset on new run) ──
+        // ── Gems ──
 
-        public static RunState? GetRunState()
+        public static int GetGems() => Load().gems;
+
+        public static void AddGems(int amount)
         {
-            if (_cachedRun != null) return _cachedRun;
-            string json = PlayerPrefs.GetString(RUN_KEY, "");
-            if (string.IsNullOrEmpty(json)) return null;
-            try
+            if (amount <= 0) return;
+            Load().gems += amount;
+            Save();
+        }
+
+        public static bool SpendGems(int amount)
+        {
+            var data = Load();
+            if (data.gems < amount) return false;
+            data.gems -= amount;
+            Save();
+            return true;
+        }
+
+        // ── MetaUpgrades ──
+
+        public static int GetMetaUpgradeLevel(string id)
+        {
+            var list = Load().metaUpgradeLevels;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].id == id) return list[i].level;
+            return 0;
+        }
+
+        public static void SetMetaUpgradeLevel(string id, int level)
+        {
+            var list = Load().metaUpgradeLevels;
+            for (int i = 0; i < list.Count; i++)
             {
-                _cachedRun = JsonUtility.FromJson<RunState>(json);
+                if (list[i].id == id) { list[i].level = level; Save(); return; }
             }
-            catch
+            list.Add(new MetaUpgradeEntry { id = id, level = level });
+            Save();
+        }
+
+        public static void ResetMetaUpgrade(string id)
+        {
+            var list = Load().metaUpgradeLevels;
+            for (int i = 0; i < list.Count; i++)
             {
-                _cachedRun = null;
+                if (list[i].id == id) { list[i].level = 0; Save(); return; }
             }
-            return _cachedRun;
         }
 
-        public static void SetRunState(RunState rs)
+        // Count distinct worlds cleared (world X cleared = world X-8 in clearedLevels)
+        public static int WorldsCleared()
         {
-            _cachedRun = rs;
-            PlayerPrefs.SetString(RUN_KEY, JsonUtility.ToJson(rs));
-            PlayerPrefs.Save();
+            var cleared = Load().clearedLevels;
+            int count = 0;
+            for (int w = 1; w <= 10; w++)
+                if (cleared.Contains($"world{w}-8")) count++;
+            return count;
         }
 
-        public static void AppendRunPerk(string perkId)
+        // Earn gems at level end: 1 base + 1 per star + 2 first-clear bonus
+        public static int ComputeGemReward(string levelId, int stars, bool isFirstClear)
         {
-            var rs = GetRunState() ?? new RunState();
-            if (!rs.heroPerks.Contains(perkId) || IsStackable(perkId))
-                rs.heroPerks.Add(perkId);
-            SetRunState(rs);
+            int reward = 1 + stars;
+            if (isFirstClear) reward += 2;
+            return reward;
         }
-
-        public static void ClearRunState()
-        {
-            _cachedRun = null;
-            PlayerPrefs.DeleteKey(RUN_KEY);
-            PlayerPrefs.Save();
-        }
-
-        private static bool IsStackable(string id) =>
-            id is "range" or "fire_rate" or "pierce" or "lifesteal" or "move_speed";
     }
 }
