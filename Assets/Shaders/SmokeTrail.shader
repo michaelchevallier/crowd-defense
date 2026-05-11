@@ -1,76 +1,73 @@
-// SmokeTrail shader — port de createSmokeTrail() (Shaders.js V5)
-// Particles boulet de canon / bombe: point sprites qui grossissent avec l'âge
-// et s'estompent (alpha fade). Usage: Particle System avec Custom Shader.
+// SmokeTrail shader URP port
+// Point sprites qui grossissent avec l'âge + alpha fade
 Shader "CrowdDefense/SmokeTrail"
 {
     Properties
     {
-        _SmokeColor ("Smoke Color",   Color)        = (0.5,0.5,0.5,1.0)
-        _MinSize    ("Min Point Size",Range(1,50))  = 10.0
-        _MaxSize    ("Max Point Size",Range(1,200)) = 40.0
-        _DepthScale ("Depth Scale",   Range(50,500))= 200.0
-        _AlphaScale ("Alpha Scale",   Range(0.1,2)) = 0.5
+        _SmokeColor ("Smoke Color",    Color)         = (0.5,0.5,0.5,1.0)
+        _MinSize    ("Min Point Size", Range(1,50))   = 10.0
+        _MaxSize    ("Max Point Size", Range(1,200))  = 40.0
+        _DepthScale ("Depth Scale",    Range(50,500)) = 200.0
+        _AlphaScale ("Alpha Scale",    Range(0.1,2))  = 0.5
     }
 
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
-        LOD 100
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" }
 
         Pass
         {
             Name "SmokeForward"
-            Tags { "LightMode"="ForwardBase" }
+            Tags { "LightMode"="UniversalForward" }
 
             Cull Off
             ZWrite Off
             Blend SrcAlpha OneMinusSrcAlpha
 
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
 
-            struct appdata
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                half4  _SmokeColor;
+                float  _MinSize;
+                float  _MaxSize;
+                float  _DepthScale;
+                float  _AlphaScale;
+            CBUFFER_END
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
-                float  age    : TEXCOORD0;
+                float4 positionOS : POSITION;
+                float  age        : TEXCOORD0;
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 pos   : SV_POSITION;
-                float  vAge  : TEXCOORD0;
-                float  pSize : PSIZE;
+                float4 positionCS : SV_POSITION;
+                float  vAge       : TEXCOORD0;
+                float  pSize      : PSIZE;
             };
 
-            fixed4 _SmokeColor;
-            float  _MinSize;
-            float  _MaxSize;
-            float  _DepthScale;
-            float  _AlphaScale;
-
-            v2f vert(appdata v)
+            Varyings vert(Attributes v)
             {
-                v2f o;
-                float4 mv = mul(UNITY_MATRIX_MV, v.vertex);
-                // Port de (10 + age*30) * (200/-mv.z) V5
-                float baseSize = lerp(_MinSize, _MaxSize, v.age);
-                o.pSize  = baseSize * (_DepthScale / max(0.01, -mv.z));
-                o.pos    = mul(UNITY_MATRIX_P, mv);
-                o.vAge   = v.age;
+                Varyings o;
+                float4 posVS   = mul(UNITY_MATRIX_MV, v.positionOS);
+                float  baseSize = lerp(_MinSize, _MaxSize, v.age);
+                o.pSize        = baseSize * (_DepthScale / max(0.01, -posVS.z));
+                o.positionCS   = mul(UNITY_MATRIX_P, posVS);
+                o.vAge         = v.age;
                 return o;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            half4 frag(Varyings i) : SV_Target
             {
-                // Port de alpha = (1 - vAge) * (1 - d*2) * 0.5 V5
-                // Sans gl_PointCoord en CG: alpha = (1-age) * _AlphaScale
-                float alpha = (1.0 - i.vAge) * _AlphaScale;
-                alpha = saturate(alpha);
-                return fixed4(_SmokeColor.rgb, alpha);
+                float alpha = saturate((1.0 - i.vAge) * _AlphaScale);
+                return half4(_SmokeColor.rgb, alpha);
             }
-            ENDCG
+            ENDHLSL
         }
     }
 

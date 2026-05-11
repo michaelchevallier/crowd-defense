@@ -21,6 +21,10 @@ namespace CrowdDefense.Entities
         // World index used for no-regen threshold (D1-04)
         private int _world = 1;
 
+        // Armor break — temporary damage taken multiplier (siege enemies / armor break effect)
+        private float _dmgTakenMul        = 1f;
+        private float _dmgTakenMulUntil   = 0f;
+
         // Visual state
         private bool          _smokeActive;
         private Coroutine?    _smokeCoroutine;
@@ -143,10 +147,34 @@ namespace CrowdDefense.Entities
 
         // ── Damage / regen ──────────────────────────────────────────────────────
 
+        // Armor break — boost incoming damage for a duration (ms). Caller picks max if already active.
+        public void ApplyArmorBreak(float dmgTakenMul, int durMs)
+        {
+            if (dmgTakenMul <= 1f || durMs <= 0) return;
+            _dmgTakenMul       = Mathf.Max(_dmgTakenMul, dmgTakenMul);
+            float until        = Time.time + durMs / 1000f;
+            _dmgTakenMulUntil  = Mathf.Max(_dmgTakenMulUntil, until);
+        }
+
         public void TakeDamage(int dmg)
         {
             if (IsDead || dmg <= 0) return;
-            HP = Mathf.Max(0, HP - dmg);
+
+            int actualDmg = dmg;
+
+            // Armor break — amplify incoming damage while active (siege enemies / armor break synergy)
+            if (_dmgTakenMulUntil > 0f)
+            {
+                if (Time.time < _dmgTakenMulUntil)
+                    actualDmg = Mathf.RoundToInt(dmg * _dmgTakenMul);
+                else
+                {
+                    _dmgTakenMul      = 1f;
+                    _dmgTakenMulUntil = 0f;
+                }
+            }
+
+            HP = Mathf.Max(0, HP - actualDmg);
             // Flag interest bank — any hit resets bank for this wave (D1-01 §3.5)
             Economy.Instance?.FlagCastleDamaged();
             // D1-02: streak broken if castle leaks during the break window

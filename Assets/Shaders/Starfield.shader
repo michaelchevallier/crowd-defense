@@ -1,71 +1,68 @@
-// Starfield shader — port de createStarfield() (Shaders.js V5)
-// Point sprite twinkle — chaque étoile est un point billboard
-// Usage: assigner à un objet avec un Mesh de type Points (via ParticleSystem ou MeshFilter custom)
+// Starfield shader URP port
+// Point sprite twinkle — chaque étoile clignote indépendamment
 Shader "CrowdDefense/Starfield"
 {
     Properties
     {
-        _StarColor  ("Star Color",      Color)        = (1.0,1.0,0.94,1.0)
-        _TwinkleFreq("Twinkle Freq",    Range(0.5,10))= 3.0
-        _PointSize  ("Point Size",      Range(1,20))  = 300.0
+        _StarColor   ("Star Color",   Color)         = (1.0,1.0,0.94,1.0)
+        _TwinkleFreq ("Twinkle Freq", Range(0.5,10)) = 3.0
+        _PointSize   ("Point Size",   Range(1,20))   = 300.0
     }
 
     SubShader
     {
-        Tags { "RenderType"="Transparent" "Queue"="Transparent" }
-        LOD 100
+        Tags { "RenderType"="Transparent" "Queue"="Transparent" "RenderPipeline"="UniversalPipeline" }
 
         Pass
         {
             Name "StarfieldForward"
-            Tags { "LightMode"="ForwardBase" }
+            Tags { "LightMode"="UniversalForward" }
 
             Cull Off
             ZWrite Off
             Blend SrcAlpha One
 
-            CGPROGRAM
+            HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
-            #include "UnityCG.cginc"
 
-            struct appdata
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            CBUFFER_START(UnityPerMaterial)
+                half4  _StarColor;
+                float  _TwinkleFreq;
+                float  _PointSize;
+            CBUFFER_END
+
+            struct Attributes
             {
-                float4 vertex : POSITION;
-                float  size   : TEXCOORD0;
+                float4 positionOS : POSITION;
+                float  size       : TEXCOORD0;
             };
 
-            struct v2f
+            struct Varyings
             {
-                float4 pos  : SV_POSITION;
-                float  vSize: TEXCOORD0;
-                float  pSize: PSIZE;
+                float4 positionCS : SV_POSITION;
+                float  vSize      : TEXCOORD0;
+                float  pSize      : PSIZE;
             };
 
-            fixed4 _StarColor;
-            float  _TwinkleFreq;
-            float  _PointSize;
-
-            v2f vert(appdata v)
+            Varyings vert(Attributes v)
             {
-                v2f o;
-                float4 mv = mul(UNITY_MATRIX_MV, v.vertex);
-                // Port de gl_PointSize = size * (300 / -mv.z) V5
-                o.pSize = v.size * (_PointSize / -mv.z);
-                o.pos   = mul(UNITY_MATRIX_P, mv);
-                o.vSize = v.size;
+                Varyings o;
+                float4 posVS  = mul(UNITY_MATRIX_MV, v.positionOS);
+                o.pSize       = v.size * (_PointSize / -posVS.z);
+                o.positionCS  = mul(UNITY_MATRIX_P, posVS);
+                o.vSize       = v.size;
                 return o;
             }
 
-            fixed4 frag(v2f i) : SV_Target
+            half4 frag(Varyings i) : SV_Target
             {
-                // Disque soft — gl_PointCoord n'est pas standard CG, on utilise une approche fixe
-                // (twinkle seul sans discard car PSIZE suffit pour le rendu point)
                 float twinkle = 0.5 + 0.5 * sin(_Time.y * _TwinkleFreq + i.vSize * 10.0);
-                float a = twinkle;
-                return fixed4(_StarColor.rgb, a);
+                return half4(_StarColor.rgb, twinkle);
             }
-            ENDCG
+            ENDHLSL
         }
     }
 
