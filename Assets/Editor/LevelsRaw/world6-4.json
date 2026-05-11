@@ -1,0 +1,93 @@
+{
+  "id": "world6-4",
+  "displayName": "Apocalypse — Marée de Fer",
+  "theme": "apocalypse",
+  "world": 6,
+  "level": 4,
+  "cellSize": 4,
+  "mapRows": [
+    "0000000000R000R",
+    "P1110R0000000R0",
+    "000100000R00000",
+    "000111110000000",
+    "000000010000R0R",
+    "LLLLL001000R000",
+    "R000L0011100000",
+    "R0R0L0000111110",
+    "R000LLLLL00001C"
+  ],
+  "startCoins": 272,
+  "overrideCastleHP": true,
+  "castleHPOverride": 320,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 320,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        28,
+        24,
+        16,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 290,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        36,
+        28,
+        20,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 270,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        40,
+        32,
+        20
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 250,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        44,
+        36,
+        28,
+        24
+      ]
+    }
+  ]
+}

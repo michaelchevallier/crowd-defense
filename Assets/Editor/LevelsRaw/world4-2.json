@@ -1,0 +1,100 @@
+{
+  "id": "world4-2",
+  "displayName": "Volcan — Coulée à Éviter",
+  "theme": "volcan",
+  "world": 4,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000L00000",
+    "00000000L0D000",
+    "P1111111L00000",
+    "00000001L00R00",
+    "000D0001LLLLLL",
+    "0R00000111C000",
+    "000R0000000000"
+  ],
+  "startCoins": 113,
+  "overrideCastleHP": true,
+  "castleHPOverride": 185,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 460,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "flyer"
+      ],
+      "typeCounts": [
+        14,
+        10,
+        6
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 430,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        14,
+        10,
+        5
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 410,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        16,
+        12,
+        7
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 390,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "shielded"
+      ],
+      "typeCounts": [
+        14,
+        16,
+        6
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 380,
+      "breakMs": 0,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        18,
+        12,
+        8,
+        6
+      ]
+    }
+  ]
+}

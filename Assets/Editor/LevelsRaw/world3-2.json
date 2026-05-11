@@ -1,0 +1,94 @@
+{
+  "id": "world3-2",
+  "displayName": "Désert — Bifurcation",
+  "theme": "desert",
+  "world": 3,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000R000D0",
+    "P111111000R000",
+    "00000010000000",
+    "00D011111111C0",
+    "00001000000000",
+    "P111100D0R0000",
+    "000000000R00D0"
+  ],
+  "startCoins": 112,
+  "overrideCastleHP": true,
+  "castleHPOverride": 155,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 500,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        36,
+        6
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 470,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner"
+      ],
+      "typeCounts": [
+        20,
+        40
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 440,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        10
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 420,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "flyer",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        12
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 400,
+      "breakMs": 0,
+      "typeKeys": [
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        14,
+        12
+      ]
+    }
+  ]
+}

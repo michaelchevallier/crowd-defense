@@ -1,0 +1,114 @@
+{
+  "id": "world7-7",
+  "displayName": "Espace — Avant-postes orbitaux",
+  "theme": "espace",
+  "world": 7,
+  "level": 7,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000000RRR0RR",
+    "P111111110R000R00",
+    "00000000100R0000R",
+    "R0R000001000000RR",
+    "R000R000100000000",
+    "000000001111111C0",
+    "R000R000100000000",
+    "R0R000001000000RR",
+    "00000000100R0000R",
+    "P1111111100000R0R",
+    "0000000000RR0RRRR"
+  ],
+  "startCoins": 230,
+  "overrideCastleHP": true,
+  "castleHPOverride": 280,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 380,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        40,
+        36,
+        24,
+        20
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 340,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        28,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 310,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        52,
+        44,
+        32
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 290,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        56,
+        48,
+        30,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 270,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        2,
+        60,
+        52,
+        20,
+        18
+      ]
+    }
+  ]
+}

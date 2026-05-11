@@ -1,0 +1,83 @@
+{
+  "id": "world6-8",
+  "displayName": "Apocalypse — Confrontation Finale",
+  "theme": "apocalypse",
+  "world": 6,
+  "level": 8,
+  "cellSize": 4,
+  "mapRows": [
+    "R00R000L0000W00000",
+    "0000000L000RW0R000",
+    "P111000L0000W00000",
+    "0001111^1111~1111C",
+    "0000000L0000W00000",
+    "0D00000L000DW00000",
+    "0000000L0000W00000",
+    "0001111^1111~1111C",
+    "P111000L0000W00000",
+    "0000000L000RW00000",
+    "R00R000L0000W0D00R"
+  ],
+  "startCoins": 298,
+  "overrideCastleHP": true,
+  "castleHPOverride": 400,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 320,
+      "breakMs": 4500,
+      "typeKeys": [
+        "imp",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        96,
+        38,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 300,
+      "breakMs": 5000,
+      "typeKeys": [
+        "imp",
+        "assassin",
+        "midboss"
+      ],
+      "typeCounts": [
+        112,
+        38,
+        1
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 280,
+      "breakMs": 6000,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "midboss"
+      ],
+      "typeCounts": [
+        102,
+        48,
+        2
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 1500,
+      "breakMs": 0,
+      "typeKeys": [
+        "apocalypse_boss"
+      ],
+      "typeCounts": [
+        1
+      ]
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "id": "world8-2",
+  "displayName": "Abysse — Algue géante",
+  "theme": "submarin",
+  "world": 8,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "000000W000R0000",
+    "000000W00000000",
+    "P11111~1111000B",
+    "000000W0001000B",
+    "0B0000W00010000",
+    "000000W00011110",
+    "000B00W0000001C",
+    "000000W00000000"
+  ],
+  "startCoins": 221,
+  "overrideCastleHP": true,
+  "castleHPOverride": 230,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 560,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "assassin"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 500,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        56,
+        40,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 440,
+      "breakMs": 5000,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        24,
+        16
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 400,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        32,
+        24
+      ]
+    }
+  ]
+}

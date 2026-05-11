@@ -1,0 +1,108 @@
+{
+  "id": "world4-5",
+  "displayName": "Volcan — Labyrinthe de Lave",
+  "theme": "volcan",
+  "world": 4,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000000L00",
+    "P11111100000L00",
+    "000000100000L00",
+    "000000111111L00",
+    "LLLLLLLL0001LLL",
+    "00R0000L0001000",
+    "000R000L0001000",
+    "0D00000L000111C",
+    "000R000L0000000"
+  ],
+  "startCoins": 187,
+  "overrideCastleHP": true,
+  "castleHPOverride": 205,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 430,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        36,
+        24,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 410,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "assassin",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        36,
+        16,
+        20,
+        14
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 390,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        40,
+        28,
+        16,
+        14
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 380,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        32,
+        24,
+        18
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 370,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "imp",
+        "assassin",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        40,
+        20,
+        16
+      ]
+    }
+  ]
+}

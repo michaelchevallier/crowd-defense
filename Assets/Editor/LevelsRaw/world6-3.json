@@ -1,0 +1,97 @@
+{
+  "id": "world6-3",
+  "displayName": "Apocalypse — Le Seigneur de Guerre",
+  "theme": "apocalypse",
+  "world": 6,
+  "level": 3,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000000000R",
+    "P11110R000000R0",
+    "000010000000000",
+    "000010000R00000",
+    "LLLL^LLLLLLLLLL",
+    "000011000000R00",
+    "00R001110000000",
+    "000000011100000",
+    "0R000000011111C"
+  ],
+  "startCoins": 264,
+  "overrideCastleHP": true,
+  "castleHPOverride": 300,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 340,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "skeleton_minion",
+        "assassin"
+      ],
+      "typeCounts": [
+        20,
+        20,
+        20,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 300,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "skeleton_minion"
+      ],
+      "typeCounts": [
+        28,
+        24,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 400,
+      "breakMs": 5500,
+      "typeKeys": [
+        "warlord_boss",
+        "brute",
+        "shielded",
+        "flyer",
+        "skeleton_minion"
+      ],
+      "typeCounts": [
+        1,
+        20,
+        16,
+        12,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 270,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "skeleton_minion",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        36,
+        32,
+        24,
+        20,
+        16
+      ]
+    }
+  ]
+}

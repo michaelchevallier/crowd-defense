@@ -1,0 +1,104 @@
+{
+  "id": "world2-5",
+  "displayName": "Foret — Sous-Bois",
+  "theme": "foret",
+  "world": 2,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "00T0T00000000T0",
+    "T0T0T00111110T0",
+    "0T0T0T01000100T",
+    "000000010T0100T",
+    "P11100010T01000",
+    "00010T0100010T0",
+    "T00100010T01000",
+    "0T011111000111C",
+    "T00000000T00000"
+  ],
+  "startCoins": 109,
+  "overrideCastleHP": true,
+  "castleHPOverride": 150,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 480,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        56,
+        40,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 450,
+      "breakMs": 4000,
+      "typeKeys": [
+        "assassin",
+        "basic",
+        "shielded"
+      ],
+      "typeCounts": [
+        56,
+        40,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 420,
+      "breakMs": 4000,
+      "typeKeys": [
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        64,
+        28,
+        24
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 410,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "runner",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        48,
+        40,
+        24
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 390,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        64,
+        32,
+        24
+      ]
+    }
+  ]
+}

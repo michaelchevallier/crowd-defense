@@ -1,0 +1,113 @@
+{
+  "id": "world10-6",
+  "displayName": "Néo-Tokyo — Tour Megacorp",
+  "theme": "cyberpunk",
+  "world": 10,
+  "level": 6,
+  "cellSize": 4,
+  "mapRows": [
+    "L0000D0000000R0000L",
+    "L000000000000R00R0L",
+    "P11111110000000000L",
+    "L00000010000D0R000L",
+    "LLLLLL0^LLLLLLLLLLL",
+    "000000010000R0D000L",
+    "000R00010000000000L",
+    "00000001111111111CL",
+    "000D00000000000000L",
+    "0R0000000D000R000RL"
+  ],
+  "startCoins": 305,
+  "overrideCastleHP": true,
+  "castleHPOverride": 360,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 410,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        58,
+        48,
+        24,
+        20
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 370,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        66,
+        32,
+        28,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 340,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        80,
+        38,
+        32
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 310,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        36,
+        26
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 290,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        2,
+        52,
+        44,
+        36,
+        18
+      ]
+    }
+  ]
+}

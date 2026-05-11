@@ -1,0 +1,101 @@
+{
+  "id": "world3-4",
+  "displayName": "Désert — Vallée des Ruines",
+  "theme": "desert",
+  "world": 3,
+  "level": 4,
+  "cellSize": 4,
+  "mapRows": [
+    "R0R0D0R00000000",
+    "000D0R00011111C",
+    "0000000R0100000",
+    "P11110R0010000R",
+    "0001000D010R00D",
+    "000100000100000",
+    "0R0111111100R0D",
+    "D00000000000D00"
+  ],
+  "startCoins": 141,
+  "overrideCastleHP": true,
+  "castleHPOverride": 165,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 470,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "basic",
+        "brute"
+      ],
+      "typeCounts": [
+        27,
+        23,
+        10
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 440,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        31,
+        23,
+        12
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 420,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        35,
+        14,
+        10
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 410,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        27,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 390,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "runner",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        31,
+        20,
+        12
+      ]
+    }
+  ]
+}

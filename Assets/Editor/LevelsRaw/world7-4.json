@@ -1,0 +1,94 @@
+{
+  "id": "world7-4",
+  "displayName": "Espace — Station spatiale",
+  "theme": "espace",
+  "world": 7,
+  "level": 4,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000R0R0R0R0",
+    "P111110R0R000R00",
+    "00000100R00R0000",
+    "R00001000000R000",
+    "R0R0010R0R0000R0",
+    "R00001000000R00R",
+    "00R0010000000R0R",
+    "0000010000000000",
+    "R0R001111111111C",
+    "R0RR000000000000"
+  ],
+  "startCoins": 196,
+  "overrideCastleHP": true,
+  "castleHPOverride": 235,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 480,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        24,
+        20,
+        12,
+        8
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 430,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        32,
+        24,
+        16,
+        12
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 390,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        36,
+        28,
+        20
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 360,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        24,
+        20
+      ]
+    }
+  ]
+}

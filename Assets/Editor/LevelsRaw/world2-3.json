@@ -1,0 +1,104 @@
+{
+  "id": "world2-3",
+  "displayName": "Foret — Clairiere",
+  "theme": "foret",
+  "world": 2,
+  "level": 3,
+  "cellSize": 4,
+  "mapRows": [
+    "00T00T0W000000T",
+    "00T00T0W111110T",
+    "0000000W1000100",
+    "P111111~100010T",
+    "0000000W0000100",
+    "0T0T00TW00T011C",
+    "0T00T00WT0T0000"
+  ],
+  "startCoins": 101,
+  "overrideCastleHP": true,
+  "castleHPOverride": 140,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 500,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        28,
+        16,
+        6
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 470,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        10
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 440,
+      "breakMs": 4000,
+      "typeKeys": [
+        "assassin",
+        "basic",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        12,
+        10
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 420,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        24,
+        14,
+        12
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 400,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "basic",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        24,
+        20,
+        12
+      ]
+    }
+  ]
+}

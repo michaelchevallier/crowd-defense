@@ -1,0 +1,102 @@
+{
+  "id": "world3-3",
+  "displayName": "Désert — Oasis Pont",
+  "theme": "desert",
+  "world": 3,
+  "level": 3,
+  "cellSize": 4,
+  "mapRows": [
+    "R00D000W00R0D00",
+    "0R00D00W0D00R00",
+    "0000000W0000000",
+    "P111111~1111111C",
+    "0000000W0000000",
+    "0R00D00W0R00D00",
+    "00R00D0W000R0D0"
+  ],
+  "startCoins": 116,
+  "overrideCastleHP": true,
+  "castleHPOverride": 160,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 480,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        14,
+        10,
+        4
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 450,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "basic",
+        "brute"
+      ],
+      "typeCounts": [
+        14,
+        10,
+        5
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 430,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "runner",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        16,
+        10,
+        6,
+        4
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 410,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        14,
+        12,
+        7,
+        6
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 400,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        12,
+        7
+      ]
+    }
+  ]
+}

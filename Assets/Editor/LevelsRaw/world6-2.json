@@ -1,0 +1,90 @@
+{
+  "id": "world6-2",
+  "displayName": "Apocalypse — Ruines Fumantes",
+  "theme": "apocalypse",
+  "world": 6,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000LLLLLL",
+    "P1110000R0R000L",
+    "0001110000R000L",
+    "0000010000R000L",
+    "000001000000R0L",
+    "00000100000000L",
+    "000001111111110",
+    "R0000000000011C"
+  ],
+  "startCoins": 255,
+  "overrideCastleHP": true,
+  "castleHPOverride": 290,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 360,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        20,
+        16,
+        8
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 320,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        12,
+        8
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 290,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        32,
+        24,
+        16
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 270,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        36,
+        28,
+        20,
+        20
+      ]
+    }
+  ]
+}

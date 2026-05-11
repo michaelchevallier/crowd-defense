@@ -1,0 +1,83 @@
+{
+  "id": "world9-8",
+  "displayName": "Royaume — BOSS Sorcier-Roi",
+  "theme": "medieval",
+  "world": 9,
+  "level": 8,
+  "cellSize": 4,
+  "mapRows": [
+    "00000WRRRRRRW00000R",
+    "P1111W000000W111C00",
+    "00001W000000W100000",
+    "00001~111111~100000",
+    "00000W000000W100000",
+    "R0000W000000W100000",
+    "00000W000000W100000",
+    "00001~111111~100000",
+    "00001W000000W100000",
+    "P1111W000000W111C00",
+    "00000WRRRRRRW00000R"
+  ],
+  "startCoins": 272,
+  "overrideCastleHP": true,
+  "castleHPOverride": 400,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 340,
+      "breakMs": 4800,
+      "typeKeys": [
+        "shielded",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        96,
+        34,
+        20
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 310,
+      "breakMs": 5000,
+      "typeKeys": [
+        "shielded",
+        "assassin",
+        "midboss"
+      ],
+      "typeCounts": [
+        112,
+        38,
+        1
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 290,
+      "breakMs": 6000,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "midboss"
+      ],
+      "typeCounts": [
+        94,
+        56,
+        2
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 1500,
+      "breakMs": 0,
+      "typeKeys": [
+        "wizard_king"
+      ],
+      "typeCounts": [
+        1
+      ]
+    }
+  ]
+}

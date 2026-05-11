@@ -1,0 +1,116 @@
+{
+  "id": "world5-4",
+  "displayName": "Foire — Le Manège Diabolique",
+  "theme": "foire",
+  "world": 5,
+  "level": 4,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000000DD0D",
+    "P111111110D0000",
+    "000000001000000",
+    "0D0000D01110000",
+    "000D00000010000",
+    "00000D00001111C",
+    "000D00D00000000",
+    "0DD0DD0DD0DD0DD"
+  ],
+  "startCoins": 204,
+  "overrideCastleHP": true,
+  "castleHPOverride": 160,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 350,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner"
+      ],
+      "typeCounts": [
+        61,
+        48
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 310,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "basic"
+      ],
+      "typeCounts": [
+        68,
+        34,
+        28
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 290,
+      "breakMs": 4500,
+      "typeKeys": [
+        "imp",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        61,
+        55,
+        11
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 270,
+      "breakMs": 5000,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "shielded"
+      ],
+      "typeCounts": [
+        75,
+        48,
+        14
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 260,
+      "breakMs": 5000,
+      "typeKeys": [
+        "imp",
+        "brute",
+        "shielded",
+        "runner"
+      ],
+      "typeCounts": [
+        68,
+        17,
+        14,
+        41
+      ]
+    },
+    {
+      "index": 5,
+      "spawnRateMs": 240,
+      "breakMs": 0,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        94,
+        32,
+        12,
+        12
+      ]
+    }
+  ]
+}

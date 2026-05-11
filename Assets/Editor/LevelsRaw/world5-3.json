@@ -1,0 +1,103 @@
+{
+  "id": "world5-3",
+  "displayName": "Foire — Stand de Tir",
+  "theme": "foire",
+  "world": 5,
+  "level": 3,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000D0D0D0",
+    "P111110D0D00D00",
+    "00000100D0D0D00",
+    "000001000000000",
+    "0000011111111C0",
+    "000D00000000000",
+    "0000000D0D0D000",
+    "0D0D00D0D0D0D0D"
+  ],
+  "startCoins": 204,
+  "overrideCastleHP": true,
+  "castleHPOverride": 180,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 340,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "imp"
+      ],
+      "typeCounts": [
+        40,
+        40,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 300,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "brute"
+      ],
+      "typeCounts": [
+        52,
+        28,
+        8
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 270,
+      "breakMs": 4500,
+      "typeKeys": [
+        "imp",
+        "runner",
+        "shielded"
+      ],
+      "typeCounts": [
+        44,
+        40,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 250,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "imp",
+        "brute"
+      ],
+      "typeCounts": [
+        48,
+        36,
+        28,
+        8
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 220,
+      "breakMs": 0,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        68,
+        36,
+        12,
+        10
+      ]
+    }
+  ]
+}

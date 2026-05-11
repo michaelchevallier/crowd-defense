@@ -1,0 +1,94 @@
+{
+  "id": "world10-4",
+  "displayName": "Néo-Tokyo — Maglev",
+  "theme": "cyberpunk",
+  "world": 10,
+  "level": 4,
+  "cellSize": 4,
+  "mapRows": [
+    "0000000000000R000",
+    "P111111110D00R000",
+    "0000000010D00000R",
+    "0R00000010D00R000",
+    "00000000100000000",
+    "000000001000R0D00",
+    "0D000000100000000",
+    "000R000011111111C",
+    "00000D00000000000",
+    "0000000000R0D0000"
+  ],
+  "startCoins": 275,
+  "overrideCastleHP": true,
+  "castleHPOverride": 310,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 490,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "runner"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        40,
+        38
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 440,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        56,
+        40,
+        38,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 400,
+      "breakMs": 5000,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        64,
+        38,
+        28,
+        20
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 370,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        72,
+        46,
+        32
+      ]
+    }
+  ]
+}

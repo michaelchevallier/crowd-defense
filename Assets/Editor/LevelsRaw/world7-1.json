@@ -1,0 +1,85 @@
+{
+  "id": "world7-1",
+  "displayName": "Espace — Orbite basse",
+  "theme": "espace",
+  "world": 7,
+  "level": 1,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000R0R0R",
+    "P111111000R00R",
+    "00000010000000",
+    "R0000010000000",
+    "0000001111111C",
+    "R0R00000000000",
+    "0R0R0RR0R0R0RR"
+  ],
+  "startCoins": 221,
+  "overrideCastleHP": true,
+  "castleHPOverride": 220,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 580,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner"
+      ],
+      "typeCounts": [
+        40,
+        32
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 500,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        56,
+        40,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 460,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute",
+        "flyer"
+      ],
+      "typeCounts": [
+        56,
+        40,
+        24,
+        24
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 420,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "runner",
+        "flyer"
+      ],
+      "typeCounts": [
+        32,
+        24,
+        48,
+        32
+      ]
+    }
+  ]
+}

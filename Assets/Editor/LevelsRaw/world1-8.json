@@ -1,0 +1,123 @@
+{
+  "id": "world1-8",
+  "displayName": "Plaine — Brigand",
+  "theme": "plaine",
+  "world": 1,
+  "level": 8,
+  "cellSize": 4,
+  "mapRows": [
+    "000000W0000000T000",
+    "P11110W000D0000000",
+    "000010W0000000D000",
+    "000011W00000T00000",
+    "00D001W0000000D000",
+    "0T0001~11111000000",
+    "000000W0000100T000",
+    "0D0T00W00001100000",
+    "000000W0000111C000"
+  ],
+  "startCoins": 180,
+  "overrideCastleHP": true,
+  "castleHPOverride": 160,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 500,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        8
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 470,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        24,
+        24,
+        10,
+        8
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 440,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        20,
+        28,
+        14,
+        10
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 430,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "basic",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        28,
+        12
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 410,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "basic",
+        "runner",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        24,
+        20,
+        10
+      ]
+    },
+    {
+      "index": 5,
+      "spawnRateMs": 400,
+      "breakMs": 0,
+      "typeKeys": [
+        "brigand_boss",
+        "basic",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        36,
+        20,
+        12
+      ]
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "id": "world3-7",
+  "displayName": "Désert — Caravansérail",
+  "theme": "desert",
+  "world": 3,
+  "level": 7,
+  "cellSize": 4,
+  "mapRows": [
+    "R00D0R0000000000",
+    "0R00D0001111111C",
+    "0000000010000000",
+    "P111111110R0000R",
+    "0000000010000000",
+    "0R00D0001111111C",
+    "00D0R00000000000",
+    "R000D000R00D000R"
+  ],
+  "startCoins": 159,
+  "overrideCastleHP": true,
+  "castleHPOverride": 180,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 450,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        36,
+        24,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 420,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        36,
+        20,
+        16,
+        12
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 400,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "runner",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        40,
+        28,
+        16,
+        14
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 390,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        32,
+        20,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 380,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        40,
+        20,
+        14
+      ]
+    }
+  ]
+}

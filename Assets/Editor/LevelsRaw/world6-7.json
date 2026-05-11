@@ -1,0 +1,113 @@
+{
+  "id": "world6-7",
+  "displayName": "Apocalypse — Avant le Crépuscule",
+  "theme": "apocalypse",
+  "world": 6,
+  "level": 7,
+  "cellSize": 4,
+  "mapRows": [
+    "R00000000LLLLLLLL",
+    "R000111111^111000",
+    "R000100000L001000",
+    "0000100000L001000",
+    "P111100000L001111C",
+    "0000100000L001000",
+    "R000100000L001000",
+    "R000111111^111000",
+    "R00000000LLLLLLLL",
+    "RRRR00R00L0R0RRRR"
+  ],
+  "startCoins": 298,
+  "overrideCastleHP": true,
+  "castleHPOverride": 380,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 290,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        40,
+        36,
+        28,
+        24
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 260,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        32,
+        28
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 240,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        52,
+        44,
+        32
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 230,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        56,
+        48,
+        30,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 220,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        2,
+        60,
+        52,
+        20,
+        18
+      ]
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "id": "world7-6",
+  "displayName": "Espace — Voie orbitale",
+  "theme": "espace",
+  "world": 7,
+  "level": 6,
+  "cellSize": 4,
+  "mapRows": [
+    "0R0R0R0R0R0R0R0R",
+    "00000000000000R0",
+    "R00111111111100R",
+    "0001000000001000",
+    "P1110000000011C0",
+    "0001000000001000",
+    "00011111111110R0",
+    "R00000000000000R",
+    "0R0R0R0R0R0R0R0R"
+  ],
+  "startCoins": 217,
+  "overrideCastleHP": true,
+  "castleHPOverride": 265,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 420,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        32,
+        28,
+        20,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 380,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        24,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 340,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        44,
+        36,
+        28
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 310,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        32,
+        28
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 290,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        52,
+        44,
+        36,
+        18
+      ]
+    }
+  ]
+}

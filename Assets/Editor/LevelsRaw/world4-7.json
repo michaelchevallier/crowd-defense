@@ -1,0 +1,108 @@
+{
+  "id": "world4-7",
+  "displayName": "Volcan — Choix de Route",
+  "theme": "volcan",
+  "world": 4,
+  "level": 7,
+  "cellSize": 4,
+  "mapRows": [
+    "0000R0000L000R000",
+    "000R00000L0000D00",
+    "000001111^1110000",
+    "000001000L0010000",
+    "P11111000L001111C",
+    "000001000L0010000",
+    "000001111^1110000",
+    "000R00000L0000000",
+    "0000D0000L0000R00"
+  ],
+  "startCoins": 221,
+  "overrideCastleHP": true,
+  "castleHPOverride": 240,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 380,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        44,
+        28,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 300,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        68,
+        32,
+        28,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 290,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        76,
+        47,
+        15,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 280,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "imp",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        2,
+        60,
+        36,
+        28
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 270,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "imp",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        2,
+        72,
+        32,
+        24
+      ]
+    }
+  ]
+}

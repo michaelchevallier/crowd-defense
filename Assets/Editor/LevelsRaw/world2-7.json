@@ -1,0 +1,109 @@
+{
+  "id": "world2-7",
+  "displayName": "Foret — Avant-Poste",
+  "theme": "foret",
+  "world": 2,
+  "level": 7,
+  "cellSize": 4,
+  "mapRows": [
+    "00T0T00T0T0T00T0",
+    "T0T00T0000000000",
+    "0T0T00011111111C",
+    "0000000100000000",
+    "P11111110T0T0T00",
+    "0000000100000000",
+    "T0T0T0011111111C",
+    "0T0T0T0000000000"
+  ],
+  "startCoins": 119,
+  "overrideCastleHP": true,
+  "castleHPOverride": 160,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 460,
+      "breakMs": 4000,
+      "typeKeys": [
+        "assassin",
+        "basic",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        32,
+        20,
+        10,
+        8
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 430,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        28,
+        14,
+        10
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 410,
+      "breakMs": 4000,
+      "typeKeys": [
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        36,
+        16,
+        14
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 400,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        28,
+        16,
+        12
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 380,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "assassin",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        36,
+        20,
+        14,
+        4
+      ]
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "id": "world9-7",
+  "displayName": "Royaume — Forteresse Jumelée",
+  "theme": "medieval",
+  "world": 9,
+  "level": 7,
+  "cellSize": 4,
+  "mapRows": [
+    "RRRRRRRRRRR0000000R",
+    "0000000000001111C00",
+    "000R000000001000000",
+    "000R0000000010R0000",
+    "00000000000010R0000",
+    "P111111111111000000",
+    "00000000000010R0000",
+    "000R0000000010R0000",
+    "000R000000001000000",
+    "0000000000001111C00",
+    "RRRRRRRRRRR0000000R"
+  ],
+  "startCoins": 255,
+  "overrideCastleHP": true,
+  "castleHPOverride": 350,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 380,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        62,
+        36,
+        28,
+        24
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 340,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        50,
+        40,
+        32,
+        28
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 310,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        74,
+        44,
+        32
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 290,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        56,
+        48,
+        30,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 270,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        2,
+        60,
+        52,
+        20,
+        18
+      ]
+    }
+  ]
+}

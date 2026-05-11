@@ -1,0 +1,94 @@
+{
+  "id": "world10-5",
+  "displayName": "Néo-Tokyo — Glitch dans la Matrice",
+  "theme": "cyberpunk",
+  "world": 10,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000D00000R00",
+    "P111110D000R00000",
+    "000001000000R0D00",
+    "0000010R000000000",
+    "000001000R0D00000",
+    "P1111100000000R00",
+    "000001000D000R000",
+    "00000100000000000",
+    "P11111111111111C0",
+    "00000000000000000"
+  ],
+  "startCoins": 285,
+  "overrideCastleHP": true,
+  "castleHPOverride": 330,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 440,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        56,
+        48,
+        30,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 390,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        72,
+        34,
+        24,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 350,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        80,
+        42,
+        28
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 320,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        54,
+        36,
+        32,
+        28
+      ]
+    }
+  ]
+}

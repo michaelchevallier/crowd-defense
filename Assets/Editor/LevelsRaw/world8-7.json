@@ -1,0 +1,113 @@
+{
+  "id": "world8-7",
+  "displayName": "Abysse — Approche du Kraken",
+  "theme": "submarin",
+  "world": 8,
+  "level": 7,
+  "cellSize": 4,
+  "mapRows": [
+    "00000W00000000000",
+    "00000W0000011100B",
+    "00000W0000011100B",
+    "P1111~111111W1C00",
+    "00000W0000011100B",
+    "00000W0000011100B",
+    "00000W0000011100B",
+    "00000W000000W1C00",
+    "00000W00000000000",
+    "00000W00000000000"
+  ],
+  "startCoins": 230,
+  "overrideCastleHP": true,
+  "castleHPOverride": 280,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 380,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        40,
+        36,
+        28,
+        24
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 340,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        32,
+        28
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 310,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        52,
+        44,
+        32
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 290,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        56,
+        48,
+        30,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 270,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        2,
+        60,
+        52,
+        20,
+        18
+      ]
+    }
+  ]
+}

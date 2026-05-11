@@ -1,0 +1,87 @@
+{
+  "id": "world9-3",
+  "displayName": "Royaume — Premier Château",
+  "theme": "medieval",
+  "world": 9,
+  "level": 3,
+  "cellSize": 4,
+  "mapRows": [
+    "0R0R0WRR0R0R0RR0R",
+    "00000W000R00000RR",
+    "P1111W00000000000",
+    "00001W00000000000",
+    "00001~11111110000",
+    "00001W00000010000",
+    "P1111W000R001C000",
+    "00000W000000000R0",
+    "RR0R0WR0RR0R0R0RR"
+  ],
+  "startCoins": 217,
+  "overrideCastleHP": true,
+  "castleHPOverride": 270,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 520,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "runner"
+      ],
+      "typeCounts": [
+        57,
+        43,
+        50
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 460,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        85,
+        41,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 410,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        78,
+        40,
+        32
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 380,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        64,
+        48,
+        38
+      ]
+    }
+  ]
+}

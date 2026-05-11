@@ -1,0 +1,102 @@
+{
+  "id": "world3-1",
+  "displayName": "Désert — Dunes",
+  "theme": "desert",
+  "world": 3,
+  "level": 1,
+  "cellSize": 4,
+  "mapRows": [
+    "D00000000000D",
+    "0R011111100R0",
+    "00010000100D0",
+    "P1110R001000D",
+    "0000000010000",
+    "0R00D00011111C",
+    "000R00D000000"
+  ],
+  "startCoins": 109,
+  "overrideCastleHP": true,
+  "castleHPOverride": 150,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 510,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner"
+      ],
+      "typeCounts": [
+        28,
+        28
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 480,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        24,
+        36,
+        6
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 450,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        16,
+        10,
+        8
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 430,
+      "breakMs": 4500,
+      "typeKeys": [
+        "basic",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        24,
+        20,
+        12,
+        10
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 410,
+      "breakMs": 0,
+      "typeKeys": [
+        "runner",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        24,
+        14,
+        12
+      ]
+    }
+  ]
+}

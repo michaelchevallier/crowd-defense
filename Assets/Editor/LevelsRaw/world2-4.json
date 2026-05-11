@@ -1,0 +1,104 @@
+{
+  "id": "world2-4",
+  "displayName": "Foret — Marecage",
+  "theme": "foret",
+  "world": 2,
+  "level": 4,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000T00T00T",
+    "P1111000T0T00T0",
+    "0000100T00T00T0",
+    "WWWW~WWWWWWWWWW",
+    "T00011110000000",
+    "T0000001111111C",
+    "T00T0T000000000"
+  ],
+  "startCoins": 119,
+  "overrideCastleHP": true,
+  "castleHPOverride": 145,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 490,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "assassin",
+        "shielded"
+      ],
+      "typeCounts": [
+        24,
+        20,
+        8
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 460,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        28,
+        24,
+        10
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 430,
+      "breakMs": 4000,
+      "typeKeys": [
+        "assassin",
+        "basic",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        32,
+        16,
+        12,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 410,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        28,
+        14,
+        14
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 390,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        28,
+        16,
+        12
+      ]
+    }
+  ]
+}

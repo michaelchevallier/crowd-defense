@@ -1,0 +1,93 @@
+{
+  "id": "world8-4",
+  "displayName": "Abysse — Grotte sous-marine",
+  "theme": "submarin",
+  "world": 8,
+  "level": 4,
+  "cellSize": 4,
+  "mapRows": [
+    "0000W0000W00000",
+    "0000W0000W00000",
+    "0000W0000W0R000",
+    "P111~1111W00000",
+    "0000W0001W00000",
+    "0B00W0001W00000",
+    "0000W0001~11110",
+    "0000W0000W000C0",
+    "0000W0000W00000"
+  ],
+  "startCoins": 196,
+  "overrideCastleHP": true,
+  "castleHPOverride": 235,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 480,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        24,
+        20,
+        12,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 430,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        32,
+        24,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 390,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        36,
+        28,
+        20
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 360,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        24,
+        20
+      ]
+    }
+  ]
+}

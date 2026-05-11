@@ -1,0 +1,104 @@
+{
+  "id": "world3-5",
+  "displayName": "Désert — Labyrinthe",
+  "theme": "desert",
+  "world": 3,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "R00D0R00R000D00",
+    "000000000000R00",
+    "00111111100D000",
+    "00100000100000D",
+    "P110000010000R0",
+    "0000000010000D0",
+    "00000R001000000",
+    "0D000000111111C",
+    "R000R0000000000"
+  ],
+  "startCoins": 127,
+  "overrideCastleHP": true,
+  "castleHPOverride": 170,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 460,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        32,
+        20,
+        10
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 440,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        32,
+        12,
+        12
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 420,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "runner",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        36,
+        24,
+        14,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 410,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        32,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 390,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "runner",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        28,
+        24,
+        14
+      ]
+    }
+  ]
+}

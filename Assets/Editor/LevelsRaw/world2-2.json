@@ -1,0 +1,98 @@
+{
+  "id": "world2-2",
+  "displayName": "Forêt — Sentier",
+  "theme": "foret",
+  "world": 2,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "00T00T0000000",
+    "T00T00T01111C",
+    "0T00000010000",
+    "00T011111000T",
+    "00001000000T0",
+    "P1111000T000T",
+    "0000000T00T0T"
+  ],
+  "startCoins": 98,
+  "overrideCastleHP": true,
+  "castleHPOverride": 135,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 510,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "assassin"
+      ],
+      "typeCounts": [
+        28,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 480,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "assassin"
+      ],
+      "typeCounts": [
+        24,
+        24,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 450,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        20,
+        24,
+        8
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 420,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "shielded"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        10
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 400,
+      "breakMs": 0,
+      "typeKeys": [
+        "basic",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        24,
+        28,
+        12,
+        8
+      ]
+    }
+  ]
+}

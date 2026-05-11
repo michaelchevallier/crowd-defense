@@ -1,0 +1,93 @@
+{
+  "id": "world8-5",
+  "displayName": "Abysse — Courants marins",
+  "theme": "submarin",
+  "world": 8,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "0000W0000000000W",
+    "P111~1111000000W",
+    "0000W00010000B0W",
+    "0B00W0001000000W",
+    "0000W00011111110",
+    "0R00W000100000C0",
+    "0000W00010000000",
+    "P111~1111000000W",
+    "0000W0000000000W"
+  ],
+  "startCoins": 204,
+  "overrideCastleHP": true,
+  "castleHPOverride": 250,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 450,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        56,
+        48,
+        30,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 400,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        72,
+        38,
+        20,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 360,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        80,
+        46,
+        24
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 330,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        62,
+        36,
+        28,
+        24
+      ]
+    }
+  ]
+}

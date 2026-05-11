@@ -1,0 +1,106 @@
+{
+  "id": "world4-1",
+  "displayName": "Volcan — Sentier de la Pente",
+  "theme": "volcan",
+  "world": 4,
+  "level": 1,
+  "cellSize": 4,
+  "mapRows": [
+    "0000000000000",
+    "P111100000R00",
+    "000010000D000",
+    "00001100R0000",
+    "0000010000000",
+    "0000011111C00",
+    "R000000000000"
+  ],
+  "startCoins": 111,
+  "overrideCastleHP": true,
+  "castleHPOverride": 180,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 480,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "imp"
+      ],
+      "typeCounts": [
+        14,
+        10,
+        5
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 450,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "flyer",
+        "imp",
+        "brute"
+      ],
+      "typeCounts": [
+        12,
+        8,
+        8,
+        4
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 430,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "imp",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        12,
+        12,
+        6,
+        5
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 410,
+      "breakMs": 4500,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        14,
+        12,
+        7,
+        6
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 390,
+      "breakMs": 0,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "flyer",
+        "shielded"
+      ],
+      "typeCounts": [
+        14,
+        14,
+        10,
+        7
+      ]
+    }
+  ]
+}

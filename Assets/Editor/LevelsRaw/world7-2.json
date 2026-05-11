@@ -1,0 +1,91 @@
+{
+  "id": "world7-2",
+  "displayName": "Espace — Embuscade orbitale",
+  "theme": "espace",
+  "world": 7,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000RR0RR0R",
+    "P11111000R00R00",
+    "00000100R00000R",
+    "00R00100R0R0000",
+    "R000010R000000R",
+    "R00001000000000",
+    "0000011111111C0",
+    "P11111000000000",
+    "0000000R0RR0RRR"
+  ],
+  "startCoins": 213,
+  "overrideCastleHP": true,
+  "castleHPOverride": 220,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 560,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "flyer"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 500,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute",
+        "flyer"
+      ],
+      "typeCounts": [
+        56,
+        40,
+        24,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 440,
+      "breakMs": 5000,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        32,
+        16
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 400,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        40,
+        22
+      ]
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "id": "world10-2",
+  "displayName": "Néo-Tokyo — Marché noir",
+  "theme": "cyberpunk",
+  "world": 10,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000000R000D",
+    "P111111100D0R000",
+    "00000001000D00R0",
+    "000R000100D00R00",
+    "0000000100R00000",
+    "0000000100000000",
+    "0D0000011111111C",
+    "R0000D0000000000"
+  ],
+  "startCoins": 265,
+  "overrideCastleHP": true,
+  "castleHPOverride": 290,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 550,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "flyer"
+      ],
+      "typeCounts": [
+        80,
+        54,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 490,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        62,
+        48,
+        24,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 440,
+      "breakMs": 5000,
+      "typeKeys": [
+        "brute",
+        "runner",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        38,
+        56,
+        32,
+        24
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 400,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        48,
+        32,
+        40,
+        30
+      ]
+    }
+  ]
+}

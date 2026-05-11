@@ -1,0 +1,112 @@
+{
+  "id": "world6-5",
+  "displayName": "Apocalypse — Flancs Découverts",
+  "theme": "apocalypse",
+  "world": 6,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000L000000",
+    "P11111111^11111C",
+    "000000000L000000",
+    "R00R0000RL00R000",
+    "R0000R00RL000R00",
+    "R000000RRL00R000",
+    "000000000L000000",
+    "P11111111^11111C",
+    "000000000L000000"
+  ],
+  "startCoins": 281,
+  "overrideCastleHP": true,
+  "castleHPOverride": 340,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 310,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        32,
+        28,
+        20,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 280,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        24,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 260,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        44,
+        36,
+        24
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 240,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        32,
+        28
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 230,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer",
+        "midboss"
+      ],
+      "typeCounts": [
+        52,
+        44,
+        36,
+        18,
+        1
+      ]
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "id": "world10-7",
+  "displayName": "Néo-Tokyo — Approche du Hub IA",
+  "theme": "cyberpunk",
+  "world": 10,
+  "level": 7,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000000000R0000",
+    "P11111110000D0R0000",
+    "000000010000R00D000",
+    "00R000010000000R000",
+    "0000000100000000000",
+    "0D00000111111111111C",
+    "000R000000000000000",
+    "0000000000000R00000",
+    "P1111111110000000R0",
+    "0000000001000000000",
+    "00R000D00111111111C"
+  ],
+  "startCoins": 325,
+  "overrideCastleHP": true,
+  "castleHPOverride": 400,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 370,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        50,
+        40,
+        32,
+        28
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 330,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        52,
+        44,
+        36,
+        18
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 300,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        62,
+        48,
+        40
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 280,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        60,
+        50,
+        22,
+        18
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 260,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        2,
+        64,
+        42,
+        24,
+        20
+      ]
+    }
+  ]
+}

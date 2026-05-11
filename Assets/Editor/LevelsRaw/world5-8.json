@@ -1,0 +1,184 @@
+{
+  "id": "world5-8",
+  "displayName": "Foire — Apothéose Carnaval",
+  "theme": "foire",
+  "world": 5,
+  "level": 8,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000W000000000",
+    "P1111111~1111111C0",
+    "00000000W000000000",
+    "D000000DW0D0D00000",
+    "000000DDW00000D000",
+    "0D00000DW000D00000",
+    "0000000DW000000000",
+    "00000000W000000000",
+    "P1111111~111111C00",
+    "00000000W000000000",
+    "DDDDDDDDWDDDDDDDDD"
+  ],
+  "startCoins": 323,
+  "overrideCastleHP": true,
+  "castleHPOverride": 260,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 300,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "basic"
+      ],
+      "typeCounts": [
+        43,
+        29,
+        22
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 280,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "runner",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        46,
+        39,
+        18,
+        8
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 260,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        50,
+        32,
+        15,
+        11
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 250,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "imp",
+        "runner",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        53,
+        43,
+        22
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 240,
+      "breakMs": 4500,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        57,
+        36,
+        18,
+        15
+      ]
+    },
+    {
+      "index": 5,
+      "spawnRateMs": 230,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        2,
+        60,
+        39,
+        18,
+        15
+      ]
+    },
+    {
+      "index": 6,
+      "spawnRateMs": 220,
+      "breakMs": 5000,
+      "typeKeys": [
+        "assassin",
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        22,
+        39,
+        25,
+        16,
+        15
+      ]
+    },
+    {
+      "index": 7,
+      "spawnRateMs": 210,
+      "breakMs": 6000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        48,
+        32,
+        20,
+        16,
+        20
+      ]
+    },
+    {
+      "index": 8,
+      "spawnRateMs": 350,
+      "breakMs": 0,
+      "typeKeys": [
+        "warlord_boss",
+        "imp",
+        "flyer",
+        "runner"
+      ],
+      "typeCounts": [
+        1,
+        27,
+        20,
+        27
+      ]
+    }
+  ]
+}

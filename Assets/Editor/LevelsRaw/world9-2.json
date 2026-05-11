@@ -1,0 +1,84 @@
+{
+  "id": "world9-2",
+  "displayName": "Royaume — Pince Militaire",
+  "theme": "medieval",
+  "world": 9,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "0000000RRRRRRRR",
+    "P111110000R0000",
+    "0000010000R0000",
+    "000001000000R00",
+    "0000010000R0000",
+    "P11111000000000",
+    "0000011111111C0",
+    "RRRR00000000000"
+  ],
+  "startCoins": 238,
+  "overrideCastleHP": true,
+  "castleHPOverride": 260,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 560,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "assassin"
+      ],
+      "typeCounts": [
+        80,
+        54,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 500,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "assassin"
+      ],
+      "typeCounts": [
+        86,
+        40,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 450,
+      "breakMs": 5000,
+      "typeKeys": [
+        "brute",
+        "runner",
+        "assassin"
+      ],
+      "typeCounts": [
+        64,
+        54,
+        32
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 410,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        78,
+        32,
+        40
+      ]
+    }
+  ]
+}

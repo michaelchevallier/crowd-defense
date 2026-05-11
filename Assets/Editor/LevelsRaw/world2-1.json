@@ -1,0 +1,100 @@
+{
+  "id": "world2-1",
+  "displayName": "Forêt — Lisière",
+  "theme": "foret",
+  "world": 2,
+  "level": 1,
+  "cellSize": 4,
+  "mapRows": [
+    "0T0T00000T0T",
+    "00000000000T",
+    "P11111110000",
+    "0000000100TT",
+    "000T00011000",
+    "T00T00001C00",
+    "T0T00T00000T"
+  ],
+  "startCoins": 94,
+  "overrideCastleHP": true,
+  "castleHPOverride": 130,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 540,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner"
+      ],
+      "typeCounts": [
+        26,
+        15
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 500,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "assassin"
+      ],
+      "typeCounts": [
+        22,
+        22,
+        8
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 470,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        18,
+        26,
+        11,
+        6
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 440,
+      "breakMs": 4500,
+      "typeKeys": [
+        "basic",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        26,
+        15,
+        9,
+        8
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 410,
+      "breakMs": 0,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        29,
+        18,
+        11
+      ]
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "id": "world8-3",
+  "displayName": "Abysse — Épave du Titanic",
+  "theme": "submarin",
+  "world": 8,
+  "level": 3,
+  "cellSize": 4,
+  "mapRows": [
+    "000W00000W00000",
+    "000W00000W00000",
+    "P11~11111~11110",
+    "000W00000W00010",
+    "0R0W00R00W0001C",
+    "000W00000W00000",
+    "0B0W0B000W00000",
+    "000W00000W00000"
+  ],
+  "startCoins": 213,
+  "overrideCastleHP": true,
+  "castleHPOverride": 230,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 520,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "runner"
+      ],
+      "typeCounts": [
+        31,
+        23,
+        39
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 460,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        46,
+        31,
+        23,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 410,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        54,
+        39,
+        31
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 380,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        61,
+        46,
+        27,
+        16
+      ]
+    }
+  ]
+}

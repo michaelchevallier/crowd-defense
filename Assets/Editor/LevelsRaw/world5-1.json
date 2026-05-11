@@ -1,0 +1,81 @@
+{
+  "id": "world5-1",
+  "displayName": "Foire — Entrée du Parc",
+  "theme": "foire",
+  "world": 5,
+  "level": 1,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000D0D00",
+    "P111110DD0D00",
+    "0000010D0D0D0",
+    "0000010000000",
+    "00D0011110000",
+    "000000001C000",
+    "D0DD0D00000DD"
+  ],
+  "startCoins": 170,
+  "overrideCastleHP": true,
+  "castleHPOverride": 160,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 380,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner"
+      ],
+      "typeCounts": [
+        88,
+        42
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 320,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "basic",
+        "imp"
+      ],
+      "typeCounts": [
+        70,
+        63,
+        14
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 280,
+      "breakMs": 5000,
+      "typeKeys": [
+        "imp",
+        "basic",
+        "brute"
+      ],
+      "typeCounts": [
+        56,
+        77,
+        7
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 260,
+      "breakMs": 0,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "shielded"
+      ],
+      "typeCounts": [
+        105,
+        39,
+        6
+      ]
+    }
+  ]
+}

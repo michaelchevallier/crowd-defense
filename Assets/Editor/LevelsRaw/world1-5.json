@@ -1,0 +1,104 @@
+{
+  "id": "world1-5",
+  "displayName": "Plaine — 5",
+  "theme": "plaine",
+  "world": 1,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "00000W0000D0000",
+    "P1111W000D00000",
+    "00001W000000000",
+    "00001~111111C00",
+    "00000W000000000",
+    "0D00TW000T0D000",
+    "00000W0D0000T00"
+  ],
+  "startCoins": 130,
+  "overrideCastleHP": true,
+  "castleHPOverride": 140,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 580,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "shielded"
+      ],
+      "typeCounts": [
+        36,
+        16,
+        4
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 540,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        6
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 500,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        24,
+        24,
+        8,
+        6
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 470,
+      "breakMs": 4500,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        20,
+        28,
+        10,
+        8
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 460,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "basic",
+        "brute",
+        "runner"
+      ],
+      "typeCounts": [
+        1,
+        24,
+        8,
+        16
+      ]
+    }
+  ]
+}

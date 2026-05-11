@@ -1,0 +1,112 @@
+{
+  "id": "world6-6",
+  "displayName": "Apocalypse — Le Corsaire Maudit",
+  "theme": "apocalypse",
+  "world": 6,
+  "level": 6,
+  "cellSize": 4,
+  "mapRows": [
+    "0000000000R0000R",
+    "P1111100000R0000",
+    "000001000000R000",
+    "000001111100R000",
+    "R000000001000000",
+    "LLLLL00001110000",
+    "R000L00000010000",
+    "R0R0L0R000011100",
+    "R000LLLLLL00011C"
+  ],
+  "startCoins": 289,
+  "overrideCastleHP": true,
+  "castleHPOverride": 360,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 300,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        31,
+        27,
+        21,
+        17
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 270,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        37,
+        31,
+        24,
+        21
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 380,
+      "breakMs": 5500,
+      "typeKeys": [
+        "corsair_boss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        24,
+        21,
+        17
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 250,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        44,
+        34,
+        27,
+        24
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 230,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer",
+        "midboss"
+      ],
+      "typeCounts": [
+        47,
+        37,
+        31,
+        27,
+        2
+      ]
+    }
+  ]
+}

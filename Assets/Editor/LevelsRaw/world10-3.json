@@ -1,0 +1,92 @@
+{
+  "id": "world10-3",
+  "displayName": "Néo-Tokyo — Datacenter",
+  "theme": "cyberpunk",
+  "world": 10,
+  "level": 3,
+  "cellSize": 4,
+  "mapRows": [
+    "LLLLLLLLLLLLLLL",
+    "P111110000000DL",
+    "000001000000DRL",
+    "L0000100000000L",
+    "L000011111111CL",
+    "L0000000000000L",
+    "L00000000R0DRRL",
+    "LLLLLLLLLLLLLLL"
+  ],
+  "startCoins": 270,
+  "overrideCastleHP": true,
+  "castleHPOverride": 300,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 510,
+      "breakMs": 4800,
+      "typeKeys": [
+        "cyber_basic",
+        "cyber_runner",
+        "cyber_flyer",
+        "shielded"
+      ],
+      "typeCounts": [
+        32,
+        32,
+        24,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 450,
+      "breakMs": 4800,
+      "typeKeys": [
+        "cyber_basic",
+        "cyber_brute",
+        "cyber_flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        48,
+        16,
+        32,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 400,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "cyber_basic",
+        "cyber_brute",
+        "cyber_flyer"
+      ],
+      "typeCounts": [
+        1,
+        48,
+        24,
+        40
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 370,
+      "breakMs": 0,
+      "typeKeys": [
+        "cyber_brute",
+        "cyber_basic",
+        "cyber_flyer",
+        "cyber_runner"
+      ],
+      "typeCounts": [
+        32,
+        56,
+        42,
+        20
+      ]
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "id": "world5-5",
+  "displayName": "Foire — Foire des Damnés",
+  "theme": "foire",
+  "world": 5,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000D0D0D0",
+    "P111110D0D0D0D0",
+    "00000100D0D0D0D",
+    "0D0001000D0D0D0",
+    "0000010D0000000",
+    "000001000000000",
+    "000001111111110",
+    "0D00000000000C0",
+    "0D0D0D0D0D0D000"
+  ],
+  "startCoins": 221,
+  "overrideCastleHP": true,
+  "castleHPOverride": 180,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 330,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "imp"
+      ],
+      "typeCounts": [
+        31,
+        34,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 300,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "brute"
+      ],
+      "typeCounts": [
+        46,
+        27,
+        8
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 280,
+      "breakMs": 4500,
+      "typeKeys": [
+        "imp",
+        "runner",
+        "shielded"
+      ],
+      "typeCounts": [
+        42,
+        38,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 260,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        50,
+        31,
+        12,
+        8
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 250,
+      "breakMs": 5000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        46,
+        23,
+        12,
+        12
+      ]
+    },
+    {
+      "index": 5,
+      "spawnRateMs": 240,
+      "breakMs": 5000,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        57,
+        38,
+        19,
+        16
+      ]
+    },
+    {
+      "index": 6,
+      "spawnRateMs": 220,
+      "breakMs": 0,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute",
+        "shielded",
+        "midboss"
+      ],
+      "typeCounts": [
+        53,
+        31,
+        19,
+        16,
+        1
+      ]
+    }
+  ]
+}

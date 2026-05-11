@@ -1,0 +1,83 @@
+{
+  "id": "world9-1",
+  "displayName": "Royaume — Frontière",
+  "theme": "medieval",
+  "world": 9,
+  "level": 1,
+  "cellSize": 4,
+  "mapRows": [
+    "0000000RRRRRRRR",
+    "P1111100000R000",
+    "0000010000R0000",
+    "000R01000000R00",
+    "000001000000000",
+    "000001111111C00",
+    "RRRR0000000000R"
+  ],
+  "startCoins": 255,
+  "overrideCastleHP": true,
+  "castleHPOverride": 250,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 580,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner"
+      ],
+      "typeCounts": [
+        80,
+        64
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 510,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        86,
+        40,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 470,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "brute",
+        "assassin"
+      ],
+      "typeCounts": [
+        70,
+        40,
+        24,
+        16
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 430,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "runner"
+      ],
+      "typeCounts": [
+        64,
+        38,
+        48
+      ]
+    }
+  ]
+}

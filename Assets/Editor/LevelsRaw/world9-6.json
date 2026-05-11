@@ -1,0 +1,111 @@
+{
+  "id": "world9-6",
+  "displayName": "Royaume — Triple Assaut",
+  "theme": "medieval",
+  "world": 9,
+  "level": 6,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000RRRRRRR0R",
+    "P11111100000R00000",
+    "000000100000R00000",
+    "000000100000000000",
+    "P11111111111111C00",
+    "000000100000000000",
+    "000000100000R00000",
+    "P11111100000R00000",
+    "000000000000R00000",
+    "R0RRRRRRR0RRRRRRRR"
+  ],
+  "startCoins": 238,
+  "overrideCastleHP": true,
+  "castleHPOverride": 310,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 420,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        64,
+        50,
+        20,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 380,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        74,
+        32,
+        24,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 350,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        86,
+        36,
+        28
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 320,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        50,
+        40,
+        32,
+        28
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 300,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        2,
+        70,
+        44,
+        36
+      ]
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "id": "world5-2",
+  "displayName": "Foire — Manège Maudit",
+  "theme": "foire",
+  "world": 5,
+  "level": 2,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000DDDDDD",
+    "P1111110DDDDD0",
+    "00000010000000",
+    "0D000011111100",
+    "00000010000100",
+    "P11111100001C0",
+    "00000000DD0000"
+  ],
+  "startCoins": 187,
+  "overrideCastleHP": true,
+  "castleHPOverride": 150,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 360,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner"
+      ],
+      "typeCounts": [
+        88,
+        62
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 310,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "basic",
+        "imp"
+      ],
+      "typeCounts": [
+        96,
+        38,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 280,
+      "breakMs": 4500,
+      "typeKeys": [
+        "imp",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        80,
+        62,
+        8
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 260,
+      "breakMs": 5000,
+      "typeKeys": [
+        "basic",
+        "imp",
+        "shielded"
+      ],
+      "typeCounts": [
+        110,
+        32,
+        8
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 240,
+      "breakMs": 0,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        106,
+        28,
+        8,
+        8
+      ]
+    }
+  ]
+}

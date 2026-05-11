@@ -1,0 +1,103 @@
+{
+  "id": "world2-6",
+  "displayName": "Foret — Embuscade",
+  "theme": "foret",
+  "world": 2,
+  "level": 6,
+  "cellSize": 4,
+  "mapRows": [
+    "0000000T00T0T00",
+    "P1110T0T00T0T00",
+    "0001000000T0T00",
+    "T00111111000000",
+    "0T000000111111C",
+    "0T0111111000000",
+    "000100000000T0T",
+    "P111000T0T00T0T"
+  ],
+  "startCoins": 116,
+  "overrideCastleHP": true,
+  "castleHPOverride": 155,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 470,
+      "breakMs": 4000,
+      "typeKeys": [
+        "assassin",
+        "basic",
+        "brute"
+      ],
+      "typeCounts": [
+        50,
+        36,
+        18
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 440,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        57,
+        43,
+        22,
+        15
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 420,
+      "breakMs": 4000,
+      "typeKeys": [
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        64,
+        25,
+        25
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 410,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        50,
+        29
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 390,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        57,
+        32,
+        25
+      ]
+    }
+  ]
+}

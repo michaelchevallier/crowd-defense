@@ -1,0 +1,93 @@
+{
+  "id": "world9-5",
+  "displayName": "Royaume — Tenailles",
+  "theme": "medieval",
+  "world": 9,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "RRR0000000000RRRR",
+    "0000111111110R000",
+    "0000100000010R000",
+    "00001000000100000",
+    "P11110000001111C0",
+    "00001000000100000",
+    "0000100000010R000",
+    "0000111111110R000",
+    "RRR0000000000RRRR"
+  ],
+  "startCoins": 225,
+  "overrideCastleHP": true,
+  "castleHPOverride": 290,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 450,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        56,
+        48,
+        30,
+        16
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 400,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        72,
+        38,
+        20,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 360,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        80,
+        46,
+        24
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 330,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        62,
+        36,
+        28,
+        24
+      ]
+    }
+  ]
+}

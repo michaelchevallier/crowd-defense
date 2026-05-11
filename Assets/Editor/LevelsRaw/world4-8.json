@@ -1,0 +1,129 @@
+{
+  "id": "world4-8",
+  "displayName": "Volcan — Dragon BOSS",
+  "theme": "volcan",
+  "world": 4,
+  "level": 8,
+  "cellSize": 4,
+  "mapRows": [
+    "00R0000L0000W00000",
+    "0000000L000RW0R000",
+    "P111000L0000W00000",
+    "0001111^1111~1111C",
+    "0000000L0000W00000",
+    "0D00000L000DW00000",
+    "0000000L0000W00000",
+    "0001111^1111~1111C",
+    "P111000L0000W00000",
+    "0000000L000RW00000",
+    "000R000L0000W00D00"
+  ],
+  "startCoins": 272,
+  "overrideCastleHP": true,
+  "castleHPOverride": 280,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 360,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "imp"
+      ],
+      "typeCounts": [
+        24,
+        16,
+        14
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 320,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        30,
+        20,
+        14
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 300,
+      "breakMs": 4000,
+      "typeKeys": [
+        "imp",
+        "flyer",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        34,
+        22,
+        18,
+        14,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 290,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        2,
+        28,
+        18,
+        14
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 270,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "imp",
+        "flyer",
+        "shielded"
+      ],
+      "typeCounts": [
+        2,
+        36,
+        22,
+        14
+      ]
+    },
+    {
+      "index": 5,
+      "spawnRateMs": 240,
+      "breakMs": 0,
+      "typeKeys": [
+        "dragon_boss",
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        40,
+        26,
+        18,
+        14
+      ]
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "id": "world3-8",
+  "displayName": "Désert — Épreuve Finale",
+  "theme": "desert",
+  "world": 3,
+  "level": 8,
+  "cellSize": 4,
+  "mapRows": [
+    "00D00W00D0R0W00D0R",
+    "0R0D0W000000W000R0",
+    "00D00W001111~110DR",
+    "0R00RW001000W010D0",
+    "00000W001000W01000",
+    "P1111~111000W01000",
+    "00000W00000RW01000",
+    "0R00DW0D00R0W01000",
+    "00DR0W000R00W0111C",
+    "0R00RW0D0000W00000",
+    "D00R0W00D00RW00D00"
+  ],
+  "startCoins": 187,
+  "overrideCastleHP": true,
+  "castleHPOverride": 200,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 490,
+      "breakMs": 4000,
+      "typeKeys": [
+        "basic",
+        "runner",
+        "flyer"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        12
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 460,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "runner",
+        "brute"
+      ],
+      "typeCounts": [
+        32,
+        24,
+        12
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 430,
+      "breakMs": 4000,
+      "typeKeys": [
+        "flyer",
+        "assassin",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        36,
+        20,
+        16,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 420,
+      "breakMs": 4500,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        28,
+        16
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 400,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "flyer",
+        "runner",
+        "shielded"
+      ],
+      "typeCounts": [
+        1,
+        36,
+        24,
+        14
+      ]
+    },
+    {
+      "index": 5,
+      "spawnRateMs": 380,
+      "breakMs": 0,
+      "typeKeys": [
+        "corsair_boss",
+        "flyer",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        1,
+        36,
+        24,
+        16
+      ]
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "id": "world6-1",
+  "displayName": "Apocalypse — Cendres Chaudes",
+  "theme": "apocalypse",
+  "world": 6,
+  "level": 1,
+  "cellSize": 4,
+  "mapRows": [
+    "RLLLLLLLLLLLLLL",
+    "00000000000000L",
+    "P111100000R000L",
+    "000010000000R0L",
+    "R000111100000RL",
+    "R0000001110000L",
+    "R00R000001111CL",
+    "RRRR00R0000000L"
+  ],
+  "startCoins": 247,
+  "overrideCastleHP": true,
+  "castleHPOverride": 280,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 380,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "skeleton_minion",
+        "basic"
+      ],
+      "typeCounts": [
+        12,
+        12,
+        16,
+        8
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 340,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "skeleton_minion"
+      ],
+      "typeCounts": [
+        20,
+        16,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 300,
+      "breakMs": 4500,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "skeleton_minion"
+      ],
+      "typeCounts": [
+        28,
+        20,
+        12,
+        12
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 280,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer",
+        "skeleton_minion"
+      ],
+      "typeCounts": [
+        32,
+        24,
+        16,
+        12,
+        16
+      ]
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "id": "world5-6",
+  "displayName": "Foire — Tunnel des Horreurs",
+  "theme": "foire",
+  "world": 5,
+  "level": 6,
+  "cellSize": 4,
+  "mapRows": [
+    "00000000D0D0D0D0",
+    "P111110D0DD0D0D0",
+    "0000010000000000",
+    "000001111111111C",
+    "0000010000100000",
+    "P111110D0D1D0DD0",
+    "000000000010D0D0",
+    "P11111111110D0D0",
+    "000000000000D0DD"
+  ],
+  "startCoins": 238,
+  "overrideCastleHP": true,
+  "castleHPOverride": 200,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 280,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "basic"
+      ],
+      "typeCounts": [
+        112,
+        38
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 260,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "basic"
+      ],
+      "typeCounts": [
+        106,
+        24,
+        20
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 250,
+      "breakMs": 4000,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "brute"
+      ],
+      "typeCounts": [
+        112,
+        32,
+        6
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 240,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "shielded"
+      ],
+      "typeCounts": [
+        106,
+        36,
+        8
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 230,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        90,
+        40,
+        10,
+        10
+      ]
+    },
+    {
+      "index": 5,
+      "spawnRateMs": 220,
+      "breakMs": 4500,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "flyer",
+        "brute"
+      ],
+      "typeCounts": [
+        84,
+        44,
+        16,
+        6
+      ]
+    },
+    {
+      "index": 6,
+      "spawnRateMs": 210,
+      "breakMs": 5000,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "flyer",
+        "shielded"
+      ],
+      "typeCounts": [
+        80,
+        48,
+        16,
+        6
+      ]
+    },
+    {
+      "index": 7,
+      "spawnRateMs": 200,
+      "breakMs": 0,
+      "typeKeys": [
+        "runner",
+        "imp",
+        "flyer",
+        "brute",
+        "shielded"
+      ],
+      "typeCounts": [
+        88,
+        34,
+        14,
+        8,
+        6
+      ]
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "id": "world7-3",
+  "displayName": "Espace — Champ d'astéroïdes",
+  "theme": "espace",
+  "world": 7,
+  "level": 3,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000000000",
+    "0C111111111110R",
+    "010000000000000",
+    "010000R0000R00R",
+    "010R000000R00R0",
+    "0100000R00000RR",
+    "01000000000R0R0",
+    "P1000R000R0000R",
+    "0000RR0RR0RR0RR"
+  ],
+  "startCoins": 204,
+  "overrideCastleHP": true,
+  "castleHPOverride": 220,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 520,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "runner",
+        "flyer"
+      ],
+      "typeCounts": [
+        16,
+        12,
+        20,
+        8
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 460,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        24,
+        16,
+        12,
+        8
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 410,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        28,
+        20,
+        16
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 380,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        32,
+        24,
+        20,
+        16
+      ]
+    }
+  ]
+}

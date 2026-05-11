@@ -1,0 +1,112 @@
+{
+  "id": "world8-6",
+  "displayName": "Abysse — Cité d'Atlantis",
+  "theme": "submarin",
+  "world": 8,
+  "level": 6,
+  "cellSize": 4,
+  "mapRows": [
+    "0000W00000000000",
+    "P111~11111000000",
+    "0000W00001000000",
+    "0000W000011111C0",
+    "0000W00001000000",
+    "P111~11111000B00",
+    "0000W000000R0000",
+    "0000W000000B0000",
+    "0000W000000B0000"
+  ],
+  "startCoins": 217,
+  "overrideCastleHP": true,
+  "castleHPOverride": 265,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 420,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        32,
+        28,
+        20,
+        20
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 380,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        40,
+        32,
+        24,
+        24
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 340,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin"
+      ],
+      "typeCounts": [
+        1,
+        44,
+        36,
+        28
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 310,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        48,
+        40,
+        32,
+        28
+      ]
+    },
+    {
+      "index": 4,
+      "spawnRateMs": 290,
+      "breakMs": 0,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "assassin",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        52,
+        44,
+        36,
+        18
+      ]
+    }
+  ]
+}

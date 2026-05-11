@@ -1,0 +1,83 @@
+{
+  "id": "world8-8",
+  "displayName": "Abysse — BOSS Kraken",
+  "theme": "submarin",
+  "world": 8,
+  "level": 8,
+  "cellSize": 4,
+  "mapRows": [
+    "0000W0000W0000L00",
+    "P111~1111~1111^1C",
+    "0000W0000W0000L00",
+    "0B00W0000W000BL00",
+    "0000W0000W0000L00",
+    "0R00W0000W00R0L00",
+    "0000W0000W0000L00",
+    "P111~1111~1111^1C",
+    "0000W0000W0000L00",
+    "0000W000BW0B00L00",
+    "0000W0000W0000L00"
+  ],
+  "startCoins": 298,
+  "overrideCastleHP": true,
+  "castleHPOverride": 400,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 340,
+      "breakMs": 4800,
+      "typeKeys": [
+        "shielded",
+        "assassin",
+        "brute"
+      ],
+      "typeCounts": [
+        96,
+        34,
+        20
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 310,
+      "breakMs": 5000,
+      "typeKeys": [
+        "shielded",
+        "assassin",
+        "midboss"
+      ],
+      "typeCounts": [
+        112,
+        38,
+        1
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 290,
+      "breakMs": 6000,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "midboss"
+      ],
+      "typeCounts": [
+        94,
+        56,
+        2
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 1500,
+      "breakMs": 0,
+      "typeKeys": [
+        "kraken_boss"
+      ],
+      "typeCounts": [
+        1
+      ]
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "id": "world7-5",
+  "displayName": "Espace — Triangulation",
+  "theme": "espace",
+  "world": 7,
+  "level": 5,
+  "cellSize": 4,
+  "mapRows": [
+    "000000000RRR0RRR",
+    "P11111100000R00R",
+    "000000100000R000",
+    "R0R000100R00000R",
+    "0000001000000000",
+    "R0R000111111111C",
+    "R000001000000000",
+    "000000100000R00R",
+    "P1111110000R0000",
+    "00000000RRR0RRRR"
+  ],
+  "startCoins": 204,
+  "overrideCastleHP": true,
+  "castleHPOverride": 250,
+  "allowMultiMagnet": false,
+  "waves": [
+    {
+      "index": 0,
+      "spawnRateMs": 450,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        49,
+        42,
+        28,
+        21
+      ]
+    },
+    {
+      "index": 1,
+      "spawnRateMs": 400,
+      "breakMs": 4800,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        63,
+        49,
+        22,
+        16
+      ]
+    },
+    {
+      "index": 2,
+      "spawnRateMs": 360,
+      "breakMs": 5000,
+      "typeKeys": [
+        "midboss",
+        "brute",
+        "shielded",
+        "flyer"
+      ],
+      "typeCounts": [
+        1,
+        70,
+        56,
+        24
+      ]
+    },
+    {
+      "index": 3,
+      "spawnRateMs": 330,
+      "breakMs": 0,
+      "typeKeys": [
+        "brute",
+        "shielded",
+        "flyer",
+        "assassin"
+      ],
+      "typeCounts": [
+        62,
+        36,
+        28,
+        24
+      ]
+    }
+  ]
+}
