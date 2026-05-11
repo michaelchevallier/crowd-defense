@@ -4,10 +4,21 @@
 
 ## Where we are
 
-- **Current sprint** : MIGRATE **Multi-Phase Parallel Swarm** (Phase 3+4+5 en parallèle) — 2026-05-11 soir.
-- **Current focus** : 7 Sub-Opus orchestrateurs en BG, chacun pilotant 3-5 Sonnets sur leur axe. Convergence Stage A estimée 8-12h wall-clock.
-- **Next milestone** : Stage B Integrator (single Sonnet séquentiel, applique tous les hooks audio+juice+vfx+anim dans hot zones) → smoke test E2E → deploy /v6/ production.
-- **Deploy intermediate /v6/** (commit gh-pages `5734945`) : baseline avant Stage B integration, UnityGLTF + 49 AssetRegistry + ToonShader + Outline + JuiceFX + AudioController code-only (no hooks yet).
+- **Current sprint** : Phase 3 SWARM SHIPPED — **gameplay runtime broken** (Mike report 2026-05-11 soir).
+- **Status** : code compile clean, deploy /v6/ live, mais wave launch button invisible runtime → gameplay loop bloqué. Race condition init order HudController vs WaveManager probable.
+- **Fix in flight** : commit `b4888bf` ajoute safety net Update() dans HudController pour late-init WaveManager.Instance. À valider runtime via /v6/ rebuild + Chrome MCP smoke test.
+- **Lessons learned (memory `feedback_swarm_lesson_runtime_validation`)** : multi-Opus swarm = surface large mais audit statique seul insuffisant. Chaque axe DOIT valider via Unity play mode game_view screenshot avant final report. qa-tester DOIT avoir Chrome MCP loaded en début mission.
+
+### 🔴 Bugs runtime détectés post-ship Phase 3
+
+| Bug | Cause probable | Status fix |
+|---|---|---|
+| Wave launch button invisible | Race condition WaveManager.Instance null at HudController.Start | Safety net commit `b4888bf` (à valider) |
+| Pas de "buy panel" tower select | By design — selectedTowerType SerializeField Inspector | Pas un bug, fonctionne en POC |
+| 4 wave seulement (au lieu de 10) | LevelData W1-1 .asset a 4 waves définis | Pas un bug, design POC |
+| 353 warnings au build | gltfast import + Roboto fallback + Sentis shaders | Non-bloquant, ignore Phase 4 |
+
+### 🏭 Architecture multi-Opus swarm — ship-postmortem
 
 ### 🏭 Architecture multi-Opus swarm (lancée 2026-05-11)
 
