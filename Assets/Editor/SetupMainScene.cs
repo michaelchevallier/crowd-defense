@@ -95,7 +95,7 @@ namespace CrowdDefense.Editor
         private static void EnsurePanelSettingsTheme()
         {
             const string panelPath = "Assets/UI/HUDPanelSettings.asset";
-            const string tssPath = "Assets/UI/UnityDefaultRuntimeTheme.tss";
+            const string tssPath = "Assets/Resources/UI/UnityDefaultRuntimeTheme.tss";
 
             try
             {
@@ -118,7 +118,7 @@ namespace CrowdDefense.Editor
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(panel);
                 AssetDatabase.SaveAssets();
-                Debug.Log("[SetupMainScene] HUDPanelSettings.themeUss assigned to UnityDefaultRuntimeTheme.tss");
+                Debug.Log("[SetupMainScene] HUDPanelSettings.themeUss assigned to UnityDefaultRuntimeTheme.tss (now in Resources/)");
             }
             catch (System.Exception ex)
             {
@@ -306,6 +306,7 @@ namespace CrowdDefense.Editor
                 return 0;
             }
             int c = 0;
+            c += EnsureComponent<RuntimeThemeFixup>(hud);
             c += EnsureComponent<TowerToolbarController>(hud);
             c += EnsureComponent<DoctrineController>(hud);
             c += EnsureComponent<ShopController>(hud);
