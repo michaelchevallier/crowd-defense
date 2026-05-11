@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using CrowdDefense.Data;
+using CrowdDefense.Entities;
 using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
@@ -36,6 +37,15 @@ namespace CrowdDefense.UI
         private VisualElement? waveLaunchStreak;
         private Label? waveLaunchStreakText;
         private Label? waveLaunchPillText;
+
+        // Hero panel refs
+        private VisualElement? heroPanel;
+        private Label? heroHpLabel;
+        private Label? heroLevelLabel;
+        private VisualElement? heroXpBarFill;
+        private Label? heroXpLabel;
+        private Label? heroXpValue;
+        private Label? heroUltLabel;
 
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
@@ -77,6 +87,14 @@ namespace CrowdDefense.UI
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
 
             ApplyDeviceClasses(root);
+            heroPanel    = root.Q<VisualElement>("hero-panel");
+            heroHpLabel  = root.Q<Label>("hero-hp-label");
+            heroLevelLabel = root.Q<Label>("hero-level");
+            heroXpBarFill = root.Q<VisualElement>("hero-xp-bar-fill");
+            heroXpLabel  = root.Q<Label>("hero-xp-label");
+            heroXpValue  = root.Q<Label>("hero-xp-value");
+            heroUltLabel = root.Q<Label>("hero-ult-label");
+
             ApplyLocalizedTexts();
             L.OnLocaleChanged += ApplyLocalizedTexts;
 
@@ -133,6 +151,8 @@ namespace CrowdDefense.UI
             if (btnRestartVictory != null) btnRestartVictory.text = L.Get("overlay.btn_retry");
             if (btnMenuGo != null) btnMenuGo.text = L.Get("overlay.btn_menu");
             if (btnMenuVictory != null) btnMenuVictory.text = L.Get("overlay.btn_menu");
+            if (heroHpLabel != null) heroHpLabel.text = L.Get("hud.hero_hp_label");
+            if (heroXpLabel != null) heroXpLabel.text = L.Get("hud.hero_xp_label");
             OnBreakStateChanged();
         }
 
@@ -141,6 +161,51 @@ namespace CrowdDefense.UI
             // N hotkey — debounced, shared with click (Q7)
             if (Input.GetKeyDown(KeyCode.N))
                 TryLaunchWave();
+
+            UpdateHeroPanel();
+        }
+
+        private void UpdateHeroPanel()
+        {
+            var hero = LevelRunner.Instance?.Hero;
+            if (heroPanel == null) return;
+
+            if (hero == null)
+            {
+                SetVisible(heroPanel, false);
+                return;
+            }
+
+            SetVisible(heroPanel, true);
+
+            if (heroLevelLabel != null)
+                heroLevelLabel.text = L.Get("hud.hero_level", hero.Level);
+
+            if (heroXpBarFill != null)
+            {
+                float xpRatio = hero.XpToNext > 0 ? Mathf.Clamp01((float)hero.Xp / hero.XpToNext) : 1f;
+                heroXpBarFill.style.width = new Length(xpRatio * 100f, LengthUnit.Percent);
+            }
+
+            if (heroXpValue != null)
+                heroXpValue.text = $"{hero.Xp}/{hero.XpToNext}";
+
+            if (heroUltLabel != null)
+            {
+                bool ultReady = hero.UltCooldownRemaining <= 0f;
+                if (ultReady)
+                {
+                    heroUltLabel.text = L.Get("hud.hero_ult_ready");
+                    heroUltLabel.RemoveFromClassList("hero-ult-cooldown");
+                    heroUltLabel.AddToClassList("hero-ult-ready");
+                }
+                else
+                {
+                    heroUltLabel.text = L.Get("hud.hero_ult_cd", hero.UltCooldownRemaining);
+                    heroUltLabel.RemoveFromClassList("hero-ult-ready");
+                    heroUltLabel.AddToClassList("hero-ult-cooldown");
+                }
+            }
         }
 
         // Shared debounced launch entry point for click + N key

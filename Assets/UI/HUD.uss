@@ -238,6 +238,79 @@
     color: rgb(255, 210, 63);
 }
 
+/* === Hero status panel (bottom-left) === */
+.hero-panel {
+    position: absolute;
+    left: 24px;
+    bottom: 24px;
+    width: 180px;
+    background-color: rgba(0, 0, 0, 0.65);
+    border-radius: 14px;
+    padding: 10px 14px;
+    flex-direction: column;
+}
+
+.hero-panel-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.hero-pill-label {
+    color: rgba(220, 220, 220, 0.7);
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.hero-level {
+    color: rgb(255, 210, 63);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.hero-bar-bg {
+    height: 6px;
+    background-color: rgba(40, 40, 40, 0.9);
+    border-radius: 3px;
+    margin-bottom: 6px;
+    width: 100%;
+}
+
+.hero-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 3px;
+}
+
+.hero-xp-fill {
+    background-color: rgb(100, 160, 255);
+}
+
+.hero-xp-value {
+    color: rgb(180, 200, 240);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.hero-ult-label {
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-top: 4px;
+    -unity-text-align: middle-center;
+}
+
+.hero-ult-ready {
+    color: rgb(120, 255, 140);
+}
+
+.hero-ult-cooldown {
+    color: rgba(160, 160, 160, 0.7);
+}
+
 /* === Tower tooltip (hover) === */
 .tower-tooltip {
     position: absolute;

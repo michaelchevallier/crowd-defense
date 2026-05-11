@@ -45,6 +45,13 @@ namespace CrowdDefense.UI
                     ["hud.pill_skip_text"] = "+30c  {0:F1}s  +{1}%",
                     ["hud.streak_text"] = "+{0}%",
 
+                    // ── Hero panel ──────────────────────────────────────────────────
+                    ["hud.hero_hp_label"] = "HERO",
+                    ["hud.hero_xp_label"] = "XP",
+                    ["hud.hero_level"] = "Lv{0}",
+                    ["hud.hero_ult_ready"] = "ULT READY",
+                    ["hud.hero_ult_cd"] = "ULT {0:F1}s",
+
                     // ── Radial menu ────────────────────────────────────────────────
                     ["hud.radial_title"] = "{0}  L2  — Choose L3 (irreversible except sell)",
                     ["hud.radial_sell"] = "Sell +{0}g",
@@ -200,6 +207,13 @@ namespace CrowdDefense.UI
                     ["hud.wave_progress"] = "Vague {0} / {1}",
                     ["hud.pill_skip_text"] = "+30c  {0:F1}s  +{1}%",
                     ["hud.streak_text"] = "+{0}%",
+
+                    // ── Hero panel ──────────────────────────────────────────────────
+                    ["hud.hero_hp_label"] = "HÉROS",
+                    ["hud.hero_xp_label"] = "XP",
+                    ["hud.hero_level"] = "Nv{0}",
+                    ["hud.hero_ult_ready"] = "ULT DISPO",
+                    ["hud.hero_ult_cd"] = "ULT {0:F1}s",
 
                     // ── Radial menu ────────────────────────────────────────────────
                     ["hud.radial_title"] = "{0}  L2  — Choisir L3 (irréversible sauf vente)",
