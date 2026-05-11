@@ -20,3 +20,31 @@ MonoBehaviour:
   reward: 8
   scale: 0.7
   bodyColor: {r: 0.5412, g: 0.2902, b: 0.1333, a: 1}
+  walkAnim: Walk
+  assetKey: soldier
+  isFlyer: 0
+  flyHeight: 0
+  ignorePath: 0
+  isStealth: 0
+  stealthCycleMs: 0
+  stealthOpacity: 0.25
+  shieldHP: 0
+  isBoss: 0
+  isMidBoss: 0
+  isApocalypseBoss: 0
+  isBrigand: 0
+  isCorsair: 0
+  isFiery: 0
+  immuneToFlyerBonus: 0
+  bossName:
+  bossAuraColor: {r: 0, g: 0, b: 0, a: 0}
+  chargeMs: 0
+  chargeCooldownMs: 0
+  chargeMul: 1
+  summonsMinions: 0
+  summonCooldownMs: 0
+  summonType: {fileID: 0}
+  aoeBlastMs: 0
+  aoeBlastRadius: 0
+  aoeBlastDamage: 0
+  shaderOverlay:
