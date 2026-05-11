@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b0c934c512d3402d9f272d332537539, type: 3}
+  m_Name: TutorialRegistry
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TutorialRegistry
+  steps:
+  - {fileID: 11400000, guid: bc3975e8d5404f979d2da1cf30f3fc5b, type: 2}
+  - {fileID: 11400000, guid: 0e533b37468b4e15bbeadcd559eb9f64, type: 2}
+  - {fileID: 11400000, guid: 850d2e431c114fa1b82752e07d08518e, type: 2}
+  - {fileID: 11400000, guid: bb4750a7f71140d0b6b7c9aeb9866a7d, type: 2}
+  - {fileID: 11400000, guid: 62840b260aaa4b0486875837aa488b91, type: 2}

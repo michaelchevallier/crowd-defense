@@ -9,9 +9,9 @@ using CrowdDefense.Entities;
 namespace CrowdDefense.Systems
 {
     // Port de pickRandomEvent() + apply callbacks V5 events.js.
-    // Rolls un event aleatoire apres chaque niveau (30% chance).
-    // Souscrit a LevelRunner.OnLevelComplete. Attend 1 frame pour laisser
-    // PerkPickerController fermer en premier.
+    // Rolls un event aleatoire apres chaque vague ou niveau (30% chance).
+    // Souscrit a LevelRunner.OnLevelComplete et WaveManager.OnWaveCleared.
+    // Attend 1 frame pour laisser PerkPickerController fermer en premier.
     public class EventSystem : MonoSingleton<EventSystem>
     {
         private const float EventChance = 0.30f;
@@ -23,15 +23,21 @@ namespace CrowdDefense.Systems
         {
             if (LevelRunner.Instance != null)
                 LevelRunner.Instance.OnLevelComplete += OnLevelComplete;
+            if (WaveManager.Instance != null)
+                WaveManager.Instance.OnWaveCleared += OnWaveCleared;
         }
 
         protected override void OnDestroySingleton()
         {
             if (LevelRunner.Instance != null)
                 LevelRunner.Instance.OnLevelComplete -= OnLevelComplete;
+            if (WaveManager.Instance != null)
+                WaveManager.Instance.OnWaveCleared -= OnWaveCleared;
         }
 
         private void OnLevelComplete() => StartCoroutine(RollAfterDelay());
+
+        private void OnWaveCleared(int waveIdx) => StartCoroutine(RollAfterDelay());
 
         private IEnumerator RollAfterDelay()
         {
@@ -63,7 +69,8 @@ namespace CrowdDefense.Systems
             ApplyAction(evt.Choices[choiceIndex].applyAction);
         }
 
-        // Action parser: "coins+N", "castleHP-N", "pendingPerk=tag", "skipNextPerk" ...
+        // Action parser: "coins+N", "castleHP-N", "pendingPerk=tag", "skipNextPerk",
+        //                "modifier=<id>" (lookup ModifierRegistry, apply + save in RunContext)
         internal static void ApplyAction(string action)
         {
             if (string.IsNullOrEmpty(action)) return;
@@ -80,6 +87,24 @@ namespace CrowdDefense.Systems
             if (action.StartsWith("pendingPerk=", StringComparison.OrdinalIgnoreCase))
             {
                 if (ctx != null) ctx.PendingPerkOffer = action.Substring("pendingPerk=".Length);
+                return;
+            }
+
+            // RunModifierDef : "modifier=<id>" — lookup + apply applyAction + save in RunContext
+            if (action.StartsWith("modifier=", StringComparison.OrdinalIgnoreCase))
+            {
+                var modId = action.Substring("modifier=".Length);
+                var modReg = ModifierRegistry.Get();
+                var mod = modReg?.FindById(modId);
+                if (mod != null)
+                {
+                    ctx?.AddModifier(mod.Id);
+                    if (!string.IsNullOrEmpty(mod.ApplyAction))
+                        ApplyAction(mod.ApplyAction);
+                }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                else Debug.LogWarning($"[EventSystem] modifier '{modId}' non trouvé dans ModifierRegistry");
+#endif
                 return;
             }
 

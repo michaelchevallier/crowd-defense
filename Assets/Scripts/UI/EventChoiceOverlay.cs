@@ -6,7 +6,7 @@ using CrowdDefense.Data;
 
 namespace CrowdDefense.UI
 {
-    // Port du flow event V5 : overlay 2-boutons apres un niveau (30% chance via EventSystem).
+    // Port du flow event V5 : overlay 2-3 boutons apres un niveau ou une vague (30% chance via EventSystem).
     // Attacher a un GameObject avec UIDocument + EventChoice.uxml.
     [RequireComponent(typeof(UIDocument))]
     public class EventChoiceOverlay : MonoBehaviour
@@ -14,8 +14,7 @@ namespace CrowdDefense.UI
         private VisualElement? _root;
         private Label? _titleLabel;
         private Label? _bodyLabel;
-        private Button? _btn0;
-        private Button? _btn1;
+        private Button?[] _btns = new Button?[3];
 
         private EventDef? _currentEvent;
         private Action<EventDef, int>? _onPicked;
@@ -27,11 +26,15 @@ namespace CrowdDefense.UI
             _root       = ve.Q<VisualElement>("event-root");
             _titleLabel = ve.Q<Label>("event-title");
             _bodyLabel  = ve.Q<Label>("event-body");
-            _btn0       = ve.Q<Button>("choice-btn-0");
-            _btn1       = ve.Q<Button>("choice-btn-1");
+            _btns[0]    = ve.Q<Button>("choice-btn-0");
+            _btns[1]    = ve.Q<Button>("choice-btn-1");
+            _btns[2]    = ve.Q<Button>("choice-btn-2");
 
-            _btn0?.RegisterCallback<ClickEvent>(_ => Pick(0));
-            _btn1?.RegisterCallback<ClickEvent>(_ => Pick(1));
+            for (int i = 0; i < _btns.Length; i++)
+            {
+                int idx = i;
+                _btns[i]?.RegisterCallback<ClickEvent>(_ => Pick(idx));
+            }
 
             Hide();
         }
@@ -44,10 +47,20 @@ namespace CrowdDefense.UI
             if (_titleLabel != null) _titleLabel.text = evt.Title;
             if (_bodyLabel  != null) _bodyLabel.text  = evt.Body;
 
-            if (_btn0 != null && evt.Choices.Length > 0)
-                _btn0.text = evt.Choices[0].label;
-            if (_btn1 != null && evt.Choices.Length > 1)
-                _btn1.text = evt.Choices[1].label;
+            for (int i = 0; i < _btns.Length; i++)
+            {
+                var btn = _btns[i];
+                if (btn == null) continue;
+                if (i < evt.Choices.Length)
+                {
+                    btn.text = evt.Choices[i].label;
+                    btn.RemoveFromClassList("hidden");
+                }
+                else
+                {
+                    btn.AddToClassList("hidden");
+                }
+            }
 
             if (_root != null) _root.RemoveFromClassList("hidden");
             Time.timeScale = 0f;

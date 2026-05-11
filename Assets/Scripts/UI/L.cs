@@ -145,6 +145,8 @@ namespace CrowdDefense.UI
                     ["worldmap.world8"] = "Underwater",
                     ["worldmap.world9"] = "Medieval",
                     ["worldmap.world10"] = "Cyberpunk",
+                    ["worldmap.completion"] = "{0}% complete",
+                    ["worldmap.level_label"] = "Lv {0}-{1}",
 
                     // ── Settings panel ─────────────────────────────────────────────
                     ["settings.title"] = "Settings",
@@ -215,6 +217,10 @@ namespace CrowdDefense.UI
                     ["tutorial.step4.text"] = "Place your hero on the map to assist the towers.",
                     ["tutorial.step5.text"] = "Collect coins dropped by defeated enemies.",
                     ["tutorial.done.text"] = "You are ready! Good luck, defender!",
+                    ["tutorial.hint.radial_menu"]   = "Hover a placed tower and press U to upgrade, I for info, V to sell.",
+                    ["tutorial.hint.sprint_fire"]   = "Hold Shift to sprint, but you cannot fire while sprinting. Choose your moment!",
+                    ["tutorial.hint.speed_control"] = "Speed up the game with the control at bottom-left: x1 / x2 / x3.",
+                    ["tutorial.hint.shop"]          = "You earned gems. Visit the Shop (top right) to buy permanent upgrades.",
 
                     // ── Daily Challenge panel ──────────────────────────────────────
                     ["daily.title"] = "Daily Challenge",
@@ -392,6 +398,8 @@ namespace CrowdDefense.UI
                     ["worldmap.world8"] = "Sous-marin",
                     ["worldmap.world9"] = "Médiéval",
                     ["worldmap.world10"] = "Cyberpunk",
+                    ["worldmap.completion"] = "{0}% complété",
+                    ["worldmap.level_label"] = "Niv {0}-{1}",
 
                     // ── Settings panel ─────────────────────────────────────────────
                     ["settings.title"] = "Paramètres",
@@ -462,6 +470,10 @@ namespace CrowdDefense.UI
                     ["tutorial.step4.text"] = "Place ton heros sur la carte pour aider les tours.",
                     ["tutorial.step5.text"] = "Collecte les pieces laissees par les ennemis elimines.",
                     ["tutorial.done.text"] = "Tu es pret ! Bonne chance, defenseur !",
+                    ["tutorial.hint.radial_menu"]   = "Survole une tour posee et appuie sur U pour l'upgrade, I pour info, V pour vendre.",
+                    ["tutorial.hint.sprint_fire"]   = "Maintiens Shift pour courir, mais tu ne peux pas tirer en sprintant. Choisis ton moment !",
+                    ["tutorial.hint.speed_control"] = "Booste la vitesse en bas a gauche : x1 / x2 / x3.",
+                    ["tutorial.hint.shop"]          = "Tu as gagne des gemmes. Va au Shop (en haut a droite) pour acheter des bonus permanents.",
 
                     // ── Daily Challenge panel ──────────────────────────────────────
                     ["daily.title"] = "Defi Quotidien",

@@ -9,6 +9,7 @@
             <ui:VisualElement class="event-choices-row">
                 <ui:Button text="Choix 1" name="choice-btn-0" class="event-choice-btn" />
                 <ui:Button text="Choix 2" name="choice-btn-1" class="event-choice-btn" />
+                <ui:Button text="Choix 3" name="choice-btn-2" class="event-choice-btn hidden" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
