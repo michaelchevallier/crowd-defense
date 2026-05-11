@@ -38,9 +38,13 @@ namespace CrowdDefense.Entities
         // Visual state
         private bool          _smokeActive;
         private Coroutine?    _smokeCoroutine;
+        private Coroutine?    _sparksCoroutine;
         private Light?        _dangerLight;
         private float         _dangerLightPhase;
         private bool          _grayscaleApplied;
+
+        // VFX components (optional — assigned lazily, null = skip)
+        private ParticleSystem? _smokePs;
 
         // HP bar (world-space canvas child)
         private Transform?    _hpBarFill;
@@ -52,6 +56,7 @@ namespace CrowdDefense.Entities
             HP = HPMax = hp;
             _world = world;
             _meshFilter = GetComponentInChildren<MeshFilter>();
+            _smokePs    = GetComponentInChildren<ParticleSystem>();
 
             if (PathManager.Instance?.Grid != null)
             {
@@ -196,6 +201,7 @@ namespace CrowdDefense.Entities
             RefreshDamageMesh();
             UpdateTint();
             TriggerHitVfx();
+            UpdateDamageVfxIntensity();
 
             AudioController.Instance?.Play("castle_hit", 0.65f);
             JuiceFX.Instance?.Shake(0.1f, 200);
@@ -274,6 +280,74 @@ namespace CrowdDefense.Entities
             }
         }
 
+        // Progressive smoke + danger light intensity scaled to HP%
+        private void UpdateDamageVfxIntensity()
+        {
+            float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
+
+            // ── ParticleSystem smoke ──────────────────────────────────────────
+            if (_smokePs != null)
+            {
+                var emission = _smokePs.emission;
+                if (ratio > 0.66f)
+                {
+                    emission.rateOverTime = 0f;
+                    if (_smokePs.isPlaying) _smokePs.Stop();
+                }
+                else if (ratio > 0.33f)
+                {
+                    emission.rateOverTime = 8f;
+                    if (!_smokePs.isPlaying) _smokePs.Play();
+                }
+                else
+                {
+                    emission.rateOverTime = 20f;
+                    if (!_smokePs.isPlaying) _smokePs.Play();
+                }
+            }
+
+            // ── Danger light ──────────────────────────────────────────────────
+            if (_dangerLight == null) return;
+
+            if (ratio > 0.66f)
+            {
+                _dangerLight.intensity = 0f;
+            }
+            else if (ratio > 0.33f)
+            {
+                _dangerLight.intensity = 1f;
+                _dangerLight.color     = new Color(1f, 0.9f, 0.3f);
+            }
+            else
+            {
+                _dangerLight.intensity = 3f;
+                _dangerLight.color     = new Color(1f, 0.3f, 0.1f);
+
+                if (_sparksCoroutine == null)
+                    _sparksCoroutine = StartCoroutine(SparksLoop());
+            }
+        }
+
+        // Occasional spark burst every 2 s while HP < 33 %
+        private IEnumerator SparksLoop()
+        {
+            var wait = new WaitForSeconds(2f);
+            while (!IsDead && HPMax > 0 && (float)HP / HPMax < 0.33f)
+            {
+                var sparkColor = new Color(1f, 0.7f, 0.1f, 0.9f);
+                for (int i = 0; i < 5; i++)
+                {
+                    var offset = new Vector3(
+                        UnityEngine.Random.Range(-0.5f, 0.5f),
+                        UnityEngine.Random.Range(1.5f, 3f),
+                        UnityEngine.Random.Range(-0.5f, 0.5f));
+                    VfxPool.Instance?.SpawnImpact(transform.position + offset, sparkColor);
+                }
+                yield return wait;
+            }
+            _sparksCoroutine = null;
+        }
+
         // Smoke below 50 %, danger light below 20 %
         private void TriggerHitVfx()
         {
@@ -322,6 +396,9 @@ namespace CrowdDefense.Entities
             _grayscaleApplied = true;
             _smokeActive = false;
             if (_smokeCoroutine != null) { StopCoroutine(_smokeCoroutine); _smokeCoroutine = null; }
+            if (_sparksCoroutine != null) { StopCoroutine(_sparksCoroutine); _sparksCoroutine = null; }
+            if (_smokePs != null) _smokePs.Stop();
+            if (_dangerLight != null) _dangerLight.intensity = 0f;
 
             var gray = new Color(0.53f, 0.53f, 0.53f);
             foreach (var rend in GetComponentsInChildren<Renderer>())

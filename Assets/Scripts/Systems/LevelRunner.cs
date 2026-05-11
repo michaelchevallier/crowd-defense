@@ -149,6 +149,7 @@ namespace CrowdDefense.Systems
             SpawnCastle();
             SpawnHero();
             SpawnTreasureSystem();
+            SpawnPathPreview();
             TryPlayOpeningCutscene();
 
             var bounds = default(Bounds);
@@ -563,6 +564,12 @@ namespace CrowdDefense.Systems
 
             var go = new GameObject("TreasureSpawner");
             go.AddComponent<TreasureSpawner>();
+        }
+
+        private void SpawnPathPreview()
+        {
+            var go = new GameObject("PathPreviewRenderer");
+            go.AddComponent<Visual.PathPreviewRenderer>();
         }
 
         // ── Input helpers ───────────────────────────────────────────────────────

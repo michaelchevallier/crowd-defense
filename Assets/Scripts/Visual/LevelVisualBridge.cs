@@ -26,6 +26,7 @@ namespace CrowdDefense.Visual
         {
             var theme = level.LevelTheme;
             WeatherController.Instance?.ApplyTheme(theme);
+            PostProcessController.Instance?.ApplyTheme(theme);
             SceneDecor.Instance?.SpawnForLevel(theme, level.Id, gridBounds);
 
             var pm = Systems.PathManager.Instance;
