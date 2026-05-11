@@ -12,6 +12,10 @@ namespace CrowdDefense.UI
         private void Start()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
+
+            var titleLabel = root.Q<Label>("menu-title-label");
+            if (titleLabel != null) titleLabel.text = L.Get("menu.game_title");
+
             var grid = root.Q<VisualElement>("level-grid");
             if (grid == null)
             {
@@ -28,7 +32,7 @@ namespace CrowdDefense.UI
                 var row = new VisualElement();
                 row.AddToClassList("world-row");
 
-                var worldLabel = new Label($"W{w}");
+                var worldLabel = new Label(L.Get("menu.world_label", w));
                 worldLabel.AddToClassList("world-label");
                 row.Add(worldLabel);
 
@@ -39,7 +43,7 @@ namespace CrowdDefense.UI
                     bool cleared = SaveSystem.IsLevelCleared(levelId);
 
                     var btn = new Button();
-                    btn.text = $"{w}-{l}";
+                    btn.text = L.Get("menu.level_btn", w, l);
                     btn.AddToClassList("level-btn");
 
                     if (cleared) btn.AddToClassList("cleared");

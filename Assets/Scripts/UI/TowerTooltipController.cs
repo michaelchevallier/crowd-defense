@@ -102,51 +102,53 @@ namespace CrowdDefense.UI
 
             // ── Header : Nom · L{level} · coût cumulatif ──────────────────────
             sb.Clear();
-            string name = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Id : cfg.DisplayName;
-            sb.Append(name);
+            string towerNameKey = $"tower.{cfg.Id}.name";
+            string localizedName = L.Get(towerNameKey, "Towers");
+            string displayName2 = localizedName != towerNameKey
+                ? localizedName
+                : (string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Id : cfg.DisplayName);
+            sb.Append(displayName2);
             sb.Append("  L");
             sb.Append(tower.UpgradeLevel);
             if (tower.UpgradeBranch != TowerBranch.None)
             {
                 sb.Append(" (");
-                sb.Append(tower.UpgradeBranch == TowerBranch.Dps ? "DPS" : "Utility");
+                sb.Append(tower.UpgradeBranch == TowerBranch.Dps
+                    ? L.Get("tooltip.branch_dps")
+                    : L.Get("tooltip.branch_utility"));
                 sb.Append(')');
             }
             sb.Append("  |  ");
-            sb.Append(tower.CumulativeCost);
-            sb.Append("g investi");
+            sb.Append(L.Get("tooltip.invested", tower.CumulativeCost));
             if (tooltipHeader != null) tooltipHeader.text = sb.ToString();
 
             // ── Stats effectives ──────────────────────────────────────────────
             sb.Clear();
 
-            // Damage avec buffMul + levelDmgScale (levelDmgScale privé → on affiche le chiffre resultant via formule)
-            // On lit cfg.Damage × _buffMul — le _levelDmgScale est interne mais exposé par résultat fire()
-            // Pour affichage on montre cfg.Damage × _buffMul ; note si buffMul > 1 on indique le buff
             float baseDmg = cfg.Damage;
             float effectiveDmg = baseDmg * tower._buffMul;
-            sb.Append("Dmg ");
+            sb.Append(L.Get("tooltip.stat_dmg"));
+            sb.Append(' ');
             sb.Append(effectiveDmg.ToString("F1"));
             if (tower._buffMul > 1.01f)
-            {
-                sb.Append(" (x");
-                sb.Append(tower._buffMul.ToString("F2"));
-                sb.Append(" buff)");
-            }
+                sb.Append(L.Get("tooltip.stat_dmg_buff", tower._buffMul.ToString("F2")));
             sb.Append('\n');
 
-            sb.Append("Range ");
+            sb.Append(L.Get("tooltip.stat_range"));
+            sb.Append(' ');
             sb.Append(cfg.Range.ToString("F1"));
             sb.Append('\n');
 
             float fireRateSec = cfg.FireRateMs / 1000f;
-            sb.Append("Cadence ");
+            sb.Append(L.Get("tooltip.stat_rate"));
+            sb.Append(' ');
             sb.Append(fireRateSec.ToString("F2"));
             sb.Append("s");
             sb.Append('\n');
 
             int effectivePierce = cfg.Pierce + tower._pierceBonus;
-            sb.Append("Pierce ");
+            sb.Append(L.Get("tooltip.stat_pierce"));
+            sb.Append(' ');
             sb.Append(effectivePierce);
             if (tower._pierceBonus > 0)
             {
@@ -158,8 +160,7 @@ namespace CrowdDefense.UI
 
             if (tower._multiShotBonus > 0)
             {
-                sb.Append("MultiShot +");
-                sb.Append(tower._multiShotBonus);
+                sb.Append(L.Get("tooltip.stat_multishot", tower._multiShotBonus));
                 sb.Append('\n');
             }
 
@@ -171,89 +172,80 @@ namespace CrowdDefense.UI
 
             if (tower._buffMul > 1.01f && synCount < 5)
             {
-                sb.Append("Aura dmg x");
-                sb.Append(tower._buffMul.ToString("F2"));
+                sb.Append(L.Get("tooltip.syn_aura_dmg", tower._buffMul.ToString("F2")));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._pierceBonus > 0 && synCount < 5)
             {
-                sb.Append("Pierce +");
-                sb.Append(tower._pierceBonus == 99 ? "inf" : tower._pierceBonus.ToString());
+                string pierceVal = tower._pierceBonus == 99
+                    ? L.Get("tooltip.pierce_inf")
+                    : tower._pierceBonus.ToString();
+                sb.Append(L.Get("tooltip.syn_pierce", pierceVal));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._multiShotBonus > 0 && synCount < 5)
             {
-                sb.Append("MultiShot +");
-                sb.Append(tower._multiShotBonus);
+                sb.Append(L.Get("tooltip.syn_multishot", tower._multiShotBonus));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._flyerDmgBonus > 1.01f && synCount < 5)
             {
-                sb.Append("Flyer dmg x");
-                sb.Append(tower._flyerDmgBonus.ToString("F2"));
+                sb.Append(L.Get("tooltip.syn_flyer_dmg", tower._flyerDmgBonus.ToString("F2")));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._slowOnHitActive && synCount < 5)
             {
-                sb.Append("Slow on hit x");
-                sb.Append(tower._slowOnHitMul.ToString("F2"));
-                sb.Append(' ');
-                sb.Append((tower._slowOnHitDurMs / 1000f).ToString("F1"));
-                sb.Append("s");
+                sb.Append(L.Get("tooltip.syn_slow_on_hit",
+                    tower._slowOnHitMul.ToString("F2"),
+                    (tower._slowOnHitDurMs / 1000f).ToString("F1")));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._appliesSlowActive && synCount < 5)
             {
-                sb.Append("Applique slow x");
-                sb.Append(tower._appliesSlowMul.ToString("F2"));
+                sb.Append(L.Get("tooltip.syn_applies_slow", tower._appliesSlowMul.ToString("F2")));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._propagateAoEActive && synCount < 5)
             {
-                sb.Append("PropAoE r");
-                sb.Append(tower._propagateAoERadius.ToString("F1"));
-                sb.Append(" dmg ");
-                sb.Append(tower._propagateAoEDmg.ToString("F1"));
+                sb.Append(L.Get("tooltip.syn_prop_aoe",
+                    tower._propagateAoERadius.ToString("F1"),
+                    tower._propagateAoEDmg.ToString("F1")));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._cascadeRadius > 0f && synCount < 5)
             {
-                sb.Append("Cascade r");
-                sb.Append(tower._cascadeRadius.ToString("F1"));
+                sb.Append(L.Get("tooltip.syn_cascade", tower._cascadeRadius.ToString("F1")));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._knockbackOnHit > 0f && synCount < 5)
             {
-                sb.Append("Knockback ");
-                sb.Append(tower._knockbackOnHit.ToString("F1"));
+                sb.Append(L.Get("tooltip.syn_knockback", tower._knockbackOnHit.ToString("F1")));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._freezeOnHitActive && synCount < 5)
             {
-                sb.Append("Freeze ");
-                sb.Append((tower._freezeDurMs / 1000f).ToString("F1"));
-                sb.Append("s");
+                sb.Append(L.Get("tooltip.syn_freeze", (tower._freezeDurMs / 1000f).ToString("F1")));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._propagateDebuff && synCount < 5)
             {
-                sb.Append("PropagateDebuff");
+                sb.Append(L.Get("tooltip.syn_propagate_debuff"));
                 sb.Append('\n');
                 synCount++;
             }
             if (tower._pullActive && synCount < 5)
             {
-                sb.Append("Pull actif");
+                sb.Append(L.Get("tooltip.syn_pull"));
                 sb.Append('\n');
                 synCount++;
             }
