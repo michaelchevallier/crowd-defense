@@ -8,24 +8,32 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     // Minimap split into two VisualElement layers:
-    //   - StaticLayer  : background + path/castle/portal cells — painted ONCE on OnLevelStart, never again.
-    //   - DynamicLayer : enemy + tower dots                    — painted at 10 Hz.
+    //   - StaticLayer  : background + path lines + castle/portal dots — painted ONCE on OnLevelStart.
+    //   - DynamicLayer : enemy + tower dots                           — painted at 10 Hz.
     // Eliminates ~3000 redundant Painter2D commands/second for geometry that never changes.
     // Port of src-v3/ui/Minimap.js.
     [RequireComponent(typeof(UIDocument))]
     public class MinimapController : MonoBehaviour
     {
-        private const int MAP_W = 200;
-        private const int MAP_H = 120;
-        private const int PAD  = 6;
+        private const int BASE_W = 200;
+        private const int BASE_H = 120;
+        private const int PAD    = 6;
 
-        private VisualElement? _root;
-        private VisualElement?  _container;
+        // Zoom: 1.0 = 100 %, range [0.5, 3.0], scroll-wheel driven
+        private const float ZOOM_MIN  = 0.5f;
+        private const float ZOOM_MAX  = 3.0f;
+        private const float ZOOM_STEP = 0.15f;
+        private float _zoom = 1f;
+
+        private VisualElement? _hudRoot;
+        private VisualElement? _container;
+        private Button?         _toggleBtn;
         private StaticLayer?    _staticLayer;
         private DynamicLayer?   _dynamicLayer;
         private IVisualElementScheduledItem? _scheduledPaint;
 
         private bool _boundsReady;
+        private bool _visible;
 
         private void OnEnable()
         {
@@ -51,8 +59,11 @@ namespace CrowdDefense.UI
                 return;
             }
 
-            _root = doc.rootVisualElement.Q<VisualElement>("minimap-container");
-            if (_root == null)
+            var root = doc.rootVisualElement;
+            _hudRoot   = root.Q<VisualElement>("hud-root");
+            _toggleBtn = root.Q<Button>("minimap-toggle-btn");
+            var containerEl = root.Q<VisualElement>("minimap-container");
+            if (containerEl == null)
             {
 #if UNITY_EDITOR
                 Debug.LogWarning("[Minimap] minimap-container element not found.");
@@ -60,24 +71,31 @@ namespace CrowdDefense.UI
                 return;
             }
 
-            // Container holding both layers at the same position
+            // Inner wrapper holding both layers
             _container = new VisualElement();
-            _container.style.width  = MAP_W;
-            _container.style.height = MAP_H;
+            _container.style.width    = BASE_W;
+            _container.style.height   = BASE_H;
             _container.style.position = Position.Relative;
-            _root.Add(_container);
+            containerEl.Add(_container);
 
-            _staticLayer = new StaticLayer(MAP_W, MAP_H, PAD);
-            _staticLayer.style.width    = MAP_W;
-            _staticLayer.style.height   = MAP_H;
+            _staticLayer = new StaticLayer(BASE_W, BASE_H, PAD);
+            _staticLayer.style.width    = BASE_W;
+            _staticLayer.style.height   = BASE_H;
             _staticLayer.style.position = Position.Absolute;
             _container.Add(_staticLayer);
 
-            _dynamicLayer = new DynamicLayer(MAP_W, MAP_H, PAD);
-            _dynamicLayer.style.width    = MAP_W;
-            _dynamicLayer.style.height   = MAP_H;
+            _dynamicLayer = new DynamicLayer(BASE_W, BASE_H, PAD);
+            _dynamicLayer.style.width    = BASE_W;
+            _dynamicLayer.style.height   = BASE_H;
             _dynamicLayer.style.position = Position.Absolute;
             _container.Add(_dynamicLayer);
+
+            // Register click-to-pan on the static layer (captures world position)
+            _staticLayer.RegisterCallback<ClickEvent>(OnMinimapClick);
+
+            // Toggle button
+            if (_toggleBtn != null)
+                _toggleBtn.clicked += OnToggleClicked;
 
             SetVisible(false);
 
@@ -85,10 +103,35 @@ namespace CrowdDefense.UI
             _scheduledPaint = _dynamicLayer.schedule.Execute(RepaintDynamic).Every(100);
         }
 
+        private void Update()
+        {
+            if (!_visible || _container == null) return;
+
+            float scroll = Input.mouseScrollDelta.y;
+            if (scroll == 0f) return;
+
+            // Only respond when cursor is over the minimap container
+            // Check via screen position vs container world bounds
+            var containerEl = _container.parent;
+            if (containerEl == null) return;
+
+            Vector2 mousePos = Input.mousePosition;
+            // Convert to UIToolkit coords (Y flipped)
+            mousePos.y = Screen.height - mousePos.y;
+            Rect worldBound = containerEl.worldBound;
+            if (!worldBound.Contains(mousePos)) return;
+
+            _zoom = Mathf.Clamp(_zoom + scroll * ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
+
+            // Resize both layers to reflect zoom (BASE_W/H is the "1× size" at container level)
+            // We scale the container itself so both layers scale together
+            _container.style.transformOrigin = new TransformOrigin(Length.Percent(50), Length.Percent(50), 0f);
+            _container.style.scale = new Scale(new Vector3(_zoom, _zoom, 1f));
+        }
+
         private void OnLevelStart(LevelData levelData, Bounds gridBounds)
         {
             _boundsReady = true;
-            // Bake static layer once — grid + path + castle + portals never change mid-level
             _staticLayer?.MarkDirtyRepaint();
 
             bool show = !Device.IsSmallScreen || !Device.IsPortrait;
@@ -101,17 +144,66 @@ namespace CrowdDefense.UI
             _boundsReady = false;
         }
 
+        private void OnToggleClicked()
+        {
+            SetVisible(!_visible);
+        }
+
         private void RepaintDynamic()
         {
             if (!_boundsReady || _dynamicLayer == null) return;
             _dynamicLayer.MarkDirtyRepaint();
         }
 
+        // Click on the minimap: convert 2D minimap coords → world XZ → pan main camera
+        private void OnMinimapClick(ClickEvent evt)
+        {
+            if (!_boundsReady) return;
+            var grid = PathManager.Instance?.Grid;
+            if (grid == null) return;
+
+            var target = evt.currentTarget as VisualElement;
+            if (target == null) return;
+            Rect wb = target.worldBound;
+            if (wb.width <= 0f || wb.height <= 0f) return;
+
+            // Normalize [0,1] within the layer
+            float nx = (evt.position.x - wb.xMin) / wb.width;
+            float ny = (evt.position.y - wb.yMin) / wb.height;
+
+            var (offX, offY, s) = ComputeLayout(grid, BASE_W, BASE_H, PAD);
+
+            // Invert the W2M transform to get world XZ
+            float gw = grid.Width  * grid.CellSize;
+            float gh = grid.Height * grid.CellSize;
+
+            float mapPx = nx * BASE_W;
+            float mapPy = ny * BASE_H;
+
+            // px = offX + (col - (gridW-1)/2f) * cellSize * s  →  col = (px - offX)/s + (gridW-1)/2
+            float col = (mapPx - offX) / s + (grid.Width  - 1) / 2f;
+            float row = (mapPy - offY) / s + (grid.Height - 1) / 2f;
+
+            float worldX = (col - (grid.Width  - 1) / 2f) * grid.CellSize;
+            float worldZ = -((row - (grid.Height - 1) / 2f) * grid.CellSize);
+
+            var cam = Camera.main;
+            if (cam == null) return;
+
+            // Pan: keep camera Y + offset, move XZ
+            Vector3 pos = cam.transform.position;
+            cam.transform.position = new Vector3(worldX, pos.y, worldZ);
+        }
+
         private void SetVisible(bool v)
         {
-            if (_root == null) return;
-            if (v) _root.RemoveFromClassList("hidden");
-            else   _root.AddToClassList("hidden");
+            _visible = v;
+            var containerEl = _container?.parent;
+            if (containerEl != null)
+            {
+                if (v) containerEl.RemoveFromClassList("hidden");
+                else   containerEl.AddToClassList("hidden");
+            }
         }
 
         // ─── Shared geometry helpers ─────────────────────────────────────────
@@ -143,7 +235,7 @@ namespace CrowdDefense.UI
             p.Fill();
         }
 
-        // ─── Static layer: background + path/castle/portal cells ────────────
+        // ─── Static layer: background + path polylines + castle/portal dots ─
         // MarkDirtyRepaint called exactly once per level load.
 
         private sealed class StaticLayer : VisualElement
@@ -156,7 +248,7 @@ namespace CrowdDefense.UI
             {
                 _w = w; _h = h; _pad = pad;
                 generateVisualContent += OnGenerateVisualContent;
-                pickingMode = PickingMode.Ignore;
+                pickingMode = PickingMode.Position;
             }
 
             private void OnGenerateVisualContent(MeshGenerationContext ctx)
@@ -177,24 +269,58 @@ namespace CrowdDefense.UI
                 painter.ClosePath();
                 painter.Fill();
 
-                // Path / walkable cells as small yellow squares
-                painter.fillColor = new Color(1f, 0.82f, 0.25f, 0.35f);
-                float sz = Mathf.Max(1.5f, s * 0.85f);
-                for (int row = 0; row < grid.Height; row++)
+                // Path polylines — one polyline per path (from PathManager.Paths)
+                var pm = PathManager.Instance;
+                if (pm != null && pm.Paths.Count > 0)
                 {
-                    for (int col = 0; col < grid.Width; col++)
+                    Color[] pathColors = new Color[]
                     {
-                        char c = grid.At(col, row);
-                        if (!GridCoords.Walkable.Contains(c)) continue;
-                        var pos = GridCoords.CellToWorld(col, row, grid.Width, grid.Height, grid.CellSize);
-                        var mp = W2M(pos, grid, offX, offY, s);
+                        new Color(1f, 0.82f, 0.25f, 0.9f),
+                        new Color(0.4f, 0.9f, 1f, 0.9f),
+                        new Color(1f, 0.4f, 1f, 0.9f),
+                        new Color(0.4f, 1f, 0.55f, 0.9f),
+                    };
+
+                    for (int pi = 0; pi < pm.Paths.Count; pi++)
+                    {
+                        var waypoints = pm.Paths[pi];
+                        if (waypoints.Count < 2) continue;
+
+                        painter.strokeColor = pathColors[pi % pathColors.Length];
+                        painter.lineWidth   = 2f;
                         painter.BeginPath();
-                        painter.MoveTo(mp + new Vector2(-sz / 2f, -sz / 2f));
-                        painter.LineTo(mp + new Vector2(sz / 2f, -sz / 2f));
-                        painter.LineTo(mp + new Vector2(sz / 2f, sz / 2f));
-                        painter.LineTo(mp + new Vector2(-sz / 2f, sz / 2f));
-                        painter.ClosePath();
-                        painter.Fill();
+                        var first = W2M(waypoints[0], grid, offX, offY, s);
+                        painter.MoveTo(first);
+                        for (int wi = 1; wi < waypoints.Count; wi++)
+                            painter.LineTo(W2M(waypoints[wi], grid, offX, offY, s));
+                        painter.Stroke();
+
+                        // Portal dot (path entry) — white circle
+                        painter.fillColor = new Color(1f, 1f, 1f, 0.9f);
+                        DrawDot(painter, W2M(waypoints[0], grid, offX, offY, s), 4f);
+                    }
+                }
+                else
+                {
+                    // Fallback: walkable cells as small yellow squares when no paths computed yet
+                    painter.fillColor = new Color(1f, 0.82f, 0.25f, 0.35f);
+                    float sz = Mathf.Max(1.5f, s * 0.85f);
+                    for (int row = 0; row < grid.Height; row++)
+                    {
+                        for (int col = 0; col < grid.Width; col++)
+                        {
+                            char c = grid.At(col, row);
+                            if (!GridCoords.Walkable.Contains(c)) continue;
+                            var pos = GridCoords.CellToWorld(col, row, grid.Width, grid.Height, grid.CellSize);
+                            var mp = W2M(pos, grid, offX, offY, s);
+                            painter.BeginPath();
+                            painter.MoveTo(mp + new Vector2(-sz / 2f, -sz / 2f));
+                            painter.LineTo(mp + new Vector2( sz / 2f, -sz / 2f));
+                            painter.LineTo(mp + new Vector2( sz / 2f,  sz / 2f));
+                            painter.LineTo(mp + new Vector2(-sz / 2f,  sz / 2f));
+                            painter.ClosePath();
+                            painter.Fill();
+                        }
                     }
                 }
 

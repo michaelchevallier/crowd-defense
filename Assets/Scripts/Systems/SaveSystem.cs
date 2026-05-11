@@ -178,6 +178,16 @@ namespace CrowdDefense.Systems
             Save();
         }
 
+        // Hint flags — global (not slot-scoped), stored in PlayerPrefs directly
+        public static bool IsHintSeen(string key) =>
+            PlayerPrefs.GetInt($"cd_hint_{key}", 0) == 1;
+
+        public static void MarkHintSeen(string key)
+        {
+            PlayerPrefs.SetInt($"cd_hint_{key}", 1);
+            PlayerPrefs.Save();
+        }
+
         public static bool IsLevelCleared(string levelId) => Load().clearedLevels.Contains(levelId);
         public static bool IsLevelUnlocked(string levelId) => Load().unlockedLevels.Contains(levelId);
 

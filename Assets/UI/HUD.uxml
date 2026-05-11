@@ -131,6 +131,7 @@
         </ui:VisualElement>
 
         <!-- Minimap (top-right, 10 Hz update via MinimapController) -->
+        <ui:Button name="minimap-toggle-btn" class="minimap-toggle-btn" text="M" />
         <ui:VisualElement name="minimap-container" class="minimap-container hidden" />
 
         <!-- Hero panel (bottom-left) -->
