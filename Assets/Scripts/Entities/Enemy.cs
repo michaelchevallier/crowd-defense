@@ -14,6 +14,7 @@ namespace CrowdDefense.Entities
     {
         private EnemyType? cfg;
         private float hp;
+        private float maxHp;
         private float shieldHp;
         private int currentWaypoint;
         private int pathIdx;
@@ -24,6 +25,11 @@ namespace CrowdDefense.Entities
         private EnemyPool? pool;
         private float summonTimer = 0f;
         private float blastTimer = 0f;
+        private float chargeTimer = 0f;
+
+        // Set by BossSystem when enraged threshold is crossed
+        private float _enragedSpeedMul = 1f;
+        private float _enragedSummonCdMul = 1f;
 
         // Child GO holding the spawned GLTF mesh (null = using capsule primitive)
         private GameObject? _meshChild;
@@ -46,6 +52,7 @@ namespace CrowdDefense.Entities
         public bool IsDead { get; private set; }
         public bool IsFlyer => cfg?.IsFlyer ?? false;
         public bool ImmuneToFlyerBonus => cfg?.ImmuneToFlyerBonus ?? false;
+        public float HpRatio => maxHp > 0f ? Mathf.Clamp01(hp / maxHp) : 0f;
 
         // Expose alpha pour que Tower puisse tester la phase stealth
         public float StealthAlpha { get; private set; } = 1f;
@@ -59,6 +66,13 @@ namespace CrowdDefense.Entities
         // Called once by EnemyPool after Instantiate to back-link the pool
         public void SetPool(EnemyPool p) => pool = p;
 
+        // Called by BossSystem when enraged phase threshold is crossed
+        public void ApplyEnragedPhase(float speedMul, float summonCdMul)
+        {
+            _enragedSpeedMul = speedMul;
+            _enragedSummonCdMul = summonCdMul;
+        }
+
         public void Init(EnemyType type, int assignedPathIdx = 0)
         {
             cfg = type;
@@ -67,11 +81,15 @@ namespace CrowdDefense.Entities
             StealthAlpha = 1f;
             summonTimer = 0f;
             blastTimer = 0f;
+            chargeTimer = 0f;
+            _enragedSpeedMul = 1f;
+            _enragedSummonCdMul = 1f;
 
             // D1-04 mob pressure : scale HP and speed by world pressure
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
             var pressure = BalanceConfig.Get().GetPressure(currentWorld);
             hp = type.Hp * pressure.mobHpMul;
+            maxHp = hp;
             pressureSpeedMul = pressure.mobSpeedMul;
             shieldHp = type.ShieldHP;
             pathIdx = assignedPathIdx;
@@ -222,6 +240,7 @@ namespace CrowdDefense.Entities
             UpdateStealth();
             UpdateSummons();
             UpdateAoeBlast();
+            UpdateCharge();
 
             if (cfg.IsFlyer)
             {
@@ -238,7 +257,7 @@ namespace CrowdDefense.Entities
             }
 
             Vector3 target = pathManager.GetWaypointOnPath(pathIdx, currentWaypoint) + Vector3.up * 0.5f;
-            float effectiveSpeed = cfg.Speed * currentSpeedMul * pressureSpeedMul;
+            float effectiveSpeed = cfg.Speed * currentSpeedMul * pressureSpeedMul * _enragedSpeedMul;
             transform.position = Vector3.MoveTowards(transform.position, target, effectiveSpeed * Time.deltaTime);
 
             if ((transform.position - target).sqrMagnitude < 0.01f)
@@ -260,7 +279,7 @@ namespace CrowdDefense.Entities
 
             Vector3 castlePos = Castle.Instance.transform.position;
             Vector3 flyTarget = new Vector3(castlePos.x, cfg.FlyHeight, castlePos.z);
-            float effectiveSpeed = cfg.Speed * currentSpeedMul * pressureSpeedMul;
+            float effectiveSpeed = cfg.Speed * currentSpeedMul * pressureSpeedMul * _enragedSpeedMul;
             transform.position = Vector3.MoveTowards(transform.position, flyTarget, effectiveSpeed * Time.deltaTime);
             // Lock Y at fly height during movement
             var pos = transform.position;
@@ -294,7 +313,8 @@ namespace CrowdDefense.Entities
         {
             if (cfg == null || !cfg.SummonsMinions || cfg.SummonType == null) return;
             summonTimer += Time.deltaTime * 1000f;
-            if (summonTimer >= cfg.SummonCooldownMs)
+            float effectiveCooldown = cfg.SummonCooldownMs * _enragedSummonCdMul;
+            if (summonTimer >= effectiveCooldown)
             {
                 summonTimer = 0f;
                 SpawnMinion();
@@ -309,6 +329,17 @@ namespace CrowdDefense.Entities
             {
                 blastTimer = 0f;
                 EmitAoeBlast();
+            }
+        }
+
+        private void UpdateCharge()
+        {
+            if (cfg == null || !cfg.IsBrigand || cfg.ChargeCooldownMs <= 0) return;
+            chargeTimer += Time.deltaTime * 1000f;
+            if (chargeTimer >= cfg.ChargeCooldownMs)
+            {
+                chargeTimer = 0f;
+                EventManager.Instance?.Publish(new BossChargeWarningEvent());
             }
         }
 
@@ -365,6 +396,11 @@ namespace CrowdDefense.Entities
                 return;
             }
             hp -= dmg;
+
+            // Publish HP ratio after each hit for boss HP bar tracking (BossSystem polls LateUpdate,
+            // but direct publish here ensures sub-frame accuracy and avoids 0.005 debounce missing last tick)
+            if (cfg != null && cfg.IsBoss)
+                EventManager.Instance?.Publish(new BossHpChangedEvent(HpRatio));
 
             // Stage B integration : non-fatal hit feedback (audio + VFX impact)
             if (hp > 0f)
