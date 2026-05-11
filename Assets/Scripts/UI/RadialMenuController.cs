@@ -241,6 +241,7 @@ namespace CrowdDefense.UI
             bool ok = tower.UpgradeTo(2);
             if (!ok) return;
 
+            PlacementController.Instance?.NotifyTowerUpgraded(tower, 2);
 #if UNITY_EDITOR
             Debug.Log($"[RadialMenu] Upgrade L2 sur {tower.Config?.Id} ok");
 #endif
@@ -256,7 +257,7 @@ namespace CrowdDefense.UI
             if (!ok) return;
 
             tower.ApplyL3Tint();
-
+            PlacementController.Instance?.NotifyTowerUpgraded(tower, 3);
 #if UNITY_EDITOR
             Debug.Log($"[RadialMenu] Upgrade L3 {branch} sur {tower.Config?.Id} ok");
 #endif
@@ -267,9 +268,15 @@ namespace CrowdDefense.UI
         {
             var tower = currentTower;
             if (tower == null) return;
+
+            int refund = CrowdDefense.Data.BalanceConfig.Get() is { } bal
+                ? UnityEngine.Mathf.RoundToInt(tower.CumulativeCost * bal.SellRefundRatio)
+                : 0;
+
             currentTower = null;
             Hide();
             PlacementController.Instance?.DeselectTower();
+            PlacementController.Instance?.NotifyTowerSold(tower, refund);
             tower.Sell();
         }
 
