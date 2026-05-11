@@ -142,6 +142,12 @@ namespace CrowdDefense.Entities
             if (!string.IsNullOrEmpty(type.ShaderOverlay) && type.ShaderOverlay != "none")
                 MaterialController.ApplyShaderOverlay(toonRoot, type.ShaderOverlay, type.BodyColor);
 
+            // AssetVariants palette swap post-toon
+            if (activeSkin != null && activeSkin.ThemeIndex >= 0)
+                AssetVariants.ApplyThemeIndex(toonRoot, activeSkin.ThemeIndex);
+            else if (activeSkin != null && activeSkin.UseBodyColorOverride)
+                AssetVariants.ApplySkin(toonRoot, activeSkin);
+
             // Animations Mechanim : Idle + Walk via bool isWalking.
             // WalkAnim = nom de clip hint (ex: "Walking_A") — résolution dans le .controller.
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", type.WalkAnim);
