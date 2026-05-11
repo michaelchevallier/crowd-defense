@@ -101,6 +101,7 @@ namespace CrowdDefense.Systems
             // Default: plain-color material using Toon_Lit shader
             var fallback = new Material(ShaderUtil.GetToonShader());
             fallback.SetColor("_BaseColor", CellColor(ch));
+            fallback.enableInstancing = true;
             return fallback;
         }
 
