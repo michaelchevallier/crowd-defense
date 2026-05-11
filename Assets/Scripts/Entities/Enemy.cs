@@ -203,16 +203,28 @@ namespace CrowdDefense.Entities
             if (hp <= 0f)
             {
                 IsDead = true;
-                int baseReward = cfg?.Reward ?? 0;
-                float coinMul = CoinPullManager.Instance != null
-                    ? CoinPullManager.Instance.GetCoinMulAt(transform.position)
-                    : 1f;
-                float streakMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
-                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul));
+
+                // Boss reward = 0× (D1-01 §3.3, KR pattern P-U-3).
+                // Gems/skin drop conservés séparément dans LevelRunner.
+                bool isBossVariant = cfg != null && (cfg.IsBoss || cfg.IsMidBoss || cfg.IsApocalypseBoss);
+                if (!isBossVariant)
+                {
+                    int baseReward = cfg?.Reward ?? 0;
+                    float coinMul = CoinPullManager.Instance != null
+                        ? CoinPullManager.Instance.GetCoinMulAt(transform.position)
+                        : 1f;
+                    float streakMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
+                    int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul));
 #if UNITY_EDITOR
-                Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} streakMul={streakMul:F2} reward={reward}");
+                    Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} streakMul={streakMul:F2} reward={reward}");
 #endif
-                Economy.Instance?.AddGold(reward);
+                    Economy.Instance?.AddGold(reward);
+                }
+#if UNITY_EDITOR
+                else
+                    Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
+#endif
+
                 WaveManager.Instance?.NotifyEnemyDied(this);
                 Destroy(gameObject);
             }
