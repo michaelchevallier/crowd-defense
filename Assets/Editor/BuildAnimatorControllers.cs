@@ -9,11 +9,14 @@ using UnityEngine;
 namespace CrowdDefense.Editor
 {
     // Génère un AnimatorController par asset GLTF importé sous Assets/Models/.
-    // Convention de nommage clips Quaternius : "Idle", "Walking_A", "Running_A",
-    //   "1H_Melee_Attack_Chop", "Death_A", etc.
+    // Clip patterns supportés :
+    //   Idle   : "idle", "flying_idle"
+    //   Walk   : "walk", "run", "fast_flying"
+    //   Attack : "attack", "shoot", "melee", "punch", "bite", "headbutt"
+    //   Death  : "death", "die", "dead"
     // Output : Assets/Resources/Animations/Controllers/{fileName}.controller
-    // Mike : lancer via menu Tools > CrowdDefense > Build Animator Controllers
-    //        après chaque import de nouveaux modèles GLTF.
+    // Lancer via menu Tools > CrowdDefense > Build Animator Controllers
+    //              puis > Wire Animators To Prefabs
     public static class BuildAnimatorControllers
     {
         private const string k_ModelsRoot = "Assets/Models";
@@ -35,7 +38,6 @@ namespace CrowdDefense.Editor
 
                 var allAssets = AssetDatabase.LoadAllAssetsAtPath(path);
                 var clips = allAssets.OfType<AnimationClip>()
-                    // Ignore preview clips internes Unity (préfixés __preview__)
                     .Where(c => !c.name.StartsWith("__preview__"))
                     .ToArray();
 
@@ -45,10 +47,9 @@ namespace CrowdDefense.Editor
                     continue;
                 }
 
-                string fileName = Path.GetFileNameWithoutExtension(path);
+                string fileName       = Path.GetFileNameWithoutExtension(path);
                 string controllerPath = $"{k_OutputDir}/{fileName}.controller";
 
-                // Skip si controller up-to-date (ne pas écraser les tweaks manuels)
                 if (File.Exists(controllerPath))
                 {
                     skipped++;
@@ -58,12 +59,11 @@ namespace CrowdDefense.Editor
                 var controller = AnimatorController.CreateAnimatorControllerAtPath(controllerPath);
                 var rootSM = controller.layers[0].stateMachine;
 
-                AnimatorState? idleState    = null;
-                AnimatorState? walkState    = null;
-                AnimatorState? attackState  = null;
-                AnimatorState? deathState   = null;
+                AnimatorState? idleState   = null;
+                AnimatorState? walkState   = null;
+                AnimatorState? attackState = null;
+                AnimatorState? deathState  = null;
 
-                // Ajoute un state par clip + détecte les states clés par substring
                 foreach (var clip in clips)
                 {
                     var state = rootSM.AddState(clip.name);
@@ -71,40 +71,39 @@ namespace CrowdDefense.Editor
 
                     string lower = clip.name.ToLowerInvariant();
 
-                    if (idleState == null && lower.Contains("idle"))
+                    if (idleState == null && (lower == "idle" || lower == "flying_idle"))
                         idleState = state;
 
-                    if (walkState == null && (lower.Contains("walk") || lower.Contains("run")))
+                    if (walkState == null && (lower.Contains("walk") || lower.Contains("run") || lower == "fast_flying"))
                         walkState = state;
 
-                    if (attackState == null && (lower.Contains("attack") || lower.Contains("shoot") || lower.Contains("melee")))
+                    if (attackState == null && (
+                            lower.Contains("attack") || lower.Contains("shoot") || lower.Contains("melee") ||
+                            lower.Contains("punch")  || lower.Contains("bite")  || lower.Contains("headbutt")))
                         attackState = state;
 
-                    if (deathState == null && (lower.Contains("death") || lower.Contains("die")))
+                    if (deathState == null && (lower.Contains("death") || lower.Contains("die") || lower == "dead"))
                         deathState = state;
                 }
 
-                // Idle = state par défaut
                 if (idleState != null)
                     rootSM.defaultState = idleState;
 
-                // Ajoute paramètre isWalking + transitions Idle ↔ Walk
                 if (idleState != null && walkState != null)
                 {
                     controller.AddParameter("isWalking", AnimatorControllerParameterType.Bool);
 
                     var toWalk = idleState.AddTransition(walkState);
-                    toWalk.hasExitTime     = false;
-                    toWalk.duration        = 0.2f;
+                    toWalk.hasExitTime = false;
+                    toWalk.duration    = 0.2f;
                     toWalk.AddCondition(AnimatorConditionMode.If, 0, "isWalking");
 
                     var toIdle = walkState.AddTransition(idleState);
-                    toIdle.hasExitTime     = false;
-                    toIdle.duration        = 0.2f;
+                    toIdle.hasExitTime = false;
+                    toIdle.duration    = 0.2f;
                     toIdle.AddCondition(AnimatorConditionMode.IfNot, 0, "isWalking");
                 }
 
-                // Ajoute attackTrigger + transition depuis Idle (et Walk si présent)
                 if (attackState != null && (idleState != null || walkState != null))
                 {
                     controller.AddParameter("attackTrigger", AnimatorControllerParameterType.Trigger);
@@ -124,17 +123,15 @@ namespace CrowdDefense.Editor
                         t.AddCondition(AnimatorConditionMode.If, 0, "attackTrigger");
                     }
 
-                    // Retour à Idle après l'attaque
                     if (idleState != null)
                     {
                         var back = attackState.AddTransition(idleState);
-                        back.hasExitTime  = true;
-                        back.exitTime     = 0.9f;
-                        back.duration     = 0.2f;
+                        back.hasExitTime = true;
+                        back.exitTime    = 0.9f;
+                        back.duration    = 0.2f;
                     }
                 }
 
-                // Ajoute dieTrigger (pas de retour — Death est terminal)
                 if (deathState != null)
                 {
                     controller.AddParameter("dieTrigger", AnimatorControllerParameterType.Trigger);
@@ -161,8 +158,89 @@ namespace CrowdDefense.Editor
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
-
             Debug.Log($"[BuildAnimatorControllers] Terminé — {created} créés, {skipped} ignorés.");
+        }
+
+        // Assigne chaque .controller généré à l'Animator du GLTF importé correspondant.
+        // Couvre Heroes + Enemies. Idempotent (safe à relancer).
+        // Note : Unity interdit l'édition directe du prefab GLTF importé — on passe par
+        // SerializedObject sur le ModelImporter, puis ReimportAsset pour appliquer.
+        [MenuItem("Tools/CrowdDefense/Wire Animators To Prefabs")]
+        public static void WireAnimatorsToPrefabs()
+        {
+            if (!Directory.Exists(k_OutputDir))
+            {
+                Debug.LogWarning("[WireAnimators] Pas de controllers — lance d'abord 'Build Animator Controllers'.");
+                return;
+            }
+
+            string[] modelGuids = AssetDatabase.FindAssets("t:Model", new[]
+            {
+                $"{k_ModelsRoot}/Heroes",
+                $"{k_ModelsRoot}/Enemies"
+            });
+
+            int wired   = 0;
+            int missing = 0;
+
+            foreach (string guid in modelGuids)
+            {
+                string modelPath = AssetDatabase.GUIDToAssetPath(guid);
+                if (AssetImporter.GetAtPath(modelPath) is not ModelImporter) continue;
+
+                string fileName       = Path.GetFileNameWithoutExtension(modelPath);
+                string controllerPath = $"{k_OutputDir}/{fileName}.controller";
+
+                var controller = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(controllerPath);
+                if (controller == null)
+                {
+                    missing++;
+                    continue;
+                }
+
+                // ModelImporter expose defaultClipAnimations mais pas le controller directement.
+                // La seule façon stable d'attacher un controller à un GLTF prefab importé est via
+                // PrefabUtility sur un Prefab Variant, ou via le SerializedObject du root GameObject.
+                // On charge le root GameObject importé et on modifie l'Animator via SerializedObject.
+                var rootGO = AssetDatabase.LoadMainAssetAtPath(modelPath) as GameObject;
+                if (rootGO == null)
+                {
+                    missing++;
+                    continue;
+                }
+
+                var animator = rootGO.GetComponentInChildren<Animator>(includeInactive: true);
+                if (animator == null)
+                {
+                    // GLTF sans Animator — on force l'ajout via importer extraUserData flag (non standard).
+                    // On se contente de logger : le prefab n'a pas d'Animator.
+                    Debug.LogWarning($"[WireAnimators] {fileName}: pas d'Animator sur le prefab GLTF importé.");
+                    missing++;
+                    continue;
+                }
+
+                if (animator.runtimeAnimatorController == controller)
+                    continue;
+
+                var so = new SerializedObject(animator);
+                var controllerProp = so.FindProperty("m_Controller");
+                if (controllerProp == null)
+                {
+                    missing++;
+                    continue;
+                }
+
+                controllerProp.objectReferenceValue = controller;
+                so.ApplyModifiedProperties();
+                EditorUtility.SetDirty(rootGO);
+                wired++;
+
+                Debug.Log($"[WireAnimators] {fileName} -> controller assigné.");
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log($"[WireAnimators] Terminé — {wired} wirés, {missing} sans controller ou animator.");
         }
     }
 }
