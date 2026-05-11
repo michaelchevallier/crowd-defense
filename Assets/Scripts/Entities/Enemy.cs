@@ -1291,6 +1291,7 @@ namespace CrowdDefense.Entities
                 JuiceFX.Instance?.Shake(0.3f, 400);
                 JuiceFX.Instance?.SlowMo(0.3f, 800);
                 JuiceFX.Instance?.Flash(Color.white, 250);
+                StartCoroutine(BossCinematic());
             }
 
             // Boss reward = 0× (D1-01 §3.3)
