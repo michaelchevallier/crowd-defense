@@ -117,6 +117,16 @@ namespace CrowdDefense.Visual
             r.material = m;
         }
 
+        /// <summary>
+        /// Replaces all Renderer materials in the subtree with a single override material.
+        /// Used by SkinSystem when a SkinDef provides an AlternateMaterial.
+        /// </summary>
+        public static void ApplyOverrideMaterial(GameObject root, Material mat)
+        {
+            foreach (var r in root.GetComponentsInChildren<Renderer>())
+                r.material = mat;
+        }
+
         private static Material? LoadCached(ref Material? cache, string resourceName)
         {
             if (cache == null)

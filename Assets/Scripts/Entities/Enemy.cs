@@ -81,7 +81,26 @@ namespace CrowdDefense.Entities
             rend = GetComponent<MeshRenderer>();
             baseColor = type.BodyColor;
 
-            _meshChild = SpawnMeshChild(type.AssetKey);
+            // Check active skin before spawning GLTF mesh
+            string assetKey = type.AssetKey;
+            Color bodyColor = type.BodyColor;
+            Material? skinMat = null;
+
+            var activeSkin = SkinSystem.Instance?.GetActiveSkin(SkinTargetType.Enemy, type.Id);
+            if (activeSkin != null)
+            {
+                if (activeSkin.AlternateGLTF != null)
+                    assetKey = activeSkin.Id;
+                if (activeSkin.AlternateMaterial != null)
+                    skinMat = activeSkin.AlternateMaterial;
+                if (activeSkin.UseBodyColorOverride)
+                    bodyColor = activeSkin.BodyColorOverride;
+            }
+
+            _meshChild = activeSkin?.AlternateGLTF != null
+                ? SpawnSkinMeshChild(activeSkin.AlternateGLTF)
+                : SpawnMeshChild(assetKey);
+            baseColor = bodyColor;
 
             // Cache renderers once — hot path (UpdateStealth runs every frame per enemy)
             var meshRoot = _meshChild != null ? _meshChild : gameObject;
@@ -89,9 +108,11 @@ namespace CrowdDefense.Entities
             _mpb ??= new MaterialPropertyBlock();
 
             // Cel-shading toon material — port de applyToonToScene() ToonMaterial.js
-            // Apply on GLTF subtree if present, otherwise on root (capsule primitive)
             var toonRoot = meshRoot;
-            MaterialController.ApplyToon(toonRoot, type.BodyColor, type.IsStealth);
+            if (skinMat != null)
+                MaterialController.ApplyOverrideMaterial(toonRoot, skinMat);
+            else
+                MaterialController.ApplyToon(toonRoot, bodyColor, type.IsStealth);
             // If GLTF spawned, disable the root capsule MeshRenderer (keep collider)
             if (_meshChild != null && rend != null)
                 rend.enabled = false;
@@ -189,6 +210,21 @@ namespace CrowdDefense.Entities
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale = Vector3.one;
             return instance;
+        }
+
+        private GameObject? SpawnSkinMeshChild(GameObject skinPrefab)
+        {
+            if (_meshChild != null)
+            {
+                _meshChild.SetActive(true);
+                return _meshChild;
+            }
+            var inst = Object.Instantiate(skinPrefab, transform);
+            inst.name = "Skin_" + skinPrefab.name;
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one;
+            return inst;
         }
 
         private void BuildShieldHalo()
