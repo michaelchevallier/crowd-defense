@@ -70,11 +70,7 @@ namespace CrowdDefense.Systems
             }
 
             // R6: if a previous boss is still alive, publish defeated for it first
-            if (_currentBoss != null && !_currentBoss.IsDead && _currentDef != null && !_defeatedPublished)
-            {
-                EventManager.Instance?.Publish(new BossDefeatedEvent(_currentDef.DisplayNameFr));
-                _defeatedPublished = true;
-            }
+            TryPublishDefeat();
 
             _currentBoss = e.Enemy;
             _currentDef = def;
@@ -129,8 +125,7 @@ namespace CrowdDefense.Systems
 
         private void ResetBoss()
         {
-            if (!_defeatedPublished && _currentDef != null)
-                EventManager.Instance?.Publish(new BossDefeatedEvent(_currentDef.DisplayNameFr));
+            TryPublishDefeat();
             _currentBoss = null;
             _currentDef = null;
             _currentPhase = 0;
