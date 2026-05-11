@@ -1,0 +1,33 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="BluePill.uss" />
+    <ui:VisualElement name="bluepill-root" class="bluepill-root hidden">
+        <ui:VisualElement name="bluepill-panel" class="bluepill-panel">
+            <ui:Label text="BluePill Mode" name="bluepill-title" class="bluepill-title" />
+
+            <ui:Label text="Channel for 2s without moving to teleport to the castle."
+                      name="bluepill-description" class="bluepill-description" />
+
+            <ui:VisualElement class="bluepill-toggle-row">
+                <ui:Label text="Enable BluePill mode" name="bluepill-toggle-label" class="bluepill-field-label" />
+                <ui:Toggle name="bluepill-toggle" class="bluepill-toggle" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="bluepill-stats">
+                <ui:VisualElement class="bluepill-stat-row">
+                    <ui:Label text="BluePill kills" name="bluepill-kills-label" class="bluepill-stat-label" />
+                    <ui:Label text="0" name="bluepill-kills-value" class="bluepill-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="bluepill-stat-row">
+                    <ui:Label text="BluePill uses" name="bluepill-uses-label" class="bluepill-stat-label" />
+                    <ui:Label text="0" name="bluepill-uses-value" class="bluepill-stat-value" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+            <ui:VisualElement class="bluepill-footer">
+                <ui:Button text="Close" name="bluepill-close-btn" class="bluepill-btn bluepill-btn-close" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
