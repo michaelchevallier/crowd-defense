@@ -787,7 +787,7 @@ namespace CrowdDefense.Entities
             AudioController.Instance?.Play("enemy_hit", 0.4f);
             VfxPool.Instance?.SpawnHitFlash(transform);
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnDamage(
-                actualDmg, transform.position + Vector3.up * 1.2f);
+                actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
 
             // Juice screen shake on hit for bosses
             if (cfg != null && cfg.IsBoss)
@@ -883,7 +883,7 @@ namespace CrowdDefense.Entities
 #endif
                 EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
                 CoinPullManager.Instance?.SpawnCoinFlyTo(transform.position, reward);
-                Economy.Instance?.AddGoldFromKill(reward);
+                Economy.Instance?.AddGoldFromKill(reward, transform.position + Vector3.up * 1.2f);
             }
 #if UNITY_EDITOR
             else Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");

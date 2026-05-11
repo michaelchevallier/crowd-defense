@@ -168,6 +168,8 @@ namespace CrowdDefense.Entities
             HP = Mathf.Min(HPMax, HP + amount);
             OnHPChanged?.Invoke(HP, HPMax);
             RefreshHpBar();
+            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnHeal(
+                amount, transform.position + Vector3.up * 2f);
         }
 
         // Increase max HP (forteresse_perk / set bonus "pierre") — also heals by the delta.
