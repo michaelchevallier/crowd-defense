@@ -50,6 +50,8 @@ namespace CrowdDefense.Visual
             foreach (var (go, _) in tiles)
                 go.transform.localScale = Vector3.zero;
 
+            AudioController.Instance?.Play("path_reveal");
+
             // Staggered reveal
             float elapsed = 0f;
             int next = 0;
