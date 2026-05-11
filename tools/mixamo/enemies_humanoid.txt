@@ -1,0 +1,38 @@
+# Humanoid enemies — Mixamo animation download list
+# Format: enemy_key | SC_asset_name | mixamo_char_name | notes
+# Humanoid = bipedal characters compatible with Mixamo Humanoid rig
+#
+# EXCLUDED (non-humanoid):
+#   CyberFlyer (mob_cyberpunk_flying) — isFlyer=1, mechanical
+#   Flyer (wizard-flyer variant)      — isFlyer=1
+#   ForestBee (mob_armabee)           — isFlyer=1, insect
+#   PlainePigeon (mob_pigeon)         — isFlyer=1, bird
+#   DragonBoss (boss_volcan_dragon_v2) — isFlyer=1 + non-humanoid
+#   KrakenBoss (boss_submarin_kraken) — tentacle creature
+#   SubmarinRunner (mob_frog)         — quadruped
+#   DesertRunner (mob_cactoro)        — creature
+
+# --- BATCH 1 (50 downloads, today) ---
+
+zombie          | Basic                        | Zombie      | basic grunt, most used
+goblin          | Imp / Assassin / Runner      | Goblin      | 3 enemy types share this key
+soldier         | Brute                        | Soldier     | heavy infantry
+knightgolden    | Shielded                     | Knight      | armored + shield
+mob_skeleton    | SkeletonMinion               | Skeleton    | summon minion
+mob_orc         | ForestBrute                  | Orc         | forest world brute
+mob_cyberpunk_character | CyberBasic           | Mannequin   | cyberpunk basic unit
+mob_cyberpunk_large     | CyberBrute           | X Bot       | cyberpunk heavy
+mob_cyberpunk_2legs     | CyberRunner          | X Bot       | cyberpunk fast
+pirate          | Boss / BrigandBoss / CorsairBoss | Pirate  | 3 boss types share this key
+wizard          | Midboss / WarlordBoss        | Mage        | wizard class bosses
+boss_medieval_sorcier_roi | WizardKing         | Mage        | king sorcerer final boss
+
+# --- BATCH 2 (10 downloads, tomorrow) ---
+
+boss_apocalypse   | ApocalypseBoss             | Y Bot       | apocalypse boss
+boss_espace_ghost | CosmicBoss                 | Mannequin   | cosmic ghost boss
+boss_cyberpunk_hub_ia | AiHub                  | Y Bot       | AI hub boss
+
+# TOTAL: 15 unique keys × 4 anims = 60 anims
+# Batch 1: 12 × 4 = 48 + 2 from boss_apocalypse = 50
+# Batch 2: remaining 10
