@@ -475,7 +475,9 @@ namespace CrowdDefense.Entities
 #if UNITY_EDITOR
                     Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} streakMul={streakMul:F2} reward={reward}");
 #endif
-                    Economy.Instance?.AddGold(reward);
+                    // Publish first so ComboSystem updates ActiveMultiplier, then Economy applies it
+                    EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
+                    Economy.Instance?.AddGoldFromKill(reward);
                 }
 #if UNITY_EDITOR
                 else Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
