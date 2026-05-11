@@ -12,7 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 248ead8dd01ed48309b00f28d553d0a4, type: 3}
   m_Name: LevelThemeMaterialConfig
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelThemeMaterialConfig
-  entries: []
-  defaultWaterMat: {fileID: 0}
-  defaultLavaMat: {fileID: 0}
-  defaultSurfaceMat: {fileID: 0}
+  entries:
+  - theme: 0
+    waterMat: {fileID: 2100000, guid: ab356f2a22bf24c3b8174081dd636939, type: 2}
+    lavaMat: {fileID: 0}
+    surfaceMat: {fileID: 2100000, guid: 18c0d0cc0f203406ba978e3a63543fe6, type: 2}
+  - theme: 1
+    waterMat: {fileID: 2100000, guid: ab356f2a22bf24c3b8174081dd636939, type: 2}
+    lavaMat: {fileID: 0}
+    surfaceMat: {fileID: 2100000, guid: 06c01f44e2e874973ad997aedfd9fe95, type: 2}
+  - theme: 3
+    waterMat: {fileID: 0}
+    lavaMat: {fileID: 2100000, guid: ac9d54331f24d4a2691d898185eb065b, type: 2}
+    surfaceMat: {fileID: 2100000, guid: ac9d54331f24d4a2691d898185eb065b, type: 2}
+  - theme: 7
+    waterMat: {fileID: 2100000, guid: ab356f2a22bf24c3b8174081dd636939, type: 2}
+    lavaMat: {fileID: 0}
+    surfaceMat: {fileID: 2100000, guid: 9224999a4c9de45f69e35155c20e1507, type: 2}
+  - theme: 6
+    waterMat: {fileID: 2100000, guid: ab356f2a22bf24c3b8174081dd636939, type: 2}
+    lavaMat: {fileID: 0}
+    surfaceMat: {fileID: 2100000, guid: ab356f2a22bf24c3b8174081dd636939, type: 2}
+  defaultWaterMat: {fileID: 2100000, guid: ab356f2a22bf24c3b8174081dd636939, type: 2}
+  defaultLavaMat: {fileID: 2100000, guid: ac9d54331f24d4a2691d898185eb065b, type: 2}
+  defaultSurfaceMat: {fileID: 2100000, guid: 18c0d0cc0f203406ba978e3a63543fe6, type: 2}
