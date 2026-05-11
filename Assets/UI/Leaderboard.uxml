@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="Leaderboard.uss" />
+    <ui:VisualElement name="leaderboard-root" class="leaderboard-root hidden">
+        <ui:VisualElement name="leaderboard-panel" class="leaderboard-panel">
+            <ui:Label text="Best Runs" name="leaderboard-title" class="leaderboard-title" />
+            <ui:Label text="No runs yet." name="leaderboard-empty" class="leaderboard-empty" />
+            <ui:VisualElement name="leaderboard-list" class="leaderboard-list" />
+            <ui:VisualElement class="leaderboard-footer">
+                <ui:Button text="Close" name="leaderboard-close-btn" class="lb-btn" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

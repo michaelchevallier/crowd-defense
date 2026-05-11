@@ -180,6 +180,14 @@ namespace CrowdDefense.UI
                     ["doctrine.btn_active"] = "Active",
                     ["doctrine.cost_label"] = "{0} gems",
                     ["doctrine.hud_btn"] = "Doctrines",
+                    // ── Leaderboard ────────────────────────────────────────────────
+                    ["leaderboard.title"] = "Best Runs",
+                    ["leaderboard.empty"] = "No runs yet. Play endless mode!",
+                    ["leaderboard.col_rank"] = "#",
+                    ["leaderboard.col_wave"] = "Wave",
+                    ["leaderboard.col_score"] = "Score",
+                    ["leaderboard.col_date"] = "Date",
+                    ["leaderboard.close"] = "Close",
 
                     // ── Synergy badge icons (text prefix per tower type) ────────────
                     ["syn.icon.archer"]   = "[A]",
@@ -417,6 +425,14 @@ namespace CrowdDefense.UI
                     ["doctrine.btn_active"] = "Active",
                     ["doctrine.cost_label"] = "{0} gemmes",
                     ["doctrine.hud_btn"] = "Doctrines",
+                    // ── Leaderboard ────────────────────────────────────────────────
+                    ["leaderboard.title"] = "Best Runs",
+                    ["leaderboard.empty"] = "No runs yet. Play endless mode!",
+                    ["leaderboard.col_rank"] = "#",
+                    ["leaderboard.col_wave"] = "Wave",
+                    ["leaderboard.col_score"] = "Score",
+                    ["leaderboard.col_date"] = "Date",
+                    ["leaderboard.close"] = "Close",
 
                     // ── Synergy badge icons (same shortcodes in FR) ─────────────────
                     ["syn.icon.archer"]   = "[A]",
