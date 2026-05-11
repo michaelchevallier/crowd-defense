@@ -235,12 +235,14 @@ namespace CrowdDefense.Entities
             mat.renderQueue = 3000;
         }
 
-        // ── Movement input (called by InputController or HeroInputAdapter) ────
+        // ── Movement input (called by LevelRunner.UpdateHeroInput) ──────────
         public void SetMove(float dx, float dz)
         {
             float len = Mathf.Sqrt(dx * dx + dz * dz);
             _moveDir = len > 0.05f ? new Vector2(dx / len, dz / len) : Vector2.zero;
         }
+
+        public void SetRunning(bool running) => _running = running;
 
         // ── Perk accumulation ─────────────────────────────────────────────────
 
