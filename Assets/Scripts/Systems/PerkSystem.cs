@@ -195,6 +195,10 @@ namespace CrowdDefense.Systems
             if (def.mursPierre)     hero.MursPierre     = true;
             if (def.forteressePerk) { hero.ForteressePerk = true; hero.CastleHPMaxMul *= ForteresseHPMul; }
 
+            // Magnet perk (D1-01 Q3): boosts coin pull range + fly speed via CoinPullManager
+            if (def.magnetRangeMul  > 1f) CoinPullManager.Instance?.ApplyMagnetRangeMul(def.magnetRangeMul);
+            if (def.coinFlySpeedMul > 1f) CoinPullManager.Instance?.ApplyCoinFlySpeedMul(def.coinFlySpeedMul);
+
             // Downsides
             if (def.downRange != 0f)      hero.RangeMul    *= 1f + def.downRange;
             if (def.downDamage != 0f)     hero.DamageMul   *= 1f + def.downDamage;
