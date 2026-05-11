@@ -1,0 +1,41 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="HUD.uss" />
+    <ui:VisualElement name="hud-root" class="hud-root">
+        <!-- Top bar pills -->
+        <ui:VisualElement class="top-bar">
+            <ui:VisualElement class="pill pill-gold" name="pill-gold">
+                <ui:Label text="GOLD" class="pill-label" />
+                <ui:Label text="120" name="gold-value" class="pill-value" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="pill pill-wave" name="pill-wave">
+                <ui:Label text="WAVE" class="pill-label" />
+                <ui:Label text="1/4" name="wave-value" class="pill-value" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="pill pill-hp" name="pill-hp">
+                <ui:Label text="HP" class="pill-label" />
+                <ui:Label text="120/120" name="hp-value" class="pill-value" />
+                <ui:VisualElement class="hp-bar-bg">
+                    <ui:VisualElement name="hp-bar-fill" class="hp-bar-fill" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Game Over panel -->
+        <ui:VisualElement name="panel-game-over" class="overlay-panel overlay-game-over hidden">
+            <ui:Label text="GAME OVER" class="overlay-title" />
+            <ui:Label text="Le castle est tombé." class="overlay-subtitle" />
+            <ui:Button text="Recommencer" name="btn-restart-go" class="overlay-button" />
+        </ui:VisualElement>
+
+        <!-- Victory panel -->
+        <ui:VisualElement name="panel-victory" class="overlay-panel overlay-victory hidden">
+            <ui:Label text="VICTOIRE" class="overlay-title" />
+            <ui:Label text="W1-1 clear." class="overlay-subtitle" />
+            <ui:Button text="Rejouer" name="btn-restart-victory" class="overlay-button" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
