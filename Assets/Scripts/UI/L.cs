@@ -36,9 +36,9 @@ namespace CrowdDefense.UI
                     ["perk.placeholder_desc"] = "No description available.",
 
                     // ── HUD pills ───────────────────────────────────────────────────
-                    ["hud.gold_label"] = "GOLD",
-                    ["hud.wave_label"] = "WAVE",
-                    ["hud.hp_label"] = "HP",
+                    ["hud.gold_label"] = "\U0001F4B0 GOLD",
+                    ["hud.wave_label"] = "⚔️ WAVE",
+                    ["hud.hp_label"] = "❤️ HP",
                     ["hud.wave_launch"] = "Launch wave [N]",
                     ["hud.wave_launch_bonus"] = "Launch (+30c) [N]",
                     ["hud.wave_launch_countdown"] = "Wave {0} — {1:F0}s [N]",
@@ -317,9 +317,9 @@ namespace CrowdDefense.UI
                     ["perk.placeholder_desc"] = "Aucune description disponible.",
 
                     // ── HUD pills ───────────────────────────────────────────────────
-                    ["hud.gold_label"] = "OR",
-                    ["hud.wave_label"] = "VAGUE",
-                    ["hud.hp_label"] = "PV",
+                    ["hud.gold_label"] = "\U0001F4B0 OR",
+                    ["hud.wave_label"] = "⚔️ VAGUE",
+                    ["hud.hp_label"] = "❤️ PV",
                     ["hud.wave_launch"] = "Lancer la vague [N]",
                     ["hud.wave_launch_bonus"] = "Lancer (+30c) [N]",
                     ["hud.wave_launch_countdown"] = "Vague {0} — {1:F0}s [N]",

@@ -136,6 +136,11 @@ namespace CrowdDefense.UI
 
             root.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
 
+            // Force initial values so top-bar is never blank at runtime
+            if (goldValue != null) goldValue.text = "0";
+            if (waveValue != null) waveValue.text = "—";
+            if (hpValue != null) hpValue.text = "—";
+
             ApplyLocalizedTexts();
             L.OnLocaleChanged += ApplyLocalizedTexts;
 
