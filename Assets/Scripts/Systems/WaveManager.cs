@@ -129,6 +129,9 @@ namespace CrowdDefense.Systems
             {
                 enemy.Init(type);
                 activeEnemies.Add(enemy);
+#if UNITY_EDITOR
+                Debug.Log($"[WaveManager] spawned {type.Id} active={activeEnemies.Count}");
+#endif
             }
         }
 
