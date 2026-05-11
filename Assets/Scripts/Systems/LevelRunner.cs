@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 
@@ -8,10 +9,8 @@ namespace CrowdDefense.Systems
 {
     public enum GameState { Play, GameOver, Victory }
 
-    public class LevelRunner : MonoBehaviour
+    public class LevelRunner : MonoSingleton<LevelRunner>
     {
-        public static LevelRunner? Instance { get; private set; }
-
         [SerializeField] private LevelData? currentLevel;
         [SerializeField] private GameObject? castlePrefab;
 
@@ -27,11 +26,8 @@ namespace CrowdDefense.Systems
 
         private float targetSpeed = 1f;
 
-        private void Awake()
+        protected override void OnAwakeSingleton()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
-
             if (!string.IsNullOrEmpty(LevelLoader.NextLevelId))
             {
                 var reg = Data.LevelRegistry.Get();
@@ -48,9 +44,8 @@ namespace CrowdDefense.Systems
             ApplyTimeScale();
         }
 
-        private void OnDestroy()
+        protected override void OnDestroySingleton()
         {
-            if (Instance == this) Instance = null;
             if (WaveManager.Instance != null)
                 WaveManager.Instance.OnAllWavesCompleted -= OnVictory;
         }

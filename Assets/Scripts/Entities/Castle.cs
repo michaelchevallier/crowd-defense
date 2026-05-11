@@ -1,31 +1,19 @@
 #nullable enable
 using System;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Systems;
 
 namespace CrowdDefense.Entities
 {
-    public class Castle : MonoBehaviour
+    public class Castle : MonoSingleton<Castle>
     {
-        public static Castle? Instance { get; private set; }
-
         public int HP { get; private set; }
         public int HPMax { get; private set; }
         public bool IsDead => HP <= 0;
 
         public event Action<int, int>? OnHPChanged;
         public event Action<Castle>? OnCastleDied;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
-        }
-
-        private void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
-        }
 
         public void Init(int hp)
         {

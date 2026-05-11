@@ -1,14 +1,13 @@
 #nullable enable
 using System;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 
 namespace CrowdDefense.Systems
 {
-    public class Economy : MonoBehaviour
+    public class Economy : MonoSingleton<Economy>
     {
-        public static Economy? Instance { get; private set; }
-
         public int Gold { get; private set; }
 
         // Interest bank state (D1-01 §3.5)
@@ -18,12 +17,6 @@ namespace CrowdDefense.Systems
         public event Action<int>? OnGoldChanged;
         // Fired with (gain, totalAccumulated) on interest tick; gain=0 means reset (leak)
         public event Action<int, int>? OnBankTick;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
-        }
 
         private void Start()
         {

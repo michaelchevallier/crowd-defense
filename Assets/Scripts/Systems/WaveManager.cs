@@ -2,15 +2,14 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
-    public class WaveManager : MonoBehaviour
+    public class WaveManager : MonoSingleton<WaveManager>
     {
-        public static WaveManager? Instance { get; private set; }
-
         [SerializeField] private LevelData? levelData;
         [SerializeField] private GameObject? enemyPrefab;
 
@@ -45,12 +44,6 @@ namespace CrowdDefense.Systems
         public event Action? OnAllWavesCompleted;
         // Fired when the break/skip window state changes (HUD updates pill + button)
         public event Action? OnBreakStateChanged;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
-        }
 
         private void Start()
         {

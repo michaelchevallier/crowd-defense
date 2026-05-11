@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 
 namespace CrowdDefense.Systems
@@ -15,10 +16,8 @@ namespace CrowdDefense.Systems
         public PathMeta(int portalIdx, int castleIdx) { PortalIdx = portalIdx; CastleIdx = castleIdx; }
     }
 
-    public class PathManager : MonoBehaviour
+    public class PathManager : MonoSingleton<PathManager>
     {
-        public static PathManager? Instance { get; private set; }
-
         [SerializeField] private LevelData? levelData;
 
         public GridData? Grid { get; private set; }
@@ -35,12 +34,7 @@ namespace CrowdDefense.Systems
         public int WaypointCount => Waypoints.Count;
         private static readonly IReadOnlyList<Vector3> _empty = new List<Vector3>();
 
-        private void Awake()
-        {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
-            Build();
-        }
+        protected override void OnAwakeSingleton() => Build();
 
         public void Build()
         {
