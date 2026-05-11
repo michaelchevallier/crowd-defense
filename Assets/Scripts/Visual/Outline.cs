@@ -22,14 +22,14 @@ namespace CrowdDefense.Visual
             var mat = GetOrCreateMaterial(outlineColor);
             if (mat == null) return;
 
-            foreach (var mf in root.GetComponentsInChildren<MeshFilter>(true))
-            {
-                if (mf.sharedMesh == null) continue;
-                // Skip existing outline GOs to avoid double-apply on pool reuse
-                if (mf.gameObject.name == "Outline") continue;
+            // One outline GO per entity root only: find the root MeshFilter (or the first
+            // MeshFilter in the subtree for GLTF hierarchies where the root has no MeshFilter).
+            // Skipping all child MeshFilters avoids 1 outline GO per sub-mesh on multi-mesh GLTFs.
+            var rootMf = root.GetComponent<MeshFilter>() ?? root.GetComponentInChildren<MeshFilter>(true);
+            if (rootMf == null || rootMf.sharedMesh == null) return;
+            if (rootMf.gameObject.name == "Outline") return;
 
-                BuildOutlineGO(mf, mat, scale);
-            }
+            BuildOutlineGO(rootMf, mat, scale);
         }
 
         private static void BuildOutlineGO(MeshFilter sourceMf, Material mat, float scale)
