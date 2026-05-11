@@ -162,6 +162,14 @@ namespace CrowdDefense.Systems
             towerCumulativeCost.Remove(t);
         }
 
+        // Called by boss AoE blast to destroy a tower directly (POC — no HP system yet).
+        public void RemoveTower(Tower t)
+        {
+            placedTowers.Remove(t);
+            towerCumulativeCost.Remove(t);
+            Destroy(t.gameObject);
+        }
+
         /// <summary>
         /// Sync le dict cumulativeCost après un upgrade (appelé par CORE-20 radial menu ou hotkey U debug).
         /// Tower.CumulativeCost est déjà mis à jour dans Tower.UpgradeTo — ce sync garde le dict cohérent.
