@@ -1,0 +1,30 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="DailyChallenge.uss" />
+    <ui:VisualElement name="daily-root" class="daily-root hidden">
+        <ui:VisualElement name="daily-panel" class="daily-panel">
+            <ui:Label text="Daily Challenge" name="daily-title" class="daily-title" />
+
+            <ui:VisualElement class="daily-row">
+                <ui:Label text="Seed" name="daily-seed-label" class="daily-field-label" />
+                <ui:Label text="--" name="daily-seed-value" class="daily-field-value" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="daily-row">
+                <ui:Label text="Challenge" name="daily-challenge-label" class="daily-field-label" />
+                <ui:Label text="--" name="daily-challenge-value" class="daily-field-value daily-challenge-name" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="daily-row">
+                <ui:Label text="Best Score" name="daily-best-label" class="daily-field-label" />
+                <ui:Label text="No score yet" name="daily-best-value" class="daily-field-value daily-best-score" />
+            </ui:VisualElement>
+
+            <ui:VisualElement class="daily-footer">
+                <ui:Button text="Play" name="daily-play-btn" class="daily-btn daily-btn-play" />
+                <ui:Button text="Close" name="daily-close-btn" class="daily-btn daily-btn-close" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

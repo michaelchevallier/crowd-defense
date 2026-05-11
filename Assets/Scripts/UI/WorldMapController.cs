@@ -9,6 +9,7 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class WorldMapController : MonoBehaviour
     {
+        [SerializeField] private DailyChallengeController? dailyPanel;
         private static readonly string[] WorldThemeKeys =
         {
             "worldmap.world1",  // W1 — Plaine
@@ -36,6 +37,13 @@ namespace CrowdDefense.UI
 
             var starsLabel = root.Q<Label>("worldmap-stars-label");
             if (starsLabel != null) starsLabel.text = L.Get("worldmap.total_stars", SaveSystem.TotalStars());
+
+            var dailyBtn = root.Q<Button>("worldmap-daily-btn");
+            if (dailyBtn != null)
+            {
+                dailyBtn.text = L.Get("worldmap.btn_daily");
+                dailyBtn.RegisterCallback<ClickEvent>(_ => dailyPanel?.Show());
+            }
 
             var content = root.Q<VisualElement>("worldmap-content");
             if (content == null)

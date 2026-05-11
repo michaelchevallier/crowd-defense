@@ -13,6 +13,13 @@ namespace CrowdDefense.Systems
             SceneManager.LoadScene("Main");
         }
 
+        // Reserved id — LevelRunner detects "__daily" and loads Daily.BuildDailyLevel() spec.
+        public static void LoadDaily()
+        {
+            NextLevelId = "__daily";
+            SceneManager.LoadScene("Main");
+        }
+
         public static void GoToWorldMap()
         {
             NextLevelId = null;
