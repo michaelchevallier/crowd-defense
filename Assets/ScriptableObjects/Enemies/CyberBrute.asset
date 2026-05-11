@@ -21,7 +21,7 @@ MonoBehaviour:
   scale: 0.8
   bodyColor: {r: 0.627, g: 0.251, b: 1, a: 1}
   walkAnim: Walk
-  assetKey: mob_cyberpunk_large
+  assetKey: mob_tribal
   isFlyer: 0
   flyHeight: 0
   ignorePath: 0

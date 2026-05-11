@@ -21,7 +21,7 @@ MonoBehaviour:
   scale: 0.5
   bodyColor: {r: 1, g: 0.502, b: 1, a: 1}
   walkAnim: Flying
-  assetKey: mob_cyberpunk_flying
+  assetKey: mob_birb
   isFlyer: 1
   flyHeight: 2.5
   ignorePath: 1
