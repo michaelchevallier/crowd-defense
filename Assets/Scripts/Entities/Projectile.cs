@@ -1,4 +1,5 @@
 #nullable enable
+using CrowdDefense.Common;
 using UnityEngine;
 
 namespace CrowdDefense.Entities
@@ -19,7 +20,7 @@ namespace CrowdDefense.Entities
             var rend = GetComponent<MeshRenderer>();
             if (rend != null)
             {
-                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                rend.material = new Material(ShaderUtil.GetLitShader());
                 rend.material.color = color;
                 rend.material.SetFloat("_Smoothness", 0.9f);
             }

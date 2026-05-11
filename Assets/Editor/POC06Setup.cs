@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using UnityEngine;
 using UnityEditor;
+using CrowdDefense.Common;
 using CrowdDefense.Systems;
 using CrowdDefense.Entities;
 
@@ -86,7 +87,7 @@ namespace CrowdDefense.Editor
             var rend = castleGO.GetComponent<Renderer>();
             if (rend != null)
             {
-                var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                var mat = new Material(ShaderUtil.GetLitShader());
                 mat.color = new Color(0.4f, 0.25f, 0.1f, 1f);
                 rend.material = mat;
             }

@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 
@@ -36,7 +37,7 @@ namespace CrowdDefense.Entities
             var renderers = GetComponentsInChildren<MeshRenderer>();
             foreach (var rend in renderers)
             {
-                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                rend.material = new Material(ShaderUtil.GetLitShader());
                 rend.material.color = type.BodyColor;
             }
 

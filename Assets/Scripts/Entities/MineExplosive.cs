@@ -1,5 +1,6 @@
 #nullable enable
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 
@@ -24,7 +25,7 @@ namespace CrowdDefense.Entities
             var mf = gameObject.AddComponent<MeshFilter>();
             mf.mesh = Resources.GetBuiltinResource<Mesh>("Capsule.fbx");
             rend = gameObject.AddComponent<MeshRenderer>();
-            rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+            rend.material = new Material(ShaderUtil.GetLitShader());
             rend.material.color = new Color(0.67f, 0.13f, 0.13f);
             transform.localScale = Vector3.one * 0.35f;
         }

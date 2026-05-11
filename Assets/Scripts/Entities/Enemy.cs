@@ -1,5 +1,6 @@
 #nullable enable
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 
@@ -46,7 +47,7 @@ namespace CrowdDefense.Entities
             rend = GetComponent<MeshRenderer>();
             if (rend != null)
             {
-                var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                var mat = new Material(ShaderUtil.GetLitShader());
                 if (type.IsStealth)
                 {
                     // Transparency activée pour cycle stealth
@@ -82,7 +83,7 @@ namespace CrowdDefense.Entities
             var haloRend = shieldHalo.GetComponent<MeshRenderer>();
             if (haloRend != null)
             {
-                var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                var mat = new Material(ShaderUtil.GetLitShader());
                 mat.SetFloat("_Surface", 1f);
                 mat.SetFloat("_Blend", 0f);
                 mat.renderQueue = 3001;

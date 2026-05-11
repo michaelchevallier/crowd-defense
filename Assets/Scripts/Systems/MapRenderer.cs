@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using CrowdDefense.Common;
 using UnityEngine;
 
 namespace CrowdDefense.Systems
@@ -52,8 +53,7 @@ namespace CrowdDefense.Systems
         {
             if (!_matCache.TryGetValue(ch, out var m))
             {
-                var shader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
-                m = new Material(shader!);
+                m = new Material(ShaderUtil.GetLitShader());
                 m.color = CellColor(ch);
                 _matCache[ch] = m;
             }
