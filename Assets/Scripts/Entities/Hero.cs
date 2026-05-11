@@ -182,39 +182,7 @@ namespace CrowdDefense.Entities
             inst.transform.localPosition = Vector3.zero;
             inst.transform.localRotation = Quaternion.identity;
             inst.transform.localScale    = Vector3.one;
-            SetupCapeCloth(inst);
             return inst;
-        }
-
-        private static void SetupCapeCloth(GameObject meshRoot)
-        {
-            foreach (Transform t in meshRoot.GetComponentsInChildren<Transform>(true))
-            {
-                string n = t.name.ToLowerInvariant();
-                if (!n.Contains("cape") && !n.Contains("cloak")) continue;
-                var smr = t.GetComponent<SkinnedMeshRenderer>();
-                if (smr == null) continue;
-
-                var cloth = t.gameObject.AddComponent<Cloth>();
-                cloth.useGravity        = true;
-                cloth.damping           = 0.1f;
-                cloth.stretchingStiffness = 0.5f;
-                cloth.bendingStiffness    = 0.1f;
-
-                // 5 sphere colliders auto-positioned along the torso spine
-                var spheres = new ClothSphereColliderPair[5];
-                var root = meshRoot.transform;
-                float[] offsets = { 0.0f, 0.25f, 0.5f, 0.75f, 1.0f };
-                for (int i = 0; i < 5; i++)
-                {
-                    var col = new GameObject($"CapeCollider_{i}").AddComponent<SphereCollider>();
-                    col.transform.SetParent(root);
-                    col.transform.localPosition = new Vector3(0f, offsets[i] * 1.4f + 0.3f, 0f);
-                    col.radius = 0.18f;
-                    spheres[i] = new ClothSphereColliderPair(col, null);
-                }
-                cloth.sphereColliders = spheres;
-            }
         }
 
         private void BuildFallbackMesh()
