@@ -21,10 +21,50 @@ unset GITHUB_TOKEN
 
 ## Where we are
 
-- **Current sprint** : MIGRATE Phase 3 VISUALS — UnityGLTF setup ✅ **DONE** (2026-05-11 soir).
-- **Current focus** : rebuild WebGL + redeploy /v6/ avec AssetRegistry populé (49 entries) ; QA via Chrome MCP.
-- **Next milestone** : VISUAL-07 particles + VISUAL-08 audio + VISUAL-09 shader graph polish ; fix HUD font Roboto.
-- **Phase 3 install GLTF** : `org.khronos.unitygltf 2.19.2` Khronos via git URL pin (commit `da54306`). Due diligence appliquée (cf memory `feedback_dependency_due_diligence`). UnityGLTF parse 18 towers + 31 enemies .glb/.gltf, 11 .gltf Quaternius skipped (refs textures manquantes — Phase 3 dédiée).
+- **Current sprint** : MIGRATE **Multi-Phase Parallel Swarm** (Phase 3+4+5 en parallèle) — 2026-05-11 soir.
+- **Current focus** : 7 Sub-Opus orchestrateurs en BG, chacun pilotant 3-5 Sonnets sur leur axe. Convergence Stage A estimée 8-12h wall-clock.
+- **Next milestone** : Stage B Integrator (single Sonnet séquentiel, applique tous les hooks audio+juice+vfx+anim dans hot zones) → smoke test E2E → deploy /v6/ production.
+- **Deploy intermediate /v6/** (commit gh-pages `5734945`) : baseline avant Stage B integration, UnityGLTF + 49 AssetRegistry + ToonShader + Outline + JuiceFX + AudioController code-only (no hooks yet).
+
+### 🏭 Architecture multi-Opus swarm (lancée 2026-05-11)
+
+7 Sub-Opus orchestrateurs en parallèle, chacun owns 1 axe avec zone fichiers disjointe :
+
+| Axe | Sub-Opus | Branch | Deliverables Stage A |
+|---|---|---|---|
+| A VISUAL-CORE | SO-VISUAL | `axis/visual-core` | VfxPool + 4 prefabs VFX + boss shaders Jellyfish/Hologram + (opt) ToonShader Graph |
+| B AUDIO-PIPELINE | SO-AUDIO | `axis/audio` | AudioMixer 4 groupes + music ambient + extensions AudioController SetSFXVol etc |
+| C ASSET-GEN | SO-ASSET-GEN | `axis/asset-gen` | Fix Blender MCP + re-export 11 .gltf Quaternius en .glb + Mixamo setup |
+| D CONTENT-LEVELS | SO-CONTENT | `axis/content` | Audit 80 LevelData vs D1 specs + 10 briefings + tutorial flow spec |
+| E PLATFORM-BUILDS | SO-BUILD | `axis/build` | BuildScript Mac/Win/Linux + GitHub Actions matrix + WebGL deploy auto |
+| F UX-POLISH | SO-UX | `axis/ux` | Fix HUD font Roboto + Unity Localization en/fr + Settings panel |
+| G QA-AUTOMATION | SO-QA | `axis/qa` | Unity Test Framework + 10-15 smoke tests + sprint-gate scenarios + perf baseline |
+
+Coordination via 4 docs `.claude/coordination/` :
+- `file-ownership.md` : zone exclusive par axe + hot zones interdites (Tower/Enemy/Castle/Wave/Level/Economy/Balance)
+- `api-contracts.md` : interfaces stables (AudioController, JuiceFX, VfxPool, AnimationController, L(), SettingsRegistry, BuildScript) — clip keys canon
+- `qa-gates.md` : 5 niveaux QA (pre-spawn → per-commit → pre-merge → post-integration → smoke E2E)
+- `integration-spec.md` : spec exhaustive Stage B hooks à appliquer dans hot zones
+
+**Workflow** :
+1. Stage A (parallèle 7 axes) → chacun push axis/* branch
+2. QA-3 pre-merge gate par axe
+3. MO merge axis/* dans integration/phase3-4-5
+4. Stage B Integrator Sonnet (séquentiel, applique hooks)
+5. QA-4 post-integration
+6. MO merge integration/ dans main
+7. Rebuild WebGL + deploy /v6/
+8. QA-5 smoke test E2E via Chrome MCP qa-tester
+
+### Phase 3 acquis pre-swarm (commits sur main)
+
+- `da54306` UnityGLTF 2.19.2 via git URL pin (due diligence)
+- `f89ba3f` JuiceFX.cs (171 LOC, camera shake + flash + slowmo)
+- `bff9888` AudioController.cs singleton + pool 8 AudioSources + anti-replay 28ms
+- `fc304ea` AudioClipRegistry SO + Editor menu Build tool
+- `3d56816` 20 SFX .ogg imported from milan project
+- `bfb91c0` `.claude/coordination/file-ownership.md`
+- `a6540cb` `.claude/coordination/{api-contracts,qa-gates,integration-spec}.md`
 
 ### Phase 1 POC livré
 
