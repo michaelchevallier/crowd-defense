@@ -45,6 +45,7 @@ namespace CrowdDefense.Editor
 
             EnsureCamera(ref created, ref existing);
             EnsureDirectionalLight(ref created, ref existing);
+            EnsureDebugGround(ref created, ref existing);
             EnsureHUD(ref created, ref existing);
             EnsureSkyboxAndLighting();
 
@@ -142,6 +143,26 @@ namespace CrowdDefense.Editor
             light.type = LightType.Directional;
             light.intensity = 1f;
             go.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+            created++;
+        }
+
+        private static void EnsureDebugGround(ref int created, ref int existing)
+        {
+            var ground = GameObject.Find("DebugGround");
+            if (ground != null) { existing++; return; }
+
+            ground = new GameObject("DebugGround");
+            ground.transform.position = new Vector3(0, -0.1f, 0);
+
+            var meshFilter = ground.AddComponent<MeshFilter>();
+            meshFilter.sharedMesh = Resources.GetBuiltinResource<Mesh>("Plane.fbx");
+
+            var renderer = ground.AddComponent<MeshRenderer>();
+            var mat = new Material(Shader.Find("Standard"));
+            mat.color = new Color(0.3f, 0.7f, 0.3f);
+            renderer.sharedMaterial = mat;
+
+            ground.transform.localScale = new Vector3(50, 1, 50);
             created++;
         }
 
