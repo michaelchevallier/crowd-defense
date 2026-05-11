@@ -34,7 +34,9 @@ namespace CrowdDefense.Editor
             foreach (string guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (AssetImporter.GetAtPath(path) is not ModelImporter) continue;
+                // Accept both classic ModelImporter (FBX/OBJ) and ScriptedImporter (UnityGLTF .gltf/.glb).
+                var importer = AssetImporter.GetAtPath(path);
+                if (importer is not ModelImporter && importer is not UnityEditor.AssetImporters.ScriptedImporter) continue;
 
                 var allAssets = AssetDatabase.LoadAllAssetsAtPath(path);
                 var clips = allAssets.OfType<AnimationClip>()

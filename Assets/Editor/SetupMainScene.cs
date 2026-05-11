@@ -93,6 +93,9 @@ namespace CrowdDefense.Editor
             // Wire TowerType / EnemyType / HeroType assetKey → GLTF key, then rebuild AssetRegistry entries
             BuildAssetRegistryMappings.Generate();
 
+            // Generate AnimatorController assets for all GLTF models (idempotent — skips existing).
+            BuildAnimatorControllers.Build();
+
             AssetDatabase.SaveAssets();
             return n;
         }
