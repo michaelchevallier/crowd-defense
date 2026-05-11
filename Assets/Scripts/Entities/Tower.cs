@@ -122,11 +122,32 @@ namespace CrowdDefense.Entities
 
             transform.localScale = Vector3.one * type.SizeMultiplier;
 
-            _meshChild = SpawnMeshChild(type.AssetKey);
+            // Check for active skin before spawning mesh — skin may override GLTF or material
+            string assetKey = type.AssetKey;
+            Color bodyColor = type.BodyColor;
+            Material? skinMat = null;
+
+            var activeSkin = SkinSystem.Instance?.GetActiveSkin(SkinTargetType.Tower, type.Id);
+            if (activeSkin != null)
+            {
+                if (activeSkin.AlternateGLTF != null)
+                    assetKey = activeSkin.Id;
+                if (activeSkin.AlternateMaterial != null)
+                    skinMat = activeSkin.AlternateMaterial;
+                if (activeSkin.UseBodyColorOverride)
+                    bodyColor = activeSkin.BodyColorOverride;
+            }
+
+            _meshChild = activeSkin?.AlternateGLTF != null
+                ? SpawnSkinMeshChild(activeSkin.AlternateGLTF)
+                : SpawnMeshChild(assetKey);
 
             // Cel-shading toon material on mesh subtree (or whole GO if no GLTF)
             var toonRoot = _meshChild != null ? _meshChild : gameObject;
-            MaterialController.ApplyToon(toonRoot, type.BodyColor);
+            if (skinMat != null)
+                MaterialController.ApplyOverrideMaterial(toonRoot, skinMat);
+            else
+                MaterialController.ApplyToon(toonRoot, bodyColor);
 
             // Outline silhouette — applied after toon so outline mat is not overwritten
             Outline.ApplyToHierarchy(toonRoot.transform);
@@ -170,6 +191,22 @@ namespace CrowdDefense.Entities
             instance.transform.localRotation = Quaternion.identity;
             instance.transform.localScale = Vector3.one;
             return instance;
+        }
+
+        private GameObject? SpawnSkinMeshChild(GameObject skinPrefab)
+        {
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var child = transform.GetChild(i);
+                if (child.name == "Base" || child.name == "Top")
+                    child.gameObject.SetActive(false);
+            }
+            var inst = Object.Instantiate(skinPrefab, transform);
+            inst.name = "Skin_" + skinPrefab.name;
+            inst.transform.localPosition = Vector3.zero;
+            inst.transform.localRotation = Quaternion.identity;
+            inst.transform.localScale = Vector3.one;
+            return inst;
         }
 
         /// <summary>

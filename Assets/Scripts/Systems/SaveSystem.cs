@@ -6,17 +6,11 @@ using UnityEngine;
 namespace CrowdDefense.Systems
 {
     [Serializable]
-    public class LevelStars
+    public class SkinEquipEntry
     {
-        public string levelId = "";
-        public int stars = 0;
-    }
-
-    [Serializable]
-    public class MetaUpgradeEntry
-    {
-        public string id = "";
-        public int level = 0;
+        public string targetType = "";
+        public string targetId = "";
+        public string skinId = "";
     }
 
     [Serializable]
@@ -31,9 +25,10 @@ namespace CrowdDefense.Systems
         public float musicVolume = 1f;
         public float sfxVolume = 1f;
         public string lang = "fr";
-        public int gems = 0;
-        // JsonUtility doesn't support Dictionary — flat list serialized instead
-        public List<MetaUpgradeEntry> metaUpgradeLevels = new();
+        // Skins — owned ids (default skins are always owned)
+        public List<string> ownedSkins = new();
+        // Active equipped skin per (targetType+targetId) key — flat list for JsonUtility
+        public List<SkinEquipEntry> equippedSkins = new();
     }
 
     [Serializable]
@@ -288,5 +283,47 @@ namespace CrowdDefense.Systems
 
         private static bool IsStackable(string id) =>
             id is "range" or "fire_rate" or "pierce" or "lifesteal" or "move_speed";
+
+        // ── Skins ──
+
+        public static bool IsSkinOwned(string skinId)
+        {
+            return Load().ownedSkins.Contains(skinId);
+        }
+
+        public static void UnlockSkin(string skinId)
+        {
+            var data = Load();
+            if (!data.ownedSkins.Contains(skinId))
+            {
+                data.ownedSkins.Add(skinId);
+                Save();
+            }
+        }
+
+        public static string? GetEquippedSkin(string targetType, string targetId)
+        {
+            var list = Load().equippedSkins;
+            for (int i = 0; i < list.Count; i++)
+                if (list[i].targetType == targetType && list[i].targetId == targetId)
+                    return list[i].skinId;
+            return null;
+        }
+
+        public static void SetEquippedSkin(string targetType, string targetId, string skinId)
+        {
+            var list = Load().equippedSkins;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i].targetType == targetType && list[i].targetId == targetId)
+                {
+                    list[i].skinId = skinId;
+                    Save();
+                    return;
+                }
+            }
+            list.Add(new SkinEquipEntry { targetType = targetType, targetId = targetId, skinId = skinId });
+            Save();
+        }
     }
 }

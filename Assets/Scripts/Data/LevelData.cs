@@ -30,6 +30,9 @@ namespace CrowdDefense.Data
         [Header("Briefing")]
         [SerializeField] private string briefing = "";
 
+        [Header("Cutscene")]
+        [SerializeField] private string cutsceneIdAtStart = "";
+
         [Header("Magnet (Q3)")]
         [SerializeField] private bool allowMultiMagnet = false;
 
@@ -48,6 +51,7 @@ namespace CrowdDefense.Data
         public bool OverrideCastleHP => overrideCastleHP;
         public int CastleHPOverride => castleHPOverride;
         public string Briefing => briefing;
+        public string CutsceneIdAtStart => cutsceneIdAtStart;
         public bool AllowMultiMagnet => allowMultiMagnet;
         public IReadOnlyList<WaveDef> Waves => waves;
 

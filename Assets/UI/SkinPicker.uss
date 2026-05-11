@@ -1,0 +1,159 @@
+.skin-picker-panel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+}
+
+.skin-picker-backdrop {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.skin-picker-window {
+    width: 640px;
+    max-height: 80%;
+    background-color: rgba(12, 14, 28, 0.96);
+    border-radius: 14px;
+    border-width: 2px;
+    border-color: rgba(255, 210, 63, 0.4);
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.skin-picker-header {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px 10px;
+    border-bottom-width: 1px;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.skin-picker-title {
+    color: rgb(255, 210, 63);
+    font-size: 22px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.skin-close-btn {
+    background-color: rgba(255, 80, 80, 0.8);
+    border-radius: 8px;
+    border-width: 0;
+    color: white;
+    font-size: 14px;
+    -unity-font-style: bold;
+    width: 32px;
+    height: 32px;
+}
+
+.skin-tab-bar {
+    flex-direction: row;
+    padding: 8px 12px 0;
+}
+
+.skin-tab-btn {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 8px 8px 0 0;
+    border-width: 0;
+    color: rgba(200, 200, 200, 0.7);
+    font-size: 14px;
+    padding: 6px 16px;
+    margin-right: 4px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.skin-tab-btn.active {
+    background-color: rgba(255, 210, 63, 0.15);
+    color: rgb(255, 210, 63);
+    border-bottom-width: 2px;
+    border-color: rgb(255, 210, 63);
+}
+
+.skin-list {
+    flex-grow: 1;
+    padding: 12px;
+}
+
+.skin-card {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+}
+
+.skin-card-equipped {
+    background-color: rgba(255, 210, 63, 0.12);
+    border-width: 1px;
+    border-color: rgba(255, 210, 63, 0.5);
+}
+
+.skin-card-locked {
+    opacity: 0.5;
+}
+
+.skin-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    margin-right: 14px;
+    background-color: rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.skin-info {
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.skin-name {
+    color: white;
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.skin-desc {
+    color: rgba(190, 190, 190, 0.8);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-top: 2px;
+}
+
+.skin-btn-area {
+    margin-left: 12px;
+    align-items: center;
+}
+
+.skin-equip-btn {
+    background-color: rgb(255, 210, 63);
+    border-radius: 8px;
+    border-width: 0;
+    color: rgb(30, 30, 30);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    padding: 6px 14px;
+}
+
+.skin-equipped-label {
+    color: rgb(255, 210, 63);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.skin-locked-label {
+    color: rgba(180, 180, 180, 0.5);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.hidden {
+    display: none;
+}

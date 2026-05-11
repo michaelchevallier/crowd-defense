@@ -160,6 +160,13 @@ namespace CrowdDefense.Systems
 
         public TowerType? SelectedTowerType => selectedTowerType;
 
+        private static int ComputeTowerCost(int baseCost, Hero? hero)
+        {
+            if (hero == null) return baseCost;
+            if (hero.FirstTowerFree && !hero.FirstTowerFreeUsed) return 0;
+            return Mathf.Max(0, Mathf.RoundToInt(baseCost * hero.TowerCostMul));
+        }
+
         public void UnregisterTower(Tower t) => placedTowers.Remove(t);
 
         // Called by boss AoE blast to destroy a tower directly (POC — no HP system yet).

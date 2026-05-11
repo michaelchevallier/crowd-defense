@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="Cutscene.uss" />
+    <ui:VisualElement name="cutscene-panel" class="cutscene-panel hidden">
+        <ui:VisualElement class="cutscene-backdrop" />
+
+        <ui:Label name="cutscene-title" class="cutscene-title" text="" />
+
+        <ui:VisualElement class="cutscene-portraits">
+            <ui:VisualElement name="portrait-left"  class="cutscene-portrait portrait-left" />
+            <ui:VisualElement name="portrait-right" class="cutscene-portrait portrait-right" />
+        </ui:VisualElement>
+
+        <ui:VisualElement class="cutscene-box">
+            <ui:Label name="cutscene-speaker" class="cutscene-speaker" text="" />
+            <ui:Label name="cutscene-text"    class="cutscene-text"    text="" />
+            <ui:Label name="cutscene-hint"    class="cutscene-hint hidden" text="[Clic / Espace]" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
