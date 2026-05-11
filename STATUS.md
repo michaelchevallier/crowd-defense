@@ -212,6 +212,19 @@ Référence complète : `docs/decisions/Q1-Q18-arbitrages.md`.
 - [ ] Phase 1 POC tickets MIGRATE-POC-01..08 (~12-17 commits)
 - [ ] Phase 1 POC livré : W1-1 jouable WebGL `/v6/`
 
+## ⚠️ Caveats & pièges pour la nouvelle session
+
+| # | Piège | Conséquence | Mitigation |
+|---|---|---|---|
+| 1 | **`GITHUB_TOKEN` invalide hérité du shell parent Mike** | `gh` commands → HTTP 401 Bad credentials | `unset GITHUB_TOKEN` AVANT `claude` (cf section AVANT TOUT en haut). Workaround per-command : `unset GITHUB_TOKEN && gh ...` |
+| 2 | **Specs D1 référencent paths `src-v3/...`** (44 occurrences à travers D1-01..04) | New Claude peut chercher dans `crowd-defense/src-v3/` → not found | Toujours préfixer mentalement avec `/Users/mike/Work/milan project/` (cf tableau "📂 SOURCE CODE À MIGRER") |
+| 3 | **Repo `milan project/` doit rester sur disque** pendant toute la migration | Si supprimé → source Phaser à porter perdu (recoverable via clone GitHub mais friction) | Ne pas `rm -rf` `/Users/mike/Work/milan project/`. Archive frozen tag `v5.0-pre-pivot-unity` sur remote en backup. |
+| 4 | **`.claude/qa/` non porté** dans crowd-defense (auto-qa-runner.mjs + scenarios + reports restent dans milan project) | Si new Claude veut sprint-gate via Chrome MCP scenarios → not found | À réécrire pour Unity context : `mcp__UnityMCP__run_play_mode` + `manage_scene` + `run_tests` au lieu de Chrome MCP. Pas urgent Phase 1. |
+| 5 | **`.claude/settings.local.json` non porté** (permissions Bash spécifiques milan project) | New Claude aura prompts permission répétés pour `git add`, etc. | Re-run `/fewer-permission-prompts` skill une fois quelques sessions Bash accumulées dans crowd-defense |
+| 6 | **`tools/gen_textures.py` (pipeline Flux Schnell)** reste dans `milan project/tools/` | Si new Claude veut generate textures via Flux → not found dans crowd-defense | Path absolu si besoin : `python3 /Users/mike/Work/milan project/tools/gen_textures.py`. Pipeline ComfyUI:8188. Cf memory `reference_flux_local`. |
+| 7 | **subagent_type `general-purpose`** (built-in) ne lit pas les frontmatter `.claude/agents/` | Spawned agent défaut à Opus → tokens ×3-7 vs Sonnet | Toujours passer `model: "sonnet"` (exec) ou `"haiku"` (light search) en param Agent tool call quand subagent = general-purpose |
+| 8 | **Unity Editor + MCP server crash possible** entre sessions | Tools `mcp__UnityMCP__*` fail | Relancer via `open -na "/Applications/Unity/Hub/Editor/6000.3.15f1/Unity.app" --args -projectPath /Users/mike/Work/crowd-defense` + 10s wait |
+
 ## Risks raised
 
 - **Unity-MCP edge cases** : encore jeune (5800★ mais 2025-2026), peut buguer sur cas complexes. À monitorer pendant Phase 1.
