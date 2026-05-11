@@ -5,6 +5,16 @@ using CrowdDefense.Data;
 
 namespace CrowdDefense.Systems
 {
+    /// <summary>
+    /// Path metadata linking a path index to its portal and castle sources.
+    /// </summary>
+    public readonly struct PathMeta
+    {
+        public readonly int PortalIdx;
+        public readonly int CastleIdx;
+        public PathMeta(int portalIdx, int castleIdx) { PortalIdx = portalIdx; CastleIdx = castleIdx; }
+    }
+
     public class PathManager : MonoBehaviour
     {
         public static PathManager? Instance { get; private set; }
@@ -12,7 +22,18 @@ namespace CrowdDefense.Systems
         [SerializeField] private LevelData? levelData;
 
         public GridData? Grid { get; private set; }
-        public List<Vector3> Waypoints { get; private set; } = new();
+
+        /// <summary>
+        /// All paths : cross-product of portals × castles (BFS shortest path for each tuple).
+        /// Paths[i] corresponds to PathsMeta[i].
+        /// </summary>
+        public IReadOnlyList<IReadOnlyList<Vector3>> Paths { get; private set; } = new List<IReadOnlyList<Vector3>>();
+        public IReadOnlyList<PathMeta> PathsMeta { get; private set; } = new List<PathMeta>();
+
+        // Backward-compat : single-path access for POC code still using Waypoints/WaypointCount/GetWaypoint.
+        public IReadOnlyList<Vector3> Waypoints => Paths.Count > 0 ? Paths[0] : _empty;
+        public int WaypointCount => Waypoints.Count;
+        private static readonly IReadOnlyList<Vector3> _empty = new List<Vector3>();
 
         private void Awake()
         {
@@ -30,47 +51,80 @@ namespace CrowdDefense.Systems
             }
 
             Grid = GridData.Parse(levelData);
-            Waypoints.Clear();
+            var paths = new List<IReadOnlyList<Vector3>>();
+            var meta = new List<PathMeta>();
 
             if (Grid.Portals.Count == 0 || Grid.Castles.Count == 0)
             {
                 Debug.LogError($"[PathManager] No portal or castle (portals={Grid.Portals.Count}, castles={Grid.Castles.Count})");
+                Paths = paths;
+                PathsMeta = meta;
                 return;
             }
 
-            // POC : first portal × first castle only.
-            var start = Grid.Portals[0];
-            var end = Grid.Castles[0];
-            var cells = Grid.BfsShortestPath(start, end);
-
-            if (cells == null || cells.Count < 2)
+            for (int pi = 0; pi < Grid.Portals.Count; pi++)
             {
-                Debug.LogError($"[PathManager] No path from portal {start} to castle {end}");
-                return;
+                for (int ci = 0; ci < Grid.Castles.Count; ci++)
+                {
+                    var start = Grid.Portals[pi];
+                    var end = Grid.Castles[ci];
+                    var cells = Grid.BfsShortestPath(start, end);
+
+                    if (cells == null || cells.Count < 2)
+                    {
+                        Debug.LogWarning($"[PathManager] No path from portal[{pi}]={start} to castle[{ci}]={end}");
+                        continue;
+                    }
+
+                    var waypoints = new List<Vector3>(cells.Count);
+                    foreach (var cell in cells)
+                        waypoints.Add(GridCoords.CellToWorld(cell.x, cell.y, Grid.Width, Grid.Height, Grid.CellSize));
+
+                    paths.Add(waypoints);
+                    meta.Add(new PathMeta(pi, ci));
+                }
             }
 
-            foreach (var cell in cells)
-                Waypoints.Add(GridCoords.CellToWorld(cell.x, cell.y, Grid.Width, Grid.Height, Grid.CellSize));
+            Paths = paths;
+            PathsMeta = meta;
 
 #if UNITY_EDITOR
-            Debug.Log($"[PathManager] grid {Grid.Width}x{Grid.Height}, {Waypoints.Count} waypoints from {start} to {end}");
+            Debug.Log($"[PathManager] grid {Grid.Width}x{Grid.Height}, {paths.Count} paths built (portals={Grid.Portals.Count}, castles={Grid.Castles.Count})");
 #endif
         }
 
-        public Vector3 GetWaypoint(int index)
+        public Vector3 GetWaypoint(int index) => GetWaypointOnPath(0, index);
+
+        public Vector3 GetWaypointOnPath(int pathIdx, int waypointIdx)
         {
-            if (index < 0 || index >= Waypoints.Count) return Vector3.zero;
-            return Waypoints[index];
+            if (pathIdx < 0 || pathIdx >= Paths.Count) return Vector3.zero;
+            var wp = Paths[pathIdx];
+            if (waypointIdx < 0 || waypointIdx >= wp.Count) return Vector3.zero;
+            return wp[waypointIdx];
         }
 
-        public int WaypointCount => Waypoints.Count;
+        public int WaypointCountOnPath(int pathIdx)
+        {
+            if (pathIdx < 0 || pathIdx >= Paths.Count) return 0;
+            return Paths[pathIdx].Count;
+        }
+
+        /// <summary>
+        /// Returns all path indices whose castle end matches the given castle index.
+        /// </summary>
+        public List<int> PathsForCastle(int castleIdx)
+        {
+            var result = new List<int>();
+            for (int i = 0; i < PathsMeta.Count; i++)
+                if (PathsMeta[i].CastleIdx == castleIdx) result.Add(i);
+            return result;
+        }
 
 #if UNITY_EDITOR
         private void OnDrawGizmos()
         {
             if (levelData == null) return;
 
-            // Parse fresh in Editor (cheap : 15×7 = 105 cells).
             var grid = Application.isPlaying && Grid != null ? Grid : GridData.Parse(levelData);
 
             for (int r = 0; r < grid.Height; r++)
@@ -86,31 +140,60 @@ namespace CrowdDefense.Systems
                 }
             }
 
-            // Waypoint polyline + endpoints
-            var waypoints = Application.isPlaying ? Waypoints : ComputeWaypointsEditor(grid);
-            Gizmos.color = Color.yellow;
-            for (int i = 0; i < waypoints.Count - 1; i++)
-                Gizmos.DrawLine(waypoints[i] + Vector3.up * 0.1f, waypoints[i + 1] + Vector3.up * 0.1f);
-
-            if (waypoints.Count > 0)
+            // Draw all paths with distinct colors
+            if (Application.isPlaying)
             {
-                Gizmos.color = Color.red;
-                Gizmos.DrawSphere(waypoints[0], grid.CellSize * 0.3f);
-                Gizmos.color = Color.blue;
-                Gizmos.DrawSphere(waypoints[waypoints.Count - 1], grid.CellSize * 0.3f);
+                for (int pi = 0; pi < Paths.Count; pi++)
+                {
+                    var wp = Paths[pi];
+                    Gizmos.color = PathGizmoColor(pi);
+                    for (int i = 0; i < wp.Count - 1; i++)
+                        Gizmos.DrawLine(wp[i] + Vector3.up * 0.1f, wp[i + 1] + Vector3.up * 0.1f);
+                    if (wp.Count > 0)
+                    {
+                        Gizmos.color = Color.red;
+                        Gizmos.DrawSphere(wp[0] + Vector3.up * 0.1f, grid.CellSize * 0.25f);
+                        Gizmos.color = Color.blue;
+                        Gizmos.DrawSphere(wp[wp.Count - 1] + Vector3.up * 0.1f, grid.CellSize * 0.25f);
+                    }
+                }
+            }
+            else
+            {
+                // Editor preview : first path only
+                var waypoints = ComputePathEditor(grid, 0, 0);
+                Gizmos.color = Color.yellow;
+                for (int i = 0; i < waypoints.Count - 1; i++)
+                    Gizmos.DrawLine(waypoints[i] + Vector3.up * 0.1f, waypoints[i + 1] + Vector3.up * 0.1f);
+                if (waypoints.Count > 0)
+                {
+                    Gizmos.color = Color.red;
+                    Gizmos.DrawSphere(waypoints[0], grid.CellSize * 0.3f);
+                    Gizmos.color = Color.blue;
+                    Gizmos.DrawSphere(waypoints[waypoints.Count - 1], grid.CellSize * 0.3f);
+                }
             }
         }
 
-        private static List<Vector3> ComputeWaypointsEditor(GridData grid)
+        private static List<Vector3> ComputePathEditor(GridData grid, int portalIdx, int castleIdx)
         {
             var list = new List<Vector3>();
-            if (grid.Portals.Count == 0 || grid.Castles.Count == 0) return list;
-            var cells = grid.BfsShortestPath(grid.Portals[0], grid.Castles[0]);
+            if (portalIdx >= grid.Portals.Count || castleIdx >= grid.Castles.Count) return list;
+            var cells = grid.BfsShortestPath(grid.Portals[portalIdx], grid.Castles[castleIdx]);
             if (cells == null) return list;
             foreach (var cell in cells)
                 list.Add(GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize));
             return list;
         }
+
+        private static Color PathGizmoColor(int idx) => idx switch
+        {
+            0 => Color.yellow,
+            1 => Color.cyan,
+            2 => Color.magenta,
+            3 => Color.green,
+            _ => Color.white,
+        };
 
         private static Color CellGizmoColor(char ch) => ch switch
         {
