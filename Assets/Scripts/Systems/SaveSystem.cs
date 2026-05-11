@@ -16,10 +16,21 @@ namespace CrowdDefense.Systems
         public string lang = "fr";
     }
 
+    [Serializable]
+    public class RunState
+    {
+        public List<string> heroPerks = new();
+        public int    heroLevel = 1;
+        public int    heroXP    = 0;
+        public string schoolId  = "";
+    }
+
     public static class SaveSystem
     {
-        private const string KEY = "cd_progression_v1";
+        private const string KEY     = "cd_progression_v1";
+        private const string RUN_KEY = "cd_runstate_v1";
         private static ProgressData? _cached;
+        private static RunState?     _cachedRun;
 
         public static ProgressData Load()
         {
@@ -87,5 +98,49 @@ namespace CrowdDefense.Systems
             if (w < 10) return $"world{w + 1}-1";
             return "";
         }
+
+        // ── RunState (hero perks, level, xp, school — per-run, reset on new run) ──
+
+        public static RunState? GetRunState()
+        {
+            if (_cachedRun != null) return _cachedRun;
+            string json = PlayerPrefs.GetString(RUN_KEY, "");
+            if (string.IsNullOrEmpty(json)) return null;
+            try
+            {
+                _cachedRun = JsonUtility.FromJson<RunState>(json);
+            }
+            catch
+            {
+                _cachedRun = null;
+            }
+            return _cachedRun;
+        }
+
+        public static void SetRunState(RunState rs)
+        {
+            _cachedRun = rs;
+            PlayerPrefs.SetString(RUN_KEY, JsonUtility.ToJson(rs));
+            PlayerPrefs.Save();
+        }
+
+        public static void AppendRunPerk(string perkId)
+        {
+            var rs = GetRunState() ?? new RunState();
+            if (!rs.heroPerks.Contains(perkId) || IsStackable(perkId))
+                rs.heroPerks.Add(perkId);
+            SetRunState(rs);
+        }
+
+        public static void ClearRunState()
+        {
+            _cachedRun = null;
+            PlayerPrefs.DeleteKey(RUN_KEY);
+            PlayerPrefs.Save();
+        }
+
+        // Stackable check without registry dependency (simple id list from V5)
+        private static bool IsStackable(string id) =>
+            id is "range" or "fire_rate" or "pierce" or "lifesteal" or "move_speed";
     }
 }
