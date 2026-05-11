@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="Loader.uss" />
+    <ui:VisualElement name="loader-root" class="loader-root">
+
+        <!-- Fade overlay for camera fade-in -->
+        <ui:VisualElement name="fade-overlay" class="fade-overlay" />
+
+        <!-- Logo + subtitle -->
+        <ui:VisualElement name="logo-block" class="logo-block">
+            <ui:Label name="logo-label" text="CROWD DEFENSE" class="logo-label" />
+            <ui:Label name="version-label" text="v0.1.0" class="version-label" />
+        </ui:VisualElement>
+
+        <!-- Main menu buttons -->
+        <ui:VisualElement name="menu-block" class="menu-block">
+            <ui:Button name="btn-continue" text="Continuer" class="menu-btn menu-btn-primary" />
+            <ui:Button name="btn-newrun" text="Nouvelle partie" class="menu-btn" />
+            <ui:Button name="btn-settings" text="Options" class="menu-btn menu-btn-secondary" />
+            <ui:Button name="btn-quit" text="Quitter" class="menu-btn menu-btn-quit" />
+        </ui:VisualElement>
+
+    </ui:VisualElement>
+</ui:UXML>

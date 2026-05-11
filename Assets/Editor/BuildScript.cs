@@ -10,6 +10,7 @@ namespace CrowdDefense.Build
     public static class BuildScript
     {
         private const string OutputFolder = "Builds/WebGL";
+        private const string LoaderScene = "Assets/Scenes/Loader.unity";
         private const string MainScene = "Assets/Scenes/Main.unity";
 
         [MenuItem("CrowdDefense/Build WebGL")]
@@ -24,7 +25,7 @@ namespace CrowdDefense.Build
 
             var opts = new BuildPlayerOptions
             {
-                scenes = new[] { MainScene },
+                scenes = new[] { LoaderScene, MainScene },
                 locationPathName = OutputFolder,
                 target = BuildTarget.WebGL,
                 options = BuildOptions.None,
