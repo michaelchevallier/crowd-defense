@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Common;
@@ -7,6 +8,13 @@ using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
+    public readonly struct SynergyBadge
+    {
+        public readonly string TowerId;
+        public readonly int Count;
+        public SynergyBadge(string towerId, int count) { TowerId = towerId; Count = count; }
+    }
+
     /// <summary>
     /// Singleton MonoBehaviour — resolves all tower synergies every ~200 ms (LateUpdate tick).
     /// Resets synergy output fields on every Tower before recomputing, preventing stale accumulation.
@@ -16,6 +24,15 @@ namespace CrowdDefense.Systems
     {
         private const float TickInterval = 0.2f;
         private float _tickTimer;
+
+        // Fired after each Resolve tick when active-synergy set changes.
+        public event Action? OnSynergyChanged;
+
+        // Read-only snapshot updated each tick — one badge per tower type that has synergyActive towers.
+        public IReadOnlyList<SynergyBadge> ActiveBadges => _activeBadges;
+        private readonly List<SynergyBadge> _activeBadges = new();
+        private readonly List<SynergyBadge> _prevBadges = new();
+        private readonly Dictionary<string, int> _countMap = new();
 
         private void LateUpdate()
         {
@@ -28,6 +45,38 @@ namespace CrowdDefense.Systems
             var enemies = WaveManager.Instance?.ActiveEnemies;
 
             Resolve(towers, enemies);
+            UpdateBadges(towers);
+        }
+
+        private void UpdateBadges(IReadOnlyList<Tower> towers)
+        {
+            _countMap.Clear();
+            for (int i = 0; i < towers.Count; i++)
+            {
+                var t = towers[i];
+                if (t == null || !t._synergyActive || t.Config == null) continue;
+                var id = t.Config.Id;
+                if (string.IsNullOrEmpty(id)) continue;
+                _countMap.TryGetValue(id, out int c);
+                _countMap[id] = c + 1;
+            }
+
+            _prevBadges.Clear();
+            _prevBadges.AddRange(_activeBadges);
+            _activeBadges.Clear();
+            foreach (var kv in _countMap)
+                _activeBadges.Add(new SynergyBadge(kv.Key, kv.Value));
+
+            if (!BadgesEqual(_prevBadges, _activeBadges))
+                OnSynergyChanged?.Invoke();
+        }
+
+        private static bool BadgesEqual(List<SynergyBadge> a, List<SynergyBadge> b)
+        {
+            if (a.Count != b.Count) return false;
+            for (int i = 0; i < a.Count; i++)
+                if (a[i].TowerId != b[i].TowerId || a[i].Count != b[i].Count) return false;
+            return true;
         }
 
         // internal for unit tests
