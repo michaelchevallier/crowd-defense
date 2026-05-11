@@ -12,4 +12,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5d52076a1e4614e338dea095d15b7266, type: 3}
   m_Name: TowerRegistry
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerRegistry
-  towers: []
+  towers:
+  - {fileID: 11400000, guid: eba8370b271e475f8a3a0539eae33b44, type: 2}
+  - {fileID: 11400000, guid: 110e01dec9bd64e3da3d98b312b1c6de, type: 2}
+  - {fileID: 11400000, guid: 8c0985509c4040bab21f78dd917dc1d4, type: 2}
+  - {fileID: 11400000, guid: 9a4c91150db349d595bcec5e4bf77f28, type: 2}
+  - {fileID: 11400000, guid: 4df32fa4ff96427a9c86475f8db4ee38, type: 2}
+  - {fileID: 11400000, guid: abc049713b8e4882999e40519ea804b0, type: 2}
+  - {fileID: 11400000, guid: 42171ab4325f41f69764c09536223d84, type: 2}
+  - {fileID: 11400000, guid: e965c1469fb247cd8f93da7938775946, type: 2}
+  - {fileID: 11400000, guid: ba92d3f1f0df437086ac63dbc5930090, type: 2}
+  - {fileID: 11400000, guid: 121b7a03451942559f83962be0fb57d7, type: 2}
+  - {fileID: 11400000, guid: c51161c474754f148ff55a1f4ce1df17, type: 2}
+  - {fileID: 11400000, guid: e2966d9d183748d18877b5bb89d3daa0, type: 2}
+  - {fileID: 11400000, guid: dba36dd96d3c43dc83babd4f9621370c, type: 2}
