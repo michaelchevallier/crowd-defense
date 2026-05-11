@@ -17,6 +17,7 @@ namespace CrowdDefense.Editor
         public static void Run()
         {
             int regs = EnsureRegistries();
+            EnsurePanelSettingsTheme();
 
             // BuildMainSceneTool opens its own scene and saves — must run FIRST,
             // before our additions, because it re-opens the scene (would discard in-memory mods).
@@ -81,6 +82,30 @@ namespace CrowdDefense.Editor
 
             AssetDatabase.SaveAssets();
             return n;
+        }
+
+        private static void EnsurePanelSettingsTheme()
+        {
+            const string panelPath = "Assets/UI/HUDPanelSettings.asset";
+            const string tssPath = "Assets/UI/UnityDefaultRuntimeTheme.tss";
+
+            var panel = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.PanelSettings>(panelPath);
+            if (panel == null) { Debug.LogWarning($"[SetupMainScene] PanelSettings introuvable: {panelPath}"); return; }
+
+            var tss = AssetDatabase.LoadAssetAtPath<UnityEngine.UIElements.ThemeStyleSheet>(tssPath);
+            if (tss == null) { Debug.LogWarning($"[SetupMainScene] ThemeStyleSheet introuvable: {tssPath}"); return; }
+
+            var so = new SerializedObject(panel);
+            var prop = so.FindProperty("themeUss");
+            if (prop == null) { Debug.LogWarning("[SetupMainScene] PanelSettings.themeUss property non trouvée"); return; }
+
+            if (prop.objectReferenceValue == tss) return;
+
+            prop.objectReferenceValue = tss;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(panel);
+            AssetDatabase.SaveAssets();
+            Debug.Log("[SetupMainScene] HUDPanelSettings.themeUss → UnityDefaultRuntimeTheme.tss");
         }
 
         private static void PopulatePerkRegistry()
