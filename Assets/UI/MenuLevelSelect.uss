@@ -1,0 +1,85 @@
+.menu-root {
+    width: 100%;
+    height: 100%;
+    background-color: rgb(15, 20, 35);
+    align-items: center;
+    justify-content: flex-start;
+    padding: 32px 24px;
+}
+
+.menu-title {
+    color: rgb(255, 210, 63);
+    font-size: 36px;
+    -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
+    margin-bottom: 24px;
+    -unity-text-align: upper-center;
+}
+
+.level-scroll {
+    width: 100%;
+    flex-grow: 1;
+}
+
+.level-grid {
+    flex-direction: column;
+    padding: 8px;
+}
+
+.world-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.world-label {
+    color: rgba(200, 200, 200, 0.8);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
+    width: 60px;
+    -unity-text-align: middle-left;
+}
+
+.level-btn {
+    width: 72px;
+    height: 48px;
+    margin: 3px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.12);
+    color: white;
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: resource("LegacyRuntime");
+    -unity-text-align: middle-center;
+    cursor: link;
+}
+
+.level-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 210, 63, 0.8);
+}
+
+.level-btn.cleared {
+    background-color: rgba(40, 160, 40, 0.75);
+    border-color: rgb(60, 200, 60);
+    color: rgb(220, 255, 220);
+}
+
+.level-btn.cleared:hover {
+    background-color: rgba(50, 190, 50, 0.9);
+}
+
+.level-btn.locked {
+    background-color: rgba(40, 40, 40, 0.6);
+    border-color: rgba(80, 80, 80, 0.5);
+    color: rgba(100, 100, 100, 0.8);
+    cursor: arrow;
+}
+
+.level-btn.locked:hover {
+    background-color: rgba(40, 40, 40, 0.6);
+    border-color: rgba(80, 80, 80, 0.5);
+}
