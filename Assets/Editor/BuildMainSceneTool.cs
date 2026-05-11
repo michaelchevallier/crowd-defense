@@ -4,7 +4,9 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.Audio;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
+using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using CrowdDefense.Visual;
 using CrowdDefense.UI;
@@ -44,6 +46,7 @@ namespace CrowdDefense.Editor
             EnsureCamera(ref created, ref existing);
             EnsureDirectionalLight(ref created, ref existing);
             EnsureHUD(ref created, ref existing);
+            EnsureSkyboxAndLighting();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -168,6 +171,46 @@ namespace CrowdDefense.Editor
 
             created++;
         }
+
+        // ── Skybox & Ambient Lighting ────────────────────────────────────────
+
+        public static void EnsureSkyboxAndLighting()
+        {
+            // Unity built-in procedural skybox (always present, no import required)
+            var skyboxMat = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Skybox.mat");
+            if (skyboxMat != null)
+                RenderSettings.skybox = skyboxMat;
+
+            RenderSettings.ambientMode      = AmbientMode.Skybox;
+            RenderSettings.ambientIntensity = 1.2f;
+
+            // Default (Plaine) — neutral daylight tint
+            RenderSettings.ambientLight = ThemeAmbientColor(LevelTheme.Plaine);
+
+            DynamicGI.UpdateEnvironment();
+        }
+
+        // Applies per-theme ambient tint to RenderSettings.ambientLight.
+        // Call at runtime when a level is loaded to tint the scene to match the theme.
+        public static void ApplyThemeAmbient(LevelTheme theme)
+        {
+            RenderSettings.ambientLight = ThemeAmbientColor(theme);
+            DynamicGI.UpdateEnvironment();
+        }
+
+        private static Color ThemeAmbientColor(LevelTheme theme) => theme switch
+        {
+            LevelTheme.Foret      => new Color(0.45f, 0.60f, 0.38f),  // vert forêt
+            LevelTheme.Desert     => new Color(0.80f, 0.68f, 0.42f),  // sable chaud
+            LevelTheme.Volcan     => new Color(0.70f, 0.28f, 0.10f),  // rouge lave
+            LevelTheme.Apocalypse => new Color(0.35f, 0.28f, 0.25f),  // gris cendres
+            LevelTheme.Espace     => new Color(0.10f, 0.10f, 0.25f),  // bleu nuit profond
+            LevelTheme.Submarin   => new Color(0.10f, 0.35f, 0.55f),  // bleu-vert sous-marin
+            LevelTheme.Medieval   => new Color(0.52f, 0.48f, 0.38f),  // ocre pierres
+            LevelTheme.Cyberpunk  => new Color(0.15f, 0.08f, 0.35f),  // violet néon sombre
+            LevelTheme.Foire      => new Color(0.72f, 0.55f, 0.20f),  // jaune fête foraine
+            _                     => new Color(0.55f, 0.62f, 0.70f),  // Plaine — bleu ciel
+        };
     }
 }
 #endif
