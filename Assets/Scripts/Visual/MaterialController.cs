@@ -1,4 +1,6 @@
 #nullable enable
+using CrowdDefense.Data;
+using CrowdDefense.Entities;
 using UnityEngine;
 
 namespace CrowdDefense.Visual
@@ -115,6 +117,31 @@ namespace CrowdDefense.Visual
             if (m.HasProperty("_BaseColor"))
                 m.SetColor("_BaseColor", new Color(tint.r, tint.g, tint.b, m.GetColor("_BaseColor").a));
             r.material = m;
+        }
+
+        // Applique le surface material de thème à tous les Renderer statiques d'un root.
+        // Utilisé par LevelVisualBridge pour skinning thématique des décors de map.
+        public static void ApplyThemeSurface(GameObject root, LevelTheme theme)
+        {
+            var config = LevelThemeMaterialConfig.Get();
+            if (config == null) return;
+
+            var mat = config.GetSurfaceMat(theme);
+            if (mat == null) return;
+
+            foreach (var r in root.GetComponentsInChildren<Renderer>())
+            {
+                // Ne pas écraser les materials déjà toon-appliqués (enemies/towers)
+                if (r.gameObject.GetComponent<Tower>() != null) continue;
+                if (r.gameObject.GetComponentInParent<Tower>() != null) continue;
+                if (r.gameObject.GetComponent<Enemy>() != null) continue;
+                if (r.gameObject.GetComponentInParent<Enemy>() != null) continue;
+
+                var mats = new Material[r.sharedMaterials.Length];
+                for (int i = 0; i < mats.Length; i++)
+                    mats[i] = mat;
+                r.sharedMaterials = mats;
+            }
         }
 
         private static Material? LoadCached(ref Material? cache, string resourceName)
