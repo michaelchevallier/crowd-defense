@@ -9,14 +9,57 @@ namespace CrowdDefense.Data
 
     public enum SynergyType { Aura, CrossEffect, ApplyToEnemy, Passive }
 
+    /// <summary>
+    /// Inline sub-structs for complex synergy effects (SlowOnHit, AppliesSlow, PropagateAoE).
+    /// Serializable so they appear in the Inspector.
+    /// </summary>
+    [Serializable]
+    public struct SlowEffectDef
+    {
+        public float mul;
+        public int durMs;
+    }
+
+    [Serializable]
+    public struct PropagateAoEDef
+    {
+        public float radius;
+        public float dmg;
+    }
+
     [Serializable]
     public struct SynergyDef
     {
         public SynergyType type;
+        // CrossEffect only : id of the tower type that must be nearby
         public string from;
-        public string effectKey;
-        public float effectValue;
         public float range;
+
+        // --- Aura / CrossEffect scalar effects ---
+        public float dmgMul;          // Portal aura : buff dmg
+        public int   pierceBonus;     // Portal aura pierce | ballista+portal = 99
+        public bool  pierceMega;      // Shorthand for pierceBonus=99
+        public int   multiShotBonus;  // archer+frost
+        public float flyerDmgBonus;   // mage+skyguard
+        public float cascadeRadius;   // mine+cannon
+        public float knockbackOnHit;  // crossbow+fan
+        public bool  pullToTank;      // magnet+tank
+        public bool  propagateDebuff; // acid+ballista
+        public bool  freezeOnHit;     // skyguard+frost (uses freezeDurMs)
+        public int   freezeDurMs;
+
+        // --- Composite effect structs ---
+        public SlowEffectDef   slowOnHit;      // cannon+frost
+        public SlowEffectDef   appliesSlow;    // crossbow+frost
+        public PropagateAoEDef propagateAoE;   // crossbow+mage
+
+        // --- Passive / ApplyToEnemy ---
+        public float coinMul;         // magnet passive
+        public SlowEffectDef slowArea; // fan/frost applyToEnemy
+
+        // --- Aura filter ---
+        // 0=unset  1=hasPierceOrAoe  -1=noPierceOrAoe
+        public int filterPierceOrAoe;
     }
 
     [Serializable]

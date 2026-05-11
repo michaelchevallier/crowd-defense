@@ -15,8 +15,41 @@ namespace CrowdDefense.Entities
         private float cooldown;
         private Enemy? target;
 
-        // BuffAura : reçoit un buff d'un Portal voisin chaque frame
+        // ── Synergy output fields (reset + recompute chaque tick par Synergies.cs) ──
+
+        // BuffAura / Portal : reçoit un buff dmg d'un Portal voisin
         public float _buffMul = 1f;
+        // Portal aura ou ballista+portal
+        public int _pierceBonus = 0;
+        // archer+frost
+        public int _multiShotBonus = 0;
+        // mage+skyguard
+        public float _flyerDmgBonus = 1f;
+        // cannon+frost : {mul, durMs} — non-null = appliquer slow on hit
+        public bool _slowOnHitActive = false;
+        public float _slowOnHitMul = 1f;
+        public int _slowOnHitDurMs = 0;
+        // crossbow+frost : appliquer slow on hit avec ces params
+        public bool _appliesSlowActive = false;
+        public float _appliesSlowMul = 1f;
+        public int _appliesSlowDurMs = 0;
+        // crossbow+mage : propagate AoE on hit
+        public bool _propagateAoEActive = false;
+        public float _propagateAoERadius = 0f;
+        public float _propagateAoEDmg = 0f;
+        // mine+cannon
+        public float _cascadeRadius = 0f;
+        // crossbow+fan
+        public float _knockbackOnHit = 0f;
+        // magnet+tank
+        public bool _pullActive = false;
+        // acid+ballista
+        public bool _propagateDebuff = false;
+        // skyguard+frost
+        public bool _freezeOnHitActive = false;
+        public int _freezeDurMs = 0;
+        // Visual indicator : au moins une synergie active
+        public bool _synergyActive = false;
 
         // Cluster (Mine) : timer spawn
         private float _clusterTimer;
@@ -116,15 +149,14 @@ namespace CrowdDefense.Entities
         {
             if (cfg == null) return;
 
-            // Reset buff chaque frame — Portal le re-pose dans UpdateBuffAura
-            _buffMul = 1f;
-
+            // _buffMul et tous les champs synergy sont reset + recomputed par Synergies.LateUpdate.
+            // Tower.Update lit les valeurs posées par le tick précédent (1 frame de delay OK).
             switch (cfg.Behavior)
             {
                 case TowerBehavior.Attack:   UpdateAttack();   break;
                 case TowerBehavior.Cluster:  UpdateCluster();  break;
                 case TowerBehavior.Slow:     UpdateSlow();     break;
-                case TowerBehavior.BuffAura: UpdateBuffAura(); break;
+                case TowerBehavior.BuffAura: break; // délégué à Synergies.cs
                 case TowerBehavior.CoinPull: UpdateCoinPull(); break;
             }
         }
@@ -197,23 +229,6 @@ namespace CrowdDefense.Entities
             }
         }
 
-        // ── BuffAura (Portal) ────────────────────────────────────────────────
-        private void UpdateBuffAura()
-        {
-            if (cfg == null || PlacementController.Instance == null) return;
-            float rangeSq = cfg.Range * cfg.Range;
-            var towers = PlacementController.Instance.PlacedTowers;
-            for (int i = 0; i < towers.Count; i++)
-            {
-                var t = towers[i];
-                if (t == null || t == this) continue;
-                if ((t.transform.position - transform.position).sqrMagnitude > rangeSq) continue;
-                // _buffMul a été reset à 1 en début d'Update de CETTE tour
-                // On pose le buff sur les voisines (elles lisent _buffMul dans Fire())
-                t._buffMul = Mathf.Max(t._buffMul, cfg.BuffMul);
-            }
-        }
-
         // ── CoinPull (Magnet) ────────────────────────────────────────────────
         private void UpdateCoinPull()
         {
@@ -278,17 +293,43 @@ namespace CrowdDefense.Entities
 
         private void Fire(Enemy t)
         {
-            if (projectilePrefab == null || cfg == null) return;
-            var go = Instantiate(projectilePrefab, transform.position + Vector3.up * 1.0f, Quaternion.identity);
-            var proj = go.GetComponent<Projectile>();
-            if (proj != null)
+            if (cfg == null) return;
+            if (ProjectilePool.Instance == null)
             {
-                // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
-                float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _levelDmgScale;
-                // Bonus dégâts flyer (Skyguard, Mage, Ballista, Arbalète)
-                if (cfg.FlyerDmgMul > 1f && t.IsFlyer && !t.ImmuneToFlyerBonus)
-                    dmg *= cfg.FlyerDmgMul;
-                proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogError("[Tower] ProjectilePool.Instance is null — projectile not fired");
+#endif
+                return;
+            }
+
+            // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _levelDmgScale;
+
+            // Bonus dégâts flyer : cfg de base × synergie mage+skyguard (_flyerDmgBonus)
+            if (t.IsFlyer && !t.ImmuneToFlyerBonus)
+            {
+                float flyMul = Mathf.Max(cfg.FlyerDmgMul, _flyerDmgBonus);
+                if (flyMul > 1f) dmg *= flyMul;
+            }
+
+            var proj = ProjectilePool.Instance.Get();
+            proj.transform.position = transform.position + Vector3.up * 1.0f;
+            proj.transform.rotation = Quaternion.identity;
+            proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor);
+
+            // archer+frost : multiShotBonus — fire extra projectiles in spread
+            if (_multiShotBonus > 0)
+            {
+                for (int i = 0; i < _multiShotBonus; i++)
+                {
+                    float spreadAngle = (i + 1) * 12f; // 12° spread par extra projectile
+                    Vector3 dir = (t.transform.position - transform.position).normalized;
+                    Vector3 spread = Quaternion.Euler(0f, spreadAngle, 0f) * dir;
+                    var proj2 = ProjectilePool.Instance.Get();
+                    proj2.transform.position = transform.position + Vector3.up * 1.0f;
+                    proj2.transform.rotation = Quaternion.LookRotation(spread);
+                    proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor);
+                }
             }
         }
 
