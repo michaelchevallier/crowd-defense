@@ -4,6 +4,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Data;
+using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
@@ -49,6 +50,9 @@ namespace CrowdDefense.UI
             _panel?.AddToClassList("hidden");
         }
 
+        public void PlayWorld(int worldId, Action? onDone = null) =>
+            Play($"world{worldId}", onDone);
+
         public void Play(string cutsceneId, Action? onDone = null)
         {
             var reg = CutsceneRegistry.Get();
@@ -78,6 +82,7 @@ namespace CrowdDefense.UI
             if (_titleLabel != null)
                 _titleLabel.text = L.Get(def.TitleKey);
 
+            AudioController.Instance?.Play("cutscene_start", 0.7f);
             _panel?.RemoveFromClassList("hidden");
             ShowLine(_lineIndex);
         }

@@ -140,6 +140,7 @@ namespace CrowdDefense.Systems
 
             SpawnCastle();
             SpawnHero();
+            SpawnTreasureSystem();
             TryPlayOpeningCutscene();
 
             if (currentLevel != null && PathManager.Instance?.Grid != null)
@@ -537,6 +538,15 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
             Debug.Log($"[LevelRunner] spawned hero '{heroType.Id}' at {spawnPos}");
 #endif
+        }
+
+        private void SpawnTreasureSystem()
+        {
+            var grid = PathManager.Instance?.Grid;
+            if (grid == null || grid.Treasures.Count == 0) return;
+
+            var go = new GameObject("TreasureSpawner");
+            go.AddComponent<TreasureSpawner>();
         }
 
         // ── Input helpers ───────────────────────────────────────────────────────
