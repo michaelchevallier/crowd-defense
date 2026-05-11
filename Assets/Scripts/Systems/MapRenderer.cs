@@ -77,6 +77,7 @@ namespace CrowdDefense.Systems
             GridCoords.TREE         => new Color(0.20f, 0.45f, 0.15f),
             GridCoords.ROCK         => new Color(0.55f, 0.50f, 0.45f),
             GridCoords.BUSH         => new Color(0.25f, 0.50f, 0.20f),
+            GridCoords.TREASURE     => new Color(1.00f, 0.80f, 0.10f),   // doré D1-01 §3.6
             _                       => new Color(0.20f, 0.20f, 0.20f),
         };
     }

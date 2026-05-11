@@ -13,6 +13,8 @@ namespace CrowdDefense.Systems
         public char[,] Cells { get; }
         public List<Vector2Int> Portals { get; } = new();
         public List<Vector2Int> Castles { get; } = new();
+        // D1-01 §3.6 treasure cells parsed from map
+        public List<Vector2Int> Treasures { get; } = new();
 
         private GridData(int w, int h, float cellSize)
         {
@@ -49,6 +51,7 @@ namespace CrowdDefense.Systems
                     gd.Cells[r, c] = ch;
                     if (ch == GridCoords.PORTAL) gd.Portals.Add(new Vector2Int(c, r));
                     else if (ch == GridCoords.CASTLE) gd.Castles.Add(new Vector2Int(c, r));
+                    else if (ch == GridCoords.TREASURE) gd.Treasures.Add(new Vector2Int(c, r));
                 }
             }
 

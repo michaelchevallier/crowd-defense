@@ -20,6 +20,8 @@ namespace CrowdDefense.Systems
         public const char LAVA = 'L';
         public const char BRIDGE_WATER = '~';
         public const char BRIDGE_LAVA = '^';
+        // D1-01 §3.6 — treasure tile: non-walkable, non-buildable, collectable bonus at wave end
+        public const char TREASURE = '*';
 
         public static readonly HashSet<char> Walkable = new() { PATH, PORTAL, CASTLE, BRIDGE_WATER, BRIDGE_LAVA };
         public static readonly HashSet<char> Buildable = new() { GRASS };
