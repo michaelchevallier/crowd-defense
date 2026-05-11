@@ -203,6 +203,23 @@ namespace CrowdDefense.UI
                     ["tutorial.step4.text"] = "Place your hero on the map to assist the towers.",
                     ["tutorial.step5.text"] = "Collect coins dropped by defeated enemies.",
                     ["tutorial.done.text"] = "You are ready! Good luck, defender!",
+
+                    // ── Daily Challenge panel ──────────────────────────────────────
+                    ["daily.title"] = "Daily Challenge",
+                    ["daily.seed_label"] = "Seed",
+                    ["daily.challenge_label"] = "Challenge",
+                    ["daily.best_score_label"] = "Best Score",
+                    ["daily.best_score_none"] = "No score yet",
+                    ["daily.play_btn"] = "Play",
+                    ["daily.played_today"] = "Already played today",
+                    ["worldmap.btn_daily"] = "Daily",
+
+                    // ── BluePill panel ─────────────────────────────────────────────
+                    ["bluepill.title"] = "BluePill Mode",
+                    ["bluepill.description"] = "Channel for 2s without moving to teleport to the castle. Matrix easter egg.",
+                    ["bluepill.toggle_label"] = "Enable BluePill mode",
+                    ["bluepill.kills_label"] = "BluePill kills",
+                    ["bluepill.levels_label"] = "BluePill uses",
                 },
                 ["fr"] = new()
                 {
@@ -390,6 +407,23 @@ namespace CrowdDefense.UI
                     ["tutorial.step4.text"] = "Place ton heros sur la carte pour aider les tours.",
                     ["tutorial.step5.text"] = "Collecte les pieces laissees par les ennemis elimines.",
                     ["tutorial.done.text"] = "Tu es pret ! Bonne chance, defenseur !",
+
+                    // ── Daily Challenge panel ──────────────────────────────────────
+                    ["daily.title"] = "Defi Quotidien",
+                    ["daily.seed_label"] = "Graine",
+                    ["daily.challenge_label"] = "Defi",
+                    ["daily.best_score_label"] = "Meilleur score",
+                    ["daily.best_score_none"] = "Aucun score",
+                    ["daily.play_btn"] = "Jouer",
+                    ["daily.played_today"] = "Deja joue aujourd'hui",
+                    ["worldmap.btn_daily"] = "Defi du Jour",
+
+                    // ── BluePill panel ─────────────────────────────────────────────
+                    ["bluepill.title"] = "Mode Pilule Bleue",
+                    ["bluepill.description"] = "Canalise 2s sans bouger pour te teleporter au chateau. Easter egg Matrix.",
+                    ["bluepill.toggle_label"] = "Activer le mode Pilule Bleue",
+                    ["bluepill.kills_label"] = "Victimes Pilule Bleue",
+                    ["bluepill.levels_label"] = "Utilisations Pilule Bleue",
                 },
             },
 
