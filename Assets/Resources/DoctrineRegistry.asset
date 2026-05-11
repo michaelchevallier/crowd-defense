@@ -12,4 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5919d5e016cdf459b8dbbb5bdb3a7b15, type: 3}
   m_Name: DoctrineRegistry
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.DoctrineRegistry
-  defs: []
+  defs:
+  - {fileID: 11400000, guid: 4357e59c890d04496a898636ff462985, type: 2}
+  - {fileID: 11400000, guid: eb3b73af575e445488fba39eb14131de, type: 2}
+  - {fileID: 11400000, guid: c72f2d0b347574ae19a2f38889d694eb, type: 2}
+  - {fileID: 11400000, guid: c6692044a3c784f328d966cd1889240d, type: 2}
+  - {fileID: 11400000, guid: 0551558b42fa9466498676d224cf32b0, type: 2}
+  - {fileID: 11400000, guid: 9caba57ee267f499cb8f10d98a74377a, type: 2}
+  - {fileID: 11400000, guid: 53a5ca0f254984dfc974a4f2e1c04863, type: 2}

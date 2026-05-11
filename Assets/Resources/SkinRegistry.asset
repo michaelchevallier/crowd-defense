@@ -12,4 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db7b3e0f607d242b8894836a63d2a4e0, type: 3}
   m_Name: SkinRegistry
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.SkinRegistry
-  skins: []
+  skins:
+  - {fileID: 11400000, guid: 48a2f66550eca45c0b815e99d4c2016a, type: 2}
+  - {fileID: 11400000, guid: ad68ed28914bf4771a28fa73c077f898, type: 2}
+  - {fileID: 11400000, guid: 4ee8a7535fcfd4c22be2fb1f86b3dfe2, type: 2}
+  - {fileID: 11400000, guid: c15f7a1eb34534bbd8532d038dcf9b52, type: 2}
+  - {fileID: 11400000, guid: 01fb7730db3cf46319783c389df29259, type: 2}

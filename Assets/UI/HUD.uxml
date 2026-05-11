@@ -187,6 +187,14 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <!-- Virtual Joystick (D5-01 — portrait mobile, moitie gauche au-dessus toolbar) -->
+        <!-- Rendu visible par VirtualJoystickController.cs sur Device.IsMobile + portrait -->
+        <ui:VisualElement name="joystick-zone" class="joystick-zone hidden">
+            <ui:VisualElement name="joystick-base" class="joystick-base hidden">
+                <ui:VisualElement name="joystick-thumb" class="joystick-thumb" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
         <!-- Synergy badges (bottom-center, above toolbar) -->
         <ui:VisualElement name="synergy-badges" class="synergy-badges" />
 

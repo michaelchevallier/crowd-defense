@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9716c93128fd440ab63341ce00fafd4, type: 3}
+  m_Name: merchant
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.DoctrineDef
+  id: merchant
+  displayName: Marchand
+  description: "Int\xE9r\xEAt banque +50%, bonus vague rapide +40%, aimant pi\xE8ces
+    +20%."
+  icon: {fileID: 0}
+  iconEmoji: merchant
+  gemCost: 10
+  modifiers:
+  - key: BankInterestRate
+    value: 1.5
+  - key: SkipBonusGold
+    value: 1.4
+  - key: MagnetCoinMul
+    value: 1.2

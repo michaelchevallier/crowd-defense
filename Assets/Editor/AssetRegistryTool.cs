@@ -17,7 +17,8 @@ namespace CrowdDefense.Editor
         public static void BuildAssetRegistry()
         {
             // Re-import all GLTF/GLB files to ensure correct importer (UnityGLTF vs DefaultImporter)
-            ReimportGLTFAssets();
+            // DISABLED: ForceUpdate triggers GLTFast Jobs threading bug on skeleton files — cached in Library/ already works
+            // ReimportGLTFAssets();
 
             var registry = LoadOrCreateRegistry();
 

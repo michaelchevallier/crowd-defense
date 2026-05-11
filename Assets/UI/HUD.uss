@@ -567,6 +567,9 @@
 .hud-root.mobile .minimap-toggle-btn {
     right: 108px;
     top: 56px;
+    width: 44px;
+    height: 44px;
+    font-size: 15px;
 }
 
 .hud-root.portrait .minimap-toggle-btn {
@@ -890,4 +893,108 @@
     transition-property: border-color;
     transition-duration: 0.15s;
     transition-timing-function: ease-in;
+}
+
+/* ============================================================ */
+/* === MOBILE TOUCH FIXES (D5-01) — touch targets min 44px  === */
+/* ============================================================ */
+
+/* Speed buttons : ~32px tall -> 44px */
+.hud-root.mobile .speed-btn {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 15px;
+}
+
+/* BluePill : ~34px tall -> 48px */
+.hud-root.mobile .bluepill-btn {
+    min-height: 48px;
+    padding: 14px 18px;
+    font-size: 14px;
+}
+
+/* Wave launch : pleine largeur en portrait, décalé au-dessus de la toolbar */
+.hud-root.portrait .wave-launch-btn {
+    width: 88%;
+    height: 64px;
+    bottom: 76px;
+}
+
+/* Wave launch pill : repositionné portrait */
+.hud-root.portrait .wave-launch-pill {
+    bottom: 150px;
+}
+
+/* Hero panel : repositionné portrait (au-dessus toolbar) */
+.hud-root.portrait .hero-panel {
+    left: 8px;
+    bottom: 76px;
+    width: 160px;
+}
+
+/* Toast stack : réduit largeur portrait */
+.hud-root.portrait .toast-stack {
+    width: 220px;
+    right: 8px;
+    bottom: 76px;
+}
+
+/* Pill labels : contraste WCAG AA sur mobile (12px sous-seuil) */
+.hud-root.mobile .pill-label {
+    font-size: 14px;
+    color: rgba(240, 240, 240, 0.85);
+}
+
+/* Pill values : légèrement réduits portrait pour tenir sur petits écrans */
+.hud-root.portrait .pill-value {
+    font-size: 18px;
+}
+
+/* Top-bar : padding réduit portrait */
+.hud-root.portrait .top-bar {
+    padding: 10px 12px;
+}
+
+/* Pills : min-width réduit portrait */
+.hud-root.portrait .pill {
+    min-width: 72px;
+    padding: 6px 10px;
+}
+
+/* Perk/synergy badges : déplacés portrait */
+.hud-root.portrait .synergy-badges {
+    bottom: 76px;
+}
+
+/* === Virtual Joystick (portrait, moitié gauche au-dessus toolbar) === */
+.joystick-zone {
+    position: absolute;
+    left: 0;
+    bottom: 76px;
+    width: 50%;
+    height: 180px;
+    display: none;
+}
+
+.hud-root.portrait .joystick-zone {
+    display: flex;
+}
+
+.joystick-base {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+    background-color: rgba(255, 255, 255, 0.10);
+    border-color: rgba(255, 255, 255, 0.28);
+    border-width: 2px;
+    align-items: center;
+    justify-content: center;
+}
+
+.joystick-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    background-color: rgba(255, 255, 255, 0.45);
 }

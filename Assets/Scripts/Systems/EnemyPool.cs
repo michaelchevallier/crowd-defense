@@ -5,6 +5,7 @@ using UnityEngine.Pool;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
@@ -73,6 +74,9 @@ namespace CrowdDefense.Systems
             }
             var e = go.GetComponent<Enemy>();
             e.SetPool(this);
+            // Attach world-space HP bar if not already present (prefab may lack it)
+            if (go.GetComponent<EnemyHpBar>() == null)
+                go.AddComponent<EnemyHpBar>();
             return e;
         }
 

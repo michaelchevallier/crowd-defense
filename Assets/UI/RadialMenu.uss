@@ -213,3 +213,39 @@
 .hidden {
     display: none;
 }
+
+/* ============================================================ */
+/* === MOBILE TOUCH FIXES (D5-01) — touch targets min 44px  === */
+/* ============================================================ */
+
+/* Range + Sell : 36px -> 52px */
+.hud-root.mobile .radial-btn-range {
+    height: 52px;
+    width: 90px;
+}
+
+.hud-root.mobile .radial-btn-sell {
+    height: 52px;
+}
+
+/* L2/L3 upgrade : 52px -> 60px */
+.hud-root.mobile .radial-btn-upgrade {
+    height: 60px;
+}
+
+/* Radial menu : prend plus de largeur portrait */
+.hud-root.portrait .radial-menu {
+    width: 94%;
+    bottom: 76px;
+}
+
+/* DPS/Utility buttons portrait : stack vertical pour caser les hints */
+.hud-root.portrait .radial-upgrade-row {
+    flex-direction: column;
+}
+
+.hud-root.portrait .radial-btn {
+    width: 100%;
+    height: 64px;
+    margin-bottom: 6px;
+}
