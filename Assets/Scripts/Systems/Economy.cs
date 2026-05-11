@@ -49,6 +49,15 @@ namespace CrowdDefense.Systems
             AddGold(finalReward);
         }
 
+        // Overload with world position — spawns coin popup above kill site.
+        public void AddGoldFromKill(int baseReward, Vector3 worldPos)
+        {
+            float comboMul = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
+            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul));
+            AddGold(finalReward);
+            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(finalReward, worldPos);
+        }
+
         // Called by Castle.TakeDamage to flag a leak this wave
         public void FlagCastleDamaged()
         {

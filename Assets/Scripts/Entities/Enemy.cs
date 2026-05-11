@@ -443,6 +443,7 @@ namespace CrowdDefense.Entities
             {
                 AudioController.Instance?.Play("enemy_hit", 0.4f);
                 VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 0.3f, baseColor);
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnDamage(dmg, transform.position + Vector3.up * 1.2f);
             }
 
             if (hp <= 0f)
@@ -477,7 +478,7 @@ namespace CrowdDefense.Entities
 #endif
                     // Publish first so ComboSystem updates ActiveMultiplier, then Economy applies it
                     EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
-                    Economy.Instance?.AddGoldFromKill(reward);
+                    Economy.Instance?.AddGoldFromKill(reward, transform.position + Vector3.up * 1.2f);
                 }
 #if UNITY_EDITOR
                 else Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
