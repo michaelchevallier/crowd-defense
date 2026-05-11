@@ -150,6 +150,7 @@ namespace CrowdDefense.UI
                     ["settings.master"] = "Master",
                     ["settings.sfx"] = "SFX",
                     ["settings.music"] = "Music",
+                    ["settings.ui"] = "UI",
                     ["settings.mute"] = "Mute",
                     ["settings.gfx_section"] = "Graphics",
                     ["settings.quality"] = "Quality",
@@ -165,6 +166,7 @@ namespace CrowdDefense.UI
                     ["settings.lang_section"] = "Language",
                     ["settings.lang_label"] = "Locale",
                     ["settings.close"] = "Close",
+                    ["settings.reset_camera"] = "Reset Camera",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
 
@@ -337,6 +339,7 @@ namespace CrowdDefense.UI
                     ["settings.master"] = "Général",
                     ["settings.sfx"] = "Effets",
                     ["settings.music"] = "Musique",
+                    ["settings.ui"] = "Interface",
                     ["settings.mute"] = "Muet",
                     ["settings.gfx_section"] = "Graphismes",
                     ["settings.quality"] = "Qualité",
@@ -352,6 +355,7 @@ namespace CrowdDefense.UI
                     ["settings.lang_section"] = "Langue",
                     ["settings.lang_label"] = "Locale",
                     ["settings.close"] = "Fermer",
+                    ["settings.reset_camera"] = "Recentrer caméra",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
 
