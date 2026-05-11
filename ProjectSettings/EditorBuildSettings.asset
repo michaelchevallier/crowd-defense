@@ -8,10 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Menu.unity
     guid: 6078c75e6a0547fbacc3397e7b56756f
-    buildIndex: 0
   - enabled: 1
     path: Assets/Scenes/Main.unity
     guid: 920564e2be6f44cb9b4b44db293b3f5f
-    buildIndex: 1
-  m_configObjects: {}
+  m_configObjects:
+    com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
   m_UseUCBPForAssetBundles: 0

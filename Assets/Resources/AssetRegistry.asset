@@ -12,4 +12,102 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 68d6fa2faefd149f1aaa05237b2411e9, type: 3}
   m_Name: AssetRegistry
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.AssetRegistry
-  entries: []
+  entries:
+  - Key: tower_archer
+    Prefab: {fileID: 5741765962878326206, guid: c316f3c2143704aeaa3596dbc487bfda, type: 3}
+  - Key: tower_archer_l2
+    Prefab: {fileID: -8843307070985724611, guid: b8bc617fe3cec4c049ef2489b154a175, type: 3}
+  - Key: tower_archer_l3
+    Prefab: {fileID: 7985712629288543768, guid: 962d54191df734ab0836ab1cf8234046, type: 3}
+  - Key: tower_ballista
+    Prefab: {fileID: -2814452630812415425, guid: 44339fe6877dc4247a803119a18376af, type: 3}
+  - Key: tower_ballista_l2
+    Prefab: {fileID: 450760114080105252, guid: 6fe30e6b310a14cdf9adf365d42c6ff4, type: 3}
+  - Key: tower_ballista_l3
+    Prefab: {fileID: -4787285136284119406, guid: aaa2d71eb8d4042df9424b0d788fe5a0, type: 3}
+  - Key: tower_cannon
+    Prefab: {fileID: -293203802875518696, guid: bded87344d3344097a34bb5ea799125a, type: 3}
+  - Key: tower_crossbow
+    Prefab: {fileID: 2107409826236812522, guid: 9520c8122adf44b7ba6057e748a17c5a, type: 3}
+  - Key: tower_fan
+    Prefab: {fileID: 2107409826236812522, guid: 2590b8288025546ef89d17a2c8accbce, type: 3}
+  - Key: tower_frost
+    Prefab: {fileID: 2107409826236812522, guid: c524a48550e714a0780bc7b99a9b0cbf, type: 3}
+  - Key: tower_mage
+    Prefab: {fileID: 1132859227735928237, guid: c5968f0cea4774c3cbe16f2c2c87a2cd, type: 3}
+  - Key: tower_mage_l2
+    Prefab: {fileID: -6884484550512755578, guid: 2df7fdbc5d38c4767b4fd3d523a86983, type: 3}
+  - Key: tower_magnet
+    Prefab: {fileID: 4633253903771753100, guid: a5e4d5c2e67f94f289c11eb904edbef5, type: 3}
+  - Key: tower_mine
+    Prefab: {fileID: 2107409826236812522, guid: d4515f5899f914427ac9ff024ea20275, type: 3}
+  - Key: tower_portal
+    Prefab: {fileID: -293203802875518696, guid: 2196ab870949c405794e31766995cebf, type: 3}
+  - Key: tower_tank
+    Prefab: {fileID: 3880164301695603545, guid: 1d793b0af890e4004929d3840bbb559b, type: 3}
+  - Key: tower_tank_l2
+    Prefab: {fileID: 6981720698519276914, guid: 9a5923c5ef8364f939d50e9ad842440d, type: 3}
+  - Key: tower_tank_l3
+    Prefab: {fileID: -4020660195866448472, guid: 2c3d0e45633794a10b3147b5a131994f, type: 3}
+  - Key: mob_alpaking
+    Prefab: {fileID: 8771091787928289351, guid: aa34abf2eb5344e139015e759d4acbf3, type: 3}
+  - Key: mob_armabee
+    Prefab: {fileID: 8771091787928289351, guid: a7026cd0384bb4de2b40bd49ab784d83, type: 3}
+  - Key: mob_birb
+    Prefab: {fileID: 8771091787928289351, guid: 8473b0ff39b0843a58e421bbe88614fd, type: 3}
+  - Key: mob_blob_green
+    Prefab: {fileID: 8771091787928289351, guid: 3579ed7e7aa9742fc9ec0ce2258193f6, type: 3}
+  - Key: mob_blob_pink
+    Prefab: {fileID: 8771091787928289351, guid: 17e95a0096aa04e6982eb6f79d255597, type: 3}
+  - Key: mob_blob_spiky
+    Prefab: {fileID: 8771091787928289351, guid: f7a70d3b3eb2741479c74ddf3ca26de3, type: 3}
+  - Key: mob_bunny
+    Prefab: {fileID: 8771091787928289351, guid: bb811d036309346f7b7e60d9e7bc2475, type: 3}
+  - Key: mob_cactoro
+    Prefab: {fileID: 8771091787928289351, guid: 85315ba34fd214b598a9b215cd35584b, type: 3}
+  - Key: mob_dino
+    Prefab: {fileID: 8771091787928289351, guid: a55da1d45fa2649a1b1e9ecd3272b8a2, type: 3}
+  - Key: mob_espace_astronaut
+    Prefab: {fileID: 8771091787928289351, guid: e37fccb8caeb549c2aea507ba72b493c, type: 3}
+  - Key: mob_frog
+    Prefab: {fileID: 8771091787928289351, guid: 73e733b52fd2f4b868dce900e7c2e1df, type: 3}
+  - Key: mob_ninja
+    Prefab: {fileID: 8771091787928289351, guid: 90e3d16afc4dd4199913944d95ce1c0a, type: 3}
+  - Key: mob_orc
+    Prefab: {fileID: 8771091787928289351, guid: 896f919a4085f42c2b58688012d932b9, type: 3}
+  - Key: mob_pigeon
+    Prefab: {fileID: 8771091787928289351, guid: cd34c9315e3d7438091ff00717b8b15e, type: 3}
+  - Key: mob_skeleton
+    Prefab: {fileID: 8771091787928289351, guid: 3a3d984643b2846459b162cbde742465, type: 3}
+  - Key: mob_squidle
+    Prefab: {fileID: 8771091787928289351, guid: a1568c7a461434efb8b3ba9a1b636464, type: 3}
+  - Key: mob_tribal
+    Prefab: {fileID: 8771091787928289351, guid: 8fad2127f0b54448a9c6d80e2e6612d0, type: 3}
+  - Key: boss_apocalypse
+    Prefab: {fileID: 8771091787928289351, guid: b641be778d80b4fe2a72f7ea6267f69e, type: 3}
+  - Key: boss_apocalypse_orc_skull
+    Prefab: {fileID: 8771091787928289351, guid: 698673c6b2d754a6999bc1f8167e0799, type: 3}
+  - Key: boss_cyberpunk_hub_ia
+    Prefab: {fileID: 8771091787928289351, guid: f56ba6fc40d4c4f44b1eb09fa93aab99, type: 3}
+  - Key: boss_espace_ghost
+    Prefab: {fileID: 8771091787928289351, guid: 790b3dc1288574f299fd2afc4d684884, type: 3}
+  - Key: boss_espace_ghost_skull
+    Prefab: {fileID: 8771091787928289351, guid: cacc605caa2c94dda9e3f20c990abb62, type: 3}
+  - Key: boss_foret_mushroom_king
+    Prefab: {fileID: 8771091787928289351, guid: 6fa0a36634e9c464abf1d945bfee2ec9, type: 3}
+  - Key: boss_medieval_sorcier_roi
+    Prefab: {fileID: 8771091787928289351, guid: 6e1a282a20ebe433fb779ef51095c760, type: 3}
+  - Key: boss_submarin_kraken
+    Prefab: {fileID: 5861069733216532766, guid: d562c6ae8b7e0415d8ad578321673504, type: 3}
+  - Key: boss_volcan_blue_demon
+    Prefab: {fileID: 8771091787928289351, guid: 82157a85873c24cc186d6372ef77f688, type: 3}
+  - Key: boss_volcan_demon
+    Prefab: {fileID: 8771091787928289351, guid: 9a50d909ede0640b5ac848dd50e814a6, type: 3}
+  - Key: boss_volcan_dragon
+    Prefab: {fileID: 8128668236925612103, guid: 8a63ecb93635743fa93e24f186827db9, type: 3}
+  - Key: boss_volcan_dragon_evolved
+    Prefab: {fileID: 8771091787928289351, guid: 4475839b0346243b2a35e02e90e6ed54, type: 3}
+  - Key: boss_volcan_dragon_v2
+    Prefab: {fileID: 8771091787928289351, guid: 72a3634548eb94d1a8d275d248538cc4, type: 3}
+  - Key: boss_yeti
+    Prefab: {fileID: 8771091787928289351, guid: f22a7f2d9eeab4254853b12c5fe4da55, type: 3}

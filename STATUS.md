@@ -21,9 +21,10 @@ unset GITHUB_TOKEN
 
 ## Where we are
 
-- **Current sprint** : MIGRATE Phase 1 POC ✅ **DONE** (2026-05-11, ~2h Sonnet pipeline).
-- **Current focus** : activation GitHub Pages (action manuelle Mike) + Phase 2 ramp-up.
-- **Next milestone** : Phase 2 migration core (12 TOWER_TYPES + 30 ENEMY_TYPES + 80 levels + D1 specs).
+- **Current sprint** : MIGRATE Phase 3 VISUALS — UnityGLTF setup ✅ **DONE** (2026-05-11 soir).
+- **Current focus** : rebuild WebGL + redeploy /v6/ avec AssetRegistry populé (49 entries) ; QA via Chrome MCP.
+- **Next milestone** : VISUAL-07 particles + VISUAL-08 audio + VISUAL-09 shader graph polish ; fix HUD font Roboto.
+- **Phase 3 install GLTF** : `org.khronos.unitygltf 2.19.2` Khronos via git URL pin (commit `da54306`). Due diligence appliquée (cf memory `feedback_dependency_due_diligence`). UnityGLTF parse 18 towers + 31 enemies .glb/.gltf, 11 .gltf Quaternius skipped (refs textures manquantes — Phase 3 dédiée).
 
 ### Phase 1 POC livré
 
