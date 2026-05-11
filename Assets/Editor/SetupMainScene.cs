@@ -80,6 +80,9 @@ namespace CrowdDefense.Editor
             PopulateEventRegistry();
             PopulateModifierRegistry();
 
+            // Wire TowerType / EnemyType / HeroType assetKey → GLTF key, then rebuild AssetRegistry entries
+            BuildAssetRegistryMappings.Generate();
+
             AssetDatabase.SaveAssets();
             return n;
         }
@@ -312,6 +315,7 @@ namespace CrowdDefense.Editor
             WireLevelRunner();
             WireTowerToolbar();
             WireBossSystem();
+            WireEnemyPool();
         }
 
         private static void WireLevelRunner()
@@ -374,6 +378,30 @@ namespace CrowdDefense.Editor
             if (guids.Length == 0) return;
 
             PopulateList(bs, "registry", guids);
+        }
+
+        private static void WireEnemyPool()
+        {
+            var ep = Object.FindFirstObjectByType<EnemyPool>();
+            if (ep == null) return;
+
+            var enemyPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/Enemy.prefab");
+            if (enemyPrefab == null)
+            {
+                Debug.LogWarning("[SetupMainScene] Assets/Prefabs/Enemies/Enemy.prefab not found — skipping enemyPrefab wiring");
+                return;
+            }
+
+            var so = new SerializedObject(ep);
+            var prop = so.FindProperty("enemyPrefab");
+            if (prop == null)
+            {
+                Debug.LogWarning("[SetupMainScene] EnemyPool.enemyPrefab field not found — field renamed?");
+                return;
+            }
+
+            prop.objectReferenceValue = enemyPrefab;
+            so.ApplyModifiedProperties();
         }
 
         private static void PopulateList(Object target, string fieldName, string[] guids)
