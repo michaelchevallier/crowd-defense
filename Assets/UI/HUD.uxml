@@ -85,6 +85,9 @@
             <ui:Button text="Skip Tutorial" name="tutorial-btn-skip" class="tutorial-btn-skip" />
         </ui:VisualElement>
 
+        <!-- Minimap (top-right, 10 Hz update via MinimapController) -->
+        <ui:VisualElement name="minimap-container" class="minimap-container hidden" />
+
         <!-- Tower toolbar (bottom) -->
         <ui:VisualElement name="tower-toolbar" class="tower-toolbar">
         </ui:VisualElement>
