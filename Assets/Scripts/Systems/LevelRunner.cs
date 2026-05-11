@@ -110,6 +110,13 @@ namespace CrowdDefense.Systems
                 }
             }
 
+            // Fallback: if no level loaded and not in an Editor scene, load W1-1 (bootstrap default).
+            if (currentLevel == null)
+            {
+                var reg = Data.LevelRegistry.Get();
+                if (reg != null) currentLevel = reg.FindById("W1-1");
+            }
+
             ApplyTimeScale();
         }
 

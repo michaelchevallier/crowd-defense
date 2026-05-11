@@ -20,7 +20,7 @@ namespace CrowdDefense.Editor
     public static class GameSmoketest
     {
         private const string MainScenePath = "Assets/Scenes/Main.unity";
-        private const int TimeoutSeconds = 15;
+        internal const int TimeoutSeconds = 15;
 
         [MenuItem("Tools/CrowdDefense/Run Game Smoketest")]
         public static void RunMenuItem()
