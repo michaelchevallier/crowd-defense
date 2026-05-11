@@ -1,0 +1,73 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="SaveSlot.uss" />
+    <ui:VisualElement name="saveslot-root" class="saveslot-root hidden">
+        <ui:VisualElement name="saveslot-overlay" class="saveslot-overlay">
+
+            <ui:Label text="CROWD DEFENSE" name="saveslot-title" class="saveslot-title" />
+
+            <ui:VisualElement name="slots-container" class="slots-container">
+
+                <!-- Slot 0 -->
+                <ui:VisualElement name="slot-card-0" class="slot-card">
+                    <ui:Label text="Slot 1" name="slot-label-0" class="slot-label" />
+                    <ui:VisualElement name="slot-info-0" class="slot-info">
+                        <ui:Label text="" name="slot-date-0" class="slot-date" />
+                        <ui:Label text="" name="slot-world-0" class="slot-world" />
+                        <ui:Label text="" name="slot-gems-0" class="slot-gems" />
+                    </ui:VisualElement>
+                    <ui:Label text="— Empty —" name="slot-empty-0" class="slot-empty" />
+                    <ui:VisualElement class="slot-actions">
+                        <ui:Button text="Continue" name="slot-continue-0" class="slot-btn slot-btn-continue" />
+                        <ui:Button text="New Game" name="slot-new-0" class="slot-btn slot-btn-new" />
+                        <ui:Button text="Delete" name="slot-delete-0" class="slot-btn slot-btn-delete" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Slot 1 -->
+                <ui:VisualElement name="slot-card-1" class="slot-card">
+                    <ui:Label text="Slot 2" name="slot-label-1" class="slot-label" />
+                    <ui:VisualElement name="slot-info-1" class="slot-info">
+                        <ui:Label text="" name="slot-date-1" class="slot-date" />
+                        <ui:Label text="" name="slot-world-1" class="slot-world" />
+                        <ui:Label text="" name="slot-gems-1" class="slot-gems" />
+                    </ui:VisualElement>
+                    <ui:Label text="— Empty —" name="slot-empty-1" class="slot-empty" />
+                    <ui:VisualElement class="slot-actions">
+                        <ui:Button text="Continue" name="slot-continue-1" class="slot-btn slot-btn-continue" />
+                        <ui:Button text="New Game" name="slot-new-1" class="slot-btn slot-btn-new" />
+                        <ui:Button text="Delete" name="slot-delete-1" class="slot-btn slot-btn-delete" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+                <!-- Slot 2 -->
+                <ui:VisualElement name="slot-card-2" class="slot-card">
+                    <ui:Label text="Slot 3" name="slot-label-2" class="slot-label" />
+                    <ui:VisualElement name="slot-info-2" class="slot-info">
+                        <ui:Label text="" name="slot-date-2" class="slot-date" />
+                        <ui:Label text="" name="slot-world-2" class="slot-world" />
+                        <ui:Label text="" name="slot-gems-2" class="slot-gems" />
+                    </ui:VisualElement>
+                    <ui:Label text="— Empty —" name="slot-empty-2" class="slot-empty" />
+                    <ui:VisualElement class="slot-actions">
+                        <ui:Button text="Continue" name="slot-continue-2" class="slot-btn slot-btn-continue" />
+                        <ui:Button text="New Game" name="slot-new-2" class="slot-btn slot-btn-new" />
+                        <ui:Button text="Delete" name="slot-delete-2" class="slot-btn slot-btn-delete" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+
+            </ui:VisualElement>
+
+            <!-- Delete confirmation dialog -->
+            <ui:VisualElement name="confirm-dialog" class="confirm-dialog hidden">
+                <ui:Label text="Delete this save?" name="confirm-label" class="confirm-label" />
+                <ui:VisualElement class="confirm-actions">
+                    <ui:Button text="Confirm" name="confirm-yes-btn" class="slot-btn slot-btn-delete" />
+                    <ui:Button text="Cancel" name="confirm-no-btn" class="slot-btn slot-btn-new" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
