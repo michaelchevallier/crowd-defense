@@ -9,6 +9,9 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class LevelSelectController : MonoBehaviour
     {
+        private const int WorldCount     = 8;
+        private const int LevelsPerWorld = 10;
+
         private void Start()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
@@ -25,9 +28,11 @@ namespace CrowdDefense.UI
                 return;
             }
 
+            AddDailyRow(grid);
+
             var registry = LevelRegistry.Get();
 
-            for (int w = 1; w <= 10; w++)
+            for (int w = 1; w <= WorldCount; w++)
             {
                 var row = new VisualElement();
                 row.AddToClassList("world-row");
@@ -36,32 +41,27 @@ namespace CrowdDefense.UI
                 worldLabel.AddToClassList("world-label");
                 row.Add(worldLabel);
 
-                for (int l = 1; l <= 8; l++)
+                for (int l = 1; l <= LevelsPerWorld; l++)
                 {
                     string levelId = $"world{w}-{l}";
                     bool unlocked = SaveSystem.IsLevelUnlocked(levelId);
-                    bool cleared = SaveSystem.IsLevelCleared(levelId);
+                    bool cleared  = SaveSystem.IsLevelCleared(levelId);
 
                     var btn = new Button();
-                    btn.text = L.Get("menu.level_btn", w, l);
+                    btn.text = l.ToString();
                     btn.AddToClassList("level-btn");
 
-                    if (cleared) btn.AddToClassList("cleared");
+                    if (cleared)        btn.AddToClassList("cleared");
                     else if (!unlocked) btn.AddToClassList("locked");
 
                     if (unlocked)
                     {
-                        // Capture for lambda
                         string id = levelId;
                         LevelData? levelData = registry?.FindById(id);
                         if (levelData != null)
-                        {
                             btn.RegisterCallback<ClickEvent>(_ => OnLevelClicked(id));
-                        }
                         else
-                        {
                             btn.SetEnabled(false);
-                        }
                     }
                     else
                     {
@@ -78,6 +78,31 @@ namespace CrowdDefense.UI
         private static void OnLevelClicked(string levelId)
         {
             LevelLoader.LoadLevel(levelId);
+        }
+
+        private static void AddDailyRow(VisualElement grid)
+        {
+            var row = new VisualElement();
+            row.AddToClassList("world-row");
+
+            var label = new Label(L.Get("daily.title"));
+            label.AddToClassList("world-label");
+            row.Add(label);
+
+            var btn = new Button();
+            bool playedToday = Daily.HasPlayedToday();
+            int bestScore    = Daily.GetStoredScore();
+            string sub       = playedToday
+                ? $"{L.Get("daily.played_today")} ({L.Get("daily.best_score_label")}: {bestScore})"
+                : L.Get("daily.play_btn");
+            btn.text = sub;
+            btn.AddToClassList("level-btn");
+            if (playedToday) btn.AddToClassList("cleared");
+
+            btn.RegisterCallback<ClickEvent>(_ => LevelLoader.LoadDailyLevel());
+            row.Add(btn);
+
+            grid.Add(row);
         }
     }
 }

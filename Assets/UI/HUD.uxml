@@ -160,6 +160,9 @@
         <ui:VisualElement name="tower-toolbar" class="tower-toolbar">
         </ui:VisualElement>
 
+        <!-- Toast stack (generic toasts: perk, synergy, combo, modifier, achievement) -->
+        <ui:VisualElement name="toast-stack" class="toast-stack" />
+
         <!-- Game Over panel -->
         <ui:VisualElement name="panel-game-over" class="overlay-panel overlay-game-over hidden">
             <ui:Label text="GAME OVER" name="panel-game-over-title" class="overlay-title" />

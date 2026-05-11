@@ -50,6 +50,10 @@ namespace CrowdDefense.Systems
         [SerializeField] private GameObject? heroPrefab;
         [SerializeField] private bool spawnHero = true;
 
+        // Set at runtime when a DailyLevelSpec drives this run (no LevelData asset).
+        public bool IsDailyRun { get; private set; }
+        private DailyLevelSpec? _dailySpec;
+
         public GameState State { get; private set; } = GameState.Lobby;
         public LevelData? CurrentLevel => currentLevel;
 
@@ -87,7 +91,13 @@ namespace CrowdDefense.Systems
 
         protected override void OnAwakeSingleton()
         {
-            if (!string.IsNullOrEmpty(LevelLoader.NextLevelId))
+            if (LevelLoader.NextDailySpec != null)
+            {
+                _dailySpec  = LevelLoader.NextDailySpec;
+                IsDailyRun  = true;
+                LevelLoader.NextDailySpec = null;
+            }
+            else if (!string.IsNullOrEmpty(LevelLoader.NextLevelId))
             {
                 var reg = Data.LevelRegistry.Get();
                 if (reg != null)
@@ -205,7 +215,8 @@ namespace CrowdDefense.Systems
             LevelLoader.LoadLevel(currentLevel.Id);
         }
 
-        public int ResolveCastleHP() => currentLevel?.CastleHP ?? 120;
+        public int ResolveCastleHP() =>
+            _dailySpec != null ? _dailySpec.CastleHP : currentLevel?.CastleHP ?? 120;
 
         // Called externally (e.g. perk picker done) to proceed from LevelComplete → Summary.
         public void ConfirmLevelComplete()
@@ -316,13 +327,49 @@ namespace CrowdDefense.Systems
 
         private void HandleAllWavesCompleted()
         {
-            if (currentLevel != null)
+            if (IsDailyRun)
+            {
+                int score = _killsThisLevel * 10 + (WaveManager.Instance?.TotalWaves ?? 5) * 100;
+                Daily.SetScore(score);
+            }
+            else if (currentLevel != null)
                 SaveSystem.MarkLevelCleared(currentLevel.Id);
 
             if (Hero != null)
                 RunContext.Instance?.SnapshotHero(Hero);
 
-            TransitionTo(GameState.LevelComplete);
+            TryPlayWorldCutscene(() => TransitionTo(GameState.LevelComplete));
+        }
+
+        private void TryPlayWorldCutscene(Action onDone)
+        {
+            if (currentLevel == null || currentLevel.Level != 1)
+            {
+                onDone();
+                return;
+            }
+
+            var ctrl = UnityEngine.Object.FindFirstObjectByType<UI.CutsceneController>();
+            if (ctrl == null)
+            {
+                onDone();
+                return;
+            }
+
+            string cutsceneId = $"world{currentLevel.World}";
+            var reg = Data.CutsceneRegistry.Get();
+            if (reg == null || reg.FindById(cutsceneId) == null)
+            {
+                onDone();
+                return;
+            }
+
+            Time.timeScale = 0f;
+            ctrl.Play(cutsceneId, () =>
+            {
+                ApplyTimeScale();
+                onDone();
+            });
         }
 
         // ── Economy tracking ────────────────────────────────────────────────────
@@ -466,6 +513,9 @@ namespace CrowdDefense.Systems
             Hero = heroGo.GetComponent<Hero>() ?? heroGo.AddComponent<Hero>();
             Hero.Init(heroType, spawnPos, maxX, maxZ);
 
+            Hero.OnLevelUp += (_, _, _) =>
+                VfxPool.Instance?.SpawnLevelUp(Hero.transform.position + Vector3.up * 1.2f);
+
             var rs = SaveSystem.GetRunState();
             Hero.ApplyRunContext(
                 rs?.heroPerks ?? new List<string>(),
@@ -510,13 +560,19 @@ namespace CrowdDefense.Systems
 
             float dx = Input.GetAxisRaw("Horizontal");
             float dz = Input.GetAxisRaw("Vertical");
+            bool moving = dx * dx + dz * dz > 0.01f;
+
             Hero.SetMove(dx, dz);
+
+            // Notify BluePill of movement so it can cancel the channel.
+            if (moving) BluePill.Instance?.NotifyHeroMoved();
 
             bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             Hero.SetRunning(shiftHeld);
 
-            if (Input.GetKeyDown(KeyCode.B) && _castleWorldPos != Vector3.zero)
-                Hero.transform.position = _castleWorldPos + Vector3.up * 0.5f;
+            // B key: start BluePill channel (teleport to castle after 2s stationary).
+            if (Input.GetKeyDown(KeyCode.B))
+                BluePill.Instance?.StartChannel(Hero.transform);
 
             if (Input.GetKeyDown(KeyCode.U))
                 Hero.TryUlt();

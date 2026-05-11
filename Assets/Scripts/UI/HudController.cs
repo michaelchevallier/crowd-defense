@@ -47,6 +47,9 @@ namespace CrowdDefense.UI
         private Label? heroXpValue;
         private Label? heroUltLabel;
 
+        // BluePill button ref
+        private Button? bluePillBtn;
+
         // Perk badges — sibling component wired after UIDocument root is ready
         private HudPerkBadges? _perkBadges;
 
@@ -93,6 +96,9 @@ namespace CrowdDefense.UI
             heroXpBarFill = root.Q<VisualElement>("hero-xp-bar-fill");
             heroXpValue = root.Q<Label>("hero-xp-value");
             heroUltLabel = root.Q<Label>("hero-ult-label");
+
+            bluePillBtn = root.Q<Button>("bluepill-btn");
+            bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
 
             btnRestartGo?.RegisterCallback<ClickEvent>(_ => Restart());
             btnRestartVictory?.RegisterCallback<ClickEvent>(_ => Restart());
@@ -186,10 +192,14 @@ namespace CrowdDefense.UI
             if (hero == null)
             {
                 SetVisible(heroPanel, false);
+                if (bluePillBtn != null) SetVisible(bluePillBtn, false);
                 return;
             }
 
             SetVisible(heroPanel, true);
+            // Show BluePill button only when hero is alive and play is active.
+            bool playActive = LevelRunner.Instance?.State is GameState.WaveActive or GameState.WaveBreak or GameState.Lobby;
+            if (bluePillBtn != null) SetVisible(bluePillBtn, playActive);
 
             if (heroLevelLabel != null)
                 heroLevelLabel.text = L.Get("hud.hero_level", hero.Level);
@@ -219,6 +229,14 @@ namespace CrowdDefense.UI
                     heroUltLabel.AddToClassList("hero-ult-cooldown");
                 }
             }
+        }
+
+        // Shared entry point for click + B key
+        private void TryStartBluePill()
+        {
+            var hero = LevelRunner.Instance?.Hero;
+            if (hero == null) return;
+            Systems.BluePill.Instance?.StartChannel(hero.transform);
         }
 
         // Shared debounced launch entry point for click + N key

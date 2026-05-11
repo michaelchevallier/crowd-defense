@@ -311,6 +311,29 @@
     color: rgba(160, 160, 160, 0.7);
 }
 
+/* === BluePill button === */
+.bluepill-btn {
+    position: absolute;
+    bottom: 200px;
+    left: 16px;
+    background-color: rgba(30, 60, 120, 0.85);
+    border-color: rgba(68, 136, 255, 0.7);
+    border-width: 1px;
+    border-radius: 10px;
+    color: rgb(140, 200, 255);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    padding: 8px 14px;
+    min-width: 130px;
+    -unity-text-align: middle-center;
+}
+
+.bluepill-btn:hover {
+    background-color: rgba(50, 90, 180, 0.9);
+    border-color: rgb(100, 180, 255);
+}
+
 /* === Tower tooltip (hover) === */
 .tower-tooltip {
     position: absolute;
