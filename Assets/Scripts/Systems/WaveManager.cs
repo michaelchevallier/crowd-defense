@@ -49,6 +49,10 @@ namespace CrowdDefense.Systems
 
         private void Start()
         {
+            // Fallback to LevelRunner's currentLevel if this component's levelData is not assigned
+            if (levelData == null && LevelRunner.Instance?.CurrentLevel != null)
+                levelData = LevelRunner.Instance.CurrentLevel;
+
             if (levelData == null || levelData.Waves.Count == 0)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
