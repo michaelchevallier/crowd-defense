@@ -1,0 +1,38 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="Shop.uss" />
+    <!-- Full-screen overlay — hidden by default -->
+    <ui:VisualElement name="shop-overlay" class="shop-overlay hidden">
+        <ui:VisualElement name="shop-panel" class="shop-panel">
+
+            <!-- Header -->
+            <ui:VisualElement class="shop-header">
+                <ui:Label text="Ameliorations" name="shop-title" class="shop-title" />
+                <ui:VisualElement class="shop-gems-row">
+                    <ui:Label text="Gemmes :" class="shop-gems-label" />
+                    <ui:Label text="0" name="shop-gems-value" class="shop-gems-value" />
+                </ui:VisualElement>
+                <ui:Button text="X" name="shop-close-btn" class="shop-close-btn" />
+            </ui:VisualElement>
+
+            <!-- Tier tabs -->
+            <ui:VisualElement class="shop-tabs">
+                <ui:Button text="Tier 1" name="shop-tab-1" class="shop-tab shop-tab-active" data-tier="1" />
+                <ui:Button text="Tier 2" name="shop-tab-2" class="shop-tab" data-tier="2" />
+                <ui:Button text="Tier 3" name="shop-tab-3" class="shop-tab" data-tier="3" />
+            </ui:VisualElement>
+
+            <!-- Tier unlock hint (shown when tier is locked) -->
+            <ui:Label text="" name="shop-tier-hint" class="shop-tier-hint hidden" />
+
+            <!-- Upgrade cards grid -->
+            <ui:ScrollView name="shop-scroll" class="shop-scroll">
+                <ui:VisualElement name="shop-cards-grid" class="shop-cards-grid" />
+            </ui:ScrollView>
+
+            <!-- Footer: reset info -->
+            <ui:Label text="" name="shop-reset-hint" class="shop-reset-hint" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
