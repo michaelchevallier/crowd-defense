@@ -19,6 +19,9 @@ namespace CrowdDefense.UI
             {
                 ["en"] = new()
                 {
+                    // ── Tower toolbar ──────────────────────────────────────────────
+                    ["toolbar.not_enough_gold"] = "Not enough gold",
+
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "GOLD",
                     ["hud.wave_label"] = "WAVE",
@@ -100,6 +103,26 @@ namespace CrowdDefense.UI
                     ["menu.world_label"] = "W{0}",
                     ["menu.level_btn"] = "{0}-{1}",
 
+                    // ── WorldMap ───────────────────────────────────────────────────
+                    ["worldmap.title"] = "CROWD DEFENSE",
+                    ["worldmap.total_stars"] = "{0} stars",
+                    ["worldmap.locked"] = "Locked",
+                    ["worldmap.stars_1"] = "1 star",
+                    ["worldmap.stars_2"] = "2 stars",
+                    ["worldmap.stars_3"] = "3 stars",
+                    ["worldmap.level_showcase"] = "Showcase",
+                    ["worldmap.level_boss"] = "Boss",
+                    ["worldmap.world1"] = "Plains",
+                    ["worldmap.world2"] = "Forest",
+                    ["worldmap.world3"] = "Desert",
+                    ["worldmap.world4"] = "Volcano",
+                    ["worldmap.world5"] = "Fair",
+                    ["worldmap.world6"] = "Apocalypse",
+                    ["worldmap.world7"] = "Space",
+                    ["worldmap.world8"] = "Underwater",
+                    ["worldmap.world9"] = "Medieval",
+                    ["worldmap.world10"] = "Cyberpunk",
+
                     // ── Settings panel ─────────────────────────────────────────────
                     ["settings.title"] = "Settings",
                     ["settings.audio_section"] = "Audio",
@@ -126,6 +149,9 @@ namespace CrowdDefense.UI
                 },
                 ["fr"] = new()
                 {
+                    // ── Tower toolbar ──────────────────────────────────────────────
+                    ["toolbar.not_enough_gold"] = "Pas assez d'or",
+
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "OR",
                     ["hud.wave_label"] = "VAGUE",
@@ -206,6 +232,26 @@ namespace CrowdDefense.UI
                     ["menu.level_select_title"] = "Choisir un niveau",
                     ["menu.world_label"] = "M{0}",
                     ["menu.level_btn"] = "{0}-{1}",
+
+                    // ── WorldMap ───────────────────────────────────────────────────
+                    ["worldmap.title"] = "CROWD DEFENSE",
+                    ["worldmap.total_stars"] = "{0} étoiles",
+                    ["worldmap.locked"] = "Verrouillé",
+                    ["worldmap.stars_1"] = "1 étoile",
+                    ["worldmap.stars_2"] = "2 étoiles",
+                    ["worldmap.stars_3"] = "3 étoiles",
+                    ["worldmap.level_showcase"] = "Showcase",
+                    ["worldmap.level_boss"] = "Boss",
+                    ["worldmap.world1"] = "Plaine",
+                    ["worldmap.world2"] = "Forêt",
+                    ["worldmap.world3"] = "Désert",
+                    ["worldmap.world4"] = "Volcan",
+                    ["worldmap.world5"] = "Foire",
+                    ["worldmap.world6"] = "Apocalypse",
+                    ["worldmap.world7"] = "Espace",
+                    ["worldmap.world8"] = "Sous-marin",
+                    ["worldmap.world9"] = "Médiéval",
+                    ["worldmap.world10"] = "Cyberpunk",
 
                     // ── Settings panel ─────────────────────────────────────────────
                     ["settings.title"] = "Paramètres",
