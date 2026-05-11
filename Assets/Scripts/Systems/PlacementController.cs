@@ -150,6 +150,13 @@ namespace CrowdDefense.Systems
 #endif
         }
 
+        public void SelectTowerForPlacement(TowerType? type)
+        {
+            selectedTowerType = type;
+        }
+
+        public TowerType? SelectedTowerType => selectedTowerType;
+
         public void UnregisterTower(Tower t) => placedTowers.Remove(t);
 
         // Called by boss AoE blast to destroy a tower directly (POC — no HP system yet).
