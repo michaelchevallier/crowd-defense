@@ -186,6 +186,11 @@ namespace CrowdDefense.Editor
             var registry = AssetDatabase.LoadAssetAtPath<TowerRegistry>("Assets/Resources/TowerRegistry.asset");
             if (registry == null) return;
 
+            // Populate TowerRegistry.towers from existing TowerType assets if empty
+            var guids = AssetDatabase.FindAssets("t:TowerType", new[] { "Assets/ScriptableObjects/Towers" });
+            if (guids.Length > 0)
+                PopulateList(registry, "towers", guids);
+
             var so   = new SerializedObject(tt);
             var prop = so.FindProperty("towerRegistry");
             if (prop == null)
