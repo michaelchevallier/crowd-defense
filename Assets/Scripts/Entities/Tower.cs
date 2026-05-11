@@ -152,6 +152,12 @@ namespace CrowdDefense.Entities
             // Outline silhouette — applied after toon so outline mat is not overwritten
             Outline.ApplyToHierarchy(toonRoot.transform);
 
+            // AssetVariants palette swap post-toon
+            if (activeSkin != null && activeSkin.ThemeIndex >= 0)
+                AssetVariants.ApplyThemeIndex(toonRoot, activeSkin.ThemeIndex);
+            else if (activeSkin != null && activeSkin.UseBodyColorOverride)
+                AssetVariants.ApplySkin(toonRoot, activeSkin);
+
             // Animations Mechanim : Idle uniquement pour les tours (pas de Walk, rotation vers cible = code).
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", null);
         }

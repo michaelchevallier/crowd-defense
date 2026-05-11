@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="EventChoice.uss" />
+    <ui:VisualElement name="event-root" class="event-root hidden">
+        <ui:VisualElement class="event-panel">
+            <ui:Label text="Evenement" name="event-title" class="event-title" />
+            <ui:Label text="" name="event-body" class="event-body" />
+            <ui:VisualElement class="event-choices-row">
+                <ui:Button text="Choix 1" name="choice-btn-0" class="event-choice-btn" />
+                <ui:Button text="Choix 2" name="choice-btn-1" class="event-choice-btn" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

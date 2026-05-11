@@ -27,6 +27,10 @@ namespace CrowdDefense.Systems
 
         // Fired after a tower is successfully placed (tutorial + achievements hooks)
         public event Action<Tower>? OnTowerPlaced;
+        // Fired when selected tower changes (null = deselected) — consumed by RadialMenuController
+        public event Action<Tower?>? OnTowerSelected;
+        // Fired each frame the mouse hovers a placement-mode cell (null = not hovering buildable cell)
+        public event Action<Vector2Int?>? OnHoverPlacementCell;
 
         protected override void OnAwakeSingleton()
         {
@@ -35,12 +39,19 @@ namespace CrowdDefense.Systems
 
         private void Update()
         {
+            // ESC deselects active tower (closes radial menu)
+            if (Input.GetKeyDown(KeyCode.Escape) && selectedTower != null)
+            {
+                SetSelectedTower(null);
+                return;
+            }
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             // Hotkey S : sell la tour sélectionnée (debug, UI radial menu = CORE-20)
             if (Input.GetKeyDown(KeyCode.S) && selectedTower != null)
             {
                 selectedTower.Sell();
-                selectedTower = null;
+                SetSelectedTower(null);
                 return;
             }
             // Hotkey U : upgrade la tour sélectionnée au niveau suivant (debug)
@@ -50,7 +61,40 @@ namespace CrowdDefense.Systems
                     SyncCumulativeCost(selectedTower);
             }
 #endif
-            if (cam == null || !Input.GetMouseButtonDown(0)) return;
+            if (cam == null) return;
+
+            // Hover tracking for PathfinderVisualization (runs every frame in placement mode)
+            if (OnHoverPlacementCell != null)
+            {
+                if (selectedTowerType != null)
+                {
+                    Ray hoverRay = cam.ScreenPointToRay(Input.mousePosition);
+                    if (groundPlane.Raycast(hoverRay, out float hoverDist))
+                    {
+                        var hoverGrid = PathManager.Instance?.Grid;
+                        if (hoverGrid != null)
+                        {
+                            Vector3 hoverPos = hoverRay.GetPoint(hoverDist);
+                            Vector2Int hoverCell = GridCoords.WorldToCell(hoverPos, hoverGrid.Width, hoverGrid.Height, hoverGrid.CellSize);
+                            OnHoverPlacementCell.Invoke(hoverGrid.IsBuildable(hoverCell.x, hoverCell.y) ? hoverCell : (Vector2Int?)null);
+                        }
+                        else
+                        {
+                            OnHoverPlacementCell.Invoke(null);
+                        }
+                    }
+                    else
+                    {
+                        OnHoverPlacementCell.Invoke(null);
+                    }
+                }
+                else
+                {
+                    OnHoverPlacementCell.Invoke(null);
+                }
+            }
+
+            if (!Input.GetMouseButtonDown(0)) return;
 
             // Click sur tour existante : sélectionner pour radial menu (production + debug)
             // Priorité : si selectedTowerType non set, tenter sélection tour.
@@ -147,10 +191,19 @@ namespace CrowdDefense.Systems
                 float d = (t.transform.position - hitPos).magnitude;
                 if (d < bestDist) { bestDist = d; closest = t; }
             }
-            selectedTower = closest;
+            SetSelectedTower(closest);
 #if UNITY_EDITOR
             Debug.Log($"[Place] selectedTower={selectedTower?.Config?.Id ?? "none"} L{selectedTower?.UpgradeLevel}");
 #endif
+        }
+
+        public void DeselectTower() => SetSelectedTower(null);
+
+        private void SetSelectedTower(Tower? tower)
+        {
+            if (selectedTower == tower) return;
+            selectedTower = tower;
+            OnTowerSelected?.Invoke(tower);
         }
 
         public void SelectTowerForPlacement(TowerType? type)

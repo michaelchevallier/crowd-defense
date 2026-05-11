@@ -142,6 +142,12 @@ namespace CrowdDefense.Entities
             if (!string.IsNullOrEmpty(type.ShaderOverlay) && type.ShaderOverlay != "none")
                 MaterialController.ApplyShaderOverlay(toonRoot, type.ShaderOverlay, type.BodyColor);
 
+            // AssetVariants palette swap post-toon
+            if (activeSkin != null && activeSkin.ThemeIndex >= 0)
+                AssetVariants.ApplyThemeIndex(toonRoot, activeSkin.ThemeIndex);
+            else if (activeSkin != null && activeSkin.UseBodyColorOverride)
+                AssetVariants.ApplySkin(toonRoot, activeSkin);
+
             // Animations Mechanim : Idle + Walk via bool isWalking.
             // WalkAnim = nom de clip hint (ex: "Walking_A") — résolution dans le .controller.
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", type.WalkAnim);
@@ -443,6 +449,7 @@ namespace CrowdDefense.Entities
             {
                 AudioController.Instance?.Play("enemy_hit", 0.4f);
                 VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 0.3f, baseColor);
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnDamage(dmg, transform.position + Vector3.up * 1.2f);
             }
 
             if (hp <= 0f)
@@ -477,6 +484,7 @@ namespace CrowdDefense.Entities
 #endif
                     // Publish first so ComboSystem updates ActiveMultiplier, then Economy applies it
                     EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
+                    CoinPullManager.Instance?.SpawnCoinFlyTo(transform.position, reward);
                     Economy.Instance?.AddGoldFromKill(reward);
                 }
 #if UNITY_EDITOR

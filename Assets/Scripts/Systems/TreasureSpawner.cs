@@ -92,21 +92,22 @@ namespace CrowdDefense.Systems
 
         private void OnWaveCleared(int _waveIdx)
         {
-            int intact = 0;
-            foreach (var tile in _tiles)
-                if (!tile.IsConsumed) intact++;
-
-            if (intact <= 0) return;
-
             var cfg = BalanceConfig.Get();
             int total = 0;
-            for (int i = 0; i < intact; i++)
-                total += cfg.RollTreasureValue();
+            foreach (var tile in _tiles)
+            {
+                if (tile.IsConsumed) continue;
+                int gain = cfg.RollTreasureValue();
+                total += gain;
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(gain, tile.CellCenter + Vector3.up * 1.2f);
+            }
+
+            if (total <= 0) return;
 
             Economy.Instance?.AddGold(total);
 
 #if UNITY_EDITOR
-            Debug.Log($"[TreasureSpawner] {intact} intact treasure(s) → +{total} gold");
+            Debug.Log($"[TreasureSpawner] intact treasure(s) → +{total} gold");
 #endif
         }
 

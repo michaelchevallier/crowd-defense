@@ -25,6 +25,8 @@ namespace CrowdDefense.Data
         [SerializeField] private Material? alternateMaterial;
         [SerializeField] private Color bodyColorOverride = Color.white;
         [SerializeField] private bool useBodyColorOverride = false;
+        // 0-9: ThemePalette (plaine/foret/desert/volcan/foire/apocalypse/espace/submarin/medieval/cyberpunk). -1 = none.
+        [SerializeField] private int themeIndex = -1;
 
         [Header("Unlock")]
         [SerializeField] private SkinUnlockType unlockType = SkinUnlockType.Default;
@@ -45,6 +47,7 @@ namespace CrowdDefense.Data
         public Material? AlternateMaterial => alternateMaterial;
         public Color BodyColorOverride => bodyColorOverride;
         public bool UseBodyColorOverride => useBodyColorOverride;
+        public int ThemeIndex => themeIndex;
         public SkinUnlockType UnlockType => unlockType;
         public int PurchaseCostGems => purchaseCostGems;
         public string UnlockConditionId => unlockConditionId;

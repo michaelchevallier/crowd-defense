@@ -14,7 +14,23 @@ namespace CrowdDefense.Systems
         public int CurrentLevelIndex { get; private set; }
         public int AccumulatedScore { get; private set; }
 
+        // Modifier state (V5 runner fields)
+        public List<string> ActiveModifierIds { get; } = new();
+        public List<string> RecentEventIds    { get; } = new();
+
+        public float CoinMul               { get; set; } = 1f;
+        public float TowerRangeMul         { get; set; } = 1f;
+        public float TowerFireRateMul      { get; set; } = 1f;
+        public float ProjectileDeviation   { get; set; } = 0f;
+        public bool  SkipNextPerk          { get; set; } = false;
+        public bool  BonusNextPerk         { get; set; } = false;
+        public bool  SkipNextStarterTower  { get; set; } = false;
+        public bool  CursedNextCombat      { get; set; } = false;
+        public bool  RevealNextRowTypes    { get; set; } = false;
+        public string PendingPerkOffer     { get; set; } = "";
+
         public event Action? OnPerksChanged;
+        public event Action<string>? OnModifierAdded;
 
         protected override void OnAwakeSingleton()
         {
@@ -28,6 +44,30 @@ namespace CrowdDefense.Systems
             LevelChain.Add(firstLevelId);
             CurrentLevelIndex = 0;
             AccumulatedScore = 0;
+            ResetModifierState();
+        }
+
+        private void ResetModifierState()
+        {
+            ActiveModifierIds.Clear();
+            RecentEventIds.Clear();
+            CoinMul = 1f;
+            TowerRangeMul = 1f;
+            TowerFireRateMul = 1f;
+            ProjectileDeviation = 0f;
+            SkipNextPerk = false;
+            BonusNextPerk = false;
+            SkipNextStarterTower = false;
+            CursedNextCombat = false;
+            RevealNextRowTypes = false;
+            PendingPerkOffer = "";
+        }
+
+        public void AddModifier(string modifierId)
+        {
+            if (!ActiveModifierIds.Contains(modifierId))
+                ActiveModifierIds.Add(modifierId);
+            OnModifierAdded?.Invoke(modifierId);
         }
 
         public void AddPerk(string perkId)
