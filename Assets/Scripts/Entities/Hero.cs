@@ -150,6 +150,9 @@ namespace CrowdDefense.Entities
             MaterialController.ApplyToon(toonRoot, type.BodyColor);
             Outline.ApplyToHierarchy(toonRoot.transform);
 
+            int skinTier = (_perks?.Count ?? 0) >= 5 ? 2 : ((_perks?.Count ?? 0) >= 2 ? 1 : 0);
+            ApplySkin(skinTier);
+
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", "Walk");
 
             BuildAuraDecals();
@@ -830,6 +833,61 @@ namespace CrowdDefense.Entities
                    $"dmg×{DamageMul:F2} rng×{RangeMul:F2} fr×{FireRateMul:F2} " +
                    $"ms:{MultiShot} pc:{PierceCount} crit:{CritChance:P0} " +
                    $"ult:{_ultCooldown:F1}s perks:{_perks.Count}";
+        }
+
+        // ── Tier skin: color tint via MaterialPropertyBlock (zero draw call cost) ──
+        /// <summary>
+        /// Applies a visual tint to all SkinnedMeshRenderer and MeshRenderer children.
+        /// tier 0 = Basic (no tint), tier 1 = Veteran (silver), tier 2 = Master (gold + emission).
+        /// Uses MaterialPropertyBlock — does NOT create new material instances.
+        /// </summary>
+        public void ApplySkin(int tier)
+        {
+            bool hasTint = tier > 0;
+            var tintColor = tier switch
+            {
+                1 => new Color(0.8f, 0.8f, 0.9f),
+                2 => new Color(1f, 0.85f, 0.3f),
+                _ => Color.white,
+            };
+
+            var block = new MaterialPropertyBlock();
+
+            var skinnedRenderers = GetComponentsInChildren<SkinnedMeshRenderer>(includeInactive: true);
+            foreach (var r in skinnedRenderers)
+            {
+                r.GetPropertyBlock(block);
+                if (hasTint)
+                {
+                    block.SetColor("_BaseColor", tintColor);
+                    block.SetColor("_Color", tintColor);
+                    if (tier == 2)
+                        block.SetColor("_EmissionColor", tintColor * 0.2f);
+                }
+                else
+                {
+                    block.Clear();
+                }
+                r.SetPropertyBlock(block);
+            }
+
+            var meshRenderers = GetComponentsInChildren<MeshRenderer>(includeInactive: true);
+            foreach (var r in meshRenderers)
+            {
+                r.GetPropertyBlock(block);
+                if (hasTint)
+                {
+                    block.SetColor("_BaseColor", tintColor);
+                    block.SetColor("_Color", tintColor);
+                    if (tier == 2)
+                        block.SetColor("_EmissionColor", tintColor * 0.2f);
+                }
+                else
+                {
+                    block.Clear();
+                }
+                r.SetPropertyBlock(block);
+            }
         }
 
         // ── Skin asset key override (for SkinSystem to redirect mesh spawn) ──
