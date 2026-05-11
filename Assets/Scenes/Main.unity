@@ -149,6 +149,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 478098281}
+  - {fileID: 612914513}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &398450625
@@ -288,6 +289,52 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.PathManager
   levelData: {fileID: 11400000, guid: 7fb0ab0cdb28c435b84e820e174e969c, type: 2}
+--- !u!1 &612914512
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 612914513}
+  - component: {fileID: 612914514}
+  m_Layer: 0
+  m_Name: WaveManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &612914513
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 612914512}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 327615480}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &612914514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 612914512}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffa4c73afab3f43c1b2bba5970c73ed2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.WaveManager
+  levelData: {fileID: 11400000, guid: 7fb0ab0cdb28c435b84e820e174e969c, type: 2}
+  enemyPrefab: {fileID: 9165968210432444067, guid: 0d48e58909bf7495bbaa9598a6f3609e, type: 3}
 --- !u!1 &1784145442
 GameObject:
   m_ObjectHideFlags: 0
