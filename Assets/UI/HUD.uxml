@@ -165,6 +165,10 @@
         <!-- Synergy badges (bottom-center, above toolbar) -->
         <ui:VisualElement name="synergy-badges" class="synergy-badges" />
 
+        <!-- Perk badges (bottom-center, shows active perks + set progress) -->
+        <ui:VisualElement name="perk-badges-row" class="perk-badges-row" />
+        <ui:VisualElement name="perk-set-progress-row" class="perk-set-progress-row" />
+
         <!-- Tower toolbar (bottom) -->
         <ui:VisualElement name="tower-toolbar" class="tower-toolbar">
         </ui:VisualElement>
