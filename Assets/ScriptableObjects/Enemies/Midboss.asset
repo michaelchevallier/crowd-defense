@@ -21,7 +21,7 @@ MonoBehaviour:
   scale: 1
   bodyColor: {r: 0.416, g: 0.227, b: 0.627, a: 1}
   walkAnim: Walk
-  assetKey: wizard
+  assetKey: mob_ninja
   isFlyer: 0
   flyHeight: 0
   ignorePath: 0

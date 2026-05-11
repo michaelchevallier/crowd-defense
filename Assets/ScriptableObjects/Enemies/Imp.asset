@@ -21,7 +21,7 @@ MonoBehaviour:
   scale: 0.55
   bodyColor: {r: 1, g: 0.227, b: 0.063, a: 1}
   walkAnim: Run
-  assetKey: goblin
+  assetKey: mob_orc
   isFlyer: 0
   flyHeight: 0
   ignorePath: 0

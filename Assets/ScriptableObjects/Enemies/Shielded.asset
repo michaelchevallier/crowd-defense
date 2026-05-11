@@ -21,7 +21,7 @@ MonoBehaviour:
   scale: 0.6
   bodyColor: {r: 0.831, g: 0.686, b: 0.216, a: 1}
   walkAnim: Walk
-  assetKey: knightgolden
+  assetKey: mob_tribal
   isFlyer: 0
   flyHeight: 0
   ignorePath: 0

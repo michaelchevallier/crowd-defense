@@ -21,7 +21,7 @@ MonoBehaviour:
   scale: 1.75
   bodyColor: {r: 0.541, g: 0.102, b: 0.039, a: 1}
   walkAnim: Walk
-  assetKey: pirate
+  assetKey: mob_tribal
   isFlyer: 0
   flyHeight: 0
   ignorePath: 0

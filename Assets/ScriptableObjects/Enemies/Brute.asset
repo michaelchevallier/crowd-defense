@@ -21,7 +21,7 @@ MonoBehaviour:
   scale: 0.7
   bodyColor: {r: 0.5412, g: 0.2902, b: 0.1333, a: 1}
   walkAnim: Walk
-  assetKey: soldier
+  assetKey: mob_tribal
   isFlyer: 0
   flyHeight: 0
   ignorePath: 0
