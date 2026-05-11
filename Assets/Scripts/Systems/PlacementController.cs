@@ -84,6 +84,24 @@ namespace CrowdDefense.Systems
                 return;
             }
 
+            // Anti-double magnet (D1-01 Q3) : cap = 1 par défaut, 2 si AllowMultiMagnet
+            if (selectedTowerType.Behavior == TowerBehavior.CoinPull)
+            {
+                var cfg = BalanceConfig.Get();
+                bool allowMulti = LevelRunner.Instance?.CurrentLevel?.AllowMultiMagnet ?? false;
+                int cap = allowMulti ? cfg.MagnetCapAllowMulti : cfg.MagnetCapDefault;
+                int count = 0;
+                foreach (var t in placedTowers)
+                    if (t != null && t.Config?.Behavior == TowerBehavior.CoinPull) count++;
+                if (count >= cap)
+                {
+#if UNITY_EDITOR
+                    Debug.Log($"[Place] reject : magnet cap reached ({count}/{cap})");
+#endif
+                    return;
+                }
+            }
+
             int cost = selectedTowerType.Cost;
             if (Economy.Instance == null || !Economy.Instance.TrySpend(cost))
             {
