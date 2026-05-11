@@ -21,12 +21,16 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? explosionPrefab;
         [SerializeField] private GameObject? coinBurstPrefab;
         [SerializeField] private GameObject? hitFlashPrefab;
+        [SerializeField] private GameObject? levelUpPrefab;
+        [SerializeField] private GameObject? perkPickupPrefab;
 
         private ObjectPool<ParticleSystem>? _impactPool;
         private ObjectPool<ParticleSystem>? _deathPool;
         private ObjectPool<ParticleSystem>? _explosionPool;
         private ObjectPool<ParticleSystem>? _coinBurstPool;
         private ObjectPool<ParticleSystem>? _hitFlashPool;
+        private ObjectPool<ParticleSystem>? _levelUpPool;
+        private ObjectPool<ParticleSystem>? _perkPickupPool;
 
         private Transform? _root;
         private Material? _additiveMat;
@@ -41,12 +45,16 @@ namespace CrowdDefense.Visual
             explosionPrefab ??= BuildProceduralPrefab("Explosion", BuildExplosionModule);
             coinBurstPrefab ??= BuildProceduralPrefab("CoinBurst", BuildCoinBurstModule);
             hitFlashPrefab  ??= BuildProceduralPrefab("HitFlash",  BuildHitFlashModule);
+            levelUpPrefab   ??= BuildProceduralPrefab("LevelUp",   BuildLevelUpModule);
+            perkPickupPrefab ??= BuildProceduralPrefab("PerkPickup", BuildPerkPickupModule);
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
             _explosionPool = BuildPool(explosionPrefab, "Explosion", 10);
             _coinBurstPool = BuildPool(coinBurstPrefab, "CoinBurst", DefaultCapacity);
             _hitFlashPool  = BuildPool(hitFlashPrefab,  "HitFlash",  DefaultCapacity);
+            _levelUpPool   = BuildPool(levelUpPrefab,   "LevelUp",   8);
+            _perkPickupPool = BuildPool(perkPickupPrefab, "PerkPickup", DefaultCapacity);
 
             PreWarm();
         }
@@ -117,11 +125,20 @@ namespace CrowdDefense.Visual
 
         public void SpawnLevelUp(Vector3 worldPos)
         {
-            if (!IsVfxEnabled() || _coinBurstPool == null) return;
-            var ps = _coinBurstPool.Get();
+            if (!IsVfxEnabled() || _levelUpPool == null) return;
+            var ps = _levelUpPool.Get();
             ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ApplyTint(ps, new Color(1f, 0.85f, 0f));
-            PlayAndAutoRelease(ps, _coinBurstPool);
+            ApplyTint(ps, new Color(1f, 0.84f, 0f));
+            PlayAndAutoRelease(ps, _levelUpPool);
+        }
+
+        public void SpawnPerkPickup(Vector3 worldPos, Color tint)
+        {
+            if (!IsVfxEnabled() || _perkPickupPool == null) return;
+            var ps = _perkPickupPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+            ApplyTint(ps, tint);
+            PlayAndAutoRelease(ps, _perkPickupPool);
         }
 
         // ── Pool internals ────────────────────────────────────────────────────
@@ -162,6 +179,8 @@ namespace CrowdDefense.Visual
             PreWarmPool(_explosionPool, 10);
             PreWarmPool(_coinBurstPool, DefaultCapacity);
             PreWarmPool(_hitFlashPool,  DefaultCapacity);
+            PreWarmPool(_levelUpPool,   8);
+            PreWarmPool(_perkPickupPool, DefaultCapacity);
         }
 
         private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
@@ -338,6 +357,55 @@ namespace CrowdDefense.Visual
             shape.enabled   = true;
             shape.shapeType = ParticleSystemShapeType.Sphere;
             shape.radius    = 0.05f;
+
+            SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
+        }
+
+        private static void BuildLevelUpModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.6f, 1.1f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(3f, 9f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.12f, 0.42f);
+            main.startColor     = new Color(1f, 0.84f, 0f);
+            main.maxParticles   = 60;
+            main.duration       = 0.2f;
+            main.gravityModifier = -0.4f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 25, 45, 1, 0.01f) });
+
+            var shape = ps.shape;
+            shape.enabled   = true;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius    = 0.3f;
+
+            SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
+        }
+
+        private static void BuildPerkPickupModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.3f, 0.6f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 5f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.08f, 0.25f);
+            main.startColor     = Color.white;
+            main.maxParticles   = 25;
+            main.duration       = 0.1f;
+            main.gravityModifier = 0.2f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 10, 18, 1, 0.01f) });
+
+            var shape = ps.shape;
+            shape.enabled      = true;
+            shape.shapeType    = ParticleSystemShapeType.Hemisphere;
+            shape.radius       = 0.2f;
+            shape.rotation     = new Vector3(-90f, 0f, 0f);
 
             SetSizeOverLifetimeFade(ps);
             SetColorAlphaFade(ps);
