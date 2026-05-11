@@ -12,16 +12,23 @@ namespace CrowdDefense.Entities
     {
         private EnemyType? cfg;
         private float hp;
+        private float shieldHp;
         private int currentWaypoint;
         private int pathIdx;
         private PathManager? pathManager;
         private MeshRenderer? rend;
         private Color baseColor;
+        private GameObject? shieldHalo;
 
         public EnemyType? Config => cfg;
         public int CurrentWaypoint => currentWaypoint;
         public int PathIdx => pathIdx;
         public bool IsDead { get; private set; }
+        public bool IsFlyer => cfg?.IsFlyer ?? false;
+        public bool ImmuneToFlyerBonus => cfg?.ImmuneToFlyerBonus ?? false;
+
+        // Expose alpha pour que Tower puisse tester la phase stealth
+        public float StealthAlpha { get; private set; } = 1f;
 
         // Modifié par SlowEffectManager chaque frame
         public float currentSpeedMul = 1f;
@@ -30,6 +37,7 @@ namespace CrowdDefense.Entities
         {
             cfg = type;
             hp = type.Hp;
+            shieldHp = type.ShieldHP;
             pathIdx = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
             currentSpeedMul = 1f;
@@ -38,8 +46,16 @@ namespace CrowdDefense.Entities
             rend = GetComponent<MeshRenderer>();
             if (rend != null)
             {
-                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                rend.material.color = type.BodyColor;
+                var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                if (type.IsStealth)
+                {
+                    // Transparency activée pour cycle stealth
+                    mat.SetFloat("_Surface", 1f);
+                    mat.SetFloat("_Blend", 0f);
+                    mat.renderQueue = 3000;
+                }
+                mat.color = type.BodyColor;
+                rend.material = mat;
                 baseColor = type.BodyColor;
             }
 
@@ -50,11 +66,42 @@ namespace CrowdDefense.Entities
                 col.radius = 0.3f;
                 col.height = 1f;
             }
+
+            if (shieldHp > 0f)
+                BuildShieldHalo();
+        }
+
+        private void BuildShieldHalo()
+        {
+            shieldHalo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            shieldHalo.name = "ShieldHalo";
+            shieldHalo.transform.SetParent(transform, false);
+            shieldHalo.transform.localScale = Vector3.one * 1.2f;
+            // Destroy collider — halo is visual only
+            Destroy(shieldHalo.GetComponent<Collider>());
+            var haloRend = shieldHalo.GetComponent<MeshRenderer>();
+            if (haloRend != null)
+            {
+                var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_Blend", 0f);
+                mat.renderQueue = 3001;
+                mat.color = new Color(1f, 0.85f, 0.1f, 0.35f);
+                haloRend.material = mat;
+            }
         }
 
         private void Start()
         {
             pathManager = PathManager.Instance;
+            if (cfg != null && cfg.IsFlyer)
+            {
+                // Flyers spawn at fly height, ignore path validation
+                if (Castle.Instance != null)
+                    transform.position = new Vector3(transform.position.x, cfg.FlyHeight, transform.position.z);
+                return;
+            }
+
             if (pathManager == null || pathManager.Paths.Count == 0)
             {
                 Debug.LogError("[Enemy] No PathManager or no paths");
@@ -72,7 +119,17 @@ namespace CrowdDefense.Entities
 
         private void Update()
         {
-            if (cfg == null || pathManager == null || IsDead) return;
+            if (cfg == null || IsDead) return;
+
+            UpdateStealth();
+
+            if (cfg.IsFlyer)
+            {
+                UpdateFlyer();
+                return;
+            }
+
+            if (pathManager == null) return;
             int wpCount = pathManager.WaypointCountOnPath(pathIdx);
             if (currentWaypoint >= wpCount)
             {
@@ -88,9 +145,48 @@ namespace CrowdDefense.Entities
                 currentWaypoint++;
         }
 
+        private void UpdateFlyer()
+        {
+            if (cfg == null) return;
+            if (Castle.Instance == null) return;
+
+            Vector3 castlePos = Castle.Instance.transform.position;
+            Vector3 flyTarget = new Vector3(castlePos.x, cfg.FlyHeight, castlePos.z);
+            float effectiveSpeed = cfg.Speed * currentSpeedMul;
+            transform.position = Vector3.MoveTowards(transform.position, flyTarget, effectiveSpeed * Time.deltaTime);
+            // Lock Y at fly height during movement
+            var pos = transform.position;
+            pos.y = cfg.FlyHeight;
+            transform.position = pos;
+
+            if ((transform.position - flyTarget).sqrMagnitude < 0.25f)
+                OnReachedCastle();
+        }
+
+        private void UpdateStealth()
+        {
+            if (cfg == null || !cfg.IsStealth || rend == null) return;
+            float cycleS = cfg.StealthCycleMs > 0 ? cfg.StealthCycleMs / 1000f : 2.2f;
+            float alpha = cfg.StealthOpacity + (1f - cfg.StealthOpacity)
+                * Mathf.Abs(Mathf.Sin(Time.time / cycleS * Mathf.PI));
+            StealthAlpha = alpha;
+            rend.material.color = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
+        }
+
         public void TakeDamage(float dmg)
         {
             if (IsDead) return;
+            if (shieldHp > 0f)
+            {
+                shieldHp -= dmg;
+                if (shieldHp <= 0f)
+                {
+                    shieldHp = 0f;
+                    if (shieldHalo != null)
+                        shieldHalo.SetActive(false);
+                }
+                return;
+            }
             hp -= dmg;
             if (hp <= 0f)
             {
@@ -99,9 +195,10 @@ namespace CrowdDefense.Entities
                 float coinMul = CoinPullManager.Instance != null
                     ? CoinPullManager.Instance.GetCoinMulAt(transform.position)
                     : 1f;
-                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul));
+                float streakMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
+                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul));
 #if UNITY_EDITOR
-                Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} reward={reward}");
+                Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} streakMul={streakMul:F2} reward={reward}");
 #endif
                 Economy.Instance?.AddGold(reward);
                 WaveManager.Instance?.NotifyEnemyDied(this);
@@ -109,11 +206,14 @@ namespace CrowdDefense.Entities
             }
         }
 
-        // Tint cyan pendant slow, retour couleur base à l'expiration
+        // Tint cyan pendant slow, retour couleur base à l'expiration — préserve alpha stealth
         public void SetSlowTint(bool slowed)
         {
             if (rend == null) return;
-            rend.material.color = slowed ? new Color(0.4f, 0.9f, 1.0f) : baseColor;
+            float a = (cfg?.IsStealth == true) ? StealthAlpha : 1f;
+            rend.material.color = slowed
+                ? new Color(0.4f, 0.9f, 1.0f, a)
+                : new Color(baseColor.r, baseColor.g, baseColor.b, a);
         }
 
         private void OnReachedCastle()

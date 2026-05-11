@@ -15,21 +15,36 @@ namespace CrowdDefense.Systems
         [SerializeField] private GameObject? enemyPrefab;
 
         private int currentWaveIdx = 0;
+        private int nextWaveToStart = 0;      // index of the wave that will begin on next StartNextWave()
         private float spawnTimerMs = 0f;
-        private float breakTimerMs = 0f;
         private bool waveActive = false;
         private int spawnCounter = 0;
         private Queue<EnemyType> pendingSpawns = new();
         private List<Enemy> activeEnemies = new();
 
+        // D1-02 pacing state
+        private bool waitingForPlayerStart = false;
+        private float skipWindowTimer = 0f;   // seconds remaining in the 5s skip bonus window
+        private int streakCount = 0;           // consecutive skip-bonus claims
+
         public IReadOnlyList<Enemy> ActiveEnemies => activeEnemies;
         public int CurrentWaveIdx => currentWaveIdx;
         public int WaveDisplayNumber => currentWaveIdx + 1;
         public int TotalWaves => levelData?.Waves.Count ?? 0;
+        public bool IsWaitingForPlayerStart => waitingForPlayerStart;
+        public float SkipWindowSecondsRemaining => skipWindowTimer;
+        public int StreakCount => streakCount;
+        // Display number of the wave that will start when the player clicks (1-based)
+        public int NextWaveDisplayNumber => nextWaveToStart + 1;
+
+        // Multiplier applied to kill rewards for the current wave (1 + streak * 0.05, cap 1.25)
+        public float StreakRewardMul { get; private set; } = 1f;
 
         public event Action<int>? OnWaveStart;
         public event Action<int>? OnWaveCleared;
         public event Action? OnAllWavesCompleted;
+        // Fired when the break/skip window state changes (HUD updates pill + button)
+        public event Action? OnBreakStateChanged;
 
         private void Awake()
         {
@@ -44,7 +59,11 @@ namespace CrowdDefense.Systems
                 Debug.LogError("[WaveManager] No LevelData or no waves");
                 return;
             }
-            BeginWave(0);
+            // D1-02: first wave waits for player click/N — show button immediately
+            nextWaveToStart = 0;
+            waitingForPlayerStart = true;
+            skipWindowTimer = 0f; // no skip bonus for wave 1 (no prior wave)
+            OnBreakStateChanged?.Invoke();
         }
 
         private void BeginWave(int idx)
@@ -60,7 +79,7 @@ namespace CrowdDefense.Systems
                 int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul));
                 for (int i = 0; i < count; i++) list.Add(entry.type);
             }
-            // Fisher-Yates
+            // Fisher-Yates shuffle
             var rng = new System.Random();
             for (int i = list.Count - 1; i > 0; i--)
             {
@@ -71,7 +90,7 @@ namespace CrowdDefense.Systems
             spawnTimerMs = 0f;
             waveActive = true;
 #if UNITY_EDITOR
-            Debug.Log($"[WaveManager] Wave {idx + 1}/{TotalWaves} start : {list.Count} enemies, spawnRate {wave.spawnRateMs}ms");
+            Debug.Log($"[WaveManager] Wave {idx + 1}/{TotalWaves} start : {list.Count} enemies, streakRewardMul={StreakRewardMul:F2}");
 #endif
             OnWaveStart?.Invoke(idx);
         }
@@ -79,7 +98,8 @@ namespace CrowdDefense.Systems
         private void Update()
         {
             if (levelData == null) return;
-            float dtMs = Time.deltaTime * 1000f;
+            float dt = Time.deltaTime;
+            float dtMs = dt * 1000f;
 
             if (waveActive)
             {
@@ -93,33 +113,73 @@ namespace CrowdDefense.Systems
                 if (pendingSpawns.Count == 0 && activeEnemies.Count == 0)
                 {
                     waveActive = false;
-                    breakTimerMs = 0f;
-#if UNITY_EDITOR
-                    Debug.Log($"[WaveManager] Wave {currentWaveIdx + 1} cleared");
-#endif
                     OnWaveCleared?.Invoke(currentWaveIdx);
+#if UNITY_EDITOR
+                    Debug.Log($"[WaveManager] Wave {currentWaveIdx + 1} cleared — awaiting player start");
+#endif
+                    // D1-02: open skip bonus window and wait for player
+                    nextWaveToStart = currentWaveIdx + 1;
+                    waitingForPlayerStart = true;
+                    skipWindowTimer = BalanceConfig.Get().SkipWindowSeconds;
+                    OnBreakStateChanged?.Invoke();
                 }
+            }
+            else if (waitingForPlayerStart)
+            {
+                // Tick the skip bonus window (no auto-start — player must click/press N)
+                if (skipWindowTimer > 0f)
+                {
+                    skipWindowTimer = Mathf.Max(0f, skipWindowTimer - dt);
+                    // Q6: streak resets only when the window expires without a claim
+                    if (skipWindowTimer <= 0f && streakCount > 0)
+                    {
+                        streakCount = 0;
+                        StreakRewardMul = 1f;
+#if UNITY_EDITOR
+                        Debug.Log("[WaveManager] Skip window expired — streak reset");
+#endif
+                    }
+                    OnBreakStateChanged?.Invoke();
+                }
+            }
+        }
+
+        // Called by HudController on button click or N keypress (debounced externally)
+        public void StartNextWave()
+        {
+            if (!waitingForPlayerStart) return;
+
+            bool inWindow = skipWindowTimer > 0f;
+            if (inWindow)
+            {
+                // Claim skip bonus
+                var cfg = BalanceConfig.Get();
+                streakCount = Mathf.Min(cfg.StreakCap, streakCount + 1);
+                StreakRewardMul = 1f + streakCount * cfg.StreakBonusPerWave;
+                Economy.Instance?.AddGold(cfg.SkipBonusGold);
+#if UNITY_EDITOR
+                Debug.Log($"[WaveManager] Skip bonus claimed — +{cfg.SkipBonusGold}¢ streak={streakCount} rewardMul={StreakRewardMul:F2}");
+#endif
+            }
+            // Q6=B: streak reset only when the 5s window expires without a claim.
+            // If player clicks after the window expired, streak was already reset in Update().
+            // If it's wave 1 (no prior wave, window never opened), streakCount stays 0.
+
+            skipWindowTimer = 0f;
+            waitingForPlayerStart = false;
+            OnBreakStateChanged?.Invoke();
+
+            if (nextWaveToStart < levelData!.Waves.Count)
+            {
+                BeginWave(nextWaveToStart);
             }
             else
             {
-                breakTimerMs += dtMs;
-                int breakMs = levelData.Waves[currentWaveIdx].breakMs;
-                if (breakMs <= 0) breakMs = 4000;
-                if (breakTimerMs >= breakMs)
-                {
-                    if (currentWaveIdx + 1 < levelData.Waves.Count)
-                    {
-                        BeginWave(currentWaveIdx + 1);
-                    }
-                    else
-                    {
 #if UNITY_EDITOR
-                        Debug.Log("[WaveManager] All waves completed — victory");
+                Debug.Log("[WaveManager] All waves completed — victory");
 #endif
-                        OnAllWavesCompleted?.Invoke();
-                        enabled = false;
-                    }
-                }
+                OnAllWavesCompleted?.Invoke();
+                enabled = false;
             }
         }
 
@@ -144,11 +204,7 @@ namespace CrowdDefense.Systems
             }
         }
 
-        /// <summary>
-        /// Resolves which path index to use.
-        /// wavePortalIdx == -1 → round-robin across all paths by spawnCounter.
-        /// wavePortalIdx >= 0  → pick first path whose PortalIdx matches; fallback round-robin.
-        /// </summary>
+        // wavePortalIdx == -1 → round-robin; >= 0 → match portal index, fallback round-robin
         private int ResolvePathIdx(int wavePortalIdx)
         {
             var pm = PathManager.Instance!;
@@ -157,12 +213,10 @@ namespace CrowdDefense.Systems
             if (wavePortalIdx < 0)
                 return spawnCounter % pathCount;
 
-            // Find first path that starts from the requested portal
             var meta = pm.PathsMeta;
             for (int i = 0; i < meta.Count; i++)
                 if (meta[i].PortalIdx == wavePortalIdx) return i;
 
-            // Fallback : round-robin
             return spawnCounter % pathCount;
         }
 
