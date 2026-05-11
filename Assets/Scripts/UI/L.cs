@@ -123,6 +123,17 @@ namespace CrowdDefense.UI
                     ["settings.close"] = "Close",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+
+                    // ── Doctrine panel ─────────────────────────────────────────────
+                    ["doctrine.title"] = "Doctrines",
+                    ["doctrine.close"] = "Close",
+                    ["doctrine.active_label"] = "{0} Active: {1}",
+                    ["doctrine.none_active"] = "No doctrine active",
+                    ["doctrine.gems_label"] = "Gems: {0}",
+                    ["doctrine.btn_select"] = "Select",
+                    ["doctrine.btn_active"] = "Active",
+                    ["doctrine.cost_label"] = "{0} gems",
+                    ["doctrine.hud_btn"] = "Doctrines",
                 },
                 ["fr"] = new()
                 {
@@ -230,6 +241,17 @@ namespace CrowdDefense.UI
                     ["settings.close"] = "Fermer",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+
+                    // ── Doctrine panel ─────────────────────────────────────────────
+                    ["doctrine.title"] = "Doctrines",
+                    ["doctrine.close"] = "Fermer",
+                    ["doctrine.active_label"] = "{0} Active : {1}",
+                    ["doctrine.none_active"] = "Aucune doctrine active",
+                    ["doctrine.gems_label"] = "Gemmes : {0}",
+                    ["doctrine.btn_select"] = "Choisir",
+                    ["doctrine.btn_active"] = "Active",
+                    ["doctrine.cost_label"] = "{0} gemmes",
+                    ["doctrine.hud_btn"] = "Doctrines",
                 },
             },
 

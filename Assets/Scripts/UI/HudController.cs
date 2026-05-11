@@ -40,8 +40,13 @@ namespace CrowdDefense.UI
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
 
+        // Doctrine panel controller — sibling component on same GameObject
+        private DoctrineController? _doctrineCtrl;
+
         private void Start()
         {
+            _doctrineCtrl = GetComponent<DoctrineController>();
+
             var root = GetComponent<UIDocument>().rootVisualElement;
             goldLabel = root.Q<Label>("gold-label");
             goldValue = root.Q<Label>("gold-value");
@@ -75,6 +80,8 @@ namespace CrowdDefense.UI
             btnMenuVictory?.RegisterCallback<ClickEvent>(_ => GoToMenu());
 
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
+
+            root.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
 
             ApplyLocalizedTexts();
             L.OnLocaleChanged += ApplyLocalizedTexts;
