@@ -69,8 +69,19 @@ namespace CrowdDefense.Build
                 "CrowdDefense/OutlineInvertedHull",
             };
 
-            var so = new SerializedObject(UnityEditor.Rendering.GraphicsSettings.currentSettings);
+            var graphicsSettingsAsset = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset");
+            if (graphicsSettingsAsset == null || graphicsSettingsAsset.Length == 0)
+            {
+                Debug.LogWarning("[BuildScript] Could not load GraphicsSettings.asset");
+                return;
+            }
+            var so = new SerializedObject(graphicsSettingsAsset[0]);
             var shadersProp = so.FindProperty("m_AlwaysIncludedShaders");
+            if (shadersProp == null)
+            {
+                Debug.LogWarning("[BuildScript] m_AlwaysIncludedShaders not found");
+                return;
+            }
 
             foreach (var shaderName in requiredShaderNames)
             {
