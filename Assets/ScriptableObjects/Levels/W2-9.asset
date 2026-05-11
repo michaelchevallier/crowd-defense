@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ecf15f4edfd5f404fa83a12c7a61fe34, type: 3}
+  m_Name: W2-9
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
+  id: world2-9
+  displayName: "Foret - Clairiere des Abeilles"
+  theme: foret
+  world: 2
+  level: 9
+  mapRows:
+  - T0T0T0T0T0T0T00
+  - P11111T000000T00
+  - 0T0000100T000T00
+  - 0T0001111T000000
+  - 0000000100000T00
+  - 0PT00111100000T0
+  - 000001T0001000TT
+  - 0T0000T0000111C0
+  - 0T0T0000T0000000
+  cellSize: 4
+  startCoins: 140
+  overrideCastleHP: 1
+  castleHPOverride: 185
+  lossMode: 0
+  allowMultiMagnet: 0
+  waves:
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 28
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 18
+    spawnRateMs: 720
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 30
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 22
+    - type: {fileID: 11400000, guid: 53c26439f6ec4adcad7bc70ca2fd30dc, type: 2}
+      count: 8
+    spawnRateMs: 660
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 28
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 26
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 8
+    - type: {fileID: 11400000, guid: 30ee745ced0c49cc9758c5ae02f3af43, type: 2}
+      count: 12
+    spawnRateMs: 600
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 30
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 10
+    - type: {fileID: 11400000, guid: 30ee745ced0c49cc9758c5ae02f3af43, type: 2}
+      count: 18
+    spawnRateMs: 560
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 26
+    - type: {fileID: 11400000, guid: 53c26439f6ec4adcad7bc70ca2fd30dc, type: 2}
+      count: 16
+    - type: {fileID: 11400000, guid: e52ebe92cb354e7ea45f2346fceb3abc, type: 2}
+      count: 8
+    - type: {fileID: 11400000, guid: 30ee745ced0c49cc9758c5ae02f3af43, type: 2}
+      count: 16
+    spawnRateMs: 520
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 34
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 12
+    - type: {fileID: 11400000, guid: e52ebe92cb354e7ea45f2346fceb3abc, type: 2}
+      count: 10
+    - type: {fileID: 11400000, guid: 30ee745ced0c49cc9758c5ae02f3af43, type: 2}
+      count: 20
+    spawnRateMs: 490
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 30
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 18
+    - type: {fileID: 11400000, guid: e52ebe92cb354e7ea45f2346fceb3abc, type: 2}
+      count: 12
+    - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
+      count: 12
+    spawnRateMs: 460
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 36
+    - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
+      count: 22
+    - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
+      count: 1
+    spawnRateMs: 430
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 44
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 32
+    - type: {fileID: 11400000, guid: 30ee745ced0c49cc9758c5ae02f3af43, type: 2}
+      count: 24
+    spawnRateMs: 400
+    breakMs: 5000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 50
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 16
+    - type: {fileID: 11400000, guid: 30ee745ced0c49cc9758c5ae02f3af43, type: 2}
+      count: 28
+    - type: {fileID: 11400000, guid: e52ebe92cb354e7ea45f2346fceb3abc, type: 2}
+      count: 12
+    spawnRateMs: 370
+    breakMs: 0
+    portalIdx: -1
