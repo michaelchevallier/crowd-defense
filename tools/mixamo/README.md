@@ -1,6 +1,6 @@
 # tools/mixamo — Mixamo Animation Downloader
 
-Downloads humanoid animations from Mixamo for Crowd Defense enemies.
+Batch downloads humanoid animations from Mixamo for Crowd Defense enemies.
 
 ## Setup
 
@@ -11,22 +11,33 @@ python3 -m playwright install chromium
 
 Both are already installed on this machine.
 
-## First run (Adobe login required)
+## Auth — extract bearer token from Chrome (recommended, 30s)
 
-```bash
-cd /Users/mike/Work/crowd-defense
-python3 tools/mixamo/download_anims.py
-```
+The Mixamo API uses an Adobe IMS OAuth bearer token. Since you are already
+logged in to Mixamo in Chrome, the fastest way is to copy the token directly:
 
-A Chromium browser window opens. Log in to [mixamo.com](https://mixamo.com) with your Adobe account.
-After login the script detects the session automatically and continues.
-Session cookies are saved to `tools/mixamo/.session.json` for reuse.
+1. Open https://www.mixamo.com in your Chrome
+2. Open DevTools (Cmd+Opt+I) → Console tab
+3. Run: `copy(localStorage.access_token)`
+4. Paste into `tools/mixamo/.token` (one line, no quotes):
+   ```bash
+   pbpaste > tools/mixamo/.token
+   ```
+5. Run the script:
+   ```bash
+   python3 tools/mixamo/download_anims.py
+   ```
 
-## Subsequent runs (headless, no browser)
+The token is JWT-formatted; it typically expires after 24h. If you get HTTP 401,
+re-extract the token using the same steps above.
 
-```bash
-python3 tools/mixamo/download_anims.py --resume
-```
+Alternative: set `MIXAMO_TOKEN` env var with the token value.
+
+## Auth — automated Playwright login (fallback)
+
+If `.token` / `MIXAMO_TOKEN` / `.session.json` are all absent, the script opens
+a fresh Chromium window for Adobe login. The script captures the OAuth token
+automatically and saves it to `.session.json` for reuse.
 
 ## Options
 
@@ -61,21 +72,36 @@ FBX files: `Assets/Animations/Mixamo/{enemy_key}_{anim}.fbx`
 
 ## Session expiry / re-login
 
-If you see `HTTP 401` or the script hangs at login:
+If you see `HTTP 401` or "OAuth token expired":
 
 ```bash
-rm tools/mixamo/.session.json
-python3 tools/mixamo/download_anims.py
+# In Chrome devtools: copy(localStorage.access_token)
+pbpaste > tools/mixamo/.token
+python3 tools/mixamo/download_anims.py --resume
 ```
 
-A new Chromium window will open for fresh login.
+## API endpoints used (reverse-engineered)
+
+Base: `https://www.mixamo.com/api/v1/*` (NOT `api.mixamo.com` — deprecated)
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/products?type=Character&query=X` | GET | Find character ID by name |
+| `/products?type=Motion,MotionPack&query=X` | GET | Find motion ID by name |
+| `/products/{motion_id}?character_id={char_id}` | GET | Fetch motion gms_hash |
+| `/animations/stream` | POST | Retarget motion to character |
+| `/animations/export` | POST | Request FBX generation |
+| `/characters/{char_id}/monitor` | GET | Poll until job complete |
+| S3 presigned URL (`job_result`) | GET | Download FBX (or ZIP-wrapped FBX) |
+
+Headers: `x-api-key: mixamo2` + `Authorization: Bearer <token>`
 
 ## Enemy list
 
 See `enemies_humanoid.txt` — 15 humanoid keys.
 
 Excluded (not Mixamo-Humanoid compatible):
-- `mob_frog`, `mob_cactoro`, `mob_armabee`, `mob_pigeon` — non-humanoid creatures
+- `mob_frog`, `mob_cactoro`, `mob_armabee`, `mob_pigeon` — non-humanoid
 - `mob_cyberpunk_flying`, dragon, kraken — flyers / non-humanoid bosses
 
 ## Unity import notes
@@ -84,3 +110,12 @@ Excluded (not Mixamo-Humanoid compatible):
 - Avatar: Create From This Model
 - AnimationController already present in `Assets/Animations/Controllers/`
 - `AnimationController.cs` in `Assets/Scripts/Visual/` applies clips at runtime
+
+## Troubleshooting
+
+| Error | Cause | Fix |
+|---|---|---|
+| `HTTP 401: Oauth token is not valid` | Token expired | Re-copy token from Chrome devtools |
+| `Failed to resolve api.mixamo.com` | Old script using deprecated host | Script already uses `www.mixamo.com/api/v1` |
+| Playwright SingletonLock | Chrome running same profile | Script uses temp profile |
+| 503 on S3 URL | FBX not yet generated | Script polls monitor endpoint until ready |

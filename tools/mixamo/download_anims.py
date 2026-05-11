@@ -11,9 +11,10 @@ Requirements:
 
 Adobe login:
     The script launches a visible Chromium window for first-time login.
-    After login, session cookies are saved to tools/mixamo/.session.json.
-    Subsequent runs reuse the saved session (headless).
-    If session expires: delete .session.json and re-run for fresh login.
+    After login, the OAuth bearer token is captured from the browser
+    (Adobe IMS) and saved to tools/mixamo/.session.json.
+    Subsequent runs reuse the saved token (headless, no browser).
+    If token expires: delete .session.json and re-run for fresh login.
 """
 
 from __future__ import annotations
@@ -32,7 +33,7 @@ import requests
 # Paths
 # ---------------------------------------------------------------------------
 SCRIPT_DIR = Path(__file__).parent.resolve()
-PROJECT_ROOT = SCRIPT_DIR.parent.parent  # crowd-defense/
+PROJECT_ROOT = SCRIPT_DIR.parent.parent
 OUTPUT_DIR = PROJECT_ROOT / "Assets" / "Animations" / "Mixamo"
 SESSION_FILE = SCRIPT_DIR / ".session.json"
 PROGRESS_FILE = SCRIPT_DIR / ".progress.json"
@@ -40,51 +41,59 @@ PROGRESS_FILE = SCRIPT_DIR / ".progress.json"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ---------------------------------------------------------------------------
-# Mixamo API endpoints (unofficial but stable)
+# Mixamo API endpoints — current as of 2026 (reverse-engineered)
+# Base: www.mixamo.com/api/v1/*  (api.mixamo.com is deprecated)
+# Auth: x-api-key header + Authorization: Bearer <Adobe IMS access_token>
+#   The token is stored in browser localStorage as 'access_token' after login.
+# Download flow (per animation):
+#   1. GET /products/{motion_id}?character_id={char_id} — fetch motion details
+#   2. POST /animations/stream — retarget motion to character
+#   3. POST /animations/export — request FBX generation
+#   4. GET /characters/{char_id}/monitor — poll until job complete
+#   5. GET response.job_result (S3 presigned URL) — download FBX
 # ---------------------------------------------------------------------------
 MIXAMO_BASE = "https://www.mixamo.com"
-MIXAMO_API = "https://api.mixamo.com"
-MIXAMO_ANIMATIONS_API = f"{MIXAMO_API}/v1/animations"
-MIXAMO_CHARACTER_API = f"{MIXAMO_API}/v1/characters"
-MIXAMO_PRODUCT_API = f"{MIXAMO_API}/v1/products"
-MIXAMO_EXPORT_API = f"{MIXAMO_API}/v1/animations/export"
+MIXAMO_API = "https://www.mixamo.com/api/v1"
+MIXAMO_PRODUCTS_API = f"{MIXAMO_API}/products"
+MIXAMO_CHARACTERS_API = f"{MIXAMO_API}/characters"
+MIXAMO_STREAM_API = f"{MIXAMO_API}/animations/stream"
+MIXAMO_EXPORT_API = f"{MIXAMO_API}/animations/export"
+
+API_KEY = "mixamo2"
 
 # ---------------------------------------------------------------------------
-# Humanoid enemy list — 15 unique asset keys + animation mappings
-# Priority order (most-used first per ticket brief):
-#   zombie (Basic), goblin (Imp/Assassin/Runner), soldier (Brute),
-#   knightgolden (Shielded), mob_skeleton, mob_orc, mob_cyberpunk_character,
-#   mob_cyberpunk_large, mob_cyberpunk_2legs, pirate, wizard,
-#   boss_medieval_sorcier_roi, boss_apocalypse, boss_espace_ghost, boss_cyberpunk_hub_ia
+# Humanoid enemy list — 15 unique asset keys + Mixamo character mapping
 # ---------------------------------------------------------------------------
 HUMANOID_ENEMIES = [
     # (enemy_key, mixamo_character_name, notes)
-    ("zombie",                      "Zombie",      "Basic grunt"),
-    ("goblin",                      "Goblin",      "Imp/Assassin/Runner"),
-    ("soldier",                     "Soldier",     "Brute — heavy infantry"),
-    ("knightgolden",                "Knight",      "Shielded enemy"),
-    ("mob_skeleton",                "Skeleton",    "SkeletonMinion summon"),
-    ("mob_orc",                     "Orc",         "ForestBrute"),
-    ("mob_cyberpunk_character",     "Mannequin",   "CyberBasic"),
-    ("mob_cyberpunk_large",         "X Bot",       "CyberBrute"),
-    ("mob_cyberpunk_2legs",         "X Bot",       "CyberRunner"),
-    ("pirate",                      "Pirate",      "Boss/BrigandBoss/CorsairBoss"),
-    ("wizard",                      "Mage",        "Midboss/WarlordBoss"),
-    ("boss_medieval_sorcier_roi",   "Mage",        "WizardKing"),
-    ("boss_apocalypse",             "Y Bot",       "ApocalypseBoss"),
-    ("boss_espace_ghost",           "Mannequin",   "CosmicBoss"),
-    ("boss_cyberpunk_hub_ia",       "Y Bot",       "AiHub"),
+    ("zombie",                      "Zombie",       "Basic grunt"),
+    ("goblin",                      "Goblin",       "Imp/Assassin/Runner"),
+    ("soldier",                     "Soldier",      "Brute — heavy infantry"),
+    ("knightgolden",                "Knight",       "Shielded enemy"),
+    ("mob_skeleton",                "Skeleton",     "SkeletonMinion summon"),
+    ("mob_orc",                     "Orc",          "ForestBrute"),
+    ("mob_cyberpunk_character",     "Mannequin",    "CyberBasic"),
+    ("mob_cyberpunk_large",         "X Bot",        "CyberBrute"),
+    ("mob_cyberpunk_2legs",         "X Bot",        "CyberRunner"),
+    ("pirate",                      "Pirate",       "Boss/BrigandBoss/CorsairBoss"),
+    ("wizard",                      "Mage",         "Midboss/WarlordBoss"),
+    ("boss_medieval_sorcier_roi",   "Mage",         "WizardKing"),
+    ("boss_apocalypse",             "Y Bot",        "ApocalypseBoss"),
+    ("boss_espace_ghost",           "Mannequin",    "CosmicBoss"),
+    ("boss_cyberpunk_hub_ia",       "Y Bot",        "AiHub"),
 ]
 
-# 4 animations to fetch per character
+# Generic Mixamo humanoid character ID (fallback)
+GENERIC_HUMANOID_ID = "efb06b46-a470-49b2-b7da-a06755d4dba7"  # Warrok W Kurniawan
+
+# 4 animations per character
 ANIMATIONS = [
-    ("Walking",  "walking"),   # idle-moving
-    ("Running",  "running"),   # fast-moving
-    ("Punch",    "attack"),    # combat attack
-    ("Dying",    "dying"),     # death
+    ("Walking",  "walking"),
+    ("Running",  "running"),
+    ("Punch",    "attack"),
+    ("Dying",    "dying"),
 ]
 
-# Mixamo animation search queries
 ANIM_QUERIES = {
     "walking": "Walking",
     "running": "Running",
@@ -92,13 +101,11 @@ ANIM_QUERIES = {
     "dying":   "Dying",
 }
 
-# ---------------------------------------------------------------------------
-# Rate limit settings
-# ---------------------------------------------------------------------------
-WAIT_BETWEEN_DOWNLOADS = 5   # seconds between each download
-RATE_LIMIT_WAIT = 60         # seconds to wait on rate limit
+# Rate limit
+WAIT_BETWEEN_DOWNLOADS = 5
+RATE_LIMIT_WAIT = 60
 MAX_RETRIES = 3
-DAILY_LIMIT = 50             # Mixamo soft daily limit
+DAILY_LIMIT = 50
 
 # ---------------------------------------------------------------------------
 # Progress tracking
@@ -117,7 +124,7 @@ def save_progress(progress: dict) -> None:
 
 
 def is_done(progress: dict, enemy_key: str, anim_key: str) -> bool:
-    return f"{enemy_key}_{anim_key}" in progress["downloaded"]
+    return f"{enemy_key}_{anim_key}" in progress.get("downloaded", [])
 
 
 def mark_done(progress: dict, enemy_key: str, anim_key: str) -> None:
@@ -129,197 +136,314 @@ def mark_done(progress: dict, enemy_key: str, anim_key: str) -> None:
 
 
 def mark_failed(progress: dict, enemy_key: str, anim_key: str, reason: str) -> None:
-    entry = {"key": f"{enemy_key}_{anim_key}", "reason": reason}
-    progress["failed"].append(entry)
+    progress["failed"].append({"key": f"{enemy_key}_{anim_key}", "reason": reason})
     save_progress(progress)
 
 
 # ---------------------------------------------------------------------------
-# Session management — Adobe IMS cookies
+# Session — OAuth bearer token from Adobe IMS via browser
 # ---------------------------------------------------------------------------
 
 def load_session() -> dict | None:
+    """
+    Load bearer token from .session.json, environment variable MIXAMO_TOKEN,
+    or a one-line .token file. Token can be obtained from Chrome devtools:
+        chrome → mixamo.com → DevTools → Console:
+        copy(localStorage.access_token)
+    Then paste into tools/mixamo/.token (one line, no quotes).
+    """
+    # 1. Env var (highest priority)
+    env_token = os.environ.get("MIXAMO_TOKEN")
+    if env_token:
+        print("[auth] Using MIXAMO_TOKEN from environment")
+        return {"bearer_token": env_token.strip()}
+
+    # 2. .token plain-text file
+    token_file = SCRIPT_DIR / ".token"
+    if token_file.exists():
+        with open(token_file) as f:
+            tok = f.read().strip()
+        if tok:
+            print(f"[auth] Loaded bearer token from {token_file}")
+            return {"bearer_token": tok}
+
+    # 3. .session.json (Playwright-saved)
     if SESSION_FILE.exists():
         with open(SESSION_FILE) as f:
             data = json.load(f)
-        print(f"[auth] Loaded session from {SESSION_FILE}")
-        return data
+        if isinstance(data, dict) and "bearer_token" in data and data["bearer_token"]:
+            print(f"[auth] Loaded bearer token from {SESSION_FILE}")
+            return data
     return None
 
 
-def save_session(cookies: list[dict]) -> None:
+def save_session(data: dict) -> None:
     with open(SESSION_FILE, "w") as f:
-        json.dump(cookies, f, indent=2)
-    print(f"[auth] Session cookies saved to {SESSION_FILE}")
+        json.dump(data, f, indent=2)
+    print(f"[auth] Session saved to {SESSION_FILE}")
 
 
-def cookies_to_jar(cookies: list[dict]) -> dict:
-    """Convert playwright cookie list to requests-compatible dict."""
-    return {c["name"]: c["value"] for c in cookies}
-
-
-def do_browser_login() -> list[dict]:
+def do_browser_login() -> dict:
     """
-    Open a visible Chromium window for Adobe/Mixamo login.
-    Uses a fresh temp profile (avoids conflict with running Chrome instance).
-    Returns session cookies after successful login.
+    Open a visible Chromium for Adobe login.
+    After login, extract the OAuth bearer token from the browser context.
     """
     from playwright.sync_api import sync_playwright
     import tempfile
     import shutil
 
-    print("\n[auth] No saved session found. Opening browser for Mixamo login...")
-    print("[auth] Please log in to https://www.mixamo.com with your Adobe account.")
-    print("[auth] The script continues automatically once logged in (max 5 min).\n")
+    print("\n" + "=" * 60)
+    print("MIXAMO LOGIN REQUIRED")
+    print("=" * 60)
+    print("A Chromium window is opening. Please:")
+    print("  1. Log in to https://www.mixamo.com with your Adobe account")
+    print("  2. Wait for the Mixamo character picker page to fully load")
+    print("  3. Do NOT close the browser — the script will close it")
+    print("  4. The script waits up to 10 minutes for login")
+    print("=" * 60 + "\n")
 
-    # Use a fresh temp profile to avoid Chrome SingletonLock conflict
     tmp_profile = tempfile.mkdtemp(prefix="playwright-mixamo-")
+    token = None
 
     try:
         with sync_playwright() as p:
             context = p.chromium.launch_persistent_context(
                 user_data_dir=tmp_profile,
                 headless=False,
-                slow_mo=150,
+                slow_mo=100,
                 args=["--no-first-run", "--disable-extensions"],
             )
             page = context.new_page()
+
+            # Capture network requests to extract bearer token
+            captured_token = {"value": None}
+
+            def on_request(request):
+                if "mixamo.com/api" in request.url:
+                    auth = request.headers.get("authorization", "")
+                    if auth.lower().startswith("bearer "):
+                        tok = auth[7:]
+                        if tok and tok != captured_token["value"]:
+                            captured_token["value"] = tok
+
+            page.on("request", on_request)
+
             page.goto(f"{MIXAMO_BASE}/#/")
             page.wait_for_timeout(3000)
 
-            print("[auth] Waiting for login completion (max 5 minutes)...")
-            try:
-                page.wait_for_selector(
-                    "div.character-picker, .user-avatar, [data-id='character-picker'], "
-                    ".characters-container, .nav-user-info, canvas",
-                    timeout=300_000,
-                )
-                print("[auth] Login detected.")
-            except Exception:
-                print("[auth] Login wait timed out — capturing cookies anyway.")
+            print("[auth] Waiting for login + bearer token (max 10 min)...")
+            deadline = time.time() + 600
+            last_tick = 0
+            while time.time() < deadline:
+                if captured_token["value"]:
+                    print("[auth] Bearer token captured!")
+                    # Give it 2 more seconds in case more requests fire
+                    page.wait_for_timeout(2000)
+                    break
+                # Periodic status
+                if time.time() - last_tick > 30:
+                    print(f"[auth] Still waiting... (login the user has {int(deadline - time.time())}s left)")
+                    last_tick = time.time()
+                time.sleep(1)
 
-            cookies = context.cookies()
+            if not captured_token["value"]:
+                # Fallback: try to extract from window/localStorage
+                print("[auth] No bearer token from network; trying localStorage...")
+                try:
+                    token_js = page.evaluate("""() => {
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const k = localStorage.key(i);
+                            if (!k) continue;
+                            const raw = localStorage.getItem(k);
+                            if (!raw) continue;
+                            try {
+                                const v = JSON.parse(raw);
+                                if (v && v.tokenValue && typeof v.tokenValue === 'string' && v.tokenValue.length > 100) return v.tokenValue;
+                                if (v && v.access_token && typeof v.access_token === 'string') return v.access_token;
+                            } catch(e) {}
+                            if (raw.length > 100 && raw.startsWith('ey')) return raw;
+                        }
+                        return null;
+                    }""")
+                    if token_js:
+                        captured_token["value"] = token_js
+                        print("[auth] Token extracted from localStorage")
+                except Exception as e:
+                    print(f"[auth] localStorage extraction failed: {e}")
+
+            token = captured_token["value"]
             context.close()
+
     finally:
         shutil.rmtree(tmp_profile, ignore_errors=True)
 
-    save_session(cookies)
-    return cookies
+    if not token:
+        print("\n[auth] FATAL: Could not capture OAuth bearer token.")
+        print("       Mike must complete the Mixamo login in the browser.")
+        sys.exit(2)
+
+    data = {"bearer_token": token}
+    save_session(data)
+    return data
 
 
-def get_session_cookies() -> dict:
-    """Return cookies dict, triggering browser login if no saved session."""
+def get_session() -> dict:
     saved = load_session()
     if saved:
-        return cookies_to_jar(saved)
-    cookies_list = do_browser_login()
-    return cookies_to_jar(cookies_list)
+        return saved
+    return do_browser_login()
 
 
 # ---------------------------------------------------------------------------
 # Mixamo API helpers
 # ---------------------------------------------------------------------------
 
-def make_session(cookies: dict) -> requests.Session:
+def make_session(token: str) -> requests.Session:
     s = requests.Session()
-    s.cookies.update(cookies)
     s.headers.update({
         "Accept": "application/json",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        "X-Api-Key": "mixamo2",
+        "x-api-key": API_KEY,
         "Origin": MIXAMO_BASE,
         "Referer": f"{MIXAMO_BASE}/",
+        "Authorization": f"Bearer {token}",
     })
     return s
 
 
-def search_animation(session: requests.Session, query: str, page: int = 1) -> list[dict]:
-    """Search for animations by name. Returns list of product dicts."""
+def search_animation(session: requests.Session, query: str) -> list[dict]:
+    """Search for animations by name."""
     params = {
+        "type": "Motion,MotionPack",
         "query": query,
-        "page": page,
         "limit": 10,
+        "page": 1,
         "order": "popularity",
-        "type": "Motion%2CMotionPack",
-        "character_id": "00000000-0000-0000-0000-000000000002",
     }
-    resp = session.get(MIXAMO_ANIMATIONS_API, params=params)
+    resp = session.get(MIXAMO_PRODUCTS_API, params=params)
     if resp.status_code != 200:
-        print(f"[search] HTTP {resp.status_code} for query '{query}'")
+        print(f"[search] HTTP {resp.status_code} for '{query}': {resp.text[:200]}")
         return []
-    data = resp.json()
-    return data.get("results", [])
+    return resp.json().get("results", [])
 
 
 def find_character_id(session: requests.Session, char_name: str) -> str | None:
-    """Find the Mixamo character ID by display name."""
+    """Find Mixamo character ID by display name."""
     params = {
-        "order": "name",
-        "limit": 20,
-        "page": 1,
-        "query": char_name,
         "type": "Character",
+        "query": char_name,
+        "limit": 10,
+        "page": 1,
     }
-    resp = session.get(f"{MIXAMO_API}/v1/products", params=params)
+    resp = session.get(MIXAMO_PRODUCTS_API, params=params)
     if resp.status_code != 200:
         return None
     results = resp.json().get("results", [])
     for r in results:
         if r.get("name", "").lower() == char_name.lower():
-            return r.get("id") or r.get("character_id")
+            return r.get("id")
     if results:
-        return results[0].get("id") or results[0].get("character_id")
+        return results[0].get("id")
     return None
+
+
+def get_motion_details(
+    session: requests.Session,
+    motion_id: str,
+    character_id: str,
+) -> dict | None:
+    """
+    Fetch motion details — returns gms_hash needed for retargeting/export.
+    GET /products/{motion_id}?character_id={char_id}
+    """
+    url = f"{MIXAMO_PRODUCTS_API}/{motion_id}"
+    params = {"character_id": character_id}
+    resp = session.get(url, params=params)
+    if resp.status_code != 200:
+        print(f"[motion] HTTP {resp.status_code}: {resp.text[:200]}")
+        return None
+    return resp.json()
 
 
 def request_export(
     session: requests.Session,
     character_id: str,
-    product_id: str,
-) -> str | None:
-    """Request an FBX export. Returns the export job URL or None."""
-    payload = {
-        "gms_hash": [{
-            "model_id": character_id,
-            "trim_end_ms": 0,
-            "trim_start_ms": 0,
-            "overdrive": 0,
-            "mirror": False,
-            "inplace": False,
-        }],
+    motion_id: str,
+    motion_details: dict,
+    product_name: str = "Walking",
+) -> bool:
+    """
+    Trigger FBX generation. Two-step flow:
+      1. POST /animations/stream — retarget animation
+      2. POST /animations/export — generate FBX
+    Uses gms_hash from motion_details (NOT motion_id, which is a UUID).
+    """
+    gms_hash = motion_details.get("gms_hash") or motion_details.get("details", {}).get("gms_hash")
+    if not gms_hash:
+        # Fallback: try alternate key paths
+        gms_hash = motion_details.get("motion", {}).get("gms_hash") if motion_details.get("motion") else None
+    if not gms_hash:
+        print(f"[export] No gms_hash in motion details")
+        return False
+
+    # 1. Stream (retarget)
+    stream_payload = {
+        "gms_hash": gms_hash,
+        "character_id": character_id,
+        "retargeting_payload": "",
+        "target_type": "skin",
+    }
+    r1 = session.post(MIXAMO_STREAM_API, json=stream_payload)
+    if r1.status_code not in (200, 201, 202):
+        print(f"[stream] HTTP {r1.status_code}: {r1.text[:200]}")
+        return False
+
+    # 2. Export (request FBX)
+    export_payload = {
+        "gms_hash": gms_hash,
         "preferences": {
             "format": "fbx7_unity",
-            "skin": "false",
+            "skin": "true",
             "fps": "30",
-            "reducekeyframes": "false",
+            "reducekf": "0",
         },
-        "product_name": product_id,
+        "character_id": character_id,
         "type": "Motion",
+        "product_name": product_name,
     }
-    resp = session.post(MIXAMO_EXPORT_API, json=payload)
-    if resp.status_code not in (200, 201, 202):
-        print(f"[export] HTTP {resp.status_code}: {resp.text[:200]}")
-        return None
-    data = resp.json()
-    return data.get("job_result")
+    r2 = session.post(MIXAMO_EXPORT_API, json=export_payload)
+    if r2.status_code not in (200, 201, 202):
+        print(f"[export] HTTP {r2.status_code}: {r2.text[:200]}")
+        return False
+    return True
 
 
-def poll_export(session: requests.Session, job_url: str, timeout: int = 120) -> str | None:
-    """Poll an export job until ready. Returns the download URL."""
+def poll_export(
+    session: requests.Session,
+    character_id: str,
+    timeout: int = 180,
+) -> str | None:
+    """Poll /characters/{character_id}/monitor for completion. Returns download URL."""
+    monitor_url = f"{MIXAMO_CHARACTERS_API}/{character_id}/monitor"
     deadline = time.time() + timeout
+
     while time.time() < deadline:
-        resp = session.get(job_url)
+        resp = session.get(monitor_url)
         if resp.status_code != 200:
             time.sleep(3)
             continue
+
         data = resp.json()
         status = data.get("status", "")
+        message = data.get("message", "")
+
         if status == "completed":
             return data.get("job_result")
-        if status in ("failed", "error"):
-            print(f"[export] Job failed: {data}")
+        if status in ("failed", "error", "Error"):
+            print(f"[export] Job failed: {message}")
             return None
         time.sleep(3)
+
     print("[export] Timeout waiting for export job")
     return None
 
@@ -329,7 +453,7 @@ def download_fbx(
     download_url: str,
     out_path: Path,
 ) -> bool:
-    """Download FBX (possibly ZIP-wrapped) to out_path."""
+    """Download FBX (or ZIP-wrapped FBX) to out_path."""
     resp = session.get(download_url, stream=True)
     if resp.status_code != 200:
         print(f"[download] HTTP {resp.status_code}")
@@ -343,26 +467,24 @@ def download_fbx(
     if "zip" in content_type or raw[:2] == b"PK":
         tmp_zip = out_path.with_suffix(".zip")
         tmp_zip.write_bytes(raw)
-        with zipfile.ZipFile(tmp_zip, "r") as zf:
-            for name in zf.namelist():
-                if name.endswith(".fbx"):
-                    zf.extract(name, out_path.parent)
-                    extracted = out_path.parent / name
-                    extracted.rename(out_path)
-                    break
-        tmp_zip.unlink(missing_ok=True)
+        try:
+            with zipfile.ZipFile(tmp_zip, "r") as zf:
+                for name in zf.namelist():
+                    if name.endswith(".fbx"):
+                        zf.extract(name, out_path.parent)
+                        extracted = out_path.parent / name
+                        extracted.rename(out_path)
+                        break
+        finally:
+            tmp_zip.unlink(missing_ok=True)
     else:
         out_path.write_bytes(raw)
 
     return out_path.exists() and out_path.stat().st_size > 1024
 
 
-# ---------------------------------------------------------------------------
-# Main download flow
-# ---------------------------------------------------------------------------
-
 def download_animation(
-    session: requests.Session,
+    session: requests.Session | None,
     enemy_key: str,
     mixamo_char_name: str,
     anim_key: str,
@@ -381,40 +503,55 @@ def download_animation(
         print(f"  [dry-run] Would download → {out_filename}")
         return True
 
-    # Find character ID
+    assert session is not None
+
+    # 1. Find character
     char_id = find_character_id(session, mixamo_char_name)
     if not char_id:
-        char_id = "00000000-0000-0000-0000-000000000002"
+        char_id = GENERIC_HUMANOID_ID
         print(f"  [warn] Could not find '{mixamo_char_name}', using generic humanoid")
 
-    # Search animation
+    # 2. Find animation
     results = search_animation(session, anim_query)
     if not results:
         print(f"  [fail] No results for '{anim_query}'")
         return False
-    product_id = results[0].get("id") or results[0].get("product_id") or results[0].get("name", "")
-    print(f"  [found] {results[0].get('name', '?')} (id={product_id})")
+    # Prefer exact name match
+    motion = next((r for r in results if r.get("name", "").lower() == anim_query.lower()), results[0])
+    motion_id = motion.get("id")
+    motion_name = motion.get("name", "?")
+    print(f"  [found] {motion_name} (id={motion_id})")
 
-    # Request export
-    job_url = request_export(session, char_id, product_id)
-    if not job_url:
+    # 3. Fetch motion details (gms_hash)
+    motion_details = get_motion_details(session, motion_id, char_id)
+    if not motion_details:
+        print(f"  [fail] Failed to fetch motion details")
+        return False
+
+    # 4. Request export (stream + export)
+    if not request_export(session, char_id, motion_id, motion_details, motion_name):
         print(f"  [fail] Export request failed")
         return False
 
-    # Poll until ready
-    download_url = poll_export(session, job_url)
+    # 5. Poll for completion
+    download_url = poll_export(session, char_id)
     if not download_url:
         print(f"  [fail] Export job did not complete")
         return False
 
-    # Download
+    # 6. Download FBX from S3
     ok = download_fbx(session, download_url, out_path)
     if ok:
-        print(f"  [ok] Saved {out_filename} ({out_path.stat().st_size // 1024} KB)")
+        size_kb = out_path.stat().st_size // 1024
+        print(f"  [ok] Saved {out_filename} ({size_kb} KB)")
     else:
         print(f"  [fail] Download failed for {out_filename}")
     return ok
 
+
+# ---------------------------------------------------------------------------
+# Main run
+# ---------------------------------------------------------------------------
 
 def run(
     batch_size: int = DAILY_LIMIT,
@@ -427,20 +564,23 @@ def run(
         progress = {"downloaded": [], "failed": [], "total_today": 0}
         save_progress(progress)
 
-    cookies = get_session_cookies()
-    session = make_session(cookies)
+    session: requests.Session | None = None
+    if not dry_run:
+        sess_data = get_session()
+        token = sess_data["bearer_token"]
+        session = make_session(token)
 
-    # Verify session is live
-    test_resp = session.get(f"{MIXAMO_API}/v1/characters?limit=1")
-    if test_resp.status_code == 401:
-        print("\n[auth] ERROR: Session expired (HTTP 401).")
-        print("       Delete .session.json and re-run to trigger fresh browser login.")
-        print("       BLOCKER: Mike must re-login to Adobe/Mixamo.")
-        sys.exit(2)
-    elif test_resp.status_code not in (200, 201):
-        print(f"\n[auth] WARNING: Unexpected status {test_resp.status_code} — proceeding.")
+        test_resp = session.get(f"{MIXAMO_CHARACTERS_API}?limit=1")
+        if test_resp.status_code == 401:
+            print("\n[auth] ERROR: OAuth token expired or invalid (HTTP 401).")
+            print("       Delete .session.json and re-run to refresh login.")
+            print("       BLOCKER: Mike must complete Adobe/Mixamo login.")
+            sys.exit(2)
+        elif test_resp.status_code not in (200, 201):
+            print(f"\n[auth] WARNING: status {test_resp.status_code} from API: {test_resp.text[:200]}")
+            print("       Proceeding anyway...")
 
-    downloaded_this_run = 0
+    downloaded = 0
     skipped = 0
     failed = 0
     deferred = []
@@ -450,24 +590,22 @@ def run(
             out_filename = f"{enemy_key}_{anim_key}.fbx"
             out_path = OUTPUT_DIR / out_filename
 
-            # Already on disk
             if out_path.exists() and out_path.stat().st_size > 1024:
                 skipped += 1
                 continue
 
-            # Already in progress log
             if resume and is_done(progress, enemy_key, anim_key):
                 skipped += 1
                 continue
 
-            # Daily limit guard
-            total_so_far = progress.get("total_today", 0) + downloaded_this_run
+            total_so_far = progress.get("total_today", 0) + downloaded
             if total_so_far >= batch_size:
                 deferred.append(f"{enemy_key}_{anim_key}")
                 continue
 
-            print(f"\n[{downloaded_this_run + 1}/{batch_size}] {enemy_key} / {anim_display} ({mixamo_char_name})")
+            print(f"\n[{downloaded + 1}/{batch_size}] {enemy_key} / {anim_display} ({mixamo_char_name})")
 
+            success = False
             for attempt in range(1, MAX_RETRIES + 1):
                 ok = download_animation(
                     session=session,
@@ -480,28 +618,29 @@ def run(
                 if ok:
                     if not dry_run:
                         mark_done(progress, enemy_key, anim_key)
-                    downloaded_this_run += 1
+                    downloaded += 1
+                    success = True
                     break
                 else:
                     if attempt < MAX_RETRIES:
                         print(f"  [retry {attempt}/{MAX_RETRIES}] Waiting {RATE_LIMIT_WAIT}s...")
                         time.sleep(RATE_LIMIT_WAIT)
-                    else:
-                        mark_failed(progress, enemy_key, anim_key, f"failed after {MAX_RETRIES} attempts")
-                        failed += 1
 
-            if downloaded_this_run > 0 and not dry_run:
+            if not success:
+                mark_failed(progress, enemy_key, anim_key, f"failed after {MAX_RETRIES} attempts")
+                failed += 1
+
+            if downloaded > 0 and not dry_run:
                 time.sleep(WAIT_BETWEEN_DOWNLOADS)
 
-    # Summary
     print("\n" + "=" * 60)
     print("BATCH COMPLETE")
-    print(f"  Downloaded this run : {downloaded_this_run}")
-    print(f"  Skipped (done)      : {skipped}")
-    print(f"  Failed              : {failed}")
-    print(f"  Deferred (limit)    : {len(deferred)}")
+    print(f"  Downloaded this run    : {downloaded}")
+    print(f"  Skipped (already done) : {skipped}")
+    print(f"  Failed                 : {failed}")
+    print(f"  Deferred (limit)       : {len(deferred)}")
     if deferred:
-        print(f"\n  Deferred to next run ({len(deferred)} anims):")
+        print(f"\n  Deferred to next run ({len(deferred)}):")
         for d in deferred:
             print(f"    - {d}")
         print(f"\n  Re-run tomorrow: python3 tools/mixamo/download_anims.py --resume")
@@ -510,10 +649,6 @@ def run(
     progress["deferred"] = deferred
     save_progress(progress)
 
-
-# ---------------------------------------------------------------------------
-# CLI
-# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mixamo humanoid animation batch downloader")

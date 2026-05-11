@@ -22,6 +22,19 @@ namespace CrowdDefense.UI
                     // ── Tower toolbar ──────────────────────────────────────────────
                     ["toolbar.not_enough_gold"] = "Not enough gold",
 
+                    // ── Speed control ──────────────────────────────────────────────
+                    ["hud.speed_label"] = "SPEED",
+
+                    // ── Perk picker ────────────────────────────────────────────────
+                    ["perk.pick_title"] = "Choose a perk",
+                    ["perk.pick_subtitle"] = "Pick 1 of 3 to continue",
+                    ["perk.rarity_common"] = "Common",
+                    ["perk.rarity_rare"] = "Rare",
+                    ["perk.rarity_epic"] = "Epic",
+                    ["perk.rarity_legendary"] = "Legendary",
+                    ["perk.placeholder_name"] = "Unknown Perk",
+                    ["perk.placeholder_desc"] = "No description available.",
+
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "GOLD",
                     ["hud.wave_label"] = "WAVE",
@@ -151,6 +164,19 @@ namespace CrowdDefense.UI
                 {
                     // ── Tower toolbar ──────────────────────────────────────────────
                     ["toolbar.not_enough_gold"] = "Pas assez d'or",
+
+                    // ── Speed control ──────────────────────────────────────────────
+                    ["hud.speed_label"] = "VITESSE",
+
+                    // ── Perk picker ────────────────────────────────────────────────
+                    ["perk.pick_title"] = "Choisir un bonus",
+                    ["perk.pick_subtitle"] = "Choisir 1 parmi 3 pour continuer",
+                    ["perk.rarity_common"] = "Commun",
+                    ["perk.rarity_rare"] = "Rare",
+                    ["perk.rarity_epic"] = "Epique",
+                    ["perk.rarity_legendary"] = "Legendaire",
+                    ["perk.placeholder_name"] = "Bonus inconnu",
+                    ["perk.placeholder_desc"] = "Aucune description disponible.",
 
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "OR",

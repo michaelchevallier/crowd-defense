@@ -64,16 +64,10 @@ namespace CrowdDefense.Systems
             ApplyRunStateToHero();
         }
 
-        private void Update()
+        public void SetGameSpeed(int multiplier)
         {
-            if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                targetSpeed = Mathf.Approximately(targetSpeed, 1f) ? 10f : 1f;
-                ApplyTimeScale();
-#if UNITY_EDITOR
-                Debug.Log($"[LevelRunner] speed cheat → {targetSpeed}x");
-#endif
-            }
+            targetSpeed = Mathf.Clamp(multiplier, 1, 3);
+            ApplyTimeScale();
         }
 
         private void SpawnCastle()
