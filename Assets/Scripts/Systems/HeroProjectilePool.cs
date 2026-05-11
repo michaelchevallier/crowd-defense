@@ -11,6 +11,7 @@ namespace CrowdDefense.Systems
     /// Place on a scene GameObject alongside ProjectilePool.
     /// Assign heroProjectilePrefab — a prefab with HeroProjectile + MeshRenderer (small sphere).
     /// </summary>
+    [DefaultExecutionOrder(-50)]
     public class HeroProjectilePool : MonoSingleton<HeroProjectilePool>
     {
         [SerializeField] private GameObject? heroProjectilePrefab;

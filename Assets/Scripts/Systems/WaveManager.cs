@@ -9,6 +9,7 @@ using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
+    [DefaultExecutionOrder(-50)]
     public class WaveManager : MonoSingleton<WaveManager>
     {
         [SerializeField] private LevelData? levelData;

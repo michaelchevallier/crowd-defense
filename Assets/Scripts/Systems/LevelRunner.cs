@@ -150,14 +150,16 @@ namespace CrowdDefense.Systems
             SpawnTreasureSystem();
             TryPlayOpeningCutscene();
 
-            if (currentLevel != null && PathManager.Instance?.Grid != null)
+            var bounds = default(Bounds);
+            if (PathManager.Instance?.Grid != null)
             {
                 var grid = PathManager.Instance.Grid;
                 float halfW = (grid.Width - 1) / 2f * grid.CellSize;
                 float halfH = (grid.Height - 1) / 2f * grid.CellSize;
-                var bounds = new Bounds(Vector3.zero, new Vector3(halfW * 2f, 100f, halfH * 2f));
-                LevelEvents.RaiseLevelStart(currentLevel, bounds);
+                bounds = new Bounds(Vector3.zero, new Vector3(halfW * 2f, 100f, halfH * 2f));
             }
+            if (currentLevel != null)
+                LevelEvents.RaiseLevelStart(currentLevel, bounds);
 
             TransitionTo(GameState.Lobby);
         }

@@ -12,6 +12,7 @@ namespace CrowdDefense.Systems
     /// Subscribe<T> / Unsubscribe<T> / Publish<T> with handler isolation
     /// (one bad handler never breaks propagation to the rest).
     /// </summary>
+    [DefaultExecutionOrder(-50)]
     public class EventManager : MonoSingleton<EventManager>
     {
         private readonly Dictionary<Type, List<Delegate>> _handlers = new();

@@ -9,6 +9,7 @@ using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
+    [DefaultExecutionOrder(-50)]
     public class EnemyPool : MonoSingleton<EnemyPool>
     {
         [SerializeField] private GameObject? basePrefab;

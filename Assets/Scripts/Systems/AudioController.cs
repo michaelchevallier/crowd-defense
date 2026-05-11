@@ -8,6 +8,7 @@ using UnityEngine.Audio;
 
 namespace CrowdDefense.Systems
 {
+    [DefaultExecutionOrder(-50)]
     public class AudioController : MonoSingleton<AudioController>
     {
         private const int PoolSize = 8;

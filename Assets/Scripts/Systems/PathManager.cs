@@ -16,6 +16,7 @@ namespace CrowdDefense.Systems
         public PathMeta(int portalIdx, int castleIdx) { PortalIdx = portalIdx; CastleIdx = castleIdx; }
     }
 
+    [DefaultExecutionOrder(-100)]
     public class PathManager : MonoSingleton<PathManager>
     {
         [SerializeField] private LevelData? levelData;

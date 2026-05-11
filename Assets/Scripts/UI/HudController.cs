@@ -73,7 +73,16 @@ namespace CrowdDefense.UI
             _doctrineCtrl = GetComponent<DoctrineController>();
             _perkBadges = GetComponent<HudPerkBadges>();
 
+            // Auto-add UI sibling controllers that share the HUD UIDocument (each Qs its own
+            // elements out of HUD.uxml). Idempotent: only added when not already present.
+            EnsureSibling<PauseMenuController>();
+            EnsureSibling<TowerTooltipController>();
+            EnsureSibling<SynergyHudController>();
+            EnsureSibling<FloatingPopupController>();
+            EnsureSibling<RadialMenuController>();
+
             var root = GetComponent<UIDocument>().rootVisualElement;
+            ApplyDeviceClasses(root);
             goldLabel = root.Q<Label>("gold-label");
             goldValue = root.Q<Label>("gold-value");
             waveLabel = root.Q<Label>("wave-label");
@@ -101,7 +110,9 @@ namespace CrowdDefense.UI
             waveLaunchPillText = root.Q<Label>("wave-launch-pill-text");
 
             heroPanel = root.Q<VisualElement>("hero-panel");
+            heroHpLabel = root.Q<Label>("hero-hp-label");
             heroLevelLabel = root.Q<Label>("hero-level");
+            heroXpLabel = root.Q<Label>("hero-xp-label");
             heroXpBarFill = root.Q<VisualElement>("hero-xp-bar-fill");
             heroXpValue = root.Q<Label>("hero-xp-value");
             heroUltLabel = root.Q<Label>("hero-ult-label");

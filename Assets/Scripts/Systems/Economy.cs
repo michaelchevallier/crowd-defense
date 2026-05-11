@@ -6,6 +6,7 @@ using CrowdDefense.Data;
 
 namespace CrowdDefense.Systems
 {
+    [DefaultExecutionOrder(-100)]
     public class Economy : MonoSingleton<Economy>
     {
         public int Gold { get; private set; }

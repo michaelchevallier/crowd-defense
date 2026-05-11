@@ -6,6 +6,8 @@
     <Style src="RadialMenu.uss" />
     <Style src="TutorialOverlay.uss" />
     <Style src="Doctrine.uss" />
+    <Style src="PauseMenu.uss" />
+    <Style src="FloatingPopup.uss" />
     <ui:VisualElement name="hud-root" class="hud-root">
         <!-- Top bar pills -->
         <ui:VisualElement class="top-bar">
@@ -228,6 +230,19 @@
             <ui:Label text="W1-1 clear." name="panel-victory-subtitle" class="overlay-subtitle" />
             <ui:Button text="Rejouer" name="btn-restart-victory" class="overlay-button" />
             <ui:Button text="Retour au menu" name="btn-menu-victory" class="overlay-button overlay-button-secondary" />
+        </ui:VisualElement>
+
+        <!-- Floating popup overlay (FloatingPopupController injects Label children at runtime) -->
+        <ui:VisualElement name="popup-overlay" class="popup-overlay" picking-mode="Ignore" />
+
+        <!-- Pause menu (PauseMenuController toggles via LevelRunner.OnPauseChanged) -->
+        <ui:VisualElement name="pause-root" class="pause-root hidden">
+            <ui:VisualElement class="pause-panel">
+                <ui:Label text="PAUSE" name="pause-title" class="pause-title" />
+                <ui:Button text="Reprendre" name="btn-resume" class="pause-btn" />
+                <ui:Button text="Recommencer" name="btn-restart" class="pause-btn pause-btn-secondary" />
+                <ui:Button text="Menu principal" name="btn-menu" class="pause-btn pause-btn-secondary" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

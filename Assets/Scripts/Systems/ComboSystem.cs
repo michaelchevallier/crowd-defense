@@ -9,6 +9,7 @@ namespace CrowdDefense.Systems
     // On each EnemyKilledEvent: increments kill count, resets window timer.
     // Publishes ComboUpdatedEvent when combo level changes, ComboResetEvent on expiry.
     // Economy listens to ActiveMultiplier to scale coin rewards.
+    [DefaultExecutionOrder(-100)]
     public class ComboSystem : MonoSingleton<ComboSystem>
     {
         public int KillCount { get; private set; }

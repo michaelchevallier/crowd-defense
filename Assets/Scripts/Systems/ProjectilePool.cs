@@ -6,6 +6,7 @@ using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
+    [DefaultExecutionOrder(-50)]
     public class ProjectilePool : MonoSingleton<ProjectilePool>
     {
         [SerializeField] private GameObject? projectilePrefab;
