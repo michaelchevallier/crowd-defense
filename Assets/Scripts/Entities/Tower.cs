@@ -325,10 +325,13 @@ namespace CrowdDefense.Entities
 
             PostUpgradeVisuals(level);
 
-            // Stage B integration hooks (audio + juice + vfx)
-            AudioController.Instance?.Play("tower_upgrade", 0.8f);
-            JuiceFX.Instance?.Flash(new Color(1f, 0.9f, 0.4f, 0.3f), 200);
-            VfxPool.Instance?.SpawnCoinPickup(transform.position);
+            // Upgrade VFX : burst doré + audio + punch scale + popup niveau
+            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 1.5f);
+            AudioController.Instance?.Play3D("tower_upgrade", transform.position);
+            AudioController.Instance?.Play3D("powerup", transform.position);
+            JuiceFX.Instance?.PunchScale(transform, 1.25f, 0.4f);
+            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                $"L{level}!", transform.position + Vector3.up * 2f, Color.cyan);
 
 #if UNITY_EDITOR
             Debug.Log($"[Tower] UpgradeTo L{level} cost={cost} cumul={CumulativeCost} dmgScale={_levelDmgScale:F2} branch={branch}");
