@@ -211,7 +211,19 @@ namespace CrowdDefense.UI
             if (Input.GetKeyDown(KeyCode.Space))
                 TryCastUlt();
 
+            TickBreakPill();
             UpdateHeroPanel();
+        }
+
+        // Per-frame smooth countdown on the pill badge during the skip bonus window
+        private void TickBreakPill()
+        {
+            if (waveLaunchPill == null || waveLaunchPillText == null) return;
+            var wm = WaveManager.Instance;
+            if (wm == null || !wm.IsWaitingForPlayerStart) return;
+            float secondsLeft = wm.SkipWindowSecondsRemaining;
+            if (secondsLeft <= 0f) return;
+            waveLaunchPillText.text = L.Get("hud.pill_skip_text", secondsLeft, Mathf.RoundToInt(wm.StreakCount * 5));
         }
 
         private void UpdateHeroPanel()
