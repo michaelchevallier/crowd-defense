@@ -238,6 +238,64 @@ Référence complète : `docs/decisions/Q1-Q18-arbitrages.md`.
 - `docs/research/R2-04..R2-07` : synergies, difficulty curve, milan audit, perf baseline
 - `docs/research/R3-01..R3-02` : tooling research, portability research (a abouti au pivot Unity)
 
+## 🛠 Backlog tooling autonomie (à setup quand besoin)
+
+Outils non installés pour maximiser autonomie Opus sur génération d'assets (3D / textures / audio / anims). Pas bloquant Phase 2. À setup au trigger correspondant.
+
+### 1. Blender + Blender MCP — **T1**
+
+- **Goal** : modeler towers/enemies low-poly via Python script Blender, export `.glb` auto-import Unity. Remplace les `GameObject.CreatePrimitive()` du POC par real models.
+- **Source** : Blender free + MCP https://github.com/ahujasid/blender-mcp
+- **Install** :
+  ```bash
+  brew install --cask blender
+  uvx blender-mcp  # installs server
+  # + addon Python dans Blender (Preferences > Add-ons > Install from File)
+  # + config ~/.claude.json mcpServers : "blender": { "command": "uvx", "args": ["blender-mcp"] }
+  ```
+- **À faire quand** : démarrage Phase 3 visuels OU première fois qu'on veut un tower visuel non-primitive.
+
+### 2. ComfyUI MCP — **T1**
+
+- **Goal** : wrapper MCP sur le ComfyUI:8188 + Flux Schnell existant pour gen textures via tool call au lieu de bash python.
+- **Source** : https://github.com/joshuajaco/comfy-mcp-server
+- **Install** :
+  ```bash
+  npx -y comfy-mcp-server
+  # + config ~/.claude.json mcpServers : "comfy": { "command": "npx", "args": ["-y", "comfy-mcp-server"], "env": { "COMFYUI_URL": "http://127.0.0.1:8188" } }
+  ```
+- **Pipeline existant** : `python3 /Users/mike/Work/milan project/tools/gen_textures.py` (cf memory `reference_flux_local`).
+- **À faire quand** : besoin de gen textures fréquent (Phase 2 props + terrain, ou Phase 3 polish).
+
+### 3. Hunyuan3D-2 local — **T2**
+
+- **Goal** : image 2D → mesh 3D `.glb`. Pour boss multi-phase visuels + castle decorative.
+- **Source** : https://github.com/Tencent/Hunyuan3D-2 (MPS M1 compatible, ~10 GB model)
+- **Install** :
+  ```bash
+  git clone https://github.com/Tencent/Hunyuan3D-2 ~/tools/Hunyuan3D-2
+  cd ~/tools/Hunyuan3D-2 && uv pip install -r requirements.txt
+  ```
+- **À faire quand** : Phase 3 boss / castle visuels (assets uniques difficiles à modeler manuellement).
+
+### 4. Stable Audio Open — **T2**
+
+- **Goal** : SFX local (tower shoot, enemy death, hit, ambient) sans dépendance cloud.
+- **Source** : https://github.com/Stability-AI/stable-audio-open (MPS, ~3 GB)
+- **Install** :
+  ```bash
+  git clone https://github.com/Stability-AI/stable-audio-open ~/tools/stable-audio-open
+  cd ~/tools/stable-audio-open && uv pip install -r requirements.txt
+  ```
+- **À faire quand** : Phase 3 polish audio sweep. **Alternative zero-install** : packs CC0 Kenney + freesound.org.
+
+### 5. Mixamo auto-downloader — **T3**
+
+- **Goal** : automate fetch d'anims humanoid (walk/run/attack/death) pour enemies Phase 3.
+- **Source** : https://github.com/loveletter/mixamo-auto-downloader (ou fork actif)
+- **Nécessite** : compte Adobe gratuit, login 1× par Mike.
+- **À faire quand** : Phase 3 enemies animés.
+
 ## Open TODOs (transverse)
 
 - [x] Pivot Q18=B acté (2026-05-11)
