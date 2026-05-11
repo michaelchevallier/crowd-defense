@@ -1,6 +1,7 @@
 #nullable enable
 
 using CrowdDefense.Entities;
+using UnityEngine;
 
 namespace CrowdDefense.Common
 {
@@ -37,5 +38,11 @@ namespace CrowdDefense.Common
 
     // Music / audio
     public record LevelThemeChangedEvent(string ThemeName);
-    public record BossEncounteredEvent;
+
+    // Boss lifecycle
+    public record BossEncounteredEvent(string DisplayName, float MaxHp, Color AuraColor);
+    public record BossHpChangedEvent(float Ratio);
+    public record BossPhaseChangedEvent(string PhaseName, int PhaseIdx);
+    public record BossDefeatedEvent(string DisplayName);
+    public record BossChargeWarningEvent;
 }
