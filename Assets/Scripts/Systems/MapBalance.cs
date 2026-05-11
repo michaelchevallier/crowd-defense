@@ -74,17 +74,17 @@ namespace CrowdDefense.Systems
                 ["ai_hub"]           = new(1000,0.4f, 700, isBoss: true),
             };
 
-        public static readonly IReadOnlyDictionary<string, TowerStat> TowerStats =
-            new Dictionary<string, TowerStat>
+        public static readonly IReadOnlyDictionary<TowerId, TowerStat> TowerStats =
+            new Dictionary<TowerId, TowerStat>
             {
-                ["archer"]   = new(30,  3.15f, 8,  antiAir: true),
-                ["tank"]     = new(50,  5.02f, 5,  antiAir: true),
-                ["mage"]     = new(70,  3.68f, 7,  antiAir: true,  aoe: true),
-                ["ballista"] = new(100, 5.89f, 14, antiAir: true),
-                ["cannon"]   = new(100, 5.52f, 9,  aoe: true),
-                ["frost"]    = new(60,  0f,    3,  slow: true),
-                ["crossbow"] = new(140, 6.13f, 16, antiAir: true),
-                ["skyguard"] = new(85, 14.72f, 8,  antiAir: true, antiAirOnly: true),
+                [TowerId.Archer]   = new(30,  3.15f, 8,  antiAir: true),
+                [TowerId.Tank]     = new(50,  5.02f, 5,  antiAir: true),
+                [TowerId.Mage]     = new(70,  3.68f, 7,  antiAir: true,  aoe: true),
+                [TowerId.Ballista] = new(100, 5.89f, 14, antiAir: true),
+                [TowerId.Cannon]   = new(100, 5.52f, 9,  aoe: true),
+                [TowerId.Frost]    = new(60,  0f,    3,  slow: true),
+                [TowerId.Crossbow] = new(140, 6.13f, 16, antiAir: true),
+                [TowerId.Skyguard] = new(85, 14.72f, 8,  antiAir: true, antiAirOnly: true),
             };
 
         public const float SwarmMul = 1.4f;
@@ -316,7 +316,7 @@ namespace CrowdDefense.Systems
                 if (forbidden != null)
                 {
                     bool skip = false;
-                    foreach (var f in forbidden) if (f == kv.Key) { skip = true; break; }
+                    foreach (var f in forbidden) if (TowerIdExtensions.FromKey(f) == kv.Key) { skip = true; break; }
                     if (skip) continue;
                 }
                 list.Add(kv.Value);

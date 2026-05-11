@@ -20,7 +20,7 @@ namespace CrowdDefense.UI
     /// </summary>
     public class RadialMenuController : MonoBehaviour
     {
-        private static readonly string[] SignatureIds = { "archer", "mage", "ballista", "cannon" };
+        private static readonly TowerId[] SignatureIds = { TowerId.Archer, TowerId.Mage, TowerId.Ballista, TowerId.Cannon };
 
         private VisualElement? radialMenu;
         private Label? radialTitle;
@@ -120,7 +120,7 @@ namespace CrowdDefense.UI
             if (cfg == null) { Hide(); return; }
 
             string displayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Id : cfg.DisplayName;
-            bool isSignature = IsSignature(cfg.Id);
+            bool isSignature = IsSignature(TowerIdExtensions.FromKey(cfg.Id));
             int gold = Economy.Instance?.Gold ?? 0;
             var bal = BalanceConfig.Get();
 
@@ -146,8 +146,9 @@ namespace CrowdDefense.UI
                     if (radialTitle != null)
                         radialTitle.text = L.Get("hud.radial_title", displayName);
                     bool canAffordL3 = gold >= l3Cost;
-                    PopulateDpsButton(cfg.Id, l3Cost, canAffordL3);
-                    PopulateUtilityButton(cfg.Id, l3Cost, canAffordL3);
+                    var tid = TowerIdExtensions.FromKey(cfg.Id);
+                    PopulateDpsButton(tid, l3Cost, canAffordL3);
+                    PopulateUtilityButton(tid, l3Cost, canAffordL3);
                     SetVisible(btnDps, true);
                     SetVisible(btnUtility, true);
                     break;
@@ -182,50 +183,50 @@ namespace CrowdDefense.UI
             btnUpgradeL3?.SetEnabled(canAfford);
         }
 
-        private void PopulateDpsButton(string towerId, int cost, bool canAfford)
+        private void PopulateDpsButton(TowerId towerId, int cost, bool canAfford)
         {
             if (btnDpsCost != null) btnDpsCost.text = $"{cost}g";
 
             string labelKey = towerId switch
             {
-                "archer"   => "hud.radial_dps.archer",
-                "mage"     => "hud.radial_dps.mage",
-                "ballista" => "hud.radial_dps.ballista",
-                "cannon"   => "hud.radial_dps.cannon",
-                _          => "hud.radial_branch_dps",
+                TowerId.Archer   => "hud.radial_dps.archer",
+                TowerId.Mage     => "hud.radial_dps.mage",
+                TowerId.Ballista => "hud.radial_dps.ballista",
+                TowerId.Cannon   => "hud.radial_dps.cannon",
+                _                => "hud.radial_branch_dps",
             };
             string hintKey = towerId switch
             {
-                "archer"   => "hud.radial_dps_hint.archer",
-                "mage"     => "hud.radial_dps_hint.mage",
-                "ballista" => "hud.radial_dps_hint.ballista",
-                "cannon"   => "hud.radial_dps_hint.cannon",
-                _          => "hud.radial_dps_hint.default",
+                TowerId.Archer   => "hud.radial_dps_hint.archer",
+                TowerId.Mage     => "hud.radial_dps_hint.mage",
+                TowerId.Ballista => "hud.radial_dps_hint.ballista",
+                TowerId.Cannon   => "hud.radial_dps_hint.cannon",
+                _                => "hud.radial_dps_hint.default",
             };
             if (btnDpsLabel != null) btnDpsLabel.text = L.Get(labelKey);
             if (btnDpsHint != null)  btnDpsHint.text  = L.Get(hintKey);
             btnDps?.SetEnabled(canAfford);
         }
 
-        private void PopulateUtilityButton(string towerId, int cost, bool canAfford)
+        private void PopulateUtilityButton(TowerId towerId, int cost, bool canAfford)
         {
             if (btnUtilityCost != null) btnUtilityCost.text = $"{cost}g";
 
             string labelKey = towerId switch
             {
-                "archer"   => "hud.radial_util.archer",
-                "mage"     => "hud.radial_util.mage",
-                "ballista" => "hud.radial_util.ballista",
-                "cannon"   => "hud.radial_util.cannon",
-                _          => "hud.radial_branch_utility",
+                TowerId.Archer   => "hud.radial_util.archer",
+                TowerId.Mage     => "hud.radial_util.mage",
+                TowerId.Ballista => "hud.radial_util.ballista",
+                TowerId.Cannon   => "hud.radial_util.cannon",
+                _                => "hud.radial_branch_utility",
             };
             string hintKey = towerId switch
             {
-                "archer"   => "hud.radial_util_hint.archer",
-                "mage"     => "hud.radial_util_hint.mage",
-                "ballista" => "hud.radial_util_hint.ballista",
-                "cannon"   => "hud.radial_util_hint.cannon",
-                _          => "hud.radial_util_hint.default",
+                TowerId.Archer   => "hud.radial_util_hint.archer",
+                TowerId.Mage     => "hud.radial_util_hint.mage",
+                TowerId.Ballista => "hud.radial_util_hint.ballista",
+                TowerId.Cannon   => "hud.radial_util_hint.cannon",
+                _                => "hud.radial_util_hint.default",
             };
             if (btnUtilityLabel != null) btnUtilityLabel.text = L.Get(labelKey);
             if (btnUtilityHint != null)  btnUtilityHint.text  = L.Get(hintKey);
@@ -272,7 +273,7 @@ namespace CrowdDefense.UI
             tower.Sell();
         }
 
-        private static bool IsSignature(string id) =>
+        private static bool IsSignature(TowerId id) =>
             System.Array.IndexOf(SignatureIds, id) >= 0;
 
         private static void SetVisible(VisualElement? el, bool visible)

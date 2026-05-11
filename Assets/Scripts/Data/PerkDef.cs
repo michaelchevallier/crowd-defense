@@ -7,6 +7,8 @@ namespace CrowdDefense.Data
     public enum PerkTag      { None, Foudre, Sang, Pierre, Feu, Vide, Or }
     public enum PerkRarity   { Common, Rare, Epic, Legendary }
 
+    public enum School { None, Feu, Givre, Maconnerie }
+
     [CreateAssetMenu(menuName = "CrowdDefense/PerkDef", fileName = "PerkDef")]
     public class PerkDef : ScriptableObject
     {

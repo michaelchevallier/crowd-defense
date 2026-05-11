@@ -9,6 +9,63 @@ namespace CrowdDefense.Data
 
     public enum SynergyType { Aura, CrossEffect, ApplyToEnemy, Passive }
 
+    public enum TowerId
+    {
+        Unknown  = 0,
+        Archer   = 1,
+        Tank     = 2,
+        Mage     = 3,
+        Ballista = 4,
+        Cannon   = 5,
+        Frost    = 6,
+        Crossbow = 7,
+        Skyguard = 8,
+        Mine     = 9,
+        Acid     = 10,
+        Fan      = 11,
+        Portal   = 12,
+        Magnet   = 13,
+    }
+
+    public static class TowerIdExtensions
+    {
+        public static string ToKey(this TowerId id) => id switch
+        {
+            TowerId.Archer   => "archer",
+            TowerId.Tank     => "tank",
+            TowerId.Mage     => "mage",
+            TowerId.Ballista => "ballista",
+            TowerId.Cannon   => "cannon",
+            TowerId.Frost    => "frost",
+            TowerId.Crossbow => "crossbow",
+            TowerId.Skyguard => "skyguard",
+            TowerId.Mine     => "mine",
+            TowerId.Acid     => "acid",
+            TowerId.Fan      => "fan",
+            TowerId.Portal   => "portal",
+            TowerId.Magnet   => "magnet",
+            _                => "unknown",
+        };
+
+        public static TowerId FromKey(string key) => key switch
+        {
+            "archer"   => TowerId.Archer,
+            "tank"     => TowerId.Tank,
+            "mage"     => TowerId.Mage,
+            "ballista" => TowerId.Ballista,
+            "cannon"   => TowerId.Cannon,
+            "frost"    => TowerId.Frost,
+            "crossbow" => TowerId.Crossbow,
+            "skyguard" => TowerId.Skyguard,
+            "mine"     => TowerId.Mine,
+            "acid"     => TowerId.Acid,
+            "fan"      => TowerId.Fan,
+            "portal"   => TowerId.Portal,
+            "magnet"   => TowerId.Magnet,
+            _          => TowerId.Unknown,
+        };
+    }
+
     /// <summary>
     /// Inline sub-structs for complex synergy effects (SlowOnHit, AppliesSlow, PropagateAoE).
     /// Serializable so they appear in the Inspector.

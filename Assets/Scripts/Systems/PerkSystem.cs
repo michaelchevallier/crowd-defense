@@ -57,7 +57,7 @@ namespace CrowdDefense.Systems
         public void ApplyFreeSetBonus(Hero hero, string schoolId)
         {
             if (_registry == null) return;
-            var tag = SchoolToTag(schoolId);
+            var tag = SchoolToTag(ParseSchool(schoolId));
             if (tag == PerkTag.None) return;
             var bonus = _registry.GetBonus(tag);
             if (bonus == null) return;
@@ -250,12 +250,20 @@ namespace CrowdDefense.Systems
             return counts;
         }
 
-        private static PerkTag SchoolToTag(string schoolId) => schoolId switch
+        private static School ParseSchool(string schoolId) => schoolId switch
         {
-            "feu"        => PerkTag.Feu,
-            "givre"      => PerkTag.Vide,
-            "maconnerie" => PerkTag.Pierre,
-            _            => PerkTag.None,
+            "feu"        => School.Feu,
+            "givre"      => School.Givre,
+            "maconnerie" => School.Maconnerie,
+            _            => School.None,
+        };
+
+        private static PerkTag SchoolToTag(School school) => school switch
+        {
+            School.Feu        => PerkTag.Feu,
+            School.Givre      => PerkTag.Vide,
+            School.Maconnerie => PerkTag.Pierre,
+            _                 => PerkTag.None,
         };
 
         private static void FisherYates<T>(List<T> list)
