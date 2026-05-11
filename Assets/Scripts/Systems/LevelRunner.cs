@@ -31,6 +31,8 @@ namespace CrowdDefense.Systems
 
         public event Action<GameState>? OnStateChanged;
         public event Action<int, int>? OnTotalHPChanged;
+        // Fired on level victory before state transitions — subscribe to show perk picker.
+        public event Action? OnLevelComplete;
 
         private float targetSpeed = 1f;
         private Vector3 _castleWorldPos;
@@ -218,6 +220,7 @@ namespace CrowdDefense.Systems
             JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.4f), 500);
             JuiceFX.Instance?.SlowMo(0.5f, 1200);
 
+            OnLevelComplete?.Invoke();
             SetState(GameState.Victory);
         }
 
