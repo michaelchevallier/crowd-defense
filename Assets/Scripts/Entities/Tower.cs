@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Common;
@@ -130,6 +131,16 @@ namespace CrowdDefense.Entities
         // Child GO holding the spawned GLTF mesh (null = using placeholder primitives)
         private GameObject? _meshChild;
 
+        // Child GO for the turret head — rotated toward target in Update.
+        // Inspector-assignable; falls back to auto-discovery of a child named "Head" or "Turret".
+        [SerializeField] private GameObject? _meshHead;
+
+        // Barrel tip transform for muzzle flash position — child named "BarrelTip" if present.
+        private Transform? _barrelTip;
+
+        // Recoil state — prevents TickIdleAnim from overriding during recoil.
+        private bool _recoiling;
+
         public void Init(TowerType type, GameObject? projPrefab)
         {
             cfg = type;
@@ -189,6 +200,17 @@ namespace CrowdDefense.Entities
 
             // Animations Mechanim : Idle uniquement pour les tours (pas de Walk, rotation vers cible = code).
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", null);
+
+            // Auto-discover turret head + barrel tip from GLTF hierarchy.
+            // Inspector assignment of _meshHead takes priority.
+            if (_meshHead == null && _meshChild != null)
+            {
+                _meshHead = FindChildNamed(_meshChild.transform, "Head")
+                         ?? FindChildNamed(_meshChild.transform, "Turret");
+            }
+            _barrelTip = _meshHead != null
+                ? FindChildNamed(_meshHead.transform, "BarrelTip")
+                : (_meshChild != null ? FindChildNamed(_meshChild.transform, "BarrelTip") : null);
 
             BuildRangeRing(type.Range);
             BuildSynergyHalo();
@@ -466,6 +488,7 @@ namespace CrowdDefense.Entities
             if (cfg == null) return;
 
             TickIdleAnim();
+            TickHeadAim();
 
             // L3 Tank DoT aura — continuous damage to enemies in radius (V5 _tankBlockAura)
             if (L3TankBlockAura) TickTankBlockAura();
@@ -621,9 +644,14 @@ namespace CrowdDefense.Entities
 
             // Stage B integration hooks (audio + juice + vfx + anim)
             AudioController.Instance?.Play("tower_shoot", 0.55f);
+            AudioController.Instance?.Play("tower_fire", 0.60f);
             JuiceFX.Instance?.Shake(0.05f, 100);
-            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 0.5f, cfg.ProjectileColor);
+            Vector3 muzzlePos = _barrelTip != null
+                ? _barrelTip.position
+                : transform.position + Vector3.up * 0.5f;
+            VfxPool.Instance?.SpawnImpact(muzzlePos, cfg.ProjectileColor);
             if (_animator != null) _animator.SetTrigger("attackTrigger");
+            if (!_recoiling) StartCoroutine(RecoilRoutine());
             _lastFireAt = Time.time;
 
             // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
@@ -873,6 +901,61 @@ namespace CrowdDefense.Entities
             var baseColor = new Color(1f, 0.82f, 0.15f, nextAlpha);
             _haloMpb.SetColor(_haloColorId, baseColor);
             _synergyHaloRenderer.SetPropertyBlock(_haloMpb);
+        }
+
+        // ── Head Aim ──────────────────────────────────────────────────────────
+
+        // Smoothly rotates _meshHead toward the current target each frame (Y-axis only).
+        private void TickHeadAim()
+        {
+            if (_meshHead == null || target == null || target.IsDead) return;
+            Vector3 dir = target.transform.position - _meshHead.transform.position;
+            dir.y = 0f;
+            if (dir.sqrMagnitude < 0.001f) return;
+            Quaternion desired = Quaternion.LookRotation(dir);
+            _meshHead.transform.rotation = Quaternion.Slerp(
+                _meshHead.transform.rotation, desired, Time.deltaTime * 10f);
+        }
+
+        // Lerp head -0.5 local-Z then back to 0 for a snap recoil feel.
+        private IEnumerator RecoilRoutine()
+        {
+            _recoiling = true;
+            if (_meshHead == null) { _recoiling = false; yield break; }
+
+            Vector3 origin = _meshHead.transform.localPosition;
+            Vector3 back   = origin + _meshHead.transform.localRotation * new Vector3(0f, 0f, -0.5f);
+
+            float t = 0f;
+            while (t < 1f)
+            {
+                t = Mathf.Min(t + Time.deltaTime / 0.06f, 1f);
+                _meshHead.transform.localPosition = Vector3.Lerp(origin, back, t);
+                yield return null;
+            }
+            t = 0f;
+            while (t < 1f)
+            {
+                t = Mathf.Min(t + Time.deltaTime / 0.12f, 1f);
+                _meshHead.transform.localPosition = Vector3.Lerp(back, origin, t);
+                yield return null;
+            }
+            _meshHead.transform.localPosition = origin;
+            _recoiling = false;
+        }
+
+        // ── Utility ───────────────────────────────────────────────────────────
+
+        private static GameObject? FindChildNamed(Transform parent, string childName)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                var child = parent.GetChild(i);
+                if (child.name == childName) return child.gameObject;
+                var found = FindChildNamed(child, childName);
+                if (found != null) return found;
+            }
+            return null;
         }
 
         // ── Fire Angled ───────────────────────────────────────────────────────
