@@ -360,13 +360,13 @@ namespace CrowdDefense.Visual
 
         private static Material BuildAdditiveMaterial()
         {
+            // Hidden/InternalErrorShader is always present in Unity — safe terminal fallback.
             var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
                       ?? Shader.Find("Particles/Standard Unlit")
-                      ?? Shader.Find("Sprites/Default");
-            var mat = new Material(shader != null ? shader : Shader.Find("Standard")!)
-            {
-                name = "VfxParticle_Additive"
-            };
+                      ?? Shader.Find("Sprites/Default")
+                      ?? Shader.Find("Standard")
+                      ?? Shader.Find("Hidden/InternalErrorShader")!;
+            var mat = new Material(shader) { name = "VfxParticle_Additive" };
             mat.SetFloat("_Surface", 1f);
             mat.SetFloat("_Blend", 3f);
             mat.SetInt("_ZWrite", 0);
