@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using CrowdDefense.Common;
+using CrowdDefense.Data;
 using UnityEngine;
 
 namespace CrowdDefense.Systems
@@ -8,7 +9,11 @@ namespace CrowdDefense.Systems
     [DefaultExecutionOrder(50)]
     public class MapRenderer : MonoBehaviour
     {
-        private static readonly Dictionary<char, Material> _matCache = new();
+        // Per-char cache keyed by (char, theme) so animated mats are theme-specific.
+        private static readonly Dictionary<(char, LevelTheme), Material> _matCache = new();
+
+        // Theme resolved from LevelRunner at Start — default Plaine if not available.
+        private LevelTheme _theme = LevelTheme.Plaine;
 
         private void Start()
         {
@@ -20,6 +25,11 @@ namespace CrowdDefense.Systems
 #endif
                 return;
             }
+
+            // Resolve current theme from active LevelRunner if available
+            var lr = LevelRunner.Instance;
+            if (lr?.CurrentLevel != null)
+                _theme = lr.CurrentLevel.LevelTheme;
 
             var grid = pm.Grid;
             for (int r = 0; r < grid.Height; r++)
@@ -42,24 +52,56 @@ namespace CrowdDefense.Systems
                     var col = slab.GetComponent<Collider>();
                     if (col != null) Destroy(col);
 
-                    slab.GetComponent<MeshRenderer>().sharedMaterial = GetMat(ch);
+                    slab.GetComponent<MeshRenderer>().sharedMaterial = GetMat(ch, _theme);
                 }
             }
 
 #if UNITY_EDITOR
-            Debug.Log($"[MapRenderer] Spawned slabs for {grid.Width}x{grid.Height} grid");
+            Debug.Log($"[MapRenderer] Spawned slabs for {grid.Width}x{grid.Height} grid, theme={_theme}");
 #endif
         }
 
-        private static Material GetMat(char ch)
+        private static Material GetMat(char ch, LevelTheme theme)
         {
-            if (!_matCache.TryGetValue(ch, out var m))
+            var key = (ch, theme);
+            if (!_matCache.TryGetValue(key, out var m))
             {
-                m = new Material(ShaderUtil.GetLitShader());
-                m.color = CellColor(ch);
-                _matCache[ch] = m;
+                m = BuildMaterial(ch, theme);
+                _matCache[key] = m;
             }
             return m;
+        }
+
+        // Returns animated toon material for special cells, plain color for rest.
+        private static Material BuildMaterial(char ch, LevelTheme theme)
+        {
+            var config = LevelThemeMaterialConfig.Get();
+
+            if (ch == GridCoords.WATER)
+            {
+                var mat = config?.GetWaterMat(theme);
+                if (mat != null) return mat;
+            }
+            else if (ch == GridCoords.LAVA)
+            {
+                var mat = config?.GetLavaMat(theme);
+                if (mat != null) return mat;
+            }
+
+            // Snow theme — static cells get snow material
+            if (theme == LevelTheme.Espace || theme == LevelTheme.Medieval)
+            {
+                if (ch == GridCoords.GRASS || ch == GridCoords.GRASS_BLOCK)
+                {
+                    var snowMat = Resources.Load<Material>("Materials/Toon_Snow");
+                    if (snowMat != null) return snowMat;
+                }
+            }
+
+            // Default: plain-color material using Toon_Lit shader
+            var fallback = new Material(ShaderUtil.GetToonShader());
+            fallback.SetColor("_BaseColor", CellColor(ch));
+            return fallback;
         }
 
         private static Color CellColor(char ch) => ch switch
