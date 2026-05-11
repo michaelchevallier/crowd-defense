@@ -20,19 +20,42 @@ namespace CrowdDefense.Systems
         [SerializeField] private GameObject? ringPrefab;
         [SerializeField] private Light?      channelLight;
 
+        private const string PrefEnabled = "cd.bluepill.enabled";
+        private const string PrefKills   = "cd.bluepill.kills";
+        private const string PrefUses    = "cd.bluepill.uses";
+
         public bool IsChanneling { get; private set; }
+        public bool IsEnabled    { get; private set; }
+
+        // Read-only stats backed by PlayerPrefs
+        public static int StoredKills => PlayerPrefs.GetInt(PrefKills, 0);
+        public static int StoredUses  => PlayerPrefs.GetInt(PrefUses,  0);
 
         private float _elapsed;
         private float _lastRingAt;
         private float _lastSparkleAt;
         private Transform? _heroTransform;
 
+        protected override void OnAwakeSingleton()
+        {
+            IsEnabled = PlayerPrefs.GetInt(PrefEnabled, 0) == 1;
+        }
+
         // ---------------------------------------------------------------
-        // Public API (called from Hero input layer)
+        // Public API (called from Hero input layer / UI)
         // ---------------------------------------------------------------
+
+        public void Enable(bool value)
+        {
+            IsEnabled = value;
+            PlayerPrefs.SetInt(PrefEnabled, value ? 1 : 0);
+            PlayerPrefs.Save();
+            if (!value) CancelChannel();
+        }
 
         public void StartChannel(Transform heroTransform)
         {
+            if (!IsEnabled) return;
             if (IsChanneling) return;
             if (!AnyCastleAlive()) return;
 
@@ -119,6 +142,9 @@ namespace CrowdDefense.Systems
             Vector3 dest = castlePos + dir * 3.5f;
             dest.y = _heroTransform.position.y;
             _heroTransform.position = dest;
+
+            PlayerPrefs.SetInt(PrefUses, PlayerPrefs.GetInt(PrefUses, 0) + 1);
+            PlayerPrefs.Save();
 
             AudioController.Instance?.Play("level_up");
         }

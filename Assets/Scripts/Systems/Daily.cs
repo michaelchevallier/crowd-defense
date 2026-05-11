@@ -26,6 +26,12 @@ namespace CrowdDefense.Systems
         // Public API
         // ---------------------------------------------------------------
 
+        public static int GetDailySeed(DateTime? utcDate = null)
+        {
+            var d = utcDate ?? DateTime.UtcNow;
+            return d.Year * 10000 + d.Month * 100 + d.Day;
+        }
+
         public static string GetDateKey(DateTime? utcDate = null)
         {
             var d = utcDate ?? DateTime.UtcNow;
