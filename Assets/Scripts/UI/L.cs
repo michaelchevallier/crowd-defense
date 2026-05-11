@@ -177,6 +177,9 @@ namespace CrowdDefense.UI
                     ["doctrine.btn_active"] = "Active",
                     ["doctrine.cost_label"] = "{0} gems",
                     ["doctrine.hud_btn"] = "Doctrines",
+
+                    // ── Achievement toast ───────────────────────────────────────────
+                    ["achievement.toast_header"] = "ACHIEVEMENT UNLOCKED",
                 },
                 ["fr"] = new()
                 {
@@ -338,6 +341,9 @@ namespace CrowdDefense.UI
                     ["doctrine.btn_active"] = "Active",
                     ["doctrine.cost_label"] = "{0} gemmes",
                     ["doctrine.hud_btn"] = "Doctrines",
+
+                    // ── Achievement toast ───────────────────────────────────────────
+                    ["achievement.toast_header"] = "SUCCES DEBLOQUE",
                 },
             },
 

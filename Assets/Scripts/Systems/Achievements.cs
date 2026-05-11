@@ -62,8 +62,7 @@ namespace CrowdDefense.Systems
 
             AudioController.Instance?.Play("achievement");
 
-            // TODO Phase 5.B: show toast notification UI (AchievementToastController.Show(id))
-
+            // AchievementToastController subscribes to OnUnlocked and renders the toast.
             OnUnlocked?.Invoke(id);
         }
 
