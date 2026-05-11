@@ -79,13 +79,13 @@ namespace CrowdDefense.Systems
 
             if (ch == GridCoords.WATER)
             {
-                var mat = config?.GetWaterMat(theme);
-                if (mat != null) return mat;
+                var waterMat = config?.GetWaterMat(theme);
+                if (waterMat != null) return waterMat;
             }
             else if (ch == GridCoords.LAVA)
             {
-                var mat = config?.GetLavaMat(theme);
-                if (mat != null) return mat;
+                var lavaMat = config?.GetLavaMat(theme);
+                if (lavaMat != null) return lavaMat;
             }
 
             // Snow theme — static cells get snow material
@@ -98,7 +98,17 @@ namespace CrowdDefense.Systems
                 }
             }
 
-            // Default: plain-color material using Toon_Lit shader
+            // Default: load pre-built Toon_Default material, apply color tint
+            var mat = Resources.Load<Material>("Materials/Toon_Default");
+            if (mat != null)
+            {
+                // Clone to avoid modifying the source asset
+                mat = new Material(mat);
+                mat.SetColor("_BaseColor", CellColor(ch));
+                return mat;
+            }
+
+            // Fallback if Toon_Default not found: create new material with shader
             var fallback = new Material(ShaderUtil.GetToonShader());
             fallback.SetColor("_BaseColor", CellColor(ch));
             fallback.enableInstancing = true;
