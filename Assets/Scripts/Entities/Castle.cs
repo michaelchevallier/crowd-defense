@@ -25,6 +25,16 @@ namespace CrowdDefense.Entities
         private float _dmgTakenMul        = 1f;
         private float _dmgTakenMulUntil   = 0f;
 
+        // Damage state meshes (assign in Inspector; null = no swap)
+        [SerializeField] private Mesh? _meshIntact;   // 100–66 %
+        [SerializeField] private Mesh? _meshCracked;  // 66–33 %
+        [SerializeField] private Mesh? _meshRuined;   // < 33 %
+
+        private MeshFilter?   _meshFilter;
+        private DamageStage   _currentStage = DamageStage.Intact;
+
+        private enum DamageStage { Intact, Cracked, Ruined }
+
         // Visual state
         private bool          _smokeActive;
         private Coroutine?    _smokeCoroutine;
@@ -41,6 +51,7 @@ namespace CrowdDefense.Entities
         {
             HP = HPMax = hp;
             _world = world;
+            _meshFilter = GetComponentInChildren<MeshFilter>();
 
             if (PathManager.Instance?.Grid != null)
             {
@@ -182,6 +193,7 @@ namespace CrowdDefense.Entities
             OnHPChanged?.Invoke(HP, HPMax);
 
             RefreshHpBar();
+            RefreshDamageMesh();
             UpdateTint();
             TriggerHitVfx();
 
@@ -228,6 +240,24 @@ namespace CrowdDefense.Entities
         }
 
         // ── Visual helpers ──────────────────────────────────────────────────────
+
+        private void RefreshDamageMesh()
+        {
+            if (_meshFilter == null) return;
+            float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
+            DamageStage stage = ratio > 0.66f ? DamageStage.Intact
+                              : ratio > 0.33f ? DamageStage.Cracked
+                              :                 DamageStage.Ruined;
+            if (stage == _currentStage) return;
+            _currentStage = stage;
+            Mesh? next = stage switch
+            {
+                DamageStage.Cracked => _meshCracked,
+                DamageStage.Ruined  => _meshRuined,
+                _                   => _meshIntact,
+            };
+            if (next != null) _meshFilter.sharedMesh = next;
+        }
 
         // Red tint on all child renderers when HP < 30 %
         private void UpdateTint()
