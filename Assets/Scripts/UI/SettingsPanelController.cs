@@ -30,9 +30,38 @@ namespace CrowdDefense.UI
         private DropdownField? _langDropdown;
         private Button? _closeBtn;
 
-        private static readonly List<string> QualityChoices = new() { "Mobile", "Desktop", "High" };
-        private static readonly List<string> LangChoices = new() { "English", "Français" };
+        // Section title label refs for locale refresh
+        private Label? _settingsTitleLabel;
+        private Label? _audioSectionLabel;
+        private Label? _masterLabel;
+        private Label? _sfxLabel;
+        private Label? _musicLabel;
+        private Label? _muteLabel;
+        private Label? _gfxSectionLabel;
+        private Label? _qualityLabel;
+        private Label? _vfxLabel;
+        private Label? _shakeLabel;
+        private Label? _a11ySectionLabel;
+        private Label? _colorblindLabel;
+        private Label? _reduceMotionLabel;
+        private Label? _largeTextLabel;
+        private Label? _langSectionLabel;
+        private Label? _langLabel;
+
         private static readonly string[] LangCodes = { "en", "fr" };
+
+        // Built at runtime so locale changes are reflected
+        private List<string> QualityChoices => new()
+        {
+            L.Get("settings.quality_mobile"),
+            L.Get("settings.quality_desktop"),
+            L.Get("settings.quality_high"),
+        };
+        private List<string> LangChoices => new()
+        {
+            L.Get("settings.lang_en"),
+            L.Get("settings.lang_fr"),
+        };
 
         private bool _suppressEvents;
 
@@ -60,6 +89,23 @@ namespace CrowdDefense.UI
             _langDropdown = _root.Q<DropdownField>("lang-dropdown");
             _closeBtn = _root.Q<Button>("settings-close-btn");
 
+            _settingsTitleLabel  = _root.Q<Label>("settings-title");
+            _audioSectionLabel   = _root.Q<Label>("audio-section-title");
+            _masterLabel         = _root.Q<Label>("master-label");
+            _sfxLabel            = _root.Q<Label>("sfx-label");
+            _musicLabel          = _root.Q<Label>("music-label");
+            _muteLabel           = _root.Q<Label>("mute-label");
+            _gfxSectionLabel     = _root.Q<Label>("gfx-section-title");
+            _qualityLabel        = _root.Q<Label>("quality-label");
+            _vfxLabel            = _root.Q<Label>("vfx-label");
+            _shakeLabel          = _root.Q<Label>("shake-label");
+            _a11ySectionLabel    = _root.Q<Label>("a11y-section-title");
+            _colorblindLabel     = _root.Q<Label>("colorblind-label");
+            _reduceMotionLabel   = _root.Q<Label>("reduce-motion-label");
+            _largeTextLabel      = _root.Q<Label>("large-text-label");
+            _langSectionLabel    = _root.Q<Label>("lang-section-title");
+            _langLabel           = _root.Q<Label>("lang-label");
+
             if (_qualityDropdown != null)
             {
                 _qualityDropdown.choices = QualityChoices;
@@ -69,6 +115,8 @@ namespace CrowdDefense.UI
                 _langDropdown.choices = LangChoices;
             }
 
+            ApplyLocalizedTexts();
+            L.OnLocaleChanged += ApplyLocalizedTexts;
             BindCallbacks();
             SyncFromRegistry();
         }
@@ -83,6 +131,35 @@ namespace CrowdDefense.UI
         {
             if (SettingsRegistry.Instance != null)
                 SettingsRegistry.Instance.OnSettingsChanged -= SyncFromRegistry;
+        }
+
+        private void OnDestroy()
+        {
+            L.OnLocaleChanged -= ApplyLocalizedTexts;
+        }
+
+        private void ApplyLocalizedTexts()
+        {
+            if (_settingsTitleLabel != null)  _settingsTitleLabel.text  = L.Get("settings.title");
+            if (_audioSectionLabel != null)   _audioSectionLabel.text   = L.Get("settings.audio_section");
+            if (_masterLabel != null)         _masterLabel.text         = L.Get("settings.master");
+            if (_sfxLabel != null)            _sfxLabel.text            = L.Get("settings.sfx");
+            if (_musicLabel != null)          _musicLabel.text          = L.Get("settings.music");
+            if (_muteLabel != null)           _muteLabel.text           = L.Get("settings.mute");
+            if (_gfxSectionLabel != null)     _gfxSectionLabel.text     = L.Get("settings.gfx_section");
+            if (_qualityLabel != null)        _qualityLabel.text        = L.Get("settings.quality");
+            if (_vfxLabel != null)            _vfxLabel.text            = L.Get("settings.vfx");
+            if (_shakeLabel != null)          _shakeLabel.text          = L.Get("settings.shake");
+            if (_a11ySectionLabel != null)    _a11ySectionLabel.text    = L.Get("settings.a11y_section");
+            if (_colorblindLabel != null)     _colorblindLabel.text     = L.Get("settings.colorblind");
+            if (_reduceMotionLabel != null)   _reduceMotionLabel.text   = L.Get("settings.reduce_motion");
+            if (_largeTextLabel != null)      _largeTextLabel.text      = L.Get("settings.large_text");
+            if (_langSectionLabel != null)    _langSectionLabel.text    = L.Get("settings.lang_section");
+            if (_langLabel != null)           _langLabel.text           = L.Get("settings.lang_label");
+            if (_closeBtn != null)            _closeBtn.text            = L.Get("settings.close");
+
+            if (_qualityDropdown != null) _qualityDropdown.choices = QualityChoices;
+            if (_langDropdown != null)    _langDropdown.choices    = LangChoices;
         }
 
         private void BindCallbacks()

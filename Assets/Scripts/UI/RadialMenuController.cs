@@ -91,7 +91,7 @@ namespace CrowdDefense.UI
             string displayName = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Id : cfg.DisplayName;
 
             if (radialTitle != null)
-                radialTitle.text = $"{displayName}  L2  — Choisir L3 (irreversible sauf vente)";
+                radialTitle.text = L.Get("hud.radial_title", displayName);
 
             int l3Cost = Mathf.RoundToInt(cfg.Cost * BalanceConfig.Get().UpgradeMulL3);
             int gold = Economy.Instance?.Gold ?? 0;
@@ -102,7 +102,7 @@ namespace CrowdDefense.UI
 
             int refund = Mathf.RoundToInt(tower.CumulativeCost * BalanceConfig.Get().SellRefundRatio);
             if (btnSellLabel != null)
-                btnSellLabel.text = $"Vendre +{refund}g";
+                btnSellLabel.text = L.Get("hud.radial_sell", refund);
 
             Show();
         }
@@ -111,24 +111,24 @@ namespace CrowdDefense.UI
         {
             if (btnDpsCost != null) btnDpsCost.text = $"{cost}g";
 
-            string label = towerId switch
+            string labelKey = towerId switch
             {
-                "archer"   => "Sniper",
-                "mage"     => "Arcane",
-                "ballista" => "Pierce inf.",
-                "cannon"   => "Mega Shell",
-                _          => "DPS",
+                "archer"   => "hud.radial_dps.archer",
+                "mage"     => "hud.radial_dps.mage",
+                "ballista" => "hud.radial_dps.ballista",
+                "cannon"   => "hud.radial_dps.cannon",
+                _          => "hud.radial_branch_dps",
             };
-            string hint = towerId switch
+            string hintKey = towerId switch
             {
-                "archer"   => "x3 dmg, cadence /2",
-                "mage"     => "x2.5 dmg, slow 30%",
-                "ballista" => "x2.5 dmg, pierce 99",
-                "cannon"   => "x3 dmg, slow 50%",
-                _          => "+DPS pur",
+                "archer"   => "hud.radial_dps_hint.archer",
+                "mage"     => "hud.radial_dps_hint.mage",
+                "ballista" => "hud.radial_dps_hint.ballista",
+                "cannon"   => "hud.radial_dps_hint.cannon",
+                _          => "hud.radial_dps_hint.default",
             };
-            if (btnDpsLabel != null) btnDpsLabel.text = label;
-            if (btnDpsHint != null)  btnDpsHint.text = hint;
+            if (btnDpsLabel != null) btnDpsLabel.text = L.Get(labelKey);
+            if (btnDpsHint != null)  btnDpsHint.text = L.Get(hintKey);
 
             if (btnDps != null)
             {
@@ -140,24 +140,24 @@ namespace CrowdDefense.UI
         {
             if (btnUtilityCost != null) btnUtilityCost.text = $"{cost}g";
 
-            string label = towerId switch
+            string labelKey = towerId switch
             {
-                "archer"   => "Pluie",
-                "mage"     => "Boule de feu",
-                "ballista" => "Explosion",
-                "cannon"   => "Shotgun",
-                _          => "Utility",
+                "archer"   => "hud.radial_util.archer",
+                "mage"     => "hud.radial_util.mage",
+                "ballista" => "hud.radial_util.ballista",
+                "cannon"   => "hud.radial_util.cannon",
+                _          => "hud.radial_branch_utility",
             };
-            string hint = towerId switch
+            string hintKey = towerId switch
             {
-                "archer"   => "multiShot 2, AOE 3",
-                "mage"     => "AOE 4, burn DOT 3s",
-                "ballista" => "AOE 5, knockback",
-                "cannon"   => "5 projectiles, AOE 2",
-                _          => "+AOE crowd",
+                "archer"   => "hud.radial_util_hint.archer",
+                "mage"     => "hud.radial_util_hint.mage",
+                "ballista" => "hud.radial_util_hint.ballista",
+                "cannon"   => "hud.radial_util_hint.cannon",
+                _          => "hud.radial_util_hint.default",
             };
-            if (btnUtilityLabel != null) btnUtilityLabel.text = label;
-            if (btnUtilityHint != null)  btnUtilityHint.text = hint;
+            if (btnUtilityLabel != null) btnUtilityLabel.text = L.Get(labelKey);
+            if (btnUtilityHint != null)  btnUtilityHint.text = L.Get(hintKey);
 
             if (btnUtility != null)
             {
