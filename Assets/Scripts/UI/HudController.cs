@@ -298,12 +298,13 @@ namespace CrowdDefense.UI
 
         private void OnStateChanged(GameState state)
         {
-            if (panelGameOver != null) SetVisible(panelGameOver, state == GameState.GameOver);
-            if (panelVictory != null) SetVisible(panelVictory, state == GameState.Victory);
-            // Hide wave button on game over / victory
-            if (state != GameState.Play)
+            if (panelGameOver != null) SetVisible(panelGameOver, state == GameState.Lost);
+            if (panelVictory != null)  SetVisible(panelVictory,  state == GameState.LevelComplete || state == GameState.Summary);
+            // Hide wave launch controls whenever play is over
+            bool playActive = state == GameState.WaveActive || state == GameState.WaveBreak || state == GameState.Lobby;
+            if (!playActive)
             {
-                if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
+                if (waveLaunchBtn != null)  SetVisible(waveLaunchBtn,  false);
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
             }
         }

@@ -67,7 +67,9 @@ namespace CrowdDefense.UI
 
         private void SetSpeed(int speed)
         {
-            if (LevelRunner.Instance?.State != GameState.Play) return;
+            var state = LevelRunner.Instance?.State;
+            bool playable = state == GameState.Lobby || state == GameState.WaveActive || state == GameState.WaveBreak;
+            if (!playable) return;
             ApplySpeed(speed, persist: true);
         }
 
