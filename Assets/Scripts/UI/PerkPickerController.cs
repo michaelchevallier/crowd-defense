@@ -56,7 +56,7 @@ namespace CrowdDefense.UI
         }
 
         private void HandleLevelComplete() =>
-            ShowAndWait(() => LevelLoader.LoadNextOrMenu());
+            ShowAndWait(() => LevelLoader.GoToWorldMap());
 
         // Called by LevelRunner (or HudController) on victory to show the picker.
         // onDone fires after a card is selected.
