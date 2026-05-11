@@ -3,6 +3,7 @@ using System;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.UI;
 
 namespace CrowdDefense.Systems
 {
@@ -47,6 +48,7 @@ namespace CrowdDefense.Systems
 
             ActiveDoctrine = def;
             OnDoctrineChanged?.Invoke(ActiveDoctrine);
+            Toast.Show("Doctrine Activated", def.displayName, 3000, def.iconEmoji);
             return true;
         }
 
