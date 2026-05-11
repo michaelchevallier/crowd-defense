@@ -27,10 +27,14 @@ namespace CrowdDefense.Entities
         private int piercesRemaining;
         private readonly HashSet<Enemy> alreadyHit = new();
 
+        // AoE radius (Mage / Cannon / Mine)
+        private float aoe;
+
         // Called once by ProjectilePool after Instantiate to back-link the pool
         public void SetPool(ProjectilePool p) => pool = p;
 
         /// <param name="pierce">Number of additional enemies the projectile pierces (0 = no pierce).</param>
+        /// <param name="aoeRadius">Radius for area-of-effect damage on impact (0 = single target).</param>
         /// <param name="isParabolic">True = quadratic Bezier arc (Cannon).</param>
         /// <param name="flightDur">Total flight time in seconds (parabolic only).</param>
         /// <param name="arcH">Arc peak height offset above midpoint (parabolic only).</param>
@@ -40,6 +44,7 @@ namespace CrowdDefense.Entities
             float speed,
             Color color,
             int pierce = 0,
+            float aoeRadius = 0f,
             bool isParabolic = false,
             float flightDur = 0f,
             float arcH = 0f)
@@ -51,6 +56,7 @@ namespace CrowdDefense.Entities
 
             piercesRemaining = pierce;
             alreadyHit.Clear();
+            aoe = aoeRadius;
 
             parabolic = isParabolic;
             startPosition = transform.position;
@@ -111,7 +117,9 @@ namespace CrowdDefense.Entities
         {
             if (target == null) { ReleaseToPool(); return; }
 
-            if (!alreadyHit.Contains(target))
+            if (aoe > 0f)
+                ApplyAoeDamage();
+            else if (!alreadyHit.Contains(target))
                 target.TakeDamage(damage);
 
             if (piercesRemaining > 0)
@@ -136,6 +144,20 @@ namespace CrowdDefense.Entities
             }
 
             ReleaseToPool();
+        }
+
+        private void ApplyAoeDamage()
+        {
+            if (WaveManager.Instance == null) return;
+            float aoeSq = aoe * aoe;
+            var enemies = WaveManager.Instance.ActiveEnemies;
+            for (int i = 0; i < enemies.Count; i++)
+            {
+                var e = enemies[i];
+                if (e == null || e.IsDead) continue;
+                if ((e.transform.position - transform.position).sqrMagnitude <= aoeSq)
+                    e.TakeDamage(damage);
+            }
         }
 
         private Enemy? FindNextPierceTarget()

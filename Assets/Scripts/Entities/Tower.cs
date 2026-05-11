@@ -457,6 +457,8 @@ namespace CrowdDefense.Entities
 
             // Pierce : L3Pierce overrides cfg.Pierce ; add _pierceBonus from synergy
             int effectivePierce = L3Pierce > 0 ? L3Pierce : cfg.Pierce + _pierceBonus;
+            // AoE : L3Aoe > 0 overrides cfg.Aoe
+            float effectiveAoe = L3Aoe > 0f ? L3Aoe : cfg.Aoe;
 
             // Parabolic arc parameters (Cannon)
             float dist = (t.transform.position - (transform.position + Vector3.up * 1.0f)).magnitude;
@@ -467,7 +469,7 @@ namespace CrowdDefense.Entities
             proj.transform.position = transform.position + Vector3.up * 1.0f;
             proj.transform.rotation = Quaternion.identity;
             proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
-                effectivePierce, cfg.Parabolic, flightDur, arcH);
+                effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH);
 
             // Extra projectiles : synergy _multiShotBonus + L3MultiShot (cumulatifs)
             int extraShots = _multiShotBonus + L3MultiShot;
@@ -482,7 +484,7 @@ namespace CrowdDefense.Entities
                     proj2.transform.position = transform.position + Vector3.up * 1.0f;
                     proj2.transform.rotation = Quaternion.LookRotation(spread);
                     proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
-                        effectivePierce, cfg.Parabolic, flightDur, arcH);
+                        effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH);
                 }
             }
 
