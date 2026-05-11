@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Systems;
+using static CrowdDefense.UI.Toast;
 
 namespace CrowdDefense.UI
 {
@@ -37,7 +38,7 @@ namespace CrowdDefense.UI
         {
             string label = L.Get($"synergy.{info.Label}", "Synergies");
             if (string.IsNullOrEmpty(label)) label = info.Label;
-            Toast.Show(label, string.Empty, 2500);
+            Toast.Show(label, string.Empty, 2500, null, ToastType.Synergy);
         }
 
         private void Redraw()

@@ -7,11 +7,13 @@ using CrowdDefense.Common;
 
 namespace CrowdDefense.UI
 {
+    public enum ToastType { Generic, Achievement, Perk, Synergy, Combo, Modifier }
+
     // Static facade — callers use Toast.Show(...) without needing a reference to the MonoBehaviour.
     public static class Toast
     {
-        public static void Show(string title, string body, int durationMs = 3000, string? iconEmoji = null) =>
-            ToastController.Instance?.Enqueue(title, body, durationMs, iconEmoji);
+        public static void Show(string title, string body, int durationMs = 3000, string? iconEmoji = null, ToastType type = ToastType.Generic) =>
+            ToastController.Instance?.Enqueue(title, body, durationMs, iconEmoji, type);
     }
 
     [RequireComponent(typeof(UIDocument))]
@@ -31,23 +33,22 @@ namespace CrowdDefense.UI
             public readonly string Body;
             public readonly float DurationSec;
             public readonly string? IconEmoji;
-            public ToastData(string title, string body, float durationSec, string? iconEmoji)
+            public readonly ToastType Type;
+            public ToastData(string title, string body, float durationSec, string? iconEmoji, ToastType type)
             {
-                Title = title; Body = body; DurationSec = durationSec; IconEmoji = iconEmoji;
+                Title = title; Body = body; DurationSec = durationSec; IconEmoji = iconEmoji; Type = type;
             }
         }
 
         protected override void OnAwakeSingleton()
         {
             var doc = GetComponent<UIDocument>();
-            // Prefer dedicated stack; fall back to the achievement stack if co-located.
-            _stack = doc.rootVisualElement.Q<VisualElement>("generic-toast-stack")
-                  ?? doc.rootVisualElement.Q<VisualElement>("toast-stack");
+            _stack = doc.rootVisualElement.Q<VisualElement>("toast-stack");
         }
 
-        public void Enqueue(string title, string body, int durationMs, string? iconEmoji)
+        public void Enqueue(string title, string body, int durationMs, string? iconEmoji, ToastType type = ToastType.Generic)
         {
-            _pending.Enqueue(new ToastData(title, body, durationMs / 1000f, iconEmoji));
+            _pending.Enqueue(new ToastData(title, body, durationMs / 1000f, iconEmoji, type));
             if (!_draining)
                 StartCoroutine(DrainQueue());
         }
@@ -79,10 +80,21 @@ namespace CrowdDefense.UI
             _stack.Remove(card);
         }
 
+        private static string TypeCssClass(ToastType t) => t switch
+        {
+            ToastType.Achievement => "toast-type-gold",
+            ToastType.Synergy     => "toast-type-blue",
+            ToastType.Perk        => "toast-type-green",
+            ToastType.Combo       => "toast-type-orange",
+            ToastType.Modifier    => "toast-type-purple",
+            _                     => "toast-type-default",
+        };
+
         private static VisualElement BuildCard(ToastData data)
         {
             var card = new VisualElement();
             card.AddToClassList("generic-toast");
+            card.AddToClassList(TypeCssClass(data.Type));
             card.style.opacity = 0f;
             card.style.translate = new Translate(new Length(80f, LengthUnit.Pixel), 0);
 
@@ -142,8 +154,22 @@ namespace CrowdDefense.UI
 
 #if UNITY_EDITOR
         [ContextMenu("Test Generic Toast")]
-        private void TestToast() =>
-            Toast.Show("Test Title", "Ceci est un test de toast generique.", 3000, null);
+        private void TestToast() => Toast.Show("Test", "Generique", 3000, null, ToastType.Generic);
+
+        [ContextMenu("Test Achievement Toast")]
+        private void TestAchievementToast() => Toast.Show("Achievement Unlock", "Premier sang !", 3000, null, ToastType.Achievement);
+
+        [ContextMenu("Test Perk Toast")]
+        private void TestPerkToast() => Toast.Show("Perk Pick", "Bouclier de givre", 3000, null, ToastType.Perk);
+
+        [ContextMenu("Test Synergy Toast")]
+        private void TestSynergyToast() => Toast.Show("Synergy Activated", "Trio de feu x3", 2500, null, ToastType.Synergy);
+
+        [ContextMenu("Test Combo Toast")]
+        private void TestComboToast() => Toast.Show("Combo x4", "Multi-kill !", 2000, null, ToastType.Combo);
+
+        [ContextMenu("Test Modifier Toast")]
+        private void TestModifierToast() => Toast.Show("Modifier Selected", "Vitesse +50%", 3000, null, ToastType.Modifier);
 #endif
     }
 }

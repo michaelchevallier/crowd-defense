@@ -122,7 +122,7 @@ namespace CrowdDefense.Systems
             if (_defeatedPublished || _currentDef == null) return;
             _defeatedPublished = true;
             EventManager.Instance?.Publish(new BossDefeatedEvent(_currentDef.DisplayNameFr));
-            Toast.Show("Boss Defeated", _currentDef.DisplayNameFr, 4000, null);
+            Toast.Show("Boss Defeated", _currentDef.DisplayNameFr, 4000, null, ToastType.Achievement);
         }
 
         private void ResetBoss()

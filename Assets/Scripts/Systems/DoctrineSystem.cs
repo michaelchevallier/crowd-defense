@@ -48,7 +48,7 @@ namespace CrowdDefense.Systems
 
             ActiveDoctrine = def;
             OnDoctrineChanged?.Invoke(ActiveDoctrine);
-            Toast.Show("Doctrine Activated", def.displayName, 3000, def.iconEmoji);
+            Toast.Show("Doctrine Activated", def.displayName, 3000, def.iconEmoji, ToastType.Modifier);
             return true;
         }
 

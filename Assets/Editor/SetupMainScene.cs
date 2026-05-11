@@ -59,12 +59,16 @@ namespace CrowdDefense.Editor
             BuildEventAssets.Generate();
             BuildModifierAssets.Generate();
 
+            // Seed EnemyType SOs from V5 ENEMY_TYPES (idempotent — skips existing assets).
+            EnemySeedTool.Generate();
+
             int n = 0;
             n += EnsureRegistry<PerkRegistry>("Assets/Resources/PerkRegistry.asset");
             n += EnsureRegistry<MetaUpgradeRegistry>("Assets/Resources/MetaUpgradeRegistry.asset");
             n += EnsureRegistry<DoctrineRegistry>("Assets/Resources/DoctrineRegistry.asset");
             n += EnsureRegistry<SkinRegistry>("Assets/Resources/SkinRegistry.asset");
             n += EnsureRegistry<TowerRegistry>("Assets/Resources/TowerRegistry.asset");
+            n += EnsureRegistry<EnemyRegistry>("Assets/Resources/EnemyRegistry.asset");
             n += EnsureRegistry<CutsceneRegistry>("Assets/Resources/CutsceneRegistry.asset");
             n += EnsureRegistry<EventRegistry>("Assets/Resources/EventRegistry.asset");
             n += EnsureRegistry<ModifierRegistry>("Assets/Resources/ModifierRegistry.asset");
@@ -79,6 +83,7 @@ namespace CrowdDefense.Editor
             PopulateCutsceneRegistry();
             PopulateEventRegistry();
             PopulateModifierRegistry();
+            PopulateEnemyRegistry();
 
             // Wire TowerType / EnemyType / HeroType assetKey → GLTF key, then rebuild AssetRegistry entries
             BuildAssetRegistryMappings.Generate();
@@ -226,6 +231,16 @@ namespace CrowdDefense.Editor
                 PopulateList(registry, "modifiers", guids);
         }
 
+        private static void PopulateEnemyRegistry()
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<EnemyRegistry>("Assets/Resources/EnemyRegistry.asset");
+            if (registry == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:EnemyType", new[] { "Assets/ScriptableObjects/Enemies" });
+            if (guids.Length > 0)
+                PopulateList(registry, "enemies", guids);
+        }
+
         private static int EnsureRegistry<T>(string path) where T : ScriptableObject
         {
             if (AssetDatabase.LoadAssetAtPath<T>(path) != null) return 0;
@@ -294,6 +309,7 @@ namespace CrowdDefense.Editor
             c += EnsureComponent<WorldMapController>(hud);
             c += EnsureComponent<WavePreviewController>(hud);
             c += EnsureComponent<AchievementToastController>(hud);
+            c += EnsureComponent<ToastController>(hud);
             c += EnsureComponent<ComboHudController>(hud);
             c += EnsureComponent<SpeedControlController>(hud);
             c += EnsureComponent<TutorialOverlayController>(hud);

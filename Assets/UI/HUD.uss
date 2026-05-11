@@ -625,6 +625,87 @@
     -unity-text-align: middle-center;
 }
 
+/* === Toast stack (generic toasts: perk, synergy, combo, modifier, achievement) === */
+.toast-stack {
+    position: absolute;
+    right: 24px;
+    bottom: 24px;
+    width: 300px;
+    flex-direction: column-reverse;
+    align-items: stretch;
+}
+
+.generic-toast {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(14, 18, 26, 0.94);
+    border-width: 2px;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 6px;
+    border-color: rgba(160, 160, 180, 0.4);
+}
+
+.generic-toast-emoji {
+    font-size: 22px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.generic-toast-text {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.generic-toast-title {
+    color: rgb(230, 235, 255);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+}
+
+.generic-toast-body {
+    color: rgba(190, 200, 220, 0.8);
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+    margin-top: 2px;
+}
+
+.toast-type-gold {
+    border-color: rgb(255, 210, 63);
+    background-color: rgba(40, 30, 6, 0.95);
+}
+.toast-type-gold .generic-toast-title { color: rgb(255, 210, 63); }
+
+.toast-type-blue {
+    border-color: rgb(80, 160, 255);
+    background-color: rgba(6, 20, 46, 0.95);
+}
+.toast-type-blue .generic-toast-title { color: rgb(120, 190, 255); }
+
+.toast-type-green {
+    border-color: rgb(80, 220, 120);
+    background-color: rgba(6, 30, 14, 0.95);
+}
+.toast-type-green .generic-toast-title { color: rgb(100, 230, 140); }
+
+.toast-type-orange {
+    border-color: rgb(255, 140, 40);
+    background-color: rgba(40, 18, 4, 0.95);
+}
+.toast-type-orange .generic-toast-title { color: rgb(255, 160, 60); }
+
+.toast-type-purple {
+    border-color: rgb(180, 100, 255);
+    background-color: rgba(24, 10, 40, 0.95);
+}
+.toast-type-purple .generic-toast-title { color: rgb(200, 140, 255); }
+
+.toast-type-default { border-color: rgba(160, 160, 180, 0.45); }
+
 /* === Danger vignette (edge flash on enraged / charge) === */
 .danger-vignette {
     position: absolute;

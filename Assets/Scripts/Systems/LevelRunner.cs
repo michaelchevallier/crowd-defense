@@ -323,7 +323,7 @@ namespace CrowdDefense.Systems
 
             int waveNumber = waveIdx + 1;
             if (waveNumber % 5 == 0)
-                UI.Toast.Show($"Vague {waveNumber} franchie !", string.Empty, 3000, null);
+                Toast.Show($"Vague {waveNumber} franchie !", string.Empty, 3000, null, ToastType.Generic);
         }
 
         private void HandleAllWavesCompleted()
