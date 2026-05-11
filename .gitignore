@@ -121,3 +121,4 @@ secrets.json
 Unity_v6000.3.15f1.alf
 tools/mixamo/.progress.json
 tools/textures_v5_log.csv
+auto-build-*.log
