@@ -18,9 +18,12 @@ namespace CrowdDefense.Tests.Runtime
         [UnitySetUp]
         public IEnumerator SetUp()
         {
-            _host = new GameObject("Test_AudioController");
-            _controller = _host.AddComponent<AudioController>();
             _registry = ScriptableObject.CreateInstance<AudioClipRegistry>();
+
+            // Pre-create host disabled so Awake doesn't fire before we wire the registry.
+            _host = new GameObject("Test_AudioController");
+            _host.SetActive(false);
+            _controller = _host.AddComponent<AudioController>();
 
             // Inject the private 'registry' field via reflection (no UnityEditor dep).
             var registryField = typeof(AudioController)
@@ -28,7 +31,9 @@ namespace CrowdDefense.Tests.Runtime
             Assert.IsNotNull(registryField, "AudioController.registry private field must exist.");
             registryField!.SetValue(_controller, _registry);
 
-            // Wait one frame so Awake/OnAwakeSingleton run + pool sources created.
+            // Activate now → Awake fires with registry already wired + pool sources created.
+            _host.SetActive(true);
+
             yield return null;
         }
 

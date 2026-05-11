@@ -19,32 +19,21 @@ namespace CrowdDefense.Tests.Runtime
         public IEnumerator SetUp()
         {
             // Build minimal prefab GameObjects with ParticleSystem.
-            _impactPrefab = BuildPrefab("ImpactPrefab", autoDestroy: false);
-            _deathPrefab = BuildPrefab("DeathPrefab", autoDestroy: false);
+            _impactPrefab = BuildPrefab("ImpactPrefab");
+            _deathPrefab = BuildPrefab("DeathPrefab");
 
+            // Pre-create the host disabled so Awake doesn't fire before we inject prefabs.
             _host = new GameObject("Test_VfxPool");
-            _pool = _host.AddComponent<VfxPool>();
+            _host.SetActive(false);
 
-            // Inject the private SerializeField prefabs via reflection.
-            InjectField(_pool, "impactPrefab", _impactPrefab);
-            InjectField(_pool, "deathPrefab", _deathPrefab);
-            InjectField(_pool, "auraPrefab", _impactPrefab);
-            InjectField(_pool, "coinPickupPrefab", _impactPrefab);
-
-            // Awake runs but BuildPool already executed before injection.
-            // We need to re-run OnAwakeSingleton; simplest : destroy+recreate after inject.
-            Object.DestroyImmediate(_host);
-            _host = new GameObject("Test_VfxPool");
             _pool = _host.AddComponent<VfxPool>();
             InjectField(_pool, "impactPrefab", _impactPrefab);
             InjectField(_pool, "deathPrefab", _deathPrefab);
             InjectField(_pool, "auraPrefab", _impactPrefab);
             InjectField(_pool, "coinPickupPrefab", _impactPrefab);
 
-            // Manually invoke OnAwakeSingleton post-inject (since Awake already fired before inject).
-            var onAwake = typeof(VfxPool).GetMethod("OnAwakeSingleton",
-                BindingFlags.Instance | BindingFlags.NonPublic);
-            onAwake?.Invoke(_pool, null);
+            // Activate now → Awake fires with prefabs already wired.
+            _host.SetActive(true);
 
             yield return null;
         }
@@ -97,7 +86,7 @@ namespace CrowdDefense.Tests.Runtime
             }
             yield return null;
 
-            // Count child GOs under the pool root. With pool reuse + 3 spawns short-lived,
+            // Count child GOs under the pool root. With pool reuse + 3 short-lived spawns,
             // we expect <= 3 (could be less if first one already released).
             int children = _host!.transform.childCount;
             Assert.LessOrEqual(children, 3, "Pool should not Instantiate beyond N=3 spawns.");
@@ -122,7 +111,7 @@ namespace CrowdDefense.Tests.Runtime
 
         // === Helpers ===
 
-        private static GameObject BuildPrefab(string name, bool autoDestroy)
+        private static GameObject BuildPrefab(string name)
         {
             var go = new GameObject(name);
             var ps = go.AddComponent<ParticleSystem>();
