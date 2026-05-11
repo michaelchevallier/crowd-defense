@@ -76,6 +76,7 @@ namespace CrowdDefense.UI
             // Auto-add UI sibling controllers that share the HUD UIDocument (each Qs its own
             // elements out of HUD.uxml). Idempotent: only added when not already present.
             EnsureSibling<PauseMenuController>();
+            EnsureSibling<TowerToolbarController>();
             EnsureSibling<TowerTooltipController>();
             EnsureSibling<SynergyHudController>();
             EnsureSibling<FloatingPopupController>();
@@ -442,6 +443,12 @@ namespace CrowdDefense.UI
         {
             if (visible) el.RemoveFromClassList("hidden");
             else el.AddToClassList("hidden");
+        }
+
+        private void EnsureSibling<T>() where T : Component
+        {
+            if (gameObject.GetComponent<T>() == null)
+                gameObject.AddComponent<T>();
         }
 
         private void Restart()

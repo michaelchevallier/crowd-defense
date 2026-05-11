@@ -42,9 +42,14 @@ namespace CrowdDefense.Entities
         private bool  _dying      = false;
         private float _dyingTimer = 0f;
 
-        // Set by BossSystem when enraged threshold is crossed
+        // Set by BossSystem when enraged threshold is crossed (also by self-trigger 50% HP fallback)
         private float _enragedSpeedMul    = 1f;
         private float _enragedSummonCdMul = 1f;
+        private bool  _enragedSelfTriggered = false;
+
+        // Armor break — temporary damage taken multiplier (Ballista L3 / synergy)
+        private float _dmgTakenMul        = 1f;
+        private float _dmgTakenMulUntil   = 0f;
 
         // Child GO holding the spawned GLTF mesh (null = using capsule primitive)
         private GameObject? _meshChild;
