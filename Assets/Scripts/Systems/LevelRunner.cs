@@ -425,7 +425,8 @@ namespace CrowdDefense.Systems
                 castle = go.AddComponent<Castle>();
             }
 
-            castle.Init(hp);
+            int world = currentLevel?.World ?? 1;
+            castle.Init(hp, world);
             castle.OnCastleDied += _ => TransitionTo(GameState.Lost);
             castle.OnHPChanged  += (h, hMax) => OnTotalHPChanged?.Invoke(h, hMax);
             PrimaryCastle = castle;
