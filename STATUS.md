@@ -2,6 +2,23 @@
 
 > Source of truth multi-session du sprint MIGRATE. À lire en début de chaque session opus, à updater en fin.
 
+## ⚠️ AVANT TOUT — fix env shell parent Mike
+
+Si Mike vient de switcher cwd ici via `cd /Users/mike/Work/crowd-defense && claude`, le `GITHUB_TOKEN` invalide hérité de son shell parent va **réapparaître** dans cette session (le fix précédent était dans le snapshot zsh de l'ancienne session). Symptôme : `gh repo create`, `gh repo view`, etc. retournent `HTTP 401: Bad credentials`.
+
+**Fix immédiat session courante** :
+```bash
+# dans n'importe quelle commande Bash que tu lances :
+unset GITHUB_TOKEN && gh <whatever>
+```
+
+**Fix permanent** : Mike doit tracer la source dans son shell parent. `~/.zshrc` ligne 21 est commenté donc innocent. Le token vient probablement d'une commande tapée manuellement dans son shell ou d'un fichier sourced (.zsh_history replay, alias claude wrapper, etc.). Diagnostic à faire **AVANT** le prochain `claude` :
+```bash
+set | grep GITHUB_TOKEN
+# si présent : trouve la source et retire-la
+unset GITHUB_TOKEN
+```
+
 ## Where we are
 
 - **Current sprint** : MIGRATE Phase 0 ✅ **DONE** (setup infra complète, 2026-05-11).
