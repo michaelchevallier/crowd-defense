@@ -67,6 +67,8 @@ namespace CrowdDefense.Entities
         // Range ring + synergy halo GameObjects
         private GameObject? _rangeRing;
         private Renderer? _synergyHaloRenderer;
+        private MaterialPropertyBlock? _haloMpb;
+        private static readonly int _haloColorId = Shader.PropertyToID("_BaseColor");
 
         // Tier pip GameObjects (L2 = 2 pips, L3 = 3 pips)
         private readonly List<GameObject> _tierPips = new();
@@ -781,12 +783,16 @@ namespace CrowdDefense.Entities
         private void TickSynergyHalo()
         {
             if (_synergyHaloRenderer == null) return;
+            _haloMpb ??= new MaterialPropertyBlock();
+            _synergyHaloRenderer.GetPropertyBlock(_haloMpb);
+            float prevAlpha = _haloMpb.GetColor(_haloColorId).a;
             float targetAlpha = _synergyActive
                 ? 0.30f + 0.20f * Mathf.Sin(Time.time * 5f)
                 : 0f;
-            var c = _synergyHaloRenderer.material.color;
-            c.a = Mathf.Lerp(c.a, targetAlpha, 0.15f);
-            _synergyHaloRenderer.material.color = c;
+            float nextAlpha = Mathf.Lerp(prevAlpha, targetAlpha, 0.15f);
+            var baseColor = new Color(1f, 0.82f, 0.15f, nextAlpha);
+            _haloMpb.SetColor(_haloColorId, baseColor);
+            _synergyHaloRenderer.SetPropertyBlock(_haloMpb);
         }
 
         // ── Fire Angled ───────────────────────────────────────────────────────

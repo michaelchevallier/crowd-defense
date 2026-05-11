@@ -57,6 +57,10 @@ namespace CrowdDefense.Entities
         private static readonly int _colorId     = Shader.PropertyToID("_Color");
         private static readonly int _emissiveId  = Shader.PropertyToID("_EmissionColor");
 
+        // MPBs for boss aura + stealth ring — avoid .material alloc per frame
+        private MaterialPropertyBlock? _auraMpb;
+        private MaterialPropertyBlock? _stealthRingMpb;
+
         // Animator configured by AnimationController.SetupAnimator at Init
         private Animator? _animator;
         private bool _wasWalking = false;
@@ -384,7 +388,9 @@ namespace CrowdDefense.Entities
                 if (_bossAuraMR != null)
                 {
                     var c = cfg.BossAuraColor;
-                    _bossAuraMR.material.color = new Color(c.r, c.g, c.b, 0.5f);
+                    _auraMpb ??= new MaterialPropertyBlock();
+                    _auraMpb.SetColor(_baseColorId, new Color(c.r, c.g, c.b, 0.5f));
+                    _bossAuraMR.SetPropertyBlock(_auraMpb);
                 }
             }
         }
@@ -606,7 +612,9 @@ namespace CrowdDefense.Entities
             _bossAuraGO.transform.localScale = new Vector3(scale * 2.8f, scale * 2.8f, 1f);
             Color c = cfg.BossAuraColor;
             float alpha = 0.38f + 0.27f * (Mathf.Sin(t) * 0.5f + 0.5f);
-            _bossAuraMR.material.color = new Color(c.r, c.g, c.b, alpha);
+            _auraMpb ??= new MaterialPropertyBlock();
+            _auraMpb.SetColor(_baseColorId, new Color(c.r, c.g, c.b, alpha));
+            _bossAuraMR.SetPropertyBlock(_auraMpb);
         }
 
         private void TickBossEncounterPublish()
@@ -635,7 +643,9 @@ namespace CrowdDefense.Entities
                 float pulse = 1f + 0.5f * Mathf.Sin(Time.time * 15f);
                 _bossAuraGO!.transform.localScale = new Vector3(pulse * 4.2f, pulse * 4.2f, 1f);
                 Color c = cfg.BossAuraColor;
-                _bossAuraMR.material.color = new Color(c.r, c.g, c.b, 0.7f + 0.3f * Mathf.Sin(Time.time * 15f));
+                _auraMpb ??= new MaterialPropertyBlock();
+                _auraMpb.SetColor(_baseColorId, new Color(c.r, c.g, c.b, 0.7f + 0.3f * Mathf.Sin(Time.time * 15f)));
+                _bossAuraMR.SetPropertyBlock(_auraMpb);
             }
         }
 
@@ -653,19 +663,20 @@ namespace CrowdDefense.Entities
             EnsureStealthRing();
             if (_stealthRingMR != null)
             {
+                _stealthRingMpb ??= new MaterialPropertyBlock();
                 if (visible)
                 {
                     float pulse = 1f + 0.2f * Mathf.Sin(Time.time * 8f);
                     _stealthRingGO!.transform.localScale = Vector3.one * (StealthRingRadius * 2f * pulse);
-                    Color rc = _stealthRingMR.material.color;
-                    _stealthRingMR.material.color = new Color(1f, 0.53f, 0.13f,
-                        0.45f + 0.35f * (Mathf.Sin(Time.time * 8f) * 0.5f + 0.5f));
+                    _stealthRingMpb.SetColor(_baseColorId, new Color(1f, 0.53f, 0.13f,
+                        0.45f + 0.35f * (Mathf.Sin(Time.time * 8f) * 0.5f + 0.5f)));
                 }
                 else
                 {
                     _stealthRingGO!.transform.localScale = Vector3.one * (StealthRingRadius * 2f);
-                    _stealthRingMR.material.color = new Color(1f, 1f, 1f, 0.25f);
+                    _stealthRingMpb.SetColor(_baseColorId, new Color(1f, 1f, 1f, 0.25f));
                 }
+                _stealthRingMR.SetPropertyBlock(_stealthRingMpb);
             }
         }
 

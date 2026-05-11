@@ -105,6 +105,7 @@ namespace CrowdDefense.Systems
                 // Clone to avoid modifying the source asset
                 mat = new Material(mat);
                 mat.SetColor("_BaseColor", CellColor(ch));
+                mat.enableInstancing = true;
                 return mat;
             }
 
