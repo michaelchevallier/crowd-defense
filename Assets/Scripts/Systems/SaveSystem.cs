@@ -14,6 +14,20 @@ namespace CrowdDefense.Systems
     }
 
     [Serializable]
+    public class LevelStars
+    {
+        public string levelId = "";
+        public int stars = 0;
+    }
+
+    [Serializable]
+    public class MetaUpgradeEntry
+    {
+        public string id = "";
+        public int level = 0;
+    }
+
+    [Serializable]
     public class ProgressData
     {
         public List<string> clearedLevels = new();
@@ -130,71 +144,6 @@ namespace CrowdDefense.Systems
             return total;
         }
 
-        // ── Gems ──
-
-        public static int GetGems() => Load().gems;
-
-        public static void AddGems(int amount)
-        {
-            if (amount <= 0) return;
-            Load().gems += amount;
-            Save();
-        }
-
-        public static bool SpendGems(int amount)
-        {
-            var data = Load();
-            if (data.gems < amount) return false;
-            data.gems -= amount;
-            Save();
-            return true;
-        }
-
-        // ── MetaUpgrades ──
-
-        public static int GetMetaUpgradeLevel(string id)
-        {
-            var list = Load().metaUpgradeLevels;
-            for (int i = 0; i < list.Count; i++)
-                if (list[i].id == id) return list[i].level;
-            return 0;
-        }
-
-        public static void SetMetaUpgradeLevel(string id, int level)
-        {
-            var list = Load().metaUpgradeLevels;
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (list[i].id == id) { list[i].level = level; Save(); return; }
-            }
-            list.Add(new MetaUpgradeEntry { id = id, level = level });
-            Save();
-        }
-
-        public static void ResetMetaUpgrade(string id)
-        {
-            var list = Load().metaUpgradeLevels;
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (list[i].id == id) { list[i].level = 0; Save(); return; }
-            }
-        }
-
-        // Counts how many worlds have at least 1 cleared level
-        public static int WorldsCleared()
-        {
-            var data = Load();
-            int count = 0;
-            for (int w = 1; w <= 10; w++)
-            {
-                for (int l = 1; l <= 8; l++)
-                {
-                    if (data.clearedLevels.Contains($"world{w}-{l}")) { count++; break; }
-                }
-            }
-            return count;
-        }
-
         public static void ResetAll()
         {
             _cached = new ProgressData();
@@ -213,7 +162,38 @@ namespace CrowdDefense.Systems
             return "";
         }
 
-        // ── RunState ──
+        // ── RunState (Hero perks/level/XP across levels) ──
+
+        public static RunState GetRunState()
+        {
+            if (_cachedRun != null) return _cachedRun;
+            string json = PlayerPrefs.GetString(RUN_KEY, "");
+            _cachedRun = string.IsNullOrEmpty(json) ? new RunState() : JsonUtility.FromJson<RunState>(json) ?? new RunState();
+            return _cachedRun;
+        }
+
+        public static void SetRunState(RunState rs)
+        {
+            _cachedRun = rs;
+            PlayerPrefs.SetString(RUN_KEY, JsonUtility.ToJson(rs));
+            PlayerPrefs.Save();
+        }
+
+        public static void AppendRunPerk(string perkId)
+        {
+            var rs = GetRunState();
+            rs.heroPerks.Add(perkId);
+            SetRunState(rs);
+        }
+
+        public static void ClearRunState()
+        {
+            _cachedRun = new RunState();
+            PlayerPrefs.DeleteKey(RUN_KEY);
+            PlayerPrefs.Save();
+        }
+
+        // ── Gems ──
 
         public static int GetGems() => Load().gems;
 

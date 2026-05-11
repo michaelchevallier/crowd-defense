@@ -5,6 +5,7 @@ namespace CrowdDefense.Data
 {
     public enum PerkCategory { Offensive, Economy, Mobility, Transform, Support }
     public enum PerkTag      { None, Foudre, Sang, Pierre, Feu, Vide, Or }
+    public enum PerkRarity   { Common, Rare, Epic, Legendary }
 
     [CreateAssetMenu(menuName = "CrowdDefense/PerkDef", fileName = "PerkDef")]
     public class PerkDef : ScriptableObject
@@ -16,6 +17,7 @@ namespace CrowdDefense.Data
         [SerializeField] public Sprite? icon;
         [SerializeField] public PerkCategory category;
         [SerializeField] public PerkTag tag;
+        [SerializeField] public PerkRarity rarity;
         [SerializeField] public bool   stackable;
         [SerializeField] public int    maxStacks;
         [SerializeField] public string school = "";
@@ -64,5 +66,9 @@ namespace CrowdDefense.Data
         [SerializeField] public float downDamage;
         [SerializeField] public float downFireRate;
         [SerializeField] public float downCoinReward;
+
+        // Backwards-compat shims for PerkPickerController (Speed/RunMode agent expected simpler API)
+        public string displayName { get => nameKey; set => nameKey = value; }
+        public string description { get => descKey; set => descKey = value; }
     }
 }

@@ -51,5 +51,28 @@ namespace CrowdDefense.Data
         private void OnEnable() { _byId = null; _bonusByTag = null; }
 
         public static PerkRegistry? Load() => Resources.Load<PerkRegistry>("PerkRegistry");
+
+        // Singleton-style accessor for PerkPickerController (Speed/RunMode agent expected this API)
+        private static PerkRegistry? _cached;
+        public static PerkRegistry? Get()
+        {
+            if (_cached == null) _cached = Load();
+            return _cached;
+        }
+
+        public List<PerkDef> GetRandom(int count)
+        {
+            var pool = new List<PerkDef>();
+            for (int i = 0; i < standard.Length; i++)
+                if (standard[i] != null) pool.Add(standard[i]);
+            var result = new List<PerkDef>();
+            for (int i = 0; i < count && pool.Count > 0; i++)
+            {
+                int idx = UnityEngine.Random.Range(0, pool.Count);
+                result.Add(pool[idx]);
+                pool.RemoveAt(idx);
+            }
+            return result;
+        }
     }
 }
