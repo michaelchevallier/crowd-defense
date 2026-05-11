@@ -9,7 +9,7 @@ namespace CrowdDefense.UI
     /// WebGL builds may strip the theme asset if it's not in Resources/.
     /// This fallback loads it from Resources/UI/ if null.
     /// </summary>
-    internal class RuntimeThemeFixup : MonoBehaviour
+    public class RuntimeThemeFixup : MonoBehaviour
     {
         private void Awake()
         {
