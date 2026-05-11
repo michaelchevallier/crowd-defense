@@ -66,6 +66,14 @@ namespace CrowdDefense.Entities
         public float TowerAuraRange   { get; internal set; }
         public int   AoeOnNthProjectile { get; internal set; }
 
+        // School-specific flags (tracked for future gameplay hooks)
+        public bool  ForteressePerk      { get; internal set; }
+        public bool  MursPierre         { get; internal set; }
+        public bool  CristalGlace       { get; internal set; }
+
+        // Channeling state (set externally by BluePill/item system — mirrors V5 channelingPill)
+        public bool  ChannelingPill      { get; set; }
+
         // Projectile modifiers
         public bool  Fireball            { get; internal set; }
         public float FireballRadius      { get; internal set; } = 2f;
@@ -91,6 +99,9 @@ namespace CrowdDefense.Entities
         public IReadOnlyList<string> Perks => _perks;
         private readonly List<string> _perks = new();
         private readonly Dictionary<string, int> _activeTagsCount = new();
+
+        // ── Nth-projectile AoE counter ────────────────────────────────────────
+        private int _projFiredCount;
 
         // ── Ultimate ──────────────────────────────────────────────────────────
         private float _ultCooldown;
@@ -277,6 +288,21 @@ namespace CrowdDefense.Entities
             XpMul       *= xpMul;
         }
 
+        /// <summary>
+        /// Applique les bonus d'un skin héros (V5 applySkinBonuses).
+        /// Doit être appelé APRÈS ApplyRunContext (les muls sont cumulatifs).
+        /// </summary>
+        public void ApplySkinBonuses(SkinDef skin)
+        {
+            if (skin == null) return;
+            if (skin.DamageMul    != 1f) DamageMul    *= skin.DamageMul;
+            if (skin.RangeMul     != 1f) RangeMul     *= skin.RangeMul;
+            if (skin.FireRateMul  != 1f) FireRateMul  *= 1f / Mathf.Max(skin.FireRateMul, 0.01f);
+            if (skin.MoveSpeedMul != 1f) MoveSpeedMul *= skin.MoveSpeedMul;
+            if (skin.CoinGainMul  != 1f) CoinGainMul  *= skin.CoinGainMul;
+            if (skin.XpMul        != 1f) XpMul        *= skin.XpMul;
+        }
+
         // ── XP / Level-up ─────────────────────────────────────────────────────
         public void GainXp(float amount)
         {
@@ -314,6 +340,25 @@ namespace CrowdDefense.Entities
         }
 
         public float UltCooldownRemaining => _ultCooldown;
+
+        /// <summary>
+        /// 0 = ult ready; 1 = full cooldown. Useful for UI progress rings.
+        /// </summary>
+        public float UltCooldownFraction =>
+            cfg != null && cfg.UltCooldownMs > 0
+                ? _ultCooldown / (cfg.UltCooldownMs / 1000f)
+                : 0f;
+
+        /// <summary>
+        /// Consumes the FirstTowerFree token. Returns true and marks used if available.
+        /// Called by Economy.cs when the player places the first tower.
+        /// </summary>
+        public bool TryConsumeFirstTowerFree()
+        {
+            if (!FirstTowerFree || FirstTowerFreeUsed) return false;
+            FirstTowerFreeUsed = true;
+            return true;
+        }
 
         private void FireUltFan()
         {
@@ -359,16 +404,17 @@ namespace CrowdDefense.Entities
         /// </summary>
         public (float dmgMul, float fireRateMul, float auraRange) GetTowerAuraBuffs()
         {
-            float dmg  = 1f;
-            float rate = 1f;
+            float dmg   = 1f;
+            float rate  = 1f;
             float range = 6f;
 
-            if (_perks.Contains("coin_gain"))    dmg  += 0.15f;
-            if (_perks.Contains("lifesteal"))    rate += 0.10f;
+            if (_perks.Contains("coin_gain")) dmg  += 0.15f;
+            if (_perks.Contains("lifesteal")) rate += 0.10f;
             if (_perks.Contains("surveillant"))
             {
-                rate  += 0.20f;
-                range  = Mathf.Max(range, TowerAuraRange > 0f ? TowerAuraRange : 8f);
+                // Use the actual TowerFireRateAuraMul value set by the perk (V5 pattern)
+                rate  = Mathf.Max(rate, TowerFireRateAuraMul > 1f ? TowerFireRateAuraMul : 1.20f);
+                range = Mathf.Max(range, TowerAuraRange > 0f ? TowerAuraRange : 8f);
             }
             return (dmg, rate, range);
         }
@@ -418,11 +464,17 @@ namespace CrowdDefense.Entities
             if (moving)
             {
                 float speed = cfg.MoveSpeed * MoveSpeedMul * (_running ? 1.8f : 1f);
-                var pos = transform.position;
+                var oldPos = transform.position;
+                var pos = oldPos;
                 pos.x += _moveDir.x * speed * dt;
                 pos.z += _moveDir.y * speed * dt;
                 pos.x = Mathf.Clamp(pos.x, -_maxX, _maxX);
                 pos.z = Mathf.Clamp(pos.z, -_maxZ, _maxZ);
+
+                // Grid collision: block movement onto W/L cells (V5 parity)
+                if (!IsWalkableWorldPos(pos))
+                    pos = oldPos;
+
                 transform.position = pos;
 
                 if (_attackAnimTimer <= 0f && _animator != null)
@@ -435,10 +487,21 @@ namespace CrowdDefense.Entities
             }
         }
 
+        // Returns false if the world position falls on a non-walkable blocking cell (W or L)
+        private static bool IsWalkableWorldPos(Vector3 worldPos)
+        {
+            var grid = PathManager.Instance?.Grid;
+            if (grid == null) return true;
+            var cell = GridCoords.WorldToCell(worldPos, grid.Width, grid.Height, grid.CellSize);
+            if (cell.x < 0 || cell.x >= grid.Width || cell.y < 0 || cell.y >= grid.Height) return true;
+            char ch = grid.At(cell.x, cell.y);
+            return ch != GridCoords.WATER && ch != GridCoords.LAVA;
+        }
+
         // ── Combat: acquire target + shoot ───────────────────────────────────
         private void UpdateCombat()
         {
-            if (cfg == null || _running) return;
+            if (cfg == null || _running || ChannelingPill) return;
 
             float range2 = cfg.Range * RangeMul;
             range2 *= range2;
@@ -520,6 +583,18 @@ namespace CrowdDefense.Entities
                     explodeOnConsume: PierceExplode,
                     lifetime: 1.4f,
                     damageMul: 1f);
+            }
+
+            // AoeOnNthProjectile set-bonus: every N-th primary shot fires an AoE at the target
+            if (AoeOnNthProjectile > 0)
+            {
+                _projFiredCount++;
+                if (_projFiredCount >= AoeOnNthProjectile)
+                {
+                    _projFiredCount = 0;
+                    if (cfg != null)
+                        AoeBlast(start, FireballRadius, cfg.Damage * DamageMul * FireballDmgMul);
+                }
             }
 
             // Muzzle VFX
@@ -632,6 +707,10 @@ namespace CrowdDefense.Entities
 
         private void OnProjKill(Vector3 killPos)
         {
+            // Lifesteal: each kill restores HP to the castle (V5 pattern — lifesteal unit = HP pts)
+            if (Lifesteal > 0f && Castle.Instance != null)
+                Castle.Instance.Regen(Mathf.Max(1, Mathf.RoundToInt(Lifesteal)));
+
             if (Combustion)
                 _fireTrails.Add(new FireTrail(killPos, Time.time + 2f));
 
@@ -709,17 +788,79 @@ namespace CrowdDefense.Entities
             Glaciation            = false;
             Combustion            = false;
             Pyromancie            = false;
+            ForteressePerk        = false;
+            MursPierre            = false;
+            CristalGlace          = false;
+            ChannelingPill        = false;
             FirstTowerFree        = false;
             FirstTowerFreeUsed    = false;
+            _projFiredCount       = 0;
             _fireTrails.Clear();
+        }
+
+        // ── OnDestroy — cleanup dangling projectiles (V5 destroy() parity) ───
+        private void OnDestroy()
+        {
+            for (int i = _projectiles.Count - 1; i >= 0; i--)
+            {
+                var p = _projectiles[i];
+                if (p != null) Destroy(p.gameObject);
+            }
+            _projectiles.Clear();
+            _fireTrails.Clear();
+        }
+
+        // ── Debug stats accessor (for DebugHudController) ────────────────────
+        /// <summary>
+        /// Returns a human-readable snapshot of key hero stats.
+        /// Only called in editor / development builds.
+        /// </summary>
+        public string GetDebugStats()
+        {
+            return $"Lv{Level} XP:{Xp}/{XpToNext} " +
+                   $"dmg×{DamageMul:F2} rng×{RangeMul:F2} fr×{FireRateMul:F2} " +
+                   $"ms:{MultiShot} pc:{PierceCount} crit:{CritChance:P0} " +
+                   $"ult:{_ultCooldown:F1}s perks:{_perks.Count}";
+        }
+
+        // ── Skin asset key override (for SkinSystem to redirect mesh spawn) ──
+        /// <summary>
+        /// Re-initializes the visual mesh child using an alternate skin asset key.
+        /// Called by SkinSystem after Init if a hero skin is equipped.
+        /// Does NOT reset perk stats.
+        /// </summary>
+        public void ApplySkinVisual(string assetKey)
+        {
+            // Remove existing Mesh_ children
+            var toRemove = new System.Collections.Generic.List<Transform>();
+            for (int i = 0; i < transform.childCount; i++)
+            {
+                var ch = transform.GetChild(i);
+                if (ch.name.StartsWith("Mesh_")) toRemove.Add(ch);
+            }
+            foreach (var ch in toRemove) Destroy(ch.gameObject);
+
+            _animator = null;
+            var meshChild = SpawnMeshChild(assetKey);
+            var toonRoot  = meshChild != null ? meshChild : gameObject;
+            MaterialController.ApplyToon(toonRoot, cfg?.BodyColor ?? Color.white);
+            Outline.ApplyToHierarchy(toonRoot.transform);
+            _animator = AnimationController.SetupAnimator(toonRoot, "Idle", "Walk");
         }
 
 #if UNITY_EDITOR
         private void OnDrawGizmosSelected()
         {
             if (cfg == null) return;
+            // Attack range
             Gizmos.color = new Color(1f, 0.84f, 0f, 0.25f);
             Gizmos.DrawWireSphere(transform.position, cfg.Range * RangeMul);
+            // Tower aura range (when active)
+            if (TowerAuraRange > 0f)
+            {
+                Gizmos.color = new Color(0.4f, 0.8f, 1f, 0.15f);
+                Gizmos.DrawWireSphere(transform.position, TowerAuraRange);
+            }
         }
 #endif
 
@@ -732,21 +873,29 @@ namespace CrowdDefense.Entities
         //     _hero = heroGo.GetComponent<Hero>() ?? heroGo.AddComponent<Hero>();
         //     _hero.Init(heroTypeSO, spawnPos, maxX, maxZ);
         //     _hero.ApplyMetaBonuses(metaBonuses.heroDamageMul, ...);
+        //     _hero.ApplySkinBonuses(equippedSkin);   // si skin equipé
         //
         //   Input forward (HeroInputAdapter ou HudController) :
         //     _hero.SetMove(inputDir.x, inputDir.y);  // appelé chaque frame
+        //     _hero.ChannelingPill = pillActive;       // bloquer tir pendant pill
         //     if (ultButtonPressed) _hero.TryUlt();
         //
         //   Access for Synergies.cs :
         //     var (dmgMul, rateMul, range) = LevelRunner.Instance.Hero!.GetTowerAuraBuffs();
         //
+        //   Skin visual swap (SkinSystem) :
+        //     _hero.ApplySkinVisual(skinDef.AlternateGLTF != null ? skinDef.Id : heroType.AssetKey);
+        //     _hero.ApplySkinBonuses(skinDef);
+        //
         // WaveManager (Assets/Scripts/Systems/WaveManager.cs) :
         //   À la fin de chaque vague :
         //     LevelRunner.Instance.Hero?.OnWaveEnd();
         //
-        // Economy.cs — CoinGainMul :
+        // Economy.cs — CoinGainMul + FirstTowerFree :
         //   Quand un ennemi meurt, multiplicateur de récompense :
         //     int reward = Mathf.RoundToInt(e.Reward * hero.CoinGainMul);
+        //   Quand le joueur pose une tour :
+        //     bool free = hero.TryConsumeFirstTowerFree();
         //
         // Castle.cs — CastleHPMaxMul :
         //   Lors du Init castle :

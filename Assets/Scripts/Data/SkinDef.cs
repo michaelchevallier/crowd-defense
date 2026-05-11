@@ -37,6 +37,21 @@ namespace CrowdDefense.Data
         [SerializeField] private bool hasStatBonus = false;
         [SerializeField] private string bonusDescKey = "";
 
+        [Header("Stat Bonuses (Hero skin — mirror V5 applySkinBonuses)")]
+        [SerializeField] private float damageMul     = 1f;
+        [SerializeField] private float rangeMul      = 1f;
+        [SerializeField] private float fireRateMul   = 1f;   // applied as 1/fireRateMul on cooldown
+        [SerializeField] private float moveSpeedMul  = 1f;
+        [SerializeField] private float coinGainMul   = 1f;
+        [SerializeField] private float xpMul         = 1f;
+
+        public float DamageMul    => damageMul;
+        public float RangeMul     => rangeMul;
+        public float FireRateMul  => fireRateMul;
+        public float MoveSpeedMul => moveSpeedMul;
+        public float CoinGainMul  => coinGainMul;
+        public float XpMul        => xpMul;
+
         public string Id => id;
         public string DisplayNameKey => displayNameKey;
         public string DescriptionKey => descriptionKey;

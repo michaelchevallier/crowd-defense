@@ -188,10 +188,12 @@ namespace CrowdDefense.Systems
                 hero.TowerFireRateAuraMul = def.towerFireRateAura;
                 hero.TowerAuraRange = def.towerAuraRange > 0f ? def.towerAuraRange : DefaultTowerAuraRange;
             }
-            if (def.combustion)     hero.Combustion = true;
-            if (def.pyromancie)     hero.Pyromancie = true;
-            if (def.glaciation)     hero.Glaciation = true;
-            if (def.forteressePerk) hero.CastleHPMaxMul *= ForteresseHPMul;
+            if (def.combustion)     hero.Combustion     = true;
+            if (def.pyromancie)     hero.Pyromancie     = true;
+            if (def.glaciation)     hero.Glaciation     = true;
+            if (def.cristalGlace)   hero.CristalGlace   = true;
+            if (def.mursPierre)     hero.MursPierre     = true;
+            if (def.forteressePerk) { hero.ForteressePerk = true; hero.CastleHPMaxMul *= ForteresseHPMul; }
 
             // Downsides
             if (def.downRange != 0f)      hero.RangeMul    *= 1f + def.downRange;
