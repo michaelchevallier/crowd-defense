@@ -40,6 +40,15 @@ namespace CrowdDefense.Systems
             SetGold(Gold + amount);
         }
 
+        // Called by Enemy.Die after EnemyKilledEvent has been published (so ComboSystem
+        // has already updated its ActiveMultiplier for this kill).
+        public void AddGoldFromKill(int baseReward)
+        {
+            float comboMul = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
+            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul));
+            AddGold(finalReward);
+        }
+
         // Called by Castle.TakeDamage to flag a leak this wave
         public void FlagCastleDamaged()
         {

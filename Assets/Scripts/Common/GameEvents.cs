@@ -36,6 +36,11 @@ namespace CrowdDefense.Common
     public record GameEventStartedEvent(string EventType, string DisplayName, float Duration);
     public record GameEventEndedEvent(string EventType);
 
+    // Combo (multi-kill streak)
+    // Level = 1-based combo count (2=x1.5, 3=x2, …), Multiplier = coin reward factor
+    public record ComboUpdatedEvent(int Level, float Multiplier);
+    public record ComboResetEvent;
+
     // Music / audio
     public record LevelThemeChangedEvent(string ThemeName);
 

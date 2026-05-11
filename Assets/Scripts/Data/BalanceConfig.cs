@@ -56,6 +56,12 @@ namespace CrowdDefense.Data
         [Header("Interest bank (D1-01 §3.5)")]
         public float BankInterestRate = 0.05f;
 
+        [Header("Combo system (multi-kill streak)")]
+        public float ComboWindowSeconds = 2f;
+        public int ComboMinKills = 2;
+        // Index 0 = no combo, index 1 = x2 kills, index 2 = x3 kills, …
+        public float[] ComboMultipliers = { 1f, 1.5f, 2f, 2.5f, 3f };
+
         // --- Helpers ---
 
         public float DifficultyMulFor(int world)
