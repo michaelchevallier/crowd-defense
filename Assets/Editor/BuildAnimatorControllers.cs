@@ -27,14 +27,20 @@ namespace CrowdDefense.Editor
         {
             Directory.CreateDirectory(k_OutputDir);
 
-            string[] guids = AssetDatabase.FindAssets("t:Model", new[] { k_ModelsRoot });
+            // t:Model only catches classic FBX/OBJ. UnityGLTF .gltf/.glb use ScriptedImporter → t:GameObject.
+            // Union with t:Model ensures both kinds are scanned.
+            var modelGuids = AssetDatabase.FindAssets("t:Model", new[] { k_ModelsRoot });
+            var goGuids    = AssetDatabase.FindAssets("t:GameObject", new[] { k_ModelsRoot });
+            string[] guids = modelGuids.Union(goGuids).ToArray();
             int created = 0;
             int skipped = 0;
 
             foreach (string guid in guids)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                // Accept both classic ModelImporter (FBX/OBJ) and ScriptedImporter (UnityGLTF .gltf/.glb).
+                string ext  = Path.GetExtension(path).ToLowerInvariant();
+                // Only ingest model files (FBX/OBJ/GLTF/GLB) — skip .prefab / .asset under Models/.
+                if (ext != ".fbx" && ext != ".obj" && ext != ".gltf" && ext != ".glb") continue;
                 var importer = AssetImporter.GetAtPath(path);
                 if (importer is not ModelImporter && importer is not UnityEditor.AssetImporters.ScriptedImporter) continue;
 
