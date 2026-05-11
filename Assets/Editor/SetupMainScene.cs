@@ -29,6 +29,7 @@ namespace CrowdDefense.Editor
             BuildMainSceneTool.BuildMainScene();
             int sys  = EnsureNewSingletons();
             int ui   = EnsureHudControllers();
+            WireInspectorRefs();
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -127,6 +128,96 @@ namespace CrowdDefense.Editor
             if (go.GetComponent<T>() != null) return 0;
             go.AddComponent<T>();
             return 1;
+        }
+
+        // ── 4. Inspector Refs ─────────────────────────────────────────────────
+
+        private static void WireInspectorRefs()
+        {
+            WireLevelRunner();
+            WireTowerToolbar();
+            WireBossSystem();
+        }
+
+        private static void WireLevelRunner()
+        {
+            var lr = Object.FindFirstObjectByType<LevelRunner>();
+            if (lr == null) return;
+
+            var so   = new SerializedObject(lr);
+            var hero = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Hero.prefab");
+            var ht   = AssetDatabase.LoadAssetAtPath<HeroType>("Assets/ScriptableObjects/Heroes/Knight.asset");
+
+            var heroPrefabProp = so.FindProperty("heroPrefab");
+            var heroTypeProp   = so.FindProperty("heroType");
+
+            if (heroPrefabProp == null)
+                Debug.LogWarning("[SetupMainScene] LevelRunner.heroPrefab field not found — field renamed?");
+            else if (hero != null)
+                heroPrefabProp.objectReferenceValue = hero;
+            else
+                Debug.LogWarning("[SetupMainScene] Assets/Prefabs/Hero.prefab not found — skipping heroPrefab wiring");
+
+            if (heroTypeProp == null)
+                Debug.LogWarning("[SetupMainScene] LevelRunner.heroType field not found — field renamed?");
+            else if (ht != null)
+                heroTypeProp.objectReferenceValue = ht;
+
+            so.ApplyModifiedProperties();
+        }
+
+        private static void WireTowerToolbar()
+        {
+            var tt = Object.FindFirstObjectByType<TowerToolbarController>();
+            if (tt == null) return;
+
+            var registry = AssetDatabase.LoadAssetAtPath<TowerRegistry>("Assets/Resources/TowerRegistry.asset");
+            if (registry == null) return;
+
+            var so   = new SerializedObject(tt);
+            var prop = so.FindProperty("towerRegistry");
+            if (prop == null)
+            {
+                Debug.LogWarning("[SetupMainScene] TowerToolbarController.towerRegistry field not found");
+                return;
+            }
+            prop.objectReferenceValue = registry;
+            so.ApplyModifiedProperties();
+        }
+
+        private static void WireBossSystem()
+        {
+            var bs = Object.FindFirstObjectByType<BossSystem>();
+            if (bs == null) return;
+
+            var guids = AssetDatabase.FindAssets("t:BossDef", new[] { "Assets/ScriptableObjects/Bosses" });
+            if (guids.Length == 0) return;
+
+            PopulateList(bs, "registry", guids);
+        }
+
+        private static void PopulateList(Object target, string fieldName, string[] guids)
+        {
+            var so   = new SerializedObject(target);
+            var list = so.FindProperty(fieldName);
+            if (list == null)
+            {
+                Debug.LogWarning($"[SetupMainScene] {target.GetType().Name}.{fieldName} not found");
+                return;
+            }
+
+            // Skip re-population if count already matches (avoids overwriting manual additions)
+            if (list.arraySize == guids.Length) return;
+
+            list.ClearArray();
+            for (int i = 0; i < guids.Length; i++)
+            {
+                var path  = AssetDatabase.GUIDToAssetPath(guids[i]);
+                var asset = AssetDatabase.LoadAssetAtPath<Object>(path);
+                list.InsertArrayElementAtIndex(i);
+                list.GetArrayElementAtIndex(i).objectReferenceValue = asset;
+            }
+            so.ApplyModifiedProperties();
         }
     }
 }
