@@ -27,12 +27,17 @@ namespace CrowdDefense.Visual
             var theme = level.LevelTheme;
             WeatherController.Instance?.ApplyTheme(theme);
             SceneDecor.Instance?.SpawnForLevel(theme, level.Id, gridBounds);
+
+            var pm = Systems.PathManager.Instance;
+            if (pm?.Grid != null)
+                PathTiles.Instance?.BuildForLevel(pm.Grid, theme);
         }
 
         private static void HandleLevelEnd()
         {
             WeatherController.Instance?.StopAll();
             SceneDecor.Instance?.ClearAll();
+            PathTiles.Instance?.ClearAll();
         }
     }
 }
