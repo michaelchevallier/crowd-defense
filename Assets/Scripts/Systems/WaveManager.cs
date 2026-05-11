@@ -122,6 +122,8 @@ namespace CrowdDefense.Systems
                 {
                     waveActive = false;
                     HandleWaveClearedRegen();
+                    // D1-01 §3.5: process interest bank before notifying listeners
+                    Economy.Instance?.ProcessInterestBank();
                     OnWaveCleared?.Invoke(currentWaveIdx);
 #if UNITY_EDITOR
                     Debug.Log($"[WaveManager] Wave {currentWaveIdx + 1} cleared — awaiting player start");
@@ -194,23 +196,28 @@ namespace CrowdDefense.Systems
 
         private void SpawnEnemy(EnemyType type, int wavePortalIdx)
         {
-            if (enemyPrefab == null || PathManager.Instance == null) return;
+            if (PathManager.Instance == null) return;
             var pm = PathManager.Instance;
             if (pm.Paths.Count == 0) return;
 
-            int resolvedPathIdx = ResolvePathIdx(wavePortalIdx);
-            Vector3 spawnPos = pm.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
-            var go = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
-            var enemy = go.GetComponent<Enemy>();
-            if (enemy != null)
+            if (EnemyPool.Instance == null)
             {
-                enemy.Init(type, resolvedPathIdx);
-                activeEnemies.Add(enemy);
-                spawnCounter++;
-#if UNITY_EDITOR
-                Debug.Log($"[WaveManager] spawned {type.Id} pathIdx={resolvedPathIdx} active={activeEnemies.Count}");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogError("[WaveManager] EnemyPool.Instance is null — enemy not spawned");
 #endif
+                return;
             }
+
+            int resolvedPathIdx = ResolvePathIdx(wavePortalIdx);
+            var enemy = EnemyPool.Instance.Get();
+            enemy.transform.position = pm.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
+            enemy.transform.rotation = Quaternion.identity;
+            enemy.Init(type, resolvedPathIdx);
+            activeEnemies.Add(enemy);
+            spawnCounter++;
+#if UNITY_EDITOR
+            Debug.Log($"[WaveManager] spawned {type.Id} pathIdx={resolvedPathIdx} active={activeEnemies.Count}");
+#endif
         }
 
         // wavePortalIdx == -1 → round-robin; >= 0 → match portal index, fallback round-robin

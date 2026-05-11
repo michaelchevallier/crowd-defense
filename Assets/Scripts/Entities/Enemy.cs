@@ -20,6 +20,7 @@ namespace CrowdDefense.Entities
         private MeshRenderer? rend;
         private Color baseColor;
         private GameObject? shieldHalo;
+        private EnemyPool? pool;
 
         public EnemyType? Config => cfg;
         public int CurrentWaypoint => currentWaypoint;
@@ -37,9 +38,16 @@ namespace CrowdDefense.Entities
         // World pressure scaling (D1-04) — set once in Init, persists for lifetime of enemy
         private float pressureSpeedMul = 1f;
 
+        // Called once by EnemyPool after Instantiate to back-link the pool
+        public void SetPool(EnemyPool p) => pool = p;
+
         public void Init(EnemyType type, int assignedPathIdx = 0)
         {
             cfg = type;
+            IsDead = false;
+            currentSpeedMul = 1f;
+            StealthAlpha = 1f;
+
             // D1-04 mob pressure : scale HP and speed by world pressure
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
             var pressure = BalanceConfig.Get().GetPressure(currentWorld);
@@ -48,22 +56,24 @@ namespace CrowdDefense.Entities
             shieldHp = type.ShieldHP;
             pathIdx = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
-            currentSpeedMul = 1f;
             transform.localScale = Vector3.one * type.Scale;
 
             rend = GetComponent<MeshRenderer>();
             if (rend != null)
             {
-                var mat = new Material(ShaderUtil.GetLitShader());
+                var mat = rend.material;
+                if (mat == null)
+                {
+                    mat = new Material(ShaderUtil.GetLitShader());
+                    rend.material = mat;
+                }
                 if (type.IsStealth)
                 {
-                    // Transparency activée pour cycle stealth
                     mat.SetFloat("_Surface", 1f);
                     mat.SetFloat("_Blend", 0f);
                     mat.renderQueue = 3000;
                 }
                 mat.color = type.BodyColor;
-                rend.material = mat;
                 baseColor = type.BodyColor;
             }
 
@@ -75,8 +85,44 @@ namespace CrowdDefense.Entities
                 col.height = 1f;
             }
 
+            // Reset shield halo
+            if (shieldHalo != null)
+                shieldHalo.SetActive(false);
+
             if (shieldHp > 0f)
-                BuildShieldHalo();
+            {
+                if (shieldHalo == null)
+                    BuildShieldHalo();
+                else
+                    shieldHalo.SetActive(true);
+            }
+
+            // Position + path setup (was in Start() — must run every Init for pooled reuse)
+            pathManager = PathManager.Instance;
+            if (type.IsFlyer)
+            {
+                if (Castle.Instance != null)
+                    transform.position = new Vector3(transform.position.x, type.FlyHeight, transform.position.z);
+                return;
+            }
+
+            if (pathManager == null || pathManager.Paths.Count == 0)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogError("[Enemy] No PathManager or no paths");
+#endif
+                ReleaseToPool();
+                return;
+            }
+            if (pathManager.WaypointCountOnPath(pathIdx) < 2)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.LogError($"[Enemy] Path {pathIdx} too short");
+#endif
+                ReleaseToPool();
+                return;
+            }
+            transform.position = pathManager.GetWaypointOnPath(pathIdx, 0) + Vector3.up * 0.5f;
         }
 
         private void BuildShieldHalo()
@@ -99,35 +145,9 @@ namespace CrowdDefense.Entities
             }
         }
 
-        private void Start()
-        {
-            pathManager = PathManager.Instance;
-            if (cfg != null && cfg.IsFlyer)
-            {
-                // Flyers spawn at fly height, ignore path validation
-                if (Castle.Instance != null)
-                    transform.position = new Vector3(transform.position.x, cfg.FlyHeight, transform.position.z);
-                return;
-            }
-
-            if (pathManager == null || pathManager.Paths.Count == 0)
-            {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogError("[Enemy] No PathManager or no paths");
-#endif
-                Destroy(gameObject);
-                return;
-            }
-            if (pathManager.WaypointCountOnPath(pathIdx) < 2)
-            {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogError($"[Enemy] Path {pathIdx} too short");
-#endif
-                Destroy(gameObject);
-                return;
-            }
-            transform.position = pathManager.GetWaypointOnPath(pathIdx, 0) + Vector3.up * 0.5f;
-        }
+        // Start() is called once on first Instantiate — pool reuse skips Start.
+        // Position/path setup is handled in Init() for correct pooled behavior.
+        private void Start() { }
 
         private void Update()
         {
@@ -205,7 +225,6 @@ namespace CrowdDefense.Entities
                 IsDead = true;
 
                 // Boss reward = 0× (D1-01 §3.3, KR pattern P-U-3).
-                // Gems/skin drop conservés séparément dans LevelRunner.
                 bool isBossVariant = cfg != null && (cfg.IsBoss || cfg.IsMidBoss || cfg.IsApocalypseBoss);
                 if (!isBossVariant)
                 {
@@ -226,7 +245,7 @@ namespace CrowdDefense.Entities
 #endif
 
                 WaveManager.Instance?.NotifyEnemyDied(this);
-                Destroy(gameObject);
+                ReleaseToPool();
             }
         }
 
@@ -248,7 +267,15 @@ namespace CrowdDefense.Entities
 #endif
             Castle.Instance?.TakeDamage(dmg);
             WaveManager.Instance?.NotifyEnemyDied(this);
-            Destroy(gameObject);
+            ReleaseToPool();
+        }
+
+        private void ReleaseToPool()
+        {
+            if (pool != null)
+                pool.Release(this);
+            else
+                Destroy(gameObject); // fallback si pas de pool (tests unitaires, cas edge)
         }
     }
 }
