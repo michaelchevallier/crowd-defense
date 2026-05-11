@@ -246,30 +246,33 @@ Outils non installés pour maximiser autonomie Opus sur génération d'assets (3
 
 **State actuel** : Phase 2 terminée 2026-05-11 → fenêtre idéale pour setup T1 avant Phase 3.
 
-### 1. Blender + Blender MCP — **T1**
+### 1. Blender + Blender MCP — **T1** ✅ SETUP DONE (2026-05-11)
 
 - **Goal** : modeler towers/enemies low-poly via Python script Blender, export `.glb` auto-import Unity. Remplace les `GameObject.CreatePrimitive()` du POC par real models.
 - **Source** : Blender free + MCP https://github.com/ahujasid/blender-mcp
-- **Install** :
+- **Install** (DONE) :
   ```bash
-  brew install --cask blender
-  uvx blender-mcp  # installs server
-  # + addon Python dans Blender (Preferences > Add-ons > Install from File)
-  # + config ~/.claude.json mcpServers : "blender": { "command": "uvx", "args": ["blender-mcp"] }
+  brew install --cask blender  # → Blender 5.1.1 in /Applications/Blender.app
+  uvx blender-mcp  # server installed, listens for Blender on localhost:9876
+  # config ~/.claude.json mcpServers.blender = uvx blender-mcp
+  # Addon downloaded to ~/tools/blender-mcp/addon.py (111 KB)
   ```
-- **À faire quand** : **MAINTENANT** (transition Phase 2 → Phase 3, before tower visuels non-primitive).
+- **Action manuelle Mike** : installer addon via `Edit > Preferences > Add-ons > Install...` → sélectionner `~/tools/blender-mcp/addon.py` → enable → ouvrir sidebar (N) onglet "BlenderMCP" → click "Connect to Claude". Blender doit être ouvert + addon connect pour que les tools `mcp__blender__*` fonctionnent.
+- **À faire quand** : ~~MAINTENANT~~ ✅ done. Mike : install addon + restart Claude Code session pour activer.
 
-### 2. ComfyUI MCP — **T1**
+### 2. ComfyUI MCP — **T1** ✅ SETUP DONE (2026-05-11)
 
 - **Goal** : wrapper MCP sur le ComfyUI:8188 + Flux Schnell existant pour gen textures via tool call au lieu de bash python.
-- **Source** : https://github.com/joshuajaco/comfy-mcp-server
-- **Install** :
+- **Source réelle** : https://github.com/lalanikarim/comfy-mcp-server (Python via `uvx`, FastMCP-based, 42 stars).
+  - ⚠️ Note : repo `joshuajaco/comfy-mcp-server` mentionné précédemment **N'EXISTE PAS** (404).
+- **Install** (DONE) :
   ```bash
-  npx -y comfy-mcp-server
-  # + config ~/.claude.json mcpServers : "comfy": { "command": "npx", "args": ["-y", "comfy-mcp-server"], "env": { "COMFYUI_URL": "http://127.0.0.1:8188" } }
+  uvx --with "mcp<1.6" comfy-mcp-server  # workaround bug pydantic
+  # config ~/.claude.json mcpServers.comfy avec env COMFY_URL=http://127.0.0.1:8188 + COMFY_WORKFLOW_JSON_FILE=~/flux-local/workflows/flux_schnell_basic.json + PROMPT_NODE_ID=6 + OUTPUT_NODE_ID=9 + OUTPUT_MODE=file
   ```
 - **Pipeline existant** : `python3 /Users/mike/Work/milan project/tools/gen_textures.py` (cf memory `reference_flux_local`).
-- **À faire quand** : **MAINTENANT** (transition Phase 2 → Phase 3). Pipeline Flux Schnell déjà existant via `gen_textures.py`, wrapper MCP = QoL.
+- **Tools exposés** : `mcp__comfy__generate_image(prompt)` + `mcp__comfy__generate_prompt(topic)` (2 tools seulement, pour workflows plus avancés multiples LoRAs/batch, `gen_textures.py` reste utile en complément).
+- **À faire quand** : ~~MAINTENANT~~ ✅ done. Mike : restart Claude Code session pour activer.
 
 ### 3. Hunyuan3D-2 local — **T2**
 
