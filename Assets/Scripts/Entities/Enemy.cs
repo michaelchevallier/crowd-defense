@@ -611,6 +611,23 @@ namespace CrowdDefense.Entities
                 _wasWalking = nowWalking;
             }
 
+            // Walk anim blend + footstep audio
+            if (_animator != null && _animator.runtimeAnimatorController != null && cfg != null && cfg.Speed > 0f)
+                _animator.SetFloat("Speed", effSpeed / cfg.Speed);
+            if (nowWalking)
+            {
+                _stepTimer -= Time.deltaTime;
+                if (_stepTimer <= 0f)
+                {
+                    _stepTimer = StepInterval;
+                    AudioController.Instance?.Play3D("step_dirt", transform.position, 0.55f);
+                }
+            }
+            else
+            {
+                _stepTimer = 0f;
+            }
+
             // Dust trail for ground enemies
             if (effSpeed > 0.01f)
             {
