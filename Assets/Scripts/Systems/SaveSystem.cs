@@ -39,6 +39,7 @@ namespace CrowdDefense.Systems
         public float musicVolume = 1f;
         public float sfxVolume = 1f;
         public string lang = "fr";
+        public bool tutorialCompleted = false;
         // Skins — owned ids (default skins are always owned)
         public List<string> ownedSkins = new();
         // Active equipped skin per (targetType+targetId) key — flat list for JsonUtility
@@ -92,6 +93,16 @@ namespace CrowdDefense.Systems
             string json = JsonUtility.ToJson(_cached);
             PlayerPrefs.SetString(KEY, json);
             PlayerPrefs.Save();
+        }
+
+        // ── Tutorial ──
+
+        public static bool IsTutorialCompleted() => Load().tutorialCompleted;
+
+        public static void SetTutorialCompleted()
+        {
+            Load().tutorialCompleted = true;
+            Save();
         }
 
         public static bool IsLevelCleared(string levelId) => Load().clearedLevels.Contains(levelId);

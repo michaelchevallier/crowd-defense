@@ -178,8 +178,15 @@ namespace CrowdDefense.UI
                     ["doctrine.cost_label"] = "{0} gems",
                     ["doctrine.hud_btn"] = "Doctrines",
 
-                    // ── Achievement toast ───────────────────────────────────────────
-                    ["achievement.toast_header"] = "ACHIEVEMENT UNLOCKED",
+                    // ── Tutorial ───────────────────────────────────────────────────
+                    ["tutorial.btn_next"] = "Continue",
+                    ["tutorial.btn_skip"] = "Skip Tutorial",
+                    ["tutorial.step1.text"] = "Place a tower on a build point to defend the castle.",
+                    ["tutorial.step2.text"] = "Launch the first wave with the button at the bottom.",
+                    ["tutorial.step3.text"] = "Defeat an enemy to earn coins.",
+                    ["tutorial.step4.text"] = "Place your hero on the map to assist the towers.",
+                    ["tutorial.step5.text"] = "Collect coins dropped by defeated enemies.",
+                    ["tutorial.done.text"] = "You are ready! Good luck, defender!",
                 },
                 ["fr"] = new()
                 {
@@ -342,8 +349,15 @@ namespace CrowdDefense.UI
                     ["doctrine.cost_label"] = "{0} gemmes",
                     ["doctrine.hud_btn"] = "Doctrines",
 
-                    // ── Achievement toast ───────────────────────────────────────────
-                    ["achievement.toast_header"] = "SUCCES DEBLOQUE",
+                    // ── Tutorial ───────────────────────────────────────────────────
+                    ["tutorial.btn_next"] = "Continuer",
+                    ["tutorial.btn_skip"] = "Passer le tutoriel",
+                    ["tutorial.step1.text"] = "Place une tour sur un point de construction pour defendre le chateau.",
+                    ["tutorial.step2.text"] = "Lance la premiere vague avec le bouton en bas.",
+                    ["tutorial.step3.text"] = "Elimine un ennemi pour gagner des pieces.",
+                    ["tutorial.step4.text"] = "Place ton heros sur la carte pour aider les tours.",
+                    ["tutorial.step5.text"] = "Collecte les pieces laissees par les ennemis elimines.",
+                    ["tutorial.done.text"] = "Tu es pret ! Bonne chance, defenseur !",
                 },
             },
 

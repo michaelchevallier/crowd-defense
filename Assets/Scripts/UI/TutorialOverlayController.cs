@@ -1,150 +1,69 @@
 #nullable enable
 using UnityEngine;
 using UnityEngine.UIElements;
+using CrowdDefense.Data;
 using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    /// <summary>
-    /// Drives TutorialOverlay.uxml visibility and content based on TutorialState phases.
-    /// Event-only bindings: OnTowerPlaced, OnWaveStart, OnWaveCleared, OnGoldChanged.
-    /// Phase 2 (upgrade L2) uses Update polling since Tower has no OnUpgraded event.
-    /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class TutorialOverlayController : MonoBehaviour
     {
-        private VisualElement? tutorialRoot;
-        private VisualElement? arrow;
-        private Label? textLabel;
-        private Button? btnNext;
-        private Button? btnSkip;
-
-        // Phase 2: upgrade-L2 detection needs polling once phase is reached
-        private bool watchingForUpgrade;
+        private VisualElement? _root;
+        private VisualElement? _arrow;
+        private Label?         _textLabel;
+        private Button?        _btnNext;
+        private Button?        _btnSkip;
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
-            tutorialRoot = root.Q<VisualElement>("tutorial-root");
-            arrow = root.Q<VisualElement>("tutorial-arrow");
-            textLabel = root.Q<Label>("tutorial-text");
-            btnNext = root.Q<Button>("tutorial-btn-next");
-            btnSkip = root.Q<Button>("tutorial-btn-skip");
+            var doc = GetComponent<UIDocument>().rootVisualElement;
+            _root      = doc.Q<VisualElement>("tutorial-root");
+            _arrow     = doc.Q<VisualElement>("tutorial-arrow");
+            _textLabel = doc.Q<Label>("tutorial-text");
+            _btnNext   = doc.Q<Button>("tutorial-btn-next");
+            _btnSkip   = doc.Q<Button>("tutorial-btn-skip");
 
-            btnNext?.RegisterCallback<ClickEvent>(_ => OnNextClicked());
-            btnSkip?.RegisterCallback<ClickEvent>(_ => OnSkipClicked());
+            _btnNext?.RegisterCallback<ClickEvent>(_ => OnNextClicked());
+            _btnSkip?.RegisterCallback<ClickEvent>(_ => OnSkipClicked());
 
             L.OnLocaleChanged += RefreshText;
 
-            // Subscribe to game events for auto-advance
-            if (PlacementController.Instance != null)
-                PlacementController.Instance.OnTowerPlaced += OnTowerPlaced;
-
-            if (WaveManager.Instance != null)
-            {
-                WaveManager.Instance.OnWaveStart += OnWaveStart;
-                WaveManager.Instance.OnWaveCleared += OnWaveCleared;
-            }
-
             if (TutorialState.Instance != null)
             {
-                TutorialState.Instance.OnPhaseChanged += OnPhaseChanged;
+                TutorialState.Instance.OnStepChanged       += OnStepChanged;
                 TutorialState.Instance.OnTutorialCompleted += Hide;
-                TutorialState.Instance.OnTutorialSkipped += Hide;
+                TutorialState.Instance.OnTutorialSkipped   += Hide;
             }
 
-            // Show initial state
-            SyncToCurrentPhase();
+            SyncToCurrentStep();
         }
 
         private void OnDestroy()
         {
             L.OnLocaleChanged -= RefreshText;
 
-            if (PlacementController.Instance != null)
-                PlacementController.Instance.OnTowerPlaced -= OnTowerPlaced;
-
-            if (WaveManager.Instance != null)
-            {
-                WaveManager.Instance.OnWaveStart -= OnWaveStart;
-                WaveManager.Instance.OnWaveCleared -= OnWaveCleared;
-            }
-
             if (TutorialState.Instance != null)
             {
-                TutorialState.Instance.OnPhaseChanged -= OnPhaseChanged;
+                TutorialState.Instance.OnStepChanged       -= OnStepChanged;
                 TutorialState.Instance.OnTutorialCompleted -= Hide;
-                TutorialState.Instance.OnTutorialSkipped -= Hide;
-            }
-        }
-
-        private void Update()
-        {
-            // Phase 2: poll for any placed tower upgraded to L2 (no OnUpgraded event on Tower)
-            if (!watchingForUpgrade) return;
-            if (TutorialState.Instance == null || !TutorialState.Instance.IsTutorialActive) return;
-            if (TutorialState.Instance.CurrentPhase != 2) { watchingForUpgrade = false; return; }
-
-            if (PlacementController.Instance == null) return;
-            foreach (var tower in PlacementController.Instance.PlacedTowers)
-            {
-                if (tower != null && tower.UpgradeLevel >= 2)
-                {
-                    watchingForUpgrade = false;
-                    TutorialState.Instance.AdvancePhase(); // 2 → 3
-                    return;
-                }
+                TutorialState.Instance.OnTutorialSkipped   -= Hide;
             }
         }
 
         // ── Event handlers ─────────────────────────────────────────────────────────
 
-        private void OnTowerPlaced(Entities.Tower _)
-        {
-            if (TutorialState.Instance == null || !TutorialState.Instance.IsTutorialActive) return;
-            if (TutorialState.Instance.CurrentPhase == 0)
-                TutorialState.Instance.AdvancePhase(); // 0 → 1
-        }
+        private void OnStepChanged(TutorialStep _) => SyncToCurrentStep();
 
-        private void OnWaveStart(int _)
-        {
-            if (TutorialState.Instance == null || !TutorialState.Instance.IsTutorialActive) return;
-            if (TutorialState.Instance.CurrentPhase == 1)
-                TutorialState.Instance.AdvancePhase(); // 1 → 2 (wave launched)
-        }
-
-        private void OnWaveCleared(int _)
-        {
-            if (TutorialState.Instance == null || !TutorialState.Instance.IsTutorialActive) return;
-            // Phase 2: start watching for upgrade after first wave cleared
-            if (TutorialState.Instance.CurrentPhase == 2)
-                watchingForUpgrade = true;
-
-            // Phase 3 → 4: second wave cleared = congrats
-            if (TutorialState.Instance.CurrentPhase == 3)
-                TutorialState.Instance.AdvancePhase(); // 3 → 4
-        }
-
-        private void OnPhaseChanged(int phase)
-        {
-            SyncToCurrentPhase();
-        }
-
-        private void OnNextClicked()
-        {
-            TutorialState.Instance?.AdvancePhase();
-        }
-
-        private void OnSkipClicked()
-        {
-            TutorialState.Instance?.SkipTutorial();
-        }
+        private void OnNextClicked()  => TutorialState.Instance?.AdvanceStep();
+        private void OnSkipClicked()  => TutorialState.Instance?.SkipTutorial();
 
         // ── Display ────────────────────────────────────────────────────────────────
 
-        private void SyncToCurrentPhase()
+        private void SyncToCurrentStep()
         {
-            if (TutorialState.Instance == null || !TutorialState.Instance.IsTutorialActive)
+            var state = TutorialState.Instance;
+            if (state == null || !state.IsActive)
             {
                 Hide();
                 return;
@@ -152,73 +71,70 @@ namespace CrowdDefense.UI
 
             Show();
             RefreshText();
-            PositionArrowForPhase(TutorialState.Instance.CurrentPhase);
+            UpdateNextButtonVisibility(state.CurrentStepDef);
+            PositionArrowForStep(state.CurrentStep);
         }
 
         private void RefreshText()
         {
-            if (TutorialState.Instance == null) return;
-            int phase = TutorialState.Instance.CurrentPhase;
+            var state = TutorialState.Instance;
+            if (state == null) return;
 
-            if (textLabel != null)
-                textLabel.text = L.Get($"tutorial.phase{phase}.text");
+            var def = state.CurrentStepDef;
+            if (_textLabel != null)
+                _textLabel.text = def != null ? L.Get(def.textKey) : "";
 
-            if (btnNext != null)
-                btnNext.text = L.Get("tutorial.btn_next");
+            if (_btnNext != null)
+                _btnNext.text = L.Get("tutorial.btn_next");
 
-            if (btnSkip != null)
-                btnSkip.text = L.Get("tutorial.btn_skip");
+            if (_btnSkip != null)
+                _btnSkip.text = L.Get("tutorial.btn_skip");
         }
 
-        private void Show()
+        private void UpdateNextButtonVisibility(TutorialStepDef? def)
         {
-            if (tutorialRoot == null) return;
-            tutorialRoot.RemoveFromClassList("hidden");
+            if (_btnNext == null) return;
+            bool show = def == null || def.showNextButton;
+            _btnNext.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
-        private void Hide()
-        {
-            if (tutorialRoot == null) return;
-            tutorialRoot.AddToClassList("hidden");
-        }
+        private void Show() => _root?.RemoveFromClassList("hidden");
+        private void Hide() => _root?.AddToClassList("hidden");
 
-        /// <summary>
-        /// Positions the arrow indicator relative to the HUD element relevant to each phase.
-        /// Uses static offsets aligned to the HUD layout — no runtime element querying needed.
-        /// </summary>
-        private void PositionArrowForPhase(int phase)
+        // Arrow positions are static offsets relative to HUD layout
+        private void PositionArrowForStep(TutorialStep step)
         {
-            if (arrow == null) return;
+            if (_arrow == null) return;
 
-            switch (phase)
+            switch (step)
             {
-                case 0:
-                    // Phase 0: place tower — point toward game grid center-bottom
-                    arrow.style.display = DisplayStyle.Flex;
-                    arrow.style.left = new Length(50f, LengthUnit.Percent);
-                    arrow.style.top = new Length(60f, LengthUnit.Percent);
+                case TutorialStep.Step1_PlaceTower:
+                    _arrow.style.display = DisplayStyle.Flex;
+                    _arrow.style.left    = new Length(50f, LengthUnit.Percent);
+                    _arrow.style.top     = new Length(60f, LengthUnit.Percent);
                     break;
-                case 1:
-                    // Phase 1: launch wave button — bottom-center
-                    arrow.style.display = DisplayStyle.Flex;
-                    arrow.style.left = new Length(50f, LengthUnit.Percent);
-                    arrow.style.top = new Length(75f, LengthUnit.Percent);
+                case TutorialStep.Step2_StartWave:
+                    _arrow.style.display = DisplayStyle.Flex;
+                    _arrow.style.left    = new Length(50f, LengthUnit.Percent);
+                    _arrow.style.top     = new Length(75f, LengthUnit.Percent);
                     break;
-                case 2:
-                    // Phase 2: upgrade tower — point toward a placed tower area
-                    arrow.style.display = DisplayStyle.Flex;
-                    arrow.style.left = new Length(40f, LengthUnit.Percent);
-                    arrow.style.top = new Length(55f, LengthUnit.Percent);
+                case TutorialStep.Step3_KillEnemy:
+                    _arrow.style.display = DisplayStyle.Flex;
+                    _arrow.style.left    = new Length(55f, LengthUnit.Percent);
+                    _arrow.style.top     = new Length(50f, LengthUnit.Percent);
                     break;
-                case 3:
-                    // Phase 3: synergies — point toward adjacent tower zone
-                    arrow.style.display = DisplayStyle.Flex;
-                    arrow.style.left = new Length(45f, LengthUnit.Percent);
-                    arrow.style.top = new Length(55f, LengthUnit.Percent);
+                case TutorialStep.Step4_PlaceHero:
+                    _arrow.style.display = DisplayStyle.Flex;
+                    _arrow.style.left    = new Length(40f, LengthUnit.Percent);
+                    _arrow.style.top     = new Length(55f, LengthUnit.Percent);
+                    break;
+                case TutorialStep.Step5_CollectCoins:
+                    _arrow.style.display = DisplayStyle.Flex;
+                    _arrow.style.left    = new Length(5f,  LengthUnit.Percent);
+                    _arrow.style.top     = new Length(10f, LengthUnit.Percent);
                     break;
                 default:
-                    // Phase 4+: congrats — no arrow
-                    arrow.style.display = DisplayStyle.None;
+                    _arrow.style.display = DisplayStyle.None;
                     break;
             }
         }
