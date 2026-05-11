@@ -39,6 +39,7 @@ namespace CrowdDefense.Data
         public string Id => id;
         public string DisplayName => displayName;
         public string Theme => theme;
+        public LevelTheme LevelTheme => LevelThemeExtensions.Parse(theme);
         public int World => world;
         public int Level => level;
         public IReadOnlyList<string> MapRows => mapRows;
