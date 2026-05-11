@@ -227,15 +227,19 @@ namespace CrowdDefense.UI
             UpdateHeroPanel();
         }
 
-        // Per-frame smooth countdown on the pill badge during the skip bonus window
+        // Per-frame smooth countdown on the pill badge and main label during the skip bonus window
         private void TickBreakPill()
         {
-            if (waveLaunchPill == null || waveLaunchPillText == null) return;
             var wm = WaveManager.Instance;
             if (wm == null || !wm.IsWaitingForPlayerStart) return;
             float secondsLeft = wm.SkipWindowSecondsRemaining;
             if (secondsLeft <= 0f) return;
-            waveLaunchPillText.text = L.Get("hud.pill_skip_text", secondsLeft, Mathf.RoundToInt(wm.StreakCount * 5));
+
+            if (waveLaunchPill != null && waveLaunchPillText != null)
+                waveLaunchPillText.text = L.Get("hud.pill_skip_text", secondsLeft, Mathf.RoundToInt(wm.StreakCount * 5));
+
+            if (waveLaunchLabel != null)
+                waveLaunchLabel.text = L.Get("hud.wave_launch_countdown", wm.NextWaveDisplayNumber, secondsLeft);
         }
 
         private void UpdateHeroPanel()
@@ -333,12 +337,54 @@ namespace CrowdDefense.UI
         // Shared debounced launch entry point for click + N key
         private void TryLaunchWave()
         {
-            if (WaveManager.Instance == null || !WaveManager.Instance.IsWaitingForPlayerStart) return;
+            var wm = WaveManager.Instance;
+            if (wm == null || !wm.IsWaitingForPlayerStart) return;
             float now = Time.unscaledTime;
             float debounceSec = BalanceConfig.Get().InputDebounceMs / 1000f;
             if (now - lastLaunchInputTime < debounceSec) return;
             lastLaunchInputTime = now;
-            WaveManager.Instance.StartNextWave();
+
+            bool wasInWindow = wm.SkipWindowSecondsRemaining > 0f;
+            int streakBefore = wm.StreakCount;
+            wm.StartNextWave();
+
+            if (wasInWindow)
+            {
+                // Flash the wave launch button green
+                StartCoroutine(FlashButtonGreen(waveLaunchBtn, 0.35f));
+
+                // Skip bonus popup — use Toast (HUD-space, no 3D position needed)
+                var cfg = BalanceConfig.Get();
+                Toast.Show(
+                    L.Get("hud.skip_toast_title"),
+                    L.Get("hud.skip_toast_body"),
+                    1800,
+                    null,
+                    ToastType.Perk
+                );
+
+                // Streak toast when streak just incremented
+                int newStreak = streakBefore + 1; // WaveManager caps at StreakCap but we show intent
+                if (newStreak > 0)
+                {
+                    int pctBonus = Mathf.RoundToInt(Mathf.Min(newStreak, cfg.StreakCap) * cfg.StreakBonusPerWave * 100f);
+                    Toast.Show(
+                        L.Get("hud.streak_toast_title", newStreak),
+                        L.Get("hud.streak_toast_body", pctBonus),
+                        2000,
+                        null,
+                        ToastType.Combo
+                    );
+                }
+            }
+        }
+
+        private System.Collections.IEnumerator FlashButtonGreen(VisualElement? btn, float duration)
+        {
+            if (btn == null) yield break;
+            btn.AddToClassList("skip-bonus-flash");
+            yield return new WaitForSecondsRealtime(duration);
+            btn.RemoveFromClassList("skip-bonus-flash");
         }
 
         private void OnGoldChanged(int gold)

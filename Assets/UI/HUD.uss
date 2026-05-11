@@ -150,6 +150,12 @@
     background-color: rgb(255, 185, 40);
 }
 
+.wave-launch-btn.skip-bonus-flash {
+    background-color: rgb(95, 224, 121);
+    border-color: rgb(10, 180, 60);
+    border-width: 4px;
+}
+
 .wave-launch-label {
     color: rgb(26, 26, 26);
     font-size: 18px;

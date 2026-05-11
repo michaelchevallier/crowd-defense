@@ -41,10 +41,15 @@ namespace CrowdDefense.UI
                     ["hud.hp_label"] = "HP",
                     ["hud.wave_launch"] = "Launch wave [N]",
                     ["hud.wave_launch_bonus"] = "Launch (+30c) [N]",
+                    ["hud.wave_launch_countdown"] = "Wave {0} — {1:F0}s [N]",
                     ["hud.wave_progress"] = "Wave {0} / {1}",
                     ["hud.pill_skip_text"] = "Launch in {0:F0}s for +{1}%",
                     ["hud.streak_text"] = "+{0}%",
                     ["hud.wave_preview_title"] = "Wave {0}:",
+                    ["hud.skip_toast_title"] = "+30c Skip!",
+                    ["hud.skip_toast_body"] = "Bonus for launching early",
+                    ["hud.streak_toast_title"] = "Streak x{0}!",
+                    ["hud.streak_toast_body"] = "Kill reward +{0}%",
 
                     // ── Keyboard hints bar ─────────────────────────────────────────
                     ["hud.keyboard_hints"] = "N=wave  ESC=pause  Space=ult  F3=debug  M=minimap",
@@ -317,10 +322,15 @@ namespace CrowdDefense.UI
                     ["hud.hp_label"] = "PV",
                     ["hud.wave_launch"] = "Lancer la vague [N]",
                     ["hud.wave_launch_bonus"] = "Lancer (+30c) [N]",
+                    ["hud.wave_launch_countdown"] = "Vague {0} — {1:F0}s [N]",
                     ["hud.wave_progress"] = "Vague {0} / {1}",
                     ["hud.pill_skip_text"] = "Lancer dans {0:F0}s pour +{1}%",
                     ["hud.streak_text"] = "+{0}%",
                     ["hud.wave_preview_title"] = "Vague {0} :",
+                    ["hud.skip_toast_title"] = "+30c Skip !",
+                    ["hud.skip_toast_body"] = "Bonus pour lancer tot",
+                    ["hud.streak_toast_title"] = "Série x{0} !",
+                    ["hud.streak_toast_body"] = "Récompense kills +{0}%",
 
                     // ── Barre raccourcis clavier ───────────────────────────────────
                     ["hud.keyboard_hints"] = "N=vague  ESC=pause  Espace=ult  F3=debug  M=minimap",
