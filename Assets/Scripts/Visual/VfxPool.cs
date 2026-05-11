@@ -115,6 +115,15 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _hitFlashPool);
         }
 
+        public void SpawnLevelUp(Vector3 worldPos)
+        {
+            if (!IsVfxEnabled() || _coinBurstPool == null) return;
+            var ps = _coinBurstPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+            ApplyTint(ps, new Color(1f, 0.85f, 0f));
+            PlayAndAutoRelease(ps, _coinBurstPool);
+        }
+
         // ── Pool internals ────────────────────────────────────────────────────
 
         private ObjectPool<ParticleSystem> BuildPool(GameObject prefab, string label, int capacity)

@@ -277,5 +277,17 @@ namespace CrowdDefense.Systems
 
         // Called by boss enemies when they summon a minion mid-wave.
         public void RegisterSpawnedEnemy(Enemy e) => activeEnemies.Add(e);
+
+        // Called by Castle.TakeDamage — streak is broken if castle leaks during the break window.
+        public void NotifyCastleDamaged()
+        {
+            if (!waitingForPlayerStart || streakCount == 0) return;
+            streakCount = 0;
+            StreakRewardMul = 1f;
+#if UNITY_EDITOR
+            Debug.Log("[WaveManager] Castle damaged — streak reset");
+#endif
+            OnBreakStateChanged?.Invoke();
+        }
     }
 }

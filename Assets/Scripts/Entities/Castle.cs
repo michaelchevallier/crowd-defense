@@ -134,6 +134,8 @@ namespace CrowdDefense.Entities
             HP = Mathf.Max(0, HP - dmg);
             // Flag interest bank — any hit resets bank for this wave (D1-01 §3.5)
             Economy.Instance?.FlagCastleDamaged();
+            // D1-02: streak broken if castle leaks during the break window
+            WaveManager.Instance?.NotifyCastleDamaged();
             OnHPChanged?.Invoke(HP, HPMax);
 
             RefreshHpBar();
