@@ -11,32 +11,33 @@ python3 -m playwright install chromium
 
 Already installed on this machine.
 
-## Auth — copy token from Chrome (recommended, 30s)
+## Auth — extract bearer token from Chrome (recommended, 30s)
 
-The Mixamo API uses an Adobe IMS OAuth bearer token, stored in browser
-localStorage as `access_token` after login. The fastest way to set up:
+The Mixamo API uses an Adobe IMS OAuth bearer token. Since you are already
+logged in to Mixamo in Chrome, the fastest way is to copy the token directly:
 
-1. Open https://www.mixamo.com in Chrome (already logged in)
-2. DevTools (Cmd+Opt+I) → Console
+1. Open https://www.mixamo.com in your Chrome
+2. Open DevTools (Cmd+Opt+I) → Console tab
 3. Run: `copy(localStorage.access_token)`
-4. Paste into the token file:
+4. Paste into `tools/mixamo/.token` (one line, no quotes):
    ```bash
    pbpaste > tools/mixamo/.token
    ```
-5. Run the downloader:
+5. Run the script:
    ```bash
    python3 tools/mixamo/download_anims.py
    ```
 
-Token typically expires after 24h. On HTTP 401, repeat steps 2-4.
+The token is JWT-formatted; it typically expires after 24h. If you get HTTP 401,
+re-extract the token using the same steps above.
 
 Alternative: set `MIXAMO_TOKEN` env var with the token value.
 
-## Auth — Playwright fallback
+## Auth — automated Playwright login (fallback)
 
-If no `.token`, `MIXAMO_TOKEN`, or `.session.json` is present, the script
-opens a fresh Chromium window for Adobe login and captures the token
-automatically via network request interception.
+If `.token` / `MIXAMO_TOKEN` / `.session.json` are all absent, the script opens
+a fresh Chromium window for Adobe login. The script captures the OAuth token
+automatically and saves it to `.session.json` for reuse.
 
 ## Options
 
@@ -71,17 +72,27 @@ Progress tracked in `tools/mixamo/.progress.json`.
 
 ## API endpoints (reverse-engineered, 2026)
 
+If you see `HTTP 401` or "OAuth token expired":
+
+```bash
+# In Chrome devtools: copy(localStorage.access_token)
+pbpaste > tools/mixamo/.token
+python3 tools/mixamo/download_anims.py --resume
+```
+
+## API endpoints used (reverse-engineered)
+
 Base: `https://www.mixamo.com/api/v1/*` (NOT `api.mixamo.com` — deprecated)
 
 | Endpoint | Method | Purpose |
 |---|---|---|
-| `/products?type=Character&query=X` | GET | Find character by name |
-| `/products?type=Motion,MotionPack&query=X` | GET | Find motion by name |
-| `/products/{motion_id}?character_id={char}` | GET | Fetch motion gms_hash |
+| `/products?type=Character&query=X` | GET | Find character ID by name |
+| `/products?type=Motion,MotionPack&query=X` | GET | Find motion ID by name |
+| `/products/{motion_id}?character_id={char_id}` | GET | Fetch motion gms_hash |
 | `/animations/stream` | POST | Retarget motion to character |
 | `/animations/export` | POST | Request FBX generation |
 | `/characters/{char_id}/monitor` | GET | Poll until job complete |
-| S3 presigned URL (`job_result`) | GET | Download FBX |
+| S3 presigned URL (`job_result`) | GET | Download FBX (or ZIP-wrapped FBX) |
 
 Headers: `x-api-key: mixamo2` + `Authorization: Bearer <token>`
 
@@ -104,6 +115,6 @@ Excluded (not Mixamo-Humanoid compatible):
 | Error | Cause | Fix |
 |---|---|---|
 | `HTTP 401: Oauth token is not valid` | Token expired | Re-copy token from Chrome devtools |
-| `Failed to resolve api.mixamo.com` | Old code | Script uses `www.mixamo.com/api/v1` |
-| 503 on S3 URL | FBX not yet generated | Script polls `monitor` until ready |
-| Playwright SingletonLock | Chrome same profile | Script uses temp profile |
+| `Failed to resolve api.mixamo.com` | Old script using deprecated host | Script already uses `www.mixamo.com/api/v1` |
+| Playwright SingletonLock | Chrome running same profile | Script uses temp profile |
+| 503 on S3 URL | FBX not yet generated | Script polls monitor endpoint until ready |

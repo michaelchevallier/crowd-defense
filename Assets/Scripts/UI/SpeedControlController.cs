@@ -29,6 +29,7 @@ namespace CrowdDefense.UI
 
         private void OnDestroy()
         {
+            // Reset timeScale so overlay / menu scenes aren't left fast
             Time.timeScale = 1f;
         }
 

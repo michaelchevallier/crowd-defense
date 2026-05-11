@@ -76,6 +76,7 @@ namespace CrowdDefense.UI
 
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
 
+            ApplyDeviceClasses(root);
             ApplyLocalizedTexts();
             L.OnLocaleChanged += ApplyLocalizedTexts;
 
@@ -236,6 +237,18 @@ namespace CrowdDefense.UI
                 if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
             }
+        }
+
+        private static void ApplyDeviceClasses(VisualElement root)
+        {
+            var hudRoot = root.Q<VisualElement>("hud-root");
+            if (hudRoot == null) return;
+            if (Device.IsMobile || Device.IsTouch)
+                hudRoot.AddToClassList("mobile");
+            else
+                hudRoot.AddToClassList("desktop");
+            if (Device.IsPortrait)
+                hudRoot.AddToClassList("portrait");
         }
 
         private static void SetVisible(VisualElement el, bool visible)

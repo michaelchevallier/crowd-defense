@@ -50,16 +50,18 @@ namespace CrowdDefense.UI
         private void OnSetBonusActivated(Hero hero, PerkSetBonusDef bonus)
         {
             if (hero != _hero) return;
-            AddBadge("", bonus.nameKey);
+            AddBadge("★", bonus.nameKey);
             RefreshSetProgress();
         }
 
         private void AddBadge(string emoji, string label)
         {
             if (badgePrefab == null || badgeContainer == null) return;
-            var go  = Instantiate(badgePrefab, badgeContainer);
-            var txt = go.GetComponentInChildren<Text>();
+            var go   = Instantiate(badgePrefab, badgeContainer);
+            var txt  = go.GetComponentInChildren<Text>();
             if (txt != null) txt.text = emoji;
+            var tip = go.GetComponent<Tooltip>();
+            if (tip != null) tip.Message = label;
         }
 
         private void RefreshSetProgress()
@@ -88,13 +90,19 @@ namespace CrowdDefense.UI
 
         private static string TagEmoji(PerkTag tag) => tag switch
         {
-            PerkTag.Foudre => "E",
-            PerkTag.Sang   => "S",
-            PerkTag.Pierre => "P",
-            PerkTag.Feu    => "F",
-            PerkTag.Vide   => "V",
-            PerkTag.Or     => "O",
+            PerkTag.Foudre => "⚡",
+            PerkTag.Sang   => "🩸",
+            PerkTag.Pierre => "🪨",
+            PerkTag.Feu    => "🔥",
+            PerkTag.Vide   => "🌀",
+            PerkTag.Or     => "🪙",
             _              => ""
         };
+
+        // Stub for tooltip component — may not exist yet, silently ignored
+        private sealed class Tooltip : MonoBehaviour
+        {
+            public string Message = "";
+        }
     }
 }

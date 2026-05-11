@@ -88,27 +88,10 @@ namespace CrowdDefense.Systems
             ctrl.Play(id, () => ApplyTimeScale());
         }
 
-        private void Update()
+        public void SetGameSpeed(int multiplier)
         {
-            UpdateHeroInput();
-        }
-
-        private void UpdateHeroInput()
-        {
-            if (Hero == null || State != GameState.Play) return;
-
-            float dx = Input.GetAxisRaw("Horizontal");
-            float dz = Input.GetAxisRaw("Vertical");
-            Hero.SetMove(dx, dz);
-
-            bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
-            Hero.SetRunning(shiftHeld);
-
-            if (Input.GetKeyDown(KeyCode.B) && _castleWorldPos != Vector3.zero)
-                Hero.transform.position = _castleWorldPos + Vector3.up * 0.5f;
-
-            if (Input.GetKeyDown(KeyCode.U))
-                Hero.TryUlt();
+            targetSpeed = Mathf.Clamp(multiplier, 1, 3);
+            ApplyTimeScale();
         }
 
         private void SpawnCastle()

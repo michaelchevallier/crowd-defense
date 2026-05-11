@@ -1,0 +1,10 @@
+# Auth files — never commit
+.token
+.session.json
+
+# Progress (local-only state)
+.progress.json
+
+# Python cache
+__pycache__/
+*.pyc

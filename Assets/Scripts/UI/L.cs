@@ -19,6 +19,9 @@ namespace CrowdDefense.UI
             {
                 ["en"] = new()
                 {
+                    // ── Tower toolbar ──────────────────────────────────────────────
+                    ["toolbar.not_enough_gold"] = "Not enough gold",
+
                     // ── Speed control ──────────────────────────────────────────────
                     ["hud.speed_label"] = "SPEED",
 
@@ -31,13 +34,6 @@ namespace CrowdDefense.UI
                     ["perk.rarity_legendary"] = "Legendary",
                     ["perk.placeholder_name"] = "Unknown Perk",
                     ["perk.placeholder_desc"] = "No description available.",
-
-                    // ── Hero HUD ───────────────────────────────────────────────────
-                    ["hud.hero_hp_label"] = "HERO",
-                    ["hud.hero_xp_label"] = "XP",
-                    ["hud.hero_ult_ready"] = "ULT READY",
-                    ["hud.hero_ult_cd"] = "{0:F1}s",
-                    ["hud.hero_level"] = "Lv{0}",
 
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "GOLD",
@@ -124,6 +120,9 @@ namespace CrowdDefense.UI
                     ["worldmap.title"] = "CROWD DEFENSE",
                     ["worldmap.total_stars"] = "{0} stars",
                     ["worldmap.locked"] = "Locked",
+                    ["worldmap.stars_1"] = "1 star",
+                    ["worldmap.stars_2"] = "2 stars",
+                    ["worldmap.stars_3"] = "3 stars",
                     ["worldmap.level_showcase"] = "Showcase",
                     ["worldmap.level_boss"] = "Boss",
                     ["worldmap.world1"] = "Plains",
@@ -176,6 +175,9 @@ namespace CrowdDefense.UI
                 },
                 ["fr"] = new()
                 {
+                    // ── Tower toolbar ──────────────────────────────────────────────
+                    ["toolbar.not_enough_gold"] = "Pas assez d'or",
+
                     // ── Speed control ──────────────────────────────────────────────
                     ["hud.speed_label"] = "VITESSE",
 
@@ -188,13 +190,6 @@ namespace CrowdDefense.UI
                     ["perk.rarity_legendary"] = "Legendaire",
                     ["perk.placeholder_name"] = "Bonus inconnu",
                     ["perk.placeholder_desc"] = "Aucune description disponible.",
-
-                    // ── Hero HUD ───────────────────────────────────────────────────
-                    ["hud.hero_hp_label"] = "HERO",
-                    ["hud.hero_xp_label"] = "XP",
-                    ["hud.hero_ult_ready"] = "ULT PRETE",
-                    ["hud.hero_ult_cd"] = "{0:F1}s",
-                    ["hud.hero_level"] = "Nv{0}",
 
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "OR",
@@ -281,6 +276,9 @@ namespace CrowdDefense.UI
                     ["worldmap.title"] = "CROWD DEFENSE",
                     ["worldmap.total_stars"] = "{0} étoiles",
                     ["worldmap.locked"] = "Verrouillé",
+                    ["worldmap.stars_1"] = "1 étoile",
+                    ["worldmap.stars_2"] = "2 étoiles",
+                    ["worldmap.stars_3"] = "3 étoiles",
                     ["worldmap.level_showcase"] = "Showcase",
                     ["worldmap.level_boss"] = "Boss",
                     ["worldmap.world1"] = "Plaine",
