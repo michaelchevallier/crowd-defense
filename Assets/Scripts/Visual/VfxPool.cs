@@ -23,6 +23,8 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? hitFlashPrefab;
         [SerializeField] private GameObject? levelUpPrefab;
         [SerializeField] private GameObject? perkPickupPrefab;
+        [SerializeField] private GameObject? frostPrefab;
+        [SerializeField] private GameObject? portalPrefab;
 
         private ObjectPool<ParticleSystem>? _impactPool;
         private ObjectPool<ParticleSystem>? _deathPool;
@@ -31,6 +33,8 @@ namespace CrowdDefense.Visual
         private ObjectPool<ParticleSystem>? _hitFlashPool;
         private ObjectPool<ParticleSystem>? _levelUpPool;
         private ObjectPool<ParticleSystem>? _perkPickupPool;
+        private ObjectPool<ParticleSystem>? _frostPool;
+        private ObjectPool<ParticleSystem>? _portalPool;
 
         private Transform? _root;
         private Material? _additiveMat;
@@ -48,6 +52,8 @@ namespace CrowdDefense.Visual
             hitFlashPrefab  ??= BuildProceduralPrefab("HitFlash",  BuildHitFlashModule);
             levelUpPrefab   ??= BuildProceduralPrefab("LevelUp",   BuildLevelUpModule);
             perkPickupPrefab ??= BuildProceduralPrefab("PerkPickup", BuildPerkPickupModule);
+            frostPrefab     ??= BuildProceduralPrefab("Frost",     BuildFrostModule);
+            portalPrefab    ??= BuildProceduralPrefab("Portal",    BuildPortalModule);
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
@@ -56,6 +62,8 @@ namespace CrowdDefense.Visual
             _hitFlashPool  = BuildPool(hitFlashPrefab,  "HitFlash",  DefaultCapacity);
             _levelUpPool   = BuildPool(levelUpPrefab,   "LevelUp",   8);
             _perkPickupPool = BuildPool(perkPickupPrefab, "PerkPickup", DefaultCapacity);
+            _frostPool     = BuildPool(frostPrefab,     "Frost",     DefaultCapacity);
+            _portalPool    = BuildPool(portalPrefab,    "Portal",    DefaultCapacity);
 
             PreWarm();
         }
@@ -142,6 +150,49 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _perkPickupPool);
         }
 
+        public void SpawnFrost(Vector3 worldPos, float radius)
+        {
+            if (!IsVfxEnabled() || _frostPool == null) return;
+            var ps = _frostPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+            // Scale the circle shape radius at runtime before play.
+            var shape = ps.shape;
+            shape.radius = Mathf.Max(0.3f, radius);
+            ApplyTint(ps, new Color(0.5f, 0.9f, 1f));
+            PlayAndAutoRelease(ps, _frostPool);
+        }
+
+        public void SpawnPortal(Vector3 worldPos)
+        {
+            if (!IsVfxEnabled() || _portalPool == null) return;
+            var ps = _portalPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+            ApplyTint(ps, new Color(0.4f, 0.2f, 0.6f));
+            PlayAndAutoRelease(ps, _portalPool);
+            StartCoroutine(PortalLightFlashRoutine(worldPos));
+        }
+
+        private static IEnumerator PortalLightFlashRoutine(Vector3 worldPos)
+        {
+            var lightGo = new GameObject("PortalLight_VFX");
+            lightGo.transform.position = worldPos;
+            var light = lightGo.AddComponent<Light>();
+            light.type      = LightType.Point;
+            light.color     = new Color(0.4f, 0.2f, 0.6f);
+            light.range     = 4f;
+            light.intensity = 5f;
+
+            float elapsed = 0f;
+            const float duration = 0.3f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                light.intensity = Mathf.Lerp(5f, 0f, elapsed / duration);
+                yield return null;
+            }
+            Destroy(lightGo);
+        }
+
         // ── Pool internals ────────────────────────────────────────────────────
 
         private ObjectPool<ParticleSystem> BuildPool(GameObject prefab, string label, int capacity)
@@ -182,6 +233,8 @@ namespace CrowdDefense.Visual
             PreWarmPool(_hitFlashPool,  DefaultCapacity);
             PreWarmPool(_levelUpPool,   8);
             PreWarmPool(_perkPickupPool, DefaultCapacity);
+            PreWarmPool(_frostPool,     DefaultCapacity);
+            PreWarmPool(_portalPool,    DefaultCapacity);
         }
 
         private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
@@ -407,6 +460,66 @@ namespace CrowdDefense.Visual
             shape.shapeType    = ParticleSystemShapeType.Hemisphere;
             shape.radius       = 0.2f;
             shape.rotation     = new Vector3(-90f, 0f, 0f);
+
+            SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
+        }
+
+        private static void BuildFrostModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(1.0f, 1.2f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(0.5f, 1.5f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.3f, 0.6f);
+            main.startColor     = new Color(0.5f, 0.9f, 1f);
+            main.maxParticles   = 60;
+            main.duration       = 0.8f;
+            main.gravityModifier = 0.05f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 25, 30, 1, 0.01f) });
+
+            var shape = ps.shape;
+            shape.enabled      = true;
+            shape.shapeType    = ParticleSystemShapeType.Circle;
+            shape.radius       = 1f; // overridden at runtime by SpawnFrost
+
+            SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
+        }
+
+        private static void BuildPortalModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.3f, 0.5f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(1f, 3f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.1f, 0.3f);
+            main.startColor     = new Color(0.4f, 0.2f, 0.6f);
+            main.maxParticles   = 40;
+            main.duration       = 0.5f;
+            main.gravityModifier = -0.3f;
+            // Simulate in world space so particles stay put after spawn.
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 25, 25, 1, 0.01f) });
+
+            // Donut shape: circle with donutRadius for the hollow center effect.
+            var shape = ps.shape;
+            shape.enabled      = true;
+            shape.shapeType    = ParticleSystemShapeType.Donut;
+            shape.radius       = 0.7f;
+            shape.donutRadius  = 0.15f;
+            shape.rotation     = new Vector3(90f, 0f, 0f);
+
+            // Vortex via VelocityOverLifetime orbital.
+            var vol = ps.velocityOverLifetime;
+            vol.enabled        = true;
+            vol.space          = ParticleSystemSimulationSpace.Local;
+            vol.orbitalY       = new ParticleSystem.MinMaxCurve(180f * Mathf.Deg2Rad * 6f);
+            vol.orbitalOffsetY = new ParticleSystem.MinMaxCurve(0f);
 
             SetSizeOverLifetimeFade(ps);
             SetColorAlphaFade(ps);

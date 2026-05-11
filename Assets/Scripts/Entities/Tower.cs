@@ -566,13 +566,19 @@ namespace CrowdDefense.Entities
             if (WaveManager.Instance == null || SlowEffectManager.Instance == null) return;
             float rangeSq = cfg.Range * cfg.Range;
             var enemies = WaveManager.Instance.ActiveEnemies;
+            bool hitAny = false;
             for (int i = 0; i < enemies.Count; i++)
             {
                 var e = enemies[i];
                 if (e == null || e.IsDead) continue;
                 if ((e.transform.position - transform.position).sqrMagnitude > rangeSq) continue;
                 SlowEffectManager.Instance.ApplySlow(e, cfg.SlowMul, cfg.SlowDurationMs);
+                hitAny = true;
             }
+
+            bool isFrost = cfg.Id == "frost" || cfg.Id.Contains("ice");
+            if (isFrost && hitAny)
+                VfxPool.Instance?.SpawnFrost(transform.position, cfg.Range * 0.5f);
         }
 
         // ── CoinPull (Magnet) ────────────────────────────────────────────────
