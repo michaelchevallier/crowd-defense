@@ -98,6 +98,12 @@ namespace CrowdDefense.Entities
         private bool  _summonHordePending = false;
         private float _summonHordeTime  = 0f;
 
+        // ── HP bar (world-space billboard) ────────────────────────────────────
+        private Transform?    _hpBarRoot;
+        private Transform?    _hpBarFg;
+        private MeshRenderer? _hpBarFgMR;
+        private MaterialPropertyBlock? _hpBarMpb;
+
         // ── Stealth visual ring ────────────────────────────────────────────────
         private GameObject?  _stealthRingGO;
         private MeshRenderer? _stealthRingMR;
@@ -396,6 +402,9 @@ namespace CrowdDefense.Entities
             // Boss aura ring
             EnsureBossAura();
 
+            // World-space HP bar
+            BuildHpBar();
+
             // Position + path setup
             pathManager = PathManager.Instance;
             if (type.IsFlyer)
@@ -531,6 +540,86 @@ namespace CrowdDefense.Entities
         }
 
         // ── Visual helpers ────────────────────────────────────────────────────
+
+        private void BuildHpBar()
+        {
+            bool isBoss = cfg != null && (cfg.IsBoss || cfg.IsApocalypseBoss);
+            float barScale = isBoss ? 2f : 1f;
+
+            // Re-use existing bar if already built (pool reuse)
+            if (_hpBarRoot == null)
+            {
+                // Background (red)
+                var bg = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                bg.name = "HPBarBg";
+                Object.Destroy(bg.GetComponent<Collider>());
+                _hpBarRoot = bg.transform;
+                _hpBarRoot.SetParent(transform, false);
+
+                var bgMR = bg.GetComponent<MeshRenderer>();
+                if (bgMR != null)
+                {
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+                    mat.color = Color.red;
+                    bgMR.material = mat;
+                    bgMR.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    bgMR.receiveShadows = false;
+                }
+
+                // Foreground (green, child of bg)
+                var fg = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                fg.name = "HPBarFg";
+                Object.Destroy(fg.GetComponent<Collider>());
+                _hpBarFg = fg.transform;
+                _hpBarFg.SetParent(_hpBarRoot, false);
+                _hpBarFg.localPosition = Vector3.zero;
+                _hpBarFg.localScale    = Vector3.one;
+
+                _hpBarFgMR = fg.GetComponent<MeshRenderer>();
+                if (_hpBarFgMR != null)
+                {
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+                    mat.color = Color.green;
+                    _hpBarFgMR.material = mat;
+                    _hpBarFgMR.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    _hpBarFgMR.receiveShadows = false;
+                }
+
+                _hpBarMpb = new MaterialPropertyBlock();
+            }
+
+            _hpBarRoot.localPosition = new Vector3(0f, 1.5f, 0f);
+            _hpBarRoot.localScale    = new Vector3(barScale, barScale * 0.1f, 1f);
+            _hpBarRoot.gameObject.SetActive(false); // hidden at full HP
+        }
+
+        private void UpdateHpBar()
+        {
+            if (_hpBarRoot == null || _hpBarFg == null || _hpBarFgMR == null || _hpBarMpb == null) return;
+
+            float ratio = HpRatio;
+
+            // Visibility
+            bool visible = ratio < 1f;
+            if (_hpBarRoot.gameObject.activeSelf != visible)
+                _hpBarRoot.gameObject.SetActive(visible);
+
+            if (!visible) return;
+
+            // Width: pivot is center — shift fg so left edge stays fixed
+            _hpBarFg.localScale    = new Vector3(ratio, 1f, 1f);
+            _hpBarFg.localPosition = new Vector3((ratio - 1f) * 0.5f, 0f, -0.001f);
+
+            // Color: red → green
+            Color barColor = Color.Lerp(Color.red, Color.green, ratio);
+            _hpBarMpb.SetColor(_baseColorId, barColor);
+            _hpBarMpb.SetColor(_colorId,     barColor);
+            _hpBarFgMR.SetPropertyBlock(_hpBarMpb);
+
+            // Billboard: face camera
+            if (Camera.main != null)
+                _hpBarRoot.rotation = Quaternion.LookRotation(Camera.main.transform.forward);
+        }
 
         private void BuildShieldHalo()
         {
@@ -670,6 +759,7 @@ namespace CrowdDefense.Entities
             }
 
             TickHitFlash();
+            UpdateHpBar();
             TickBossAura();
             TickBossEncounterPublish();
             TickApocalypseBoss();
@@ -1082,8 +1172,15 @@ namespace CrowdDefense.Entities
             TriggerHitFlash();
             AudioController.Instance?.Play3D("enemy_hit", transform.position, 0.4f);
             VfxPool.Instance?.SpawnHitFlash(transform);
-            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnDamage(
-                actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
+            bool isBossHit = cfg != null && (cfg.IsBoss || cfg.IsApocalypseBoss);
+            bool isCrit    = actualDmg > maxHp * 0.08f;
+            var  popup     = CrowdDefense.UI.FloatingPopupController.Instance;
+            if (isBossHit)
+                popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
+            else if (isCrit)
+                popup?.SpawnCrit(actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
+            else
+                popup?.SpawnDamage(actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
 
             // Juice screen shake on hit for bosses
             if (cfg != null && cfg.IsBoss)
