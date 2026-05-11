@@ -64,11 +64,26 @@ namespace CrowdDefense.Data
             return Mathf.Pow(1.1f, world - 10);
         }
 
-        public int CastleHPFor(int world, int level, float difficultyMul = 1f)
+        // D1-04 §3.3 : difficultyMul par level dans le world (W*-8 boss = 1.5)
+        public static float LevelDifficultyMul(int level) => level switch
         {
-            float formula = CastleHPBase + CastleHPSqrtMul * Mathf.Sqrt(world) * difficultyMul;
+            1 => 1.00f,
+            2 => 1.00f,
+            3 => 1.05f,
+            4 => 1.10f,
+            5 => 1.15f,
+            6 => 1.15f,
+            7 => 1.20f,
+            8 => 1.50f,
+            _ => 1.00f,
+        };
+
+        public int CastleHPFor(int world, int level)
+        {
+            float dMul = LevelDifficultyMul(level);
+            float formula = CastleHPBase + CastleHPSqrtMul * Mathf.Sqrt(world) * dMul;
             int rounded = Mathf.RoundToInt(formula);
-            if (world == 1) return Mathf.Max(rounded, FloorCastleHPW1);
+            if (world == 1 && level == 1) return Mathf.Max(rounded, FloorCastleHPW1);
             return rounded;
         }
 
@@ -87,8 +102,30 @@ namespace CrowdDefense.Data
         [Header("World pressure table (D1-04)")]
         public WorldPressure[] WorldPressureTable = System.Array.Empty<WorldPressure>();
 
+        private void OnEnable() => EnsurePressureTable();
+
+        // Popule la table si vide (lazy init — valeurs D1-04 §3.2 spec canonique)
+        public void EnsurePressureTable()
+        {
+            if (WorldPressureTable != null && WorldPressureTable.Length >= 10) return;
+            WorldPressureTable = new WorldPressure[]
+            {
+                new() { world = 1,  mobHpMul = 1.00f, mobCountMul = 1.00f, mobSpeedMul = 1.00f },
+                new() { world = 2,  mobHpMul = 1.10f, mobCountMul = 1.05f, mobSpeedMul = 1.00f },
+                new() { world = 3,  mobHpMul = 1.20f, mobCountMul = 1.10f, mobSpeedMul = 1.00f },
+                new() { world = 4,  mobHpMul = 1.30f, mobCountMul = 1.15f, mobSpeedMul = 1.00f },
+                new() { world = 5,  mobHpMul = 1.40f, mobCountMul = 1.20f, mobSpeedMul = 1.05f },
+                new() { world = 6,  mobHpMul = 1.65f, mobCountMul = 1.30f, mobSpeedMul = 1.10f },
+                new() { world = 7,  mobHpMul = 1.85f, mobCountMul = 1.35f, mobSpeedMul = 1.10f },
+                new() { world = 8,  mobHpMul = 2.05f, mobCountMul = 1.40f, mobSpeedMul = 1.12f },
+                new() { world = 9,  mobHpMul = 2.25f, mobCountMul = 1.45f, mobSpeedMul = 1.15f },
+                new() { world = 10, mobHpMul = 2.50f, mobCountMul = 1.50f, mobSpeedMul = 1.18f },
+            };
+        }
+
         public WorldPressure GetPressure(int world)
         {
+            EnsurePressureTable();
             foreach (var p in WorldPressureTable)
                 if (p.world == world) return p;
             return new WorldPressure { world = world, mobHpMul = 1f, mobSpeedMul = 1f, mobCountMul = 1f };
