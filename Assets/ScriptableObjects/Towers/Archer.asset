@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.TowerType
   id: archer
   displayName: Archer
+  icon: "\U0001F3F9"
   unlockWorld: 1
   cost: 30
   damage: 1.38
@@ -22,6 +23,28 @@ MonoBehaviour:
   projectileSpeed: 22
   aoe: 0
   pierce: 0
+  behavior: 0
+  clusterCount: 0
+  cooldownMs: 0
+  slowMul: 1
+  slowDurationMs: 0
+  buffMul: 1
+  coinMul: 1
+  pullSlow: 1
+  parabolic: 0
+  flyerOnly: 0
+  flyerDmgMul: 1
+  canHitFlyers: 0
+  hasArmorBreak: 0
+  armorBreak:
+    dmgTakenMul: 0
+    durMs: 0
+  synergies:
+  - type: 1
+    from: frost
+    effectKey: multiShotBonus
+    effectValue: 1
+    range: 4
   bodyColor: {r: 0.2275, g: 0.4157, b: 0.749, a: 1}
   projectileColor: {r: 1, g: 0.8235, b: 0.2471, a: 1}
   sizeMultiplier: 1
