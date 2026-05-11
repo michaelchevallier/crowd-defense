@@ -103,18 +103,9 @@ namespace CrowdDefense.Editor
 
         private static void EnsureVfxPool(GameObject parent, ref int created, ref int existing)
         {
-            var pool = EnsureChild<VfxPool>(parent, "VfxPool", ref created, ref existing);
-
-            var so = new SerializedObject(pool);
-            so.FindProperty("impactPrefab").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/VFX/Impact.prefab");
-            so.FindProperty("deathPrefab").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/VFX/Death.prefab");
-            so.FindProperty("auraPrefab").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/VFX/Aura.prefab");
-            so.FindProperty("coinPickupPrefab").objectReferenceValue =
-                AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/VFX/CoinPickup.prefab");
-            so.ApplyModifiedProperties();
+            // VfxPool generates procedural ParticleSystem prefabs at runtime if Inspector
+            // refs are null. Leave fields empty — runtime BuildProceduralPrefab handles it.
+            EnsureChild<VfxPool>(parent, "VfxPool", ref created, ref existing);
         }
 
         private static void EnsureCamera(ref int created, ref int existing)
