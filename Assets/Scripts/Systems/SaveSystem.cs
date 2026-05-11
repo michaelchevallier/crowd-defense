@@ -27,6 +27,15 @@ namespace CrowdDefense.Systems
         public int level = 0;
     }
 
+
+    [Serializable]
+    public class LeaderboardEntry
+    {
+        public int waveReached;
+        public int score;
+        public string date = "";
+    }
+
     [Serializable]
     public class ProgressData
     {
@@ -52,6 +61,7 @@ namespace CrowdDefense.Systems
         public List<string> ownedSkins = new();
         // Active equipped skin per (targetType+targetId) key — flat list for JsonUtility
         public List<SkinEquipEntry> equippedSkins = new();
+        public List<LeaderboardEntry> endlessLeaderboard = new();
     }
 
     [Serializable]
@@ -440,5 +450,24 @@ namespace CrowdDefense.Systems
             list.Add(new SkinEquipEntry { targetType = targetType, targetId = targetId, skinId = skinId });
             Save();
         }
+        // ── Leaderboard (endless mode) ────────────────────────────────────
+
+        public static List<LeaderboardEntry> GetLeaderboard() =>
+            Load().endlessLeaderboard;
+
+        public static void AddLeaderboardEntry(int waveReached, int score)
+        {
+            var list = Load().endlessLeaderboard;
+            list.Add(new LeaderboardEntry
+            {
+                waveReached = waveReached,
+                score       = score,
+                date        = System.DateTime.Now.ToString("yyyy-MM-dd"),
+            });
+            list.Sort((a, b) => b.score.CompareTo(a.score));
+            if (list.Count > 10) list.RemoveRange(10, list.Count - 10);
+            Save();
+        }
+
     }
 }
