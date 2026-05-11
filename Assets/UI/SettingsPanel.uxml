@@ -26,6 +26,11 @@
                         <ui:Label text="70%" name="music-value" class="setting-value" />
                     </ui:VisualElement>
                     <ui:VisualElement class="setting-row">
+                        <ui:Label text="UI" name="ui-label" class="setting-label" />
+                        <ui:Slider name="ui-slider" low-value="0" high-value="1" value="1" class="setting-slider" />
+                        <ui:Label text="100%" name="ui-value" class="setting-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="setting-row">
                         <ui:Label text="Mute" name="mute-label" class="setting-label" />
                         <ui:Toggle name="mute-toggle" class="setting-toggle" />
                     </ui:VisualElement>
@@ -74,6 +79,7 @@
             </ui:ScrollView>
 
             <ui:VisualElement class="settings-footer">
+                <ui:Button text="Reset Camera" name="settings-reset-camera-btn" class="settings-btn settings-btn-reset" />
                 <ui:Button text="Close" name="settings-close-btn" class="settings-btn settings-btn-close" />
             </ui:VisualElement>
         </ui:VisualElement>
