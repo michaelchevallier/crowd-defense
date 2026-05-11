@@ -9,180 +9,199 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class WorldMapController : MonoBehaviour
     {
+        private const int WorldCount     = 8;
+        private const int LevelsPerWorld = 10;
+
         private static readonly string[] WorldThemeKeys =
         {
-            "worldmap.world1",  // W1 — Plaine
-            "worldmap.world2",  // W2 — Foret
-            "worldmap.world3",  // W3 — Desert
-            "worldmap.world4",  // W4 — Volcan
-            "worldmap.world5",  // W5 — Foire
-            "worldmap.world6",  // W6 — Apocalypse
-            "worldmap.world7",  // W7 — Espace
-            "worldmap.world8",  // W8 — Submarin
-            "worldmap.world9",  // W9 — Medieval
-            "worldmap.world10", // W10 — Cyberpunk
+            "worldmap.world1",
+            "worldmap.world2",
+            "worldmap.world3",
+            "worldmap.world4",
+            "worldmap.world5",
+            "worldmap.world6",
+            "worldmap.world7",
+            "worldmap.world8",
         };
+
+        private VisualElement? _root;
+        private VisualElement? _levelGrid;
+        private Label?         _starsLabel;
+        private Label?         _completionLabel;
+        private int            _activeWorld = 1;
+        private LevelRegistry? _registry;
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
-            BuildUI(root);
+            _root     = GetComponent<UIDocument>().rootVisualElement;
+            _registry = LevelRegistry.Get();
+            BuildUI();
         }
 
-        private void BuildUI(VisualElement root)
+        private void BuildUI()
         {
-            var titleLabel = root.Q<Label>("worldmap-title");
+            if (_root == null) return;
+
+            var titleLabel = _root.Q<Label>("worldmap-title");
             if (titleLabel != null) titleLabel.text = L.Get("worldmap.title");
 
-            var starsLabel = root.Q<Label>("worldmap-stars-label");
-            if (starsLabel != null) starsLabel.text = L.Get("worldmap.total_stars", SaveSystem.TotalStars());
+            _starsLabel      = _root.Q<Label>("worldmap-stars-label");
+            _completionLabel = _root.Q<Label>("worldmap-completion-label");
 
-            var content = root.Q<VisualElement>("worldmap-content");
-            if (content == null)
+            BuildWorldTabs();
+
+            _levelGrid = _root.Q<VisualElement>("worldmap-level-grid");
+            if (_levelGrid == null)
             {
 #if UNITY_EDITOR
-                Debug.LogError("[WorldMapController] worldmap-content VisualElement not found in UXML.");
+                Debug.LogError("[WorldMapController] worldmap-level-grid not found in UXML.");
 #endif
                 return;
             }
 
-            var registry = LevelRegistry.Get();
-
-            for (int w = 1; w <= 10; w++)
-            {
-                var section = BuildWorldSection(w, registry);
-                content.Add(section);
-            }
+            RefreshHeader();
+            ShowWorld(_activeWorld);
         }
 
-        private VisualElement BuildWorldSection(int worldIndex, LevelRegistry? registry)
+        private void BuildWorldTabs()
         {
-            var section = new VisualElement();
-            section.AddToClassList("world-section");
+            var tabBar = _root?.Q<VisualElement>("worldmap-tabs");
+            if (tabBar == null) return;
 
-            var header = new VisualElement();
-            header.AddToClassList("world-section-header");
-
-            var numLabel = new Label($"W{worldIndex}");
-            numLabel.AddToClassList("world-section-number");
-
-            string themeKey = worldIndex <= WorldThemeKeys.Length ? WorldThemeKeys[worldIndex - 1] : $"worldmap.world{worldIndex}";
-            var nameLabel = new Label(L.Get(themeKey));
-            nameLabel.AddToClassList("world-section-name");
-
-            int worldStars = 0;
-            for (int l = 1; l <= 8; l++)
-                worldStars += SaveSystem.GetStars($"world{worldIndex}-{l}");
-            int maxWorldStars = 8 * 3;
-
-            var worldStarsLabel = new Label($"{worldStars}/{maxWorldStars}");
-            worldStarsLabel.AddToClassList("world-section-stars");
-
-            header.Add(numLabel);
-            header.Add(nameLabel);
-            header.Add(worldStarsLabel);
-            section.Add(header);
-
-            var nodeRow = new VisualElement();
-            nodeRow.AddToClassList("world-node-row");
-
-            for (int l = 1; l <= 8; l++)
+            tabBar.Clear();
+            for (int w = 1; w <= WorldCount; w++)
             {
-                string levelId = $"world{worldIndex}-{l}";
-                bool unlocked = SaveSystem.IsLevelUnlocked(levelId);
-                bool cleared = SaveSystem.IsLevelCleared(levelId);
-                int stars = SaveSystem.GetStars(levelId);
-                LevelData? levelData = registry?.FindById(levelId);
+                int capturedW = w;
+                var tab = new Button(() => OnTabClicked(capturedW));
+                tab.name = $"world-tab-{w}";
+                tab.AddToClassList("world-tab");
 
-                var node = BuildLevelNode(levelId, l.ToString(), unlocked, cleared, stars, false, false, levelData);
-                nodeRow.Add(node);
+                int worldStars = 0;
+                for (int l = 1; l <= LevelsPerWorld; l++)
+                    worldStars += SaveSystem.GetStars($"world{w}-{l}");
 
-                if (l < 8)
-                {
-                    var connector = new VisualElement();
-                    connector.AddToClassList("node-connector");
-                    if (cleared) connector.AddToClassList("passed");
-                    nodeRow.Add(connector);
-                }
+                bool worldUnlocked = SaveSystem.IsLevelUnlocked($"world{w}-1");
+                string themeKey    = WorldThemeKeys[w - 1];
+                tab.text = worldUnlocked ? $"W{w}" : "?";
+
+                if (!worldUnlocked) tab.AddToClassList("locked");
+                if (worldStars == LevelsPerWorld * 3) tab.AddToClassList("perfect");
+
+                tabBar.Add(tab);
             }
-
-            // Showcase level (W*-9)
-            {
-                string showcaseId = $"world{worldIndex}-9";
-                bool showcaseUnlocked = SaveSystem.IsLevelUnlocked(showcaseId);
-                bool showcaseCleared = SaveSystem.IsLevelCleared(showcaseId);
-                int showcaseStars = SaveSystem.GetStars(showcaseId);
-                LevelData? showcaseData = registry?.FindById(showcaseId);
-
-                var connector = new VisualElement();
-                connector.AddToClassList("node-connector");
-                if (SaveSystem.IsLevelCleared($"world{worldIndex}-8")) connector.AddToClassList("passed");
-                nodeRow.Add(connector);
-
-                var showcaseNode = BuildLevelNode(showcaseId, L.Get("worldmap.level_showcase"), showcaseUnlocked, showcaseCleared, showcaseStars, true, false, showcaseData);
-                nodeRow.Add(showcaseNode);
-            }
-
-            // Boss level (W*-10)
-            {
-                string bossId = $"world{worldIndex}-10";
-                bool bossUnlocked = SaveSystem.IsLevelUnlocked(bossId);
-                bool bossCleared = SaveSystem.IsLevelCleared(bossId);
-                int bossStars = SaveSystem.GetStars(bossId);
-                LevelData? bossData = registry?.FindById(bossId);
-
-                var connector = new VisualElement();
-                connector.AddToClassList("node-connector");
-                if (SaveSystem.IsLevelCleared($"world{worldIndex}-9")) connector.AddToClassList("passed");
-                nodeRow.Add(connector);
-
-                var bossNode = BuildLevelNode(bossId, L.Get("worldmap.level_boss"), bossUnlocked, bossCleared, bossStars, false, true, bossData);
-                nodeRow.Add(bossNode);
-            }
-
-            section.Add(nodeRow);
-            return section;
         }
 
-        private VisualElement BuildLevelNode(
+        private void OnTabClicked(int worldIndex)
+        {
+            _activeWorld = worldIndex;
+            RefreshTabs();
+            ShowWorld(worldIndex);
+        }
+
+        private void RefreshTabs()
+        {
+            var tabBar = _root?.Q<VisualElement>("worldmap-tabs");
+            if (tabBar == null) return;
+
+            for (int w = 1; w <= WorldCount; w++)
+            {
+                var tab = tabBar.Q<Button>($"world-tab-{w}");
+                if (tab == null) continue;
+                if (w == _activeWorld) tab.AddToClassList("active");
+                else tab.RemoveFromClassList("active");
+            }
+        }
+
+        private void ShowWorld(int worldIndex)
+        {
+            if (_levelGrid == null) return;
+            _levelGrid.Clear();
+
+            for (int l = 1; l <= LevelsPerWorld; l++)
+            {
+                string levelId  = $"world{worldIndex}-{l}";
+                bool unlocked   = SaveSystem.IsLevelUnlocked(levelId);
+                bool cleared    = SaveSystem.IsLevelCleared(levelId);
+                int  stars      = SaveSystem.GetStars(levelId);
+                bool isShowcase = l == LevelsPerWorld - 1;
+                bool isBoss     = l == LevelsPerWorld;
+                LevelData? data = _registry?.FindById(levelId);
+
+                var tile = BuildLevelTile(levelId, l, unlocked, cleared, stars, isShowcase, isBoss, data);
+                _levelGrid.Add(tile);
+            }
+
+            RefreshHeader();
+        }
+
+        private VisualElement BuildLevelTile(
             string levelId,
-            string label,
+            int levelNum,
             bool unlocked,
             bool cleared,
             int stars,
             bool isShowcase,
             bool isBoss,
-            LevelData? levelData)
+            LevelData? data)
         {
-            var node = new VisualElement();
-            node.AddToClassList("level-node");
+            var tile = new VisualElement();
+            tile.AddToClassList("level-tile");
 
-            if (!unlocked) node.AddToClassList("locked");
-            else if (cleared) node.AddToClassList("cleared");
+            if (!unlocked)       tile.AddToClassList("locked");
+            else if (cleared)    tile.AddToClassList("cleared");
+            if (isShowcase)      tile.AddToClassList("showcase");
+            if (isBoss)          tile.AddToClassList("boss");
 
-            if (isShowcase) node.AddToClassList("showcase");
-            if (isBoss) node.AddToClassList("boss");
+            var numLabel = new Label(levelNum.ToString());
+            numLabel.AddToClassList("tile-number");
+            tile.Add(numLabel);
 
-            var numLabel = new Label(label);
-            numLabel.AddToClassList("level-node-number");
-            node.Add(numLabel);
-
-            var starsLabel = new Label(StarsDisplay(stars, unlocked));
-            starsLabel.AddToClassList("level-node-stars");
-            node.Add(starsLabel);
-
-            if (unlocked && levelData != null)
+            if (isBoss)
             {
-                string id = levelId;
-                node.RegisterCallback<ClickEvent>(_ => LevelLoader.LoadLevel(id));
+                var bossIcon = new Label("BOSS");
+                bossIcon.AddToClassList("tile-boss-label");
+                tile.Add(bossIcon);
+            }
+            else if (isShowcase)
+            {
+                var showIcon = new Label("EX");
+                showIcon.AddToClassList("tile-showcase-label");
+                tile.Add(showIcon);
             }
 
-            return node;
+            var starsRow = new Label(StarsText(stars, unlocked));
+            starsRow.AddToClassList("tile-stars");
+            tile.Add(starsRow);
+
+            if (unlocked && data != null)
+            {
+                string id = levelId;
+                tile.RegisterCallback<ClickEvent>(_ => LevelLoader.LoadLevel(id));
+            }
+
+            return tile;
         }
 
-        private static string StarsDisplay(int stars, bool unlocked)
+        private void RefreshHeader()
         {
-            if (!unlocked) return L.Get("worldmap.locked");
+            int total = SaveSystem.TotalStars();
+            if (_starsLabel != null)
+                _starsLabel.text = L.Get("worldmap.total_stars", total);
+
+            int clearedCount = 0;
+            for (int w = 1; w <= WorldCount; w++)
+                for (int l = 1; l <= LevelsPerWorld; l++)
+                    if (SaveSystem.IsLevelCleared($"world{w}-{l}")) clearedCount++;
+
+            int maxLevels = WorldCount * LevelsPerWorld;
+            int pct = maxLevels > 0 ? Mathf.RoundToInt(clearedCount * 100f / maxLevels) : 0;
+            if (_completionLabel != null)
+                _completionLabel.text = L.Get("worldmap.completion", pct);
+        }
+
+        private static string StarsText(int stars, bool unlocked)
+        {
+            if (!unlocked) return "?";
             return stars switch
             {
                 0 => "- - -",

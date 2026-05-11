@@ -5,10 +5,14 @@
     <ui:VisualElement name="worldmap-root" class="worldmap-root">
         <ui:VisualElement name="worldmap-header" class="worldmap-header">
             <ui:Label text="CROWD DEFENSE" name="worldmap-title" class="worldmap-title" />
-            <ui:Label text="0 stars" name="worldmap-stars-label" class="worldmap-stars-label" />
+            <ui:VisualElement name="worldmap-header-stats" class="worldmap-header-stats">
+                <ui:Label text="0 stars" name="worldmap-stars-label" class="worldmap-stars-label" />
+                <ui:Label text="0% complete" name="worldmap-completion-label" class="worldmap-completion-label" />
+            </ui:VisualElement>
         </ui:VisualElement>
+        <ui:VisualElement name="worldmap-tabs" class="worldmap-tabs" />
         <ui:ScrollView name="worldmap-scroll" class="worldmap-scroll" vertical-scroller-visibility="AlwaysVisible">
-            <ui:VisualElement name="worldmap-content" class="worldmap-content" />
+            <ui:VisualElement name="worldmap-level-grid" class="worldmap-level-grid" />
         </ui:ScrollView>
     </ui:VisualElement>
 </ui:UXML>

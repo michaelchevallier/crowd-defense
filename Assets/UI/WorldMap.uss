@@ -10,7 +10,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 28px 12px 28px;
+    padding: 16px 28px 12px 28px;
     background-color: rgb(15, 20, 40);
     border-bottom-width: 1px;
     border-color: rgba(255, 210, 63, 0.2);
@@ -18,162 +18,190 @@
 
 .worldmap-title {
     color: rgb(255, 210, 63);
-    font-size: 32px;
+    font-size: 28px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     -unity-text-align: middle-left;
 }
 
+.worldmap-header-stats {
+    flex-direction: column;
+    align-items: flex-end;
+}
+
 .worldmap-stars-label {
-    color: rgba(255, 210, 63, 0.85);
-    font-size: 18px;
+    color: rgba(255, 210, 63, 0.9);
+    font-size: 16px;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     -unity-text-align: middle-right;
 }
+
+.worldmap-completion-label {
+    color: rgba(200, 200, 200, 0.7);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-right;
+    margin-top: 2px;
+}
+
+/* ── World tabs ─────────────────────────────────────────────────────── */
+
+.worldmap-tabs {
+    flex-direction: row;
+    align-items: stretch;
+    background-color: rgb(12, 17, 34);
+    border-bottom-width: 2px;
+    border-color: rgba(255, 255, 255, 0.08);
+    padding: 0 12px;
+}
+
+.world-tab {
+    flex-grow: 1;
+    height: 44px;
+    margin: 0 2px;
+    border-width: 0;
+    border-radius: 0;
+    border-bottom-width: 3px;
+    border-color: transparent;
+    background-color: transparent;
+    color: rgba(200, 200, 200, 0.65);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    cursor: link;
+    padding: 0;
+}
+
+.world-tab:hover {
+    color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.world-tab.active {
+    color: rgb(255, 210, 63);
+    border-color: rgb(255, 210, 63);
+    background-color: rgba(255, 210, 63, 0.06);
+}
+
+.world-tab.locked {
+    color: rgba(100, 100, 110, 0.55);
+    cursor: arrow;
+}
+
+.world-tab.locked:hover {
+    color: rgba(100, 100, 110, 0.55);
+    background-color: transparent;
+}
+
+.world-tab.perfect {
+    color: rgb(255, 220, 80);
+}
+
+/* ── Level grid (5x2) ───────────────────────────────────────────────── */
 
 .worldmap-scroll {
     flex-grow: 1;
 }
 
-.worldmap-content {
-    flex-direction: column;
-    padding: 20px 24px 40px 24px;
-}
-
-/* ── World section ──────────────────────────────────────────────────── */
-
-.world-section {
-    margin-bottom: 28px;
-}
-
-.world-section-header {
+.worldmap-level-grid {
     flex-direction: row;
-    align-items: center;
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom-width: 1px;
-    border-color: rgba(255, 255, 255, 0.08);
-}
-
-.world-section-number {
-    font-size: 12px;
-    -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    color: rgba(255, 255, 255, 0.4);
-    width: 36px;
-    -unity-text-align: middle-left;
-}
-
-.world-section-name {
-    font-size: 15px;
-    -unity-font-style: bold;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    color: rgba(255, 255, 255, 0.85);
-    flex-grow: 1;
-}
-
-.world-section-stars {
-    font-size: 12px;
-    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    color: rgba(255, 210, 63, 0.7);
-    -unity-text-align: middle-right;
-}
-
-/* ── Node row ───────────────────────────────────────────────────────── */
-
-.world-node-row {
-    flex-direction: row;
-    align-items: center;
     flex-wrap: wrap;
-    margin-left: 8px;
+    justify-content: flex-start;
+    align-content: flex-start;
+    padding: 24px 20px 40px 20px;
 }
 
-/* ── Level nodes ────────────────────────────────────────────────────── */
+/* ── Level tiles ────────────────────────────────────────────────────── */
 
-.level-node {
-    width: 64px;
-    height: 64px;
-    margin: 4px;
-    border-radius: 10px;
+.level-tile {
+    width: 18%;
+    margin: 1%;
+    min-height: 80px;
+    border-radius: 12px;
     border-width: 2px;
     border-color: rgba(255, 255, 255, 0.18);
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.08);
     align-items: center;
     justify-content: center;
     cursor: link;
+    flex-direction: column;
 }
 
-.level-node:hover {
-    background-color: rgba(255, 255, 255, 0.22);
+.level-tile:hover {
+    background-color: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 210, 63, 0.75);
 }
 
-.level-node.cleared {
-    background-color: rgba(40, 150, 40, 0.7);
-    border-color: rgb(55, 190, 55);
+.level-tile.cleared {
+    background-color: rgba(35, 130, 35, 0.7);
+    border-color: rgb(50, 180, 50);
 }
 
-.level-node.cleared:hover {
-    background-color: rgba(50, 180, 50, 0.88);
+.level-tile.cleared:hover {
+    background-color: rgba(45, 160, 45, 0.88);
 }
 
-.level-node.locked {
-    background-color: rgba(30, 30, 40, 0.65);
-    border-color: rgba(60, 60, 70, 0.55);
+.level-tile.locked {
+    background-color: rgba(20, 20, 30, 0.6);
+    border-color: rgba(50, 50, 60, 0.5);
     cursor: arrow;
-    opacity: 0.55;
+    opacity: 0.5;
 }
 
-.level-node.locked:hover {
-    background-color: rgba(30, 30, 40, 0.65);
-    border-color: rgba(60, 60, 70, 0.55);
+.level-tile.locked:hover {
+    background-color: rgba(20, 20, 30, 0.6);
+    border-color: rgba(50, 50, 60, 0.5);
 }
 
-.level-node.showcase {
+.level-tile.showcase {
     border-color: rgba(180, 130, 255, 0.75);
-    background-color: rgba(100, 50, 180, 0.35);
+    background-color: rgba(90, 40, 170, 0.35);
 }
 
-.level-node.showcase:hover {
-    background-color: rgba(120, 70, 210, 0.55);
+.level-tile.showcase:hover {
+    background-color: rgba(110, 60, 200, 0.55);
 }
 
-.level-node.boss {
-    border-color: rgba(255, 80, 80, 0.85);
-    background-color: rgba(150, 30, 30, 0.45);
-    width: 72px;
-    height: 72px;
+.level-tile.boss {
+    border-color: rgba(255, 75, 75, 0.85);
+    background-color: rgba(140, 25, 25, 0.45);
     border-width: 3px;
 }
 
-.level-node.boss:hover {
-    background-color: rgba(190, 40, 40, 0.65);
+.level-tile.boss:hover {
+    background-color: rgba(180, 35, 35, 0.65);
 }
 
-.level-node-number {
-    font-size: 16px;
+.tile-number {
+    font-size: 22px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     color: rgba(255, 255, 255, 0.95);
     -unity-text-align: middle-center;
-    margin-bottom: 1px;
 }
 
-.level-node-stars {
-    font-size: 11px;
+.tile-stars {
+    font-size: 10px;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     color: rgb(255, 210, 63);
     -unity-text-align: middle-center;
+    margin-top: 2px;
 }
 
-.node-connector {
-    width: 12px;
-    height: 3px;
-    background-color: rgba(255, 255, 255, 0.15);
-    margin: 0 2px;
-    border-radius: 2px;
+.tile-boss-label {
+    font-size: 9px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgb(255, 120, 120);
+    -unity-text-align: middle-center;
+    margin-top: 1px;
 }
 
-.node-connector.passed {
-    background-color: rgba(55, 190, 55, 0.6);
+.tile-showcase-label {
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgb(200, 160, 255);
+    -unity-text-align: middle-center;
+    margin-top: 1px;
 }
