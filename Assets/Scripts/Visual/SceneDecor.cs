@@ -212,6 +212,7 @@ namespace CrowdDefense.Visual
             go.transform.SetParent(transform, false);
             go.transform.SetPositionAndRotation(pos, rot);
             go.transform.localScale = scale;
+            if (!goName.Contains("_Rock")) go.AddComponent<WindSway>();
             return go;
         }
 
