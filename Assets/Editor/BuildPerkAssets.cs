@@ -10,6 +10,7 @@ namespace CrowdDefense.Editor
     // Génère les 17 PerkDef standard + 6 school PerkDef + 6 PerkSetBonusDef + 1 PerkRegistry.
     // Source canonique : V5 perks.js + schools.js.
     // Idempotent : met à jour les champs si l'asset existe déjà (ne duplique pas).
+    // unlockLevel: 0 = always available, 5 = mid-game, 10 = late-game.
     // Menu : Tools > CrowdDefense > Generate Perk Assets
     public static class BuildPerkAssets
     {
@@ -66,19 +67,19 @@ namespace CrowdDefense.Editor
                 MakePerk("wave_regen",      "Benediction royale", "+5 HP château/vague / -10% or","🛡️", PerkCategory.Economy,   PerkTag.Pierre,
                     stackable: false,  waveRegen: 5f, downCoinReward: -0.10f),
                 MakePerk("fireball",        "Boule de feu",       "Tirs explosent AoE (r3u)",     "🔥", PerkCategory.Transform, PerkTag.Feu,
-                    stackable: false,  transform: true, fireball: true, fireballRadius: 3f, fireballDmgMul: 0.8f),
+                    stackable: false,  transform: true, fireball: true, fireballRadius: 3f, fireballDmgMul: 0.8f, unlockLevel: 5),
                 MakePerk("ricochet",        "Chaine",             "Tirs rebondissent x3 (-15%/b)","🔗", PerkCategory.Transform, PerkTag.Vide,
-                    stackable: false,  transform: true, ricochet: true, ricochetBounces: 3, ricochetDecay: 0.85f),
+                    stackable: false,  transform: true, ricochet: true, ricochetBounces: 3, ricochetDecay: 0.85f, unlockLevel: 5),
                 MakePerk("lightning",       "Foudre divine",      "Chaque tir frappe 2 cibles",   "⚡", PerkCategory.Transform, PerkTag.Vide,
-                    stackable: false,  transform: true, lightning: true, lightningTargets: 2, lightningDmgMul: 0.7f),
+                    stackable: false,  transform: true, lightning: true, lightningTargets: 2, lightningDmgMul: 0.7f, unlockLevel: 5),
                 MakePerk("surveillant",     "Surveillant",        "Tours 8u : +30% cadence / -10% dmg","👁️", PerkCategory.Support, PerkTag.Pierre,
-                    stackable: false,  towerFireRateAura: 1.3f, towerAuraRange: 8f, downDamage: -0.10f),
+                    stackable: false,  towerFireRateAura: 1.3f, towerAuraRange: 8f, downDamage: -0.10f, unlockLevel: 5),
                 MakePerk("architecte",      "Architecte",         "Tours -20% / Or/kill -10%",    "📐", PerkCategory.Support,   PerkTag.Or,
-                    stackable: false,  towerCostMul: 0.80f, coinGain: -0.10f),
+                    stackable: false,  towerCostMul: 0.80f, coinGain: -0.10f, unlockLevel: 5),
                 MakePerk("marchand_mort",   "Marchand de mort",   "1ère tour par run gratuite",   "🏗️", PerkCategory.Support,   PerkTag.Pierre,
                     stackable: false,  firstTowerFree: true),
                 MakePerk("pierce_explode",  "Carreau explosif",   "Explose sur dernier ennemi",   "💣", PerkCategory.Transform, PerkTag.Vide,
-                    stackable: false,  transform: true, pierceExplode: true, pierceExplodeRadius: 2f, pierceExplodeDmgMul: 1.0f),
+                    stackable: false,  transform: true, pierceExplode: true, pierceExplodeRadius: 2f, pierceExplodeDmgMul: 1.0f, unlockLevel: 10),
             };
 
             foreach (var p in perks) SaveAsset(p, $"{k_PerkStandardDir}/Perk_{p.id}.asset");
@@ -91,12 +92,12 @@ namespace CrowdDefense.Editor
         {
             var perks = new PerkDef[]
             {
-                MakeSchoolPerk("combustion",    "Combustion",        "Kills laissent trail feu 2s","🔥", PerkCategory.Transform, PerkTag.Feu,    "feu",        combustion: true),
-                MakeSchoolPerk("pyromancie",    "Pyromancie",        "10% chance proj bonus/kill", "🔥", PerkCategory.Transform, PerkTag.Feu,    "feu",        pyromancie: true),
-                MakeSchoolPerk("glaciation",    "Glaciation",        "30% slow 2s sur cible",      "🧊", PerkCategory.Transform, PerkTag.Vide,   "givre",      glaciation: true),
-                MakeSchoolPerk("cristal_glace", "Cristal de Glace",  "Tours slow -15% ennemis",    "❄️", PerkCategory.Transform, PerkTag.Vide,   "givre",      cristalGlace: true),
-                MakeSchoolPerk("forteresse_perk","Forteresse Royale","+50% PV château max",        "🏰", PerkCategory.Transform, PerkTag.Pierre, "maconnerie", forteressePerk: true),
-                MakeSchoolPerk("murs_pierre",   "Murs de Pierre",    "Tours stagger 0.5s/kill",    "🧱", PerkCategory.Transform, PerkTag.Pierre, "maconnerie", mursPierre: true),
+                MakeSchoolPerk("combustion",    "Combustion",        "Kills laissent trail feu 2s","🔥", PerkCategory.Transform, PerkTag.Feu,    "feu",        combustion: true,     unlockLevel: 5),
+                MakeSchoolPerk("pyromancie",    "Pyromancie",        "10% chance proj bonus/kill", "🔥", PerkCategory.Transform, PerkTag.Feu,    "feu",        pyromancie: true,     unlockLevel: 5),
+                MakeSchoolPerk("glaciation",    "Glaciation",        "30% slow 2s sur cible",      "🧊", PerkCategory.Transform, PerkTag.Vide,   "givre",      glaciation: true,     unlockLevel: 5),
+                MakeSchoolPerk("cristal_glace", "Cristal de Glace",  "Tours slow -15% ennemis",    "❄️", PerkCategory.Transform, PerkTag.Vide,   "givre",      cristalGlace: true,   unlockLevel: 5),
+                MakeSchoolPerk("forteresse_perk","Forteresse Royale","+50% PV château max",        "🏰", PerkCategory.Transform, PerkTag.Pierre, "maconnerie", forteressePerk: true, unlockLevel: 5),
+                MakeSchoolPerk("murs_pierre",   "Murs de Pierre",    "Tours stagger 0.5s/kill",    "🧱", PerkCategory.Transform, PerkTag.Pierre, "maconnerie", mursPierre: true,     unlockLevel: 5),
             };
 
             foreach (var p in perks) SaveAsset(p, $"{k_PerkSchoolDir}/SchoolPerk_{p.id}.asset");
@@ -160,7 +161,8 @@ namespace CrowdDefense.Editor
             float towerCostMul = 1f, bool firstTowerFree = false,
             float towerFireRateAura = 1f, float towerAuraRange = 0f,
             float downRange = 0f, float downDamage = 0f,
-            float downFireRate = 0f, float downCoinReward = 0f)
+            float downFireRate = 0f, float downCoinReward = 0f,
+            int unlockLevel = 0)
         {
             var p = ScriptableObject.CreateInstance<PerkDef>();
             p.id = id; p.nameKey = name; p.descKey = desc; p.iconEmoji = icon;
@@ -179,6 +181,7 @@ namespace CrowdDefense.Editor
             p.towerFireRateAura = towerFireRateAura; p.towerAuraRange = towerAuraRange;
             p.downRange = downRange; p.downDamage = downDamage;
             p.downFireRate = downFireRate; p.downCoinReward = downCoinReward;
+            p.unlockLevel = unlockLevel;
             return p;
         }
 
@@ -186,7 +189,8 @@ namespace CrowdDefense.Editor
             string id, string name, string desc, string icon,
             PerkCategory cat, PerkTag tag, string school,
             bool combustion = false, bool pyromancie = false, bool glaciation = false,
-            bool cristalGlace = false, bool forteressePerk = false, bool mursPierre = false)
+            bool cristalGlace = false, bool forteressePerk = false, bool mursPierre = false,
+            int unlockLevel = 0)
         {
             var p = ScriptableObject.CreateInstance<PerkDef>();
             p.id = id; p.nameKey = name; p.descKey = desc; p.iconEmoji = icon;
@@ -194,6 +198,7 @@ namespace CrowdDefense.Editor
             p.stackable = false; p.transform = true;
             p.combustion = combustion; p.pyromancie = pyromancie; p.glaciation = glaciation;
             p.cristalGlace = cristalGlace; p.forteressePerk = forteressePerk; p.mursPierre = mursPierre;
+            p.unlockLevel = unlockLevel;
             return p;
         }
 
