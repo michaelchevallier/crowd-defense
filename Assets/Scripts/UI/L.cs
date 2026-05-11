@@ -173,6 +173,10 @@ namespace CrowdDefense.UI
                     ["settings.reset_camera"] = "Reset Camera",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+                    ["settings.game_speed"] = "Game Speed",
+
+                    // ── Achievement toast ──────────────────────────────────────────
+                    ["achievement.toast_header"] = "Achievement Unlocked!",
 
                     // ── Doctrine panel ─────────────────────────────────────────────
                     ["doctrine.title"] = "Doctrines",
@@ -426,6 +430,10 @@ namespace CrowdDefense.UI
                     ["settings.reset_camera"] = "Recentrer caméra",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+                    ["settings.game_speed"] = "Vitesse du jeu",
+
+                    // ── Achievement toast ──────────────────────────────────────────
+                    ["achievement.toast_header"] = "Succès débloqué !",
 
                     // ── Doctrine panel ─────────────────────────────────────────────
                     ["doctrine.title"] = "Doctrines",

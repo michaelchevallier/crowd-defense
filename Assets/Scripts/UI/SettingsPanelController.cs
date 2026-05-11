@@ -15,10 +15,12 @@ namespace CrowdDefense.UI
         private Slider? _sfxSlider;
         private Slider? _musicSlider;
         private Slider? _uiSlider;
+        private SliderInt? _gameSpeedSlider;
         private Label? _masterValue;
         private Label? _sfxValue;
         private Label? _musicValue;
         private Label? _uiValue;
+        private Label? _gameSpeedValue;
         private Toggle? _muteToggle;
         private Button? _resetCameraBtn;
 
@@ -41,6 +43,7 @@ namespace CrowdDefense.UI
         private Label? _musicLabel;
         private Label? _uiLabel;
         private Label? _muteLabel;
+        private Label? _gameSpeedLabel;
         private Label? _gfxSectionLabel;
         private Label? _qualityLabel;
         private Label? _vfxLabel;
@@ -78,10 +81,12 @@ namespace CrowdDefense.UI
             _sfxSlider = _root.Q<Slider>("sfx-slider");
             _musicSlider = _root.Q<Slider>("music-slider");
             _uiSlider = _root.Q<Slider>("ui-slider");
+            _gameSpeedSlider = _root.Q<SliderInt>("game-speed-slider");
             _masterValue = _root.Q<Label>("master-value");
             _sfxValue = _root.Q<Label>("sfx-value");
             _musicValue = _root.Q<Label>("music-value");
             _uiValue = _root.Q<Label>("ui-value");
+            _gameSpeedValue = _root.Q<Label>("game-speed-value");
             _muteToggle = _root.Q<Toggle>("mute-toggle");
             _resetCameraBtn = _root.Q<Button>("settings-reset-camera-btn");
 
@@ -103,6 +108,7 @@ namespace CrowdDefense.UI
             _musicLabel          = _root.Q<Label>("music-label");
             _uiLabel             = _root.Q<Label>("ui-label");
             _muteLabel           = _root.Q<Label>("mute-label");
+            _gameSpeedLabel      = _root.Q<Label>("game-speed-label");
             _gfxSectionLabel     = _root.Q<Label>("gfx-section-title");
             _qualityLabel        = _root.Q<Label>("quality-label");
             _vfxLabel            = _root.Q<Label>("vfx-label");
@@ -121,6 +127,12 @@ namespace CrowdDefense.UI
             if (_langDropdown != null)
             {
                 _langDropdown.choices = LangChoices;
+            }
+
+            if (_gameSpeedSlider != null)
+            {
+                _gameSpeedSlider.lowValue = 1;
+                _gameSpeedSlider.highValue = 3;
             }
 
             ApplyLocalizedTexts();
@@ -155,6 +167,7 @@ namespace CrowdDefense.UI
             if (_musicLabel != null)          _musicLabel.text          = L.Get("settings.music");
             if (_uiLabel != null)             _uiLabel.text             = L.Get("settings.ui");
             if (_muteLabel != null)           _muteLabel.text           = L.Get("settings.mute");
+            if (_gameSpeedLabel != null)      _gameSpeedLabel.text      = L.Get("settings.game_speed");
             if (_gfxSectionLabel != null)     _gfxSectionLabel.text     = L.Get("settings.gfx_section");
             if (_qualityLabel != null)        _qualityLabel.text        = L.Get("settings.quality");
             if (_vfxLabel != null)            _vfxLabel.text            = L.Get("settings.vfx");
@@ -200,6 +213,13 @@ namespace CrowdDefense.UI
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
                 SettingsRegistry.Instance.UIVolume = evt.newValue;
                 if (_uiValue != null) _uiValue.text = FormatPct(evt.newValue);
+            });
+
+            _gameSpeedSlider?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.GameSpeed = evt.newValue;
+                if (_gameSpeedValue != null) _gameSpeedValue.text = "x" + evt.newValue;
             });
 
             _muteToggle?.RegisterValueChangedCallback(evt =>
@@ -287,6 +307,8 @@ namespace CrowdDefense.UI
                 if (_sfxValue != null) _sfxValue.text = FormatPct(reg.SFXVolume);
                 if (_musicValue != null) _musicValue.text = FormatPct(reg.MusicVolume);
                 if (_uiValue != null) _uiValue.text = FormatPct(reg.UIVolume);
+                if (_gameSpeedSlider != null) _gameSpeedSlider.value = reg.GameSpeed;
+                if (_gameSpeedValue != null) _gameSpeedValue.text = "x" + reg.GameSpeed;
                 if (_muteToggle != null) _muteToggle.value = reg.Muted;
 
                 if (_qualityDropdown != null)
