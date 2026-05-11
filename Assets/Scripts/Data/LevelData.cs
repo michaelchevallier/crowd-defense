@@ -4,8 +4,6 @@ using UnityEngine;
 
 namespace CrowdDefense.Data
 {
-    public enum CastleLossMode { Any, All }
-
     [CreateAssetMenu(fileName = "LevelData", menuName = "CrowdDefense/LevelData")]
     public class LevelData : ScriptableObject
     {
@@ -28,7 +26,6 @@ namespace CrowdDefense.Data
         [Header("Castle HP")]
         [SerializeField] private bool overrideCastleHP = false;
         [SerializeField] private int castleHPOverride = 200;
-        [SerializeField] private CastleLossMode lossMode = CastleLossMode.Any;
 
         [Header("Magnet (Q3)")]
         [SerializeField] private bool allowMultiMagnet = false;
@@ -46,12 +43,9 @@ namespace CrowdDefense.Data
         public int StartCoins => startCoins;
         public bool OverrideCastleHP => overrideCastleHP;
         public int CastleHPOverride => castleHPOverride;
-        public CastleLossMode LossMode => lossMode;
         public bool AllowMultiMagnet => allowMultiMagnet;
         public IReadOnlyList<WaveDef> Waves => waves;
 
-        // Legacy property : resolved HP for single-castle POC backward-compat.
-        // Use LevelRunner.Instance.ResolveCastleHP() in new code.
         public int CastleHP => overrideCastleHP
             ? castleHPOverride
             : BalanceConfig.Get().CastleHPFor(world, level);

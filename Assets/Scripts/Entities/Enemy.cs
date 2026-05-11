@@ -103,14 +103,7 @@ namespace CrowdDefense.Entities
 #if UNITY_EDITOR
             Debug.Log($"[Enemy] reached castle type={cfg?.Id} dmg={dmg} pathIdx={pathIdx}");
 #endif
-            // Resolve castle from path meta
-            var runner = LevelRunner.Instance;
-            if (runner != null && pathManager != null)
-            {
-                var meta = pathManager.PathsMeta;
-                int castleIdx = pathIdx < meta.Count ? meta[pathIdx].CastleIdx : 0;
-                runner.GetCastle(castleIdx)?.TakeDamage(dmg);
-            }
+            Castle.Instance?.TakeDamage(dmg);
             WaveManager.Instance?.NotifyEnemyDied(this);
             Destroy(gameObject);
         }

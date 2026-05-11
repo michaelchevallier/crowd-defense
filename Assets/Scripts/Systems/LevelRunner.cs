@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
@@ -19,17 +18,13 @@ namespace CrowdDefense.Systems
         public GameState State { get; private set; } = GameState.Play;
         public LevelData? CurrentLevel => currentLevel;
 
-        public IReadOnlyList<Castle> Castles => castles;
-        public Castle? PrimaryCastle => castles.Count > 0 ? castles[0] : null;
-
-        public int TotalCastleHP => SumHP();
-        public int TotalCastleHPMax => SumHPMax();
+        public Castle? PrimaryCastle { get; private set; }
+        public int TotalCastleHP => PrimaryCastle?.HP ?? 0;
+        public int TotalCastleHPMax => PrimaryCastle?.HPMax ?? 0;
 
         public event Action<GameState>? OnStateChanged;
-        /// <summary>Fired whenever any castle takes damage. args: (currentTotalHP, maxTotalHP)</summary>
         public event Action<int, int>? OnTotalHPChanged;
 
-        private readonly List<Castle> castles = new();
         private float targetSpeed = 1f;
 
         private void Awake()
@@ -39,18 +34,19 @@ namespace CrowdDefense.Systems
             ApplyTimeScale();
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+            if (WaveManager.Instance != null)
+                WaveManager.Instance.OnAllWavesCompleted -= OnVictory;
+        }
+
         private void Start()
         {
             if (WaveManager.Instance != null)
                 WaveManager.Instance.OnAllWavesCompleted += OnVictory;
 
-            SpawnCastles();
-        }
-
-        private void OnDestroy()
-        {
-            if (WaveManager.Instance != null)
-                WaveManager.Instance.OnAllWavesCompleted -= OnVictory;
+            SpawnCastle();
         }
 
         private void Update()
@@ -65,70 +61,39 @@ namespace CrowdDefense.Systems
             }
         }
 
-        private void SpawnCastles()
+        private void SpawnCastle()
         {
             if (currentLevel == null || PathManager.Instance?.Grid == null) return;
 
             var grid = PathManager.Instance.Grid;
-            int count = grid.Castles.Count;
-            if (count == 0) return;
+            if (grid.Castles.Count == 0) return;
 
-            // Distribute HP evenly across castles (mirrors Phaser loadCastlesFromGrid logic)
-            int totalHP = ResolveCastleHP();
-            int perCastle = count > 1 ? Mathf.RoundToInt((float)totalHP / count) : totalHP;
-
-            for (int i = 0; i < count; i++)
+            int hp = ResolveCastleHP();
+            Castle castle;
+            if (castlePrefab != null)
             {
-                Castle castle;
-                if (castlePrefab != null)
-                {
-                    var go = Instantiate(castlePrefab);
-                    castle = go.GetComponent<Castle>() ?? go.AddComponent<Castle>();
-                }
-                else
-                {
-                    // Fallback : create bare GameObject with Castle component
-                    var go = new GameObject($"Castle_{i}");
-                    castle = go.AddComponent<Castle>();
-                }
-
-                castle.Init(i, perCastle);
-                castle.OnCastleDied += OnCastleDied;
-                castle.OnHPChanged += (_, _) => OnTotalHPChanged?.Invoke(TotalCastleHP, TotalCastleHPMax);
-                castles.Add(castle);
+                var go = Instantiate(castlePrefab);
+                castle = go.GetComponent<Castle>() ?? go.AddComponent<Castle>();
+            }
+            else
+            {
+                var go = new GameObject("Castle");
+                castle = go.AddComponent<Castle>();
             }
 
+            castle.Init(hp);
+            castle.OnCastleDied += _ => SetState(GameState.GameOver);
+            castle.OnHPChanged += (h, hMax) => OnTotalHPChanged?.Invoke(h, hMax);
+            PrimaryCastle = castle;
+
 #if UNITY_EDITOR
-            Debug.Log($"[LevelRunner] spawned {count} castles totalHP={totalHP} perCastle={perCastle}");
+            Debug.Log($"[LevelRunner] spawned castle hp={hp}");
 #endif
 
-            // Fire initial HP event so HUD initialises correctly
             OnTotalHPChanged?.Invoke(TotalCastleHP, TotalCastleHPMax);
         }
 
-        private void OnCastleDied(Castle dead)
-        {
-            var lossMode = currentLevel?.LossMode ?? CastleLossMode.Any;
-            bool triggerGameOver = lossMode == CastleLossMode.Any
-                || (lossMode == CastleLossMode.All && castles.TrueForAll(c => c.IsDead));
-
-            if (triggerGameOver)
-                SetState(GameState.GameOver);
-
-            OnTotalHPChanged?.Invoke(TotalCastleHP, TotalCastleHPMax);
-        }
-
-        public int ResolveCastleHP()
-        {
-            if (currentLevel == null) return 120;
-            return currentLevel.CastleHP;
-        }
-
-        public Castle? GetCastle(int idx)
-        {
-            if (idx < 0 || idx >= castles.Count) return null;
-            return castles[idx];
-        }
+        public int ResolveCastleHP() => currentLevel?.CastleHP ?? 120;
 
         public void SetState(GameState s)
         {
@@ -144,20 +109,6 @@ namespace CrowdDefense.Systems
         private void ApplyTimeScale()
         {
             Time.timeScale = State == GameState.Play ? targetSpeed : 0f;
-        }
-
-        private int SumHP()
-        {
-            int sum = 0;
-            foreach (var c in castles) sum += c.HP;
-            return sum;
-        }
-
-        private int SumHPMax()
-        {
-            int sum = 0;
-            foreach (var c in castles) sum += c.HPMax;
-            return sum;
         }
 
         private void OnVictory() => SetState(GameState.Victory);

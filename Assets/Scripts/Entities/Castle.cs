@@ -7,7 +7,8 @@ namespace CrowdDefense.Entities
 {
     public class Castle : MonoBehaviour
     {
-        public int CastleIdx { get; private set; } = 0;
+        public static Castle? Instance { get; private set; }
+
         public int HP { get; private set; }
         public int HPMax { get; private set; }
         public bool IsDead => HP <= 0;
@@ -15,17 +16,27 @@ namespace CrowdDefense.Entities
         public event Action<int, int>? OnHPChanged;
         public event Action<Castle>? OnCastleDied;
 
-        public void Init(int castleIdx, int hp)
+        private void Awake()
         {
-            CastleIdx = castleIdx;
+            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+            Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
+
+        public void Init(int hp)
+        {
             HP = HPMax = hp;
 
             if (PathManager.Instance?.Grid != null)
             {
                 var grid = PathManager.Instance.Grid;
-                if (castleIdx < grid.Castles.Count)
+                if (grid.Castles.Count > 0)
                 {
-                    var cell = grid.Castles[castleIdx];
+                    var cell = grid.Castles[0];
                     transform.position = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize) + Vector3.up * 0.5f;
                 }
             }
@@ -42,7 +53,7 @@ namespace CrowdDefense.Entities
             {
                 OnCastleDied?.Invoke(this);
 #if UNITY_EDITOR
-                Debug.Log($"[Castle] idx={CastleIdx} destroyed");
+                Debug.Log("[Castle] destroyed");
 #endif
             }
         }
