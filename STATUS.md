@@ -21,9 +21,59 @@ unset GITHUB_TOKEN
 
 ## Where we are
 
-- **Current sprint** : MIGRATE Phase 0 ✅ **DONE** (setup infra complète, 2026-05-11).
-- **Current focus** : Phase 1 POC à démarrer (1 niveau fonctionnel W1-1, ~1-2 sem).
-- **Next milestone** : `/plan` formel Phase 1 → Tickets MIGRATE-POC-01..08 → Sonnet feature-dev en série.
+- **Current sprint** : MIGRATE Phase 1 POC ✅ **DONE** (2026-05-11, ~2h Sonnet pipeline).
+- **Current focus** : activation GitHub Pages (action manuelle Mike) + Phase 2 ramp-up.
+- **Next milestone** : Phase 2 migration core (12 TOWER_TYPES + 30 ENEMY_TYPES + 80 levels + D1 specs).
+
+### Phase 1 POC livré
+
+**18 commits** (17 sur `main` + 1 sur `gh-pages`) en ~2h d'exécution multi-agent parallèle.
+
+| Ticket | Status | Commits main |
+|---|---|---|
+| POC-01 scaffold + scene 3D | ✅ | `d4b41ab`, `41ec424` |
+| POC-02 SO defs + W1-1 instances | ✅ | `f6be1fe`, `f57a629` |
+| POC-03 grid + BFS pathfinding | ✅ | `3180cb2`, `931875d` |
+| POC-04 Enemy + WaveManager | ✅ | `0133070` |
+| POC-05 Tower + Projectile + Placement | ✅ | `23661fd`, `818b6f9` |
+| POC-06 Economy + Castle + LevelRunner | ✅ | `d5f140d`, `0d04a0a`, `b5982a9` |
+| POC-07 HUD UI Toolkit | ✅ | `e2890c2` (partial), `742e2b1` (final) |
+| POC-08 WebGL build + deploy /v6/ | ✅ | `9c5b52f` (partial), `1f269eb`, `05726b3` ; `gh-pages: 051686a` |
+
+**Build WebGL** : 6 MB compressé Brotli, IL2CPP, 123s sur Mac M1. `Builds/WebGL/` local OK.
+
+### ⚠️ ACTION MANUELLE Mike requise
+
+**Activer GitHub Pages** : `https://github.com/michaelchevallier/crowd-defense/settings/pages`
+- Source : `gh-pages` branch
+- Folder : `/` (root)
+- Save → propagation ~30s
+
+Puis l'URL `https://michaelchevallier.github.io/crowd-defense/v6/` retournera HTTP 200 et le jeu sera publié.
+
+Pour Mike : tu peux aussi tester local sans activation GitHub Pages :
+```bash
+cd /Users/mike/Work/crowd-defense/Builds/WebGL && python3 -m http.server 8000
+# → http://localhost:8000
+```
+
+### Décisions Phase 1 POC actées (Mike 2026-05-11)
+
+- **Scope full fidélité** sur 4 axes : UI Toolkit (pas uGUI), 2.5D 3D primitives (pas 2D sprites), 7×15 fidèle Phaser avec stream/bridge/lava, deploy /v6/ inclus POC.
+- **Wave sizing** : 35/76/87/90 fidèle source (288 enemies total) + dev cheat `Time.timeScale=10f` touche Tab dans LevelRunner.
+- **Pas de pool POC** : Instantiate/Destroy direct (<50 mobs simultanés). Pool en Phase 2 si besoin.
+- **W1-1 castleHP=120** (fidèle source, pas 200 spec Q14).
+- **TOWER_DAMAGE_MUL=1.6** hardcoded const dans Tower.cs (à remonter en BalanceConfig SO Phase 2).
+
+### Plan + briefs Sonnet
+
+- Plan formel : `.claude/plans/phase1-poc-plan.md`
+- Briefs auto-suffisants : `.claude/specs/MIGRATE-POC-01.md` .. `MIGRATE-POC-08.md` (8 fichiers, ~2300 lignes total)
+- Editor menu fallbacks créés par Sonnet en cours de route : `Assets/Editor/POC05Setup.cs`, `POC06Setup.cs`, `POC07Setup.cs` (utiles si refs scene se cassent)
+
+### Workflow autonome multi-agent — validé
+
+Mike a explicitement autorisé "vraiment plusieurs agents en parallèle" (2026-05-11). 9 sub-agents Sonnet feature-dev orchestrés en pipeline + parallèle (POC-05 ∥ POC-08partial, POC-06 ∥ POC-07partial). Pattern à généraliser Phase 2 quand tickets orthogonaux.
 
 ## 🚀 Instructions PROCHAINE SESSION OPUS
 
@@ -109,7 +159,7 @@ Repo né d'un pivot acté le 2026-05-11. Projet précédent (`milan project` Pha
 | Phase | Goal | Estimé | Status |
 |-------|------|--------|--------|
 | **0** | Setup Unity Hub + Editor + Unity-MCP + projet Unity init | 1-3 j | ✅ **DONE** (2026-05-11) |
-| **1** | POC 1 niveau W1-1 fonctionnel (Tower + Enemy + LevelRunner + HUD + WebGL build) | 1-2 sem | pending |
+| **1** | POC 1 niveau W1-1 fonctionnel (Tower + Enemy + LevelRunner + HUD + WebGL build) | 1-2 sem | ✅ **DONE** (2026-05-11, ~2h Sonnet pipeline) |
 | **2** | Migration core (12 TOWER_TYPES + 30 ENEMY_TYPES + LevelRunner + Q1-Q14 specs) | 3-4 sem | pending |
 | **3** | 80 levels + pacing bouton + castle HP + boss + cutscenes | 2-3 sem | pending |
 | **4** | Builds Mac/Win/iOS/Android/WebGL + Steam/App Store/Play Store | 1-2 sem | pending |
@@ -208,9 +258,11 @@ Référence complète : `docs/decisions/Q1-Q18-arbitrages.md`.
 - [x] Allowlist `crowd-defense/.claude/settings.json` (10 MCP patterns read-only)
 - [x] Model overrides agents (auto-qa-runner/level-designer/ux-designer Opus→Sonnet)
 - [x] Memory consolidation (V3-obsoletes deleted, transverses copied, project_crowd_defense_unity + feedback_unity_skill added)
-- [ ] **`/plan` formel Phase 1 POC** + ExitPlanMode validation Mike
-- [ ] Phase 1 POC tickets MIGRATE-POC-01..08 (~12-17 commits)
-- [ ] Phase 1 POC livré : W1-1 jouable WebGL `/v6/`
+- [x] **`/plan` formel Phase 1 POC** + 4 questions structurantes validées Mike (2026-05-11)
+- [x] Phase 1 POC tickets MIGRATE-POC-01..08 (17 commits main + 1 gh-pages)
+- [x] Phase 1 POC livré : W1-1 jouable WebGL build OK + push `gh-pages /v6/`
+- [ ] **Mike : activer GitHub Pages** (Settings → Pages → Source = `gh-pages`, `/`)
+- [ ] Phase 2 planning + tickets MIGRATE-CORE-XX
 
 ## ⚠️ Caveats & pièges pour la nouvelle session
 
