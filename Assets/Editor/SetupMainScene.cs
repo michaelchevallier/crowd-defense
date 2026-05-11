@@ -59,6 +59,11 @@ namespace CrowdDefense.Editor
             BuildEventAssets.Generate();
             BuildModifierAssets.Generate();
 
+            // Seed Doctrine / Skin / Achievement assets (idempotent).
+            BuildDoctrineAssets.Generate();
+            BuildSkinAssets.Generate();
+            BuildAchievementAssets.Generate();
+
             // Seed EnemyType SOs from V5 ENEMY_TYPES (idempotent — skips existing assets).
             EnemySeedTool.Generate();
 
@@ -271,6 +276,8 @@ namespace CrowdDefense.Editor
             EnsureChild<MetaUpgradeSystem>(systems, "MetaUpgradeSystem", ref created, ref existing);
             EnsureChild<DoctrineSystem>(systems, "DoctrineSystem", ref created, ref existing);
             EnsureChild<SkinSystem>(systems, "SkinSystem", ref created, ref existing);
+            EnsureChild<Achievements>(systems, "Achievements", ref created, ref existing);
+            EnsureChild<ComboSystem>(systems, "ComboSystem", ref created, ref existing);
             EnsureChild<RunContext>(systems, "RunContext", ref created, ref existing);
             return created;
         }
