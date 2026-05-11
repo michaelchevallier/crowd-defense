@@ -139,7 +139,6 @@ namespace CrowdDefense.Systems
             PlayerPrefs.Save();
         }
 
-        // Stackable check without registry dependency (simple id list from V5)
         private static bool IsStackable(string id) =>
             id is "range" or "fire_rate" or "pierce" or "lifesteal" or "move_speed";
     }
