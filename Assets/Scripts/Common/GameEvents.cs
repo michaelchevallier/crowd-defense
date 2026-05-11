@@ -44,6 +44,9 @@ namespace CrowdDefense.Common
     // Music / audio
     public record LevelThemeChangedEvent(string ThemeName);
 
+    // Synergies
+    public record SynergyPairActivatedEvent(string FromType, string ToType, string Label);
+
     // Boss lifecycle
     public record BossEncounteredEvent(string DisplayName, float MaxHp, Color AuraColor);
     public record BossHpChangedEvent(float Ratio);

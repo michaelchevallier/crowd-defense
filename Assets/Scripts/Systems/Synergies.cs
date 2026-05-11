@@ -15,6 +15,21 @@ namespace CrowdDefense.Systems
         public SynergyBadge(string towerId, int count) { TowerId = towerId; Count = count; }
     }
 
+    public readonly struct SynergyActivatedInfo
+    {
+        public readonly string FromType;
+        public readonly string ToType;
+        public readonly string Label;
+        public readonly Vector3 MidPoint;
+        public SynergyActivatedInfo(string from, string to, Vector3 mid)
+        {
+            FromType = from;
+            ToType   = to;
+            Label    = $"{from}+{to}";
+            MidPoint = mid;
+        }
+    }
+
     /// <summary>
     /// Singleton MonoBehaviour — resolves all tower synergies every ~200 ms (LateUpdate tick).
     /// Resets synergy output fields on every Tower before recomputing, preventing stale accumulation.
@@ -28,11 +43,18 @@ namespace CrowdDefense.Systems
         // Fired after each Resolve tick when active-synergy set changes.
         public event Action? OnSynergyChanged;
 
+        // Fired once per cross-effect pair the first time it becomes active.
+        public event Action<SynergyActivatedInfo>? OnSynergyActivated;
+
         // Read-only snapshot updated each tick — one badge per tower type that has synergyActive towers.
         public IReadOnlyList<SynergyBadge> ActiveBadges => _activeBadges;
         private readonly List<SynergyBadge> _activeBadges = new();
         private readonly List<SynergyBadge> _prevBadges = new();
         private readonly Dictionary<string, int> _countMap = new();
+
+        // cross-effect activation state: key = "sourceInstanceId:syn.from" → currently active?
+        // Allows firing OnSynergyActivated exactly once per pair becoming active.
+        private readonly Dictionary<string, bool> _crossActiveKeys = new();
 
         private void LateUpdate()
         {
@@ -44,7 +66,7 @@ namespace CrowdDefense.Systems
             var towers = PlacementController.Instance.PlacedTowers;
             var enemies = WaveManager.Instance?.ActiveEnemies;
 
-            Resolve(towers, enemies);
+            Resolve(towers, enemies, this);
             UpdateBadges(towers);
         }
 
@@ -80,7 +102,7 @@ namespace CrowdDefense.Systems
         }
 
         // internal for unit tests
-        internal void Resolve(IReadOnlyList<Tower> towers, IReadOnlyList<Enemy>? enemies)
+        internal void Resolve(IReadOnlyList<Tower> towers, IReadOnlyList<Enemy>? enemies, Synergies? owner = null)
         {
             // ── 1. Reset all synergy output fields ────────────────────────────
             for (int i = 0; i < towers.Count; i++)
@@ -135,7 +157,7 @@ namespace CrowdDefense.Systems
                             ApplyAura(source, syn, towers);
                             break;
                         case SynergyType.CrossEffect:
-                            ApplyCrossEffect(source, syn, towers);
+                            ApplyCrossEffect(source, syn, towers, owner);
                             break;
                         case SynergyType.ApplyToEnemy:
                             if (enemies != null)
@@ -190,7 +212,7 @@ namespace CrowdDefense.Systems
         }
 
         // ── CrossEffect ───────────────────────────────────────────────────────
-        private static void ApplyCrossEffect(Tower source, SynergyDef syn, IReadOnlyList<Tower> towers)
+        private static void ApplyCrossEffect(Tower source, SynergyDef syn, IReadOnlyList<Tower> towers, Synergies? owner)
         {
             if (string.IsNullOrEmpty(syn.from)) return;
             float r = syn.range > 0f ? syn.range : 4f;
@@ -210,10 +232,32 @@ namespace CrowdDefense.Systems
                 }
             }
 
-            if (nearFrom == null) return;
+            // Track first-activation per (source instance, syn.from) pair
+            string pairKey = $"{source.GetInstanceID()}:{syn.from}";
+            bool wasActive = owner != null && owner._crossActiveKeys.TryGetValue(pairKey, out bool prev) && prev;
+
+            if (nearFrom == null)
+            {
+                if (owner != null) owner._crossActiveKeys[pairKey] = false;
+                return;
+            }
 
             source._synergyActive = true;
             nearFrom._synergyActive = true;
+
+            // Fire first-activation event exactly once per pair becoming active
+            if (!wasActive && owner != null)
+            {
+                owner._crossActiveKeys[pairKey] = true;
+                var fromId  = nearFrom.Config?.Id ?? syn.from;
+                var sourceId = source.Config?.Id ?? "?";
+                Vector3 mid = (srcPos + nearFrom.transform.position) * 0.5f;
+                owner.OnSynergyActivated?.Invoke(new SynergyActivatedInfo(fromId, sourceId, mid));
+            }
+            else if (owner != null)
+            {
+                owner._crossActiveKeys[pairKey] = true;
+            }
 
             if (syn.pierceMega)
                 source._pierceBonus = Mathf.Max(source._pierceBonus, 99);

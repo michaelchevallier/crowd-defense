@@ -18,7 +18,8 @@ namespace CrowdDefense.UI
 
             if (Synergies.Instance != null)
             {
-                Synergies.Instance.OnSynergyChanged += Redraw;
+                Synergies.Instance.OnSynergyChanged  += Redraw;
+                Synergies.Instance.OnSynergyActivated += OnPairActivated;
                 Redraw();
             }
         }
@@ -26,7 +27,17 @@ namespace CrowdDefense.UI
         private void OnDestroy()
         {
             if (Synergies.Instance != null)
-                Synergies.Instance.OnSynergyChanged -= Redraw;
+            {
+                Synergies.Instance.OnSynergyChanged  -= Redraw;
+                Synergies.Instance.OnSynergyActivated -= OnPairActivated;
+            }
+        }
+
+        private static void OnPairActivated(SynergyActivatedInfo info)
+        {
+            string label = L.Get($"synergy.{info.Label}", "Synergies");
+            if (string.IsNullOrEmpty(label)) label = info.Label;
+            Toast.Show(label, string.Empty, 2500);
         }
 
         private void Redraw()
