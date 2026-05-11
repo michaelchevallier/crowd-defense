@@ -48,6 +48,7 @@ namespace CrowdDefense.Visual
             ApplySun(theme);
             ApplyAmbient(theme);
             ApplySkyboxTint(theme);
+            ApplyFog(theme);
             DynamicGI.UpdateEnvironment();
         }
 
@@ -121,6 +122,28 @@ namespace CrowdDefense.Visual
             LevelTheme.Cyberpunk  => new Color(0.05f, 0.02f, 0.15f),  // nuit violette
             LevelTheme.Foire      => new Color(0.70f, 0.85f, 1.00f),  // ciel bleu clair festif
             _                     => new Color(0.50f, 0.70f, 1.00f),  // Plaine — bleu standard
+        };
+
+        // ── Fog ─────────────────────────────────────────────────────────────────
+
+        private static void ApplyFog(LevelTheme theme)
+        {
+            var (color, density) = FogParams(theme);
+            RenderSettings.fog        = density > 0f;
+            RenderSettings.fogMode    = FogMode.Linear;
+            RenderSettings.fogColor   = color;
+            RenderSettings.fogStartDistance = 10f;
+            RenderSettings.fogEndDistance   = 10f + (density > 0f ? 1f / density : 200f);
+        }
+
+        // Returns (color, density) — density 0 = no fog.
+        private static (Color color, float density) FogParams(LevelTheme theme) => theme switch
+        {
+            LevelTheme.Espace   => (new Color(0.40f, 0.10f, 0.55f), 0.05f),  // nebula purple
+            LevelTheme.Volcan   => (new Color(0.90f, 0.35f, 0.05f), 0.05f),  // embers orange
+            LevelTheme.Submarin => (new Color(0.05f, 0.35f, 0.70f), 0.05f),  // caustics blue
+            LevelTheme.Foret    => (new Color(0.35f, 0.60f, 0.30f), 0.05f),  // mist green
+            _                   => (Color.clear,                     0f),     // autres : pas de fog
         };
     }
 }
