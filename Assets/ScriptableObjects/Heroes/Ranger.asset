@@ -10,29 +10,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6b82e7252e01f470eac829844c040819, type: 3}
-  m_Name: Knight
+  m_Name: Ranger
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.HeroType
-  id: knight
-  displayName: Knight
-  assetKey: hero_knight
-  damage: 0.45
-  range: 12
-  fireRateMs: 600
-  projectileSpeed: 22
-  moveSpeed: 6
+  id: ranger
+  displayName: Ranger
+  assetKey: hero_ranger
+  damage: 0.55
+  range: 18
+  fireRateMs: 500
+  projectileSpeed: 28
+  moveSpeed: 7
   modelScale: 0.6
-  ultCooldownMs: 30000
-  ultAoeRadius: 6.5
-  ultAoeDamage: 15
-  ultFanShotCount: 8
-  ultFanPierceBonus: 3
-  ultFanDamageMul: 1.5
+  ultCooldownMs: 28000
+  ultAoeRadius: 5
+  ultAoeDamage: 12
+  ultFanShotCount: 10
+  ultFanPierceBonus: 4
+  ultFanDamageMul: 1.4
   xpCurve:
   - 20
   - 45
   - 75
   - 100
   - 130
-  auraColor: {r: 1, g: 0.843, b: 0, a: 0.5}
-  haloColor: {r: 1, g: 0.96, b: 0.69, a: 0.35}
-  bodyColor: {r: 0.227, g: 0.416, b: 0.749, a: 1}
+  auraColor: {r: 0.18, g: 0.58, b: 0.18, a: 0.5}
+  haloColor: {r: 0.5, g: 0.85, b: 0.5, a: 0.35}
+  bodyColor: {r: 0.18, g: 0.58, b: 0.18, a: 1}

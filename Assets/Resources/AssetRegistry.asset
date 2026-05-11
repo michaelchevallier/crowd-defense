@@ -135,3 +135,13 @@ MonoBehaviour:
     Prefab: {fileID: 8771091787928289351, guid: 96aa538f7cc2140de9e9d4ec97f7de1a, type: 3}
   - Key: mob_cyberpunk_2legs
     Prefab: {fileID: 8771091787928289351, guid: 41cbc5975572c48a898cff465b97db54, type: 3}
+  - Key: hero_knight
+    Prefab: {fileID: 8771091787928289351, guid: 20c26e8d493b14e0283e4089d5389f94, type: 3}
+  - Key: hero_mage
+    Prefab: {fileID: 8771091787928289351, guid: 6925a5c6e09974ce596fbcca97229c7e, type: 3}
+  - Key: hero_ranger
+    Prefab: {fileID: 8771091787928289351, guid: b3f08e37e0a6c47b9a27d0729f5c1444, type: 3}
+  - Key: hero_barbarian
+    Prefab: {fileID: 8771091787928289351, guid: 84d63b2910d2441f5afd81d3d9610885, type: 3}
+  - Key: hero_rogue
+    Prefab: {fileID: 8771091787928289351, guid: ae28cdc366c4646fb8650d58af345598, type: 3}
