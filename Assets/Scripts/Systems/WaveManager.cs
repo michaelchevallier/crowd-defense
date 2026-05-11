@@ -253,6 +253,12 @@ namespace CrowdDefense.Systems
             // W6+ : skip regen (Q11)
         }
 
+        public WaveDef? GetNextWaveDef()
+        {
+            if (levelData == null || nextWaveToStart >= levelData.Waves.Count) return null;
+            return levelData.Waves[nextWaveToStart];
+        }
+
         public void NotifyEnemyDied(Enemy e) => activeEnemies.Remove(e);
 
         // Called by boss enemies when they summon a minion mid-wave.

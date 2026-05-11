@@ -21,6 +21,7 @@ namespace CrowdDefense.Data
         [SerializeField] private Color bodyColor = Color.red;
         [SerializeField] private string walkAnim = "Walk";
         [SerializeField] private string assetKey = "";
+        [SerializeField] private string iconEmoji = "";
 
         [Header("Movement")]
         [SerializeField] private bool isFlyer = false;
@@ -74,6 +75,7 @@ namespace CrowdDefense.Data
         public Color BodyColor => bodyColor;
         public string WalkAnim => walkAnim;
         public string AssetKey => assetKey;
+        public string IconEmoji => string.IsNullOrEmpty(iconEmoji) ? displayName : iconEmoji;
         public bool IsFlyer => isFlyer;
         public float FlyHeight => flyHeight;
         public bool IgnorePath => ignorePath;
