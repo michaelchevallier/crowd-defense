@@ -4,6 +4,7 @@
     <Style src="HUD.uss" />
     <Style src="TowerToolbar.uss" />
     <Style src="RadialMenu.uss" />
+    <Style src="TowerSelectMenu.uss" />
     <Style src="TutorialOverlay.uss" />
     <Style src="Doctrine.uss" />
     <Style src="PauseMenu.uss" />
@@ -37,6 +38,7 @@
             </ui:VisualElement>
 
             <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines [D]" />
+            <ui:Button text="&#x2699;" name="btn-settings" class="hud-settings-btn" tooltip="Settings" />
         </ui:VisualElement>
 
         <!-- Doctrine panel (fullscreen modal, managed by DoctrineController) -->
@@ -72,9 +74,23 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Radial menu L3 upgrade (D1-03) — visible quand tower L2 signature selectionnee -->
+        <!-- Radial menu upgrade/sell/range — visible quand tower selectionnee (D1-03) -->
         <ui:VisualElement name="radial-menu" class="radial-menu hidden">
             <ui:Label text="" name="radial-title" class="radial-title" />
+
+            <!-- L1 -> L2 upgrade (pleine largeur) -->
+            <ui:Button name="btn-upgrade-l2" class="radial-btn-upgrade">
+                <ui:Label text="Upgrade L2" name="btn-upgrade-l2-label" class="radial-btn-upgrade-label" />
+                <ui:Label text="" name="btn-upgrade-l2-cost" class="radial-btn-upgrade-cost" />
+            </ui:Button>
+
+            <!-- L2 -> L3 non-signature (pleine largeur) -->
+            <ui:Button name="btn-upgrade-l3" class="radial-btn-upgrade">
+                <ui:Label text="Upgrade L3" name="btn-upgrade-l3-label" class="radial-btn-upgrade-label" />
+                <ui:Label text="" name="btn-upgrade-l3-cost" class="radial-btn-upgrade-cost" />
+            </ui:Button>
+
+            <!-- L2 -> L3 branche signature : DPS | Utility -->
             <ui:VisualElement class="radial-upgrade-row">
                 <ui:Button name="btn-upgrade-dps" class="radial-btn radial-btn-dps">
                     <ui:Label text="DPS" name="btn-dps-label" class="radial-btn-label" />
@@ -87,9 +103,16 @@
                     <ui:Label text="" name="btn-utility-hint" class="radial-btn-hint" />
                 </ui:Button>
             </ui:VisualElement>
-            <ui:Button name="btn-sell" class="radial-btn-sell">
-                <ui:Label text="" name="btn-sell-label" class="radial-btn-sell-label" />
-            </ui:Button>
+
+            <!-- Actions secondaires : Range toggle + Sell -->
+            <ui:VisualElement class="radial-action-row">
+                <ui:Button name="btn-range" class="radial-btn-range">
+                    <ui:Label text="Range" name="btn-range-label" class="radial-btn-action-label" />
+                </ui:Button>
+                <ui:Button name="btn-sell" class="radial-btn-sell">
+                    <ui:Label text="" name="btn-sell-label" class="radial-btn-sell-label" />
+                </ui:Button>
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Boss banner (top, permanent during boss fight) -->
@@ -233,6 +256,9 @@
         </ui:VisualElement>
 
         <!-- Floating popup overlay (FloatingPopupController injects Label children at runtime) -->
+        <!-- Tower select popup (TowerSelectMenuController — affiché sur cellule vide buildable) -->
+        <ui:VisualElement name="tower-select-menu" class="tower-select-menu hidden" />
+
         <ui:VisualElement name="popup-overlay" class="popup-overlay" picking-mode="Ignore" />
 
         <!-- Pause menu (PauseMenuController toggles via LevelRunner.OnPauseChanged) -->
