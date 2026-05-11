@@ -18,6 +18,7 @@ namespace CrowdDefense.UI
         private const string KReduceMotion = "cd.a11y.reduce_motion";
         private const string KLargeText = "cd.a11y.large_text";
         private const string KLocale = "cd.locale";
+        private const string KGameSpeed = "cd.gameplay.speed";
 
         public event Action? OnSettingsChanged;
 
@@ -32,6 +33,7 @@ namespace CrowdDefense.UI
         private bool _reduceMotion;
         private bool _largeText;
         private string _locale = "en";
+        private int _gameSpeed = 1;
 
         public float MasterVolume
         {
@@ -99,6 +101,12 @@ namespace CrowdDefense.UI
             set { if (_locale == value || string.IsNullOrEmpty(value)) return; _locale = value; Save(); Notify(); }
         }
 
+        public int GameSpeed
+        {
+            get => _gameSpeed;
+            set { value = value < 1 ? 1 : value > 3 ? 3 : value; if (_gameSpeed == value) return; _gameSpeed = value; Save(); Notify(); }
+        }
+
         protected override void OnAwakeSingleton()
         {
             Load();
@@ -119,6 +127,7 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetInt(KReduceMotion, _reduceMotion ? 1 : 0);
             PlayerPrefs.SetInt(KLargeText, _largeText ? 1 : 0);
             PlayerPrefs.SetString(KLocale, _locale);
+            PlayerPrefs.SetInt(KGameSpeed, _gameSpeed);
             PlayerPrefs.Save();
         }
 
@@ -135,6 +144,7 @@ namespace CrowdDefense.UI
             _reduceMotion = PlayerPrefs.GetInt(KReduceMotion, 0) == 1;
             _largeText = PlayerPrefs.GetInt(KLargeText, 0) == 1;
             _locale = PlayerPrefs.GetString(KLocale, "en");
+            _gameSpeed = PlayerPrefs.GetInt(KGameSpeed, 1);
         }
 
         private void ApplyAudio()

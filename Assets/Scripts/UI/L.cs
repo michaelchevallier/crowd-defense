@@ -19,6 +19,26 @@ namespace CrowdDefense.UI
             {
                 ["en"] = new()
                 {
+                    // ── Speed control ──────────────────────────────────────────────
+                    ["hud.speed_label"] = "SPEED",
+
+                    // ── Perk picker ────────────────────────────────────────────────
+                    ["perk.pick_title"] = "Choose a perk",
+                    ["perk.pick_subtitle"] = "Pick 1 of 3 to continue",
+                    ["perk.rarity_common"] = "Common",
+                    ["perk.rarity_rare"] = "Rare",
+                    ["perk.rarity_epic"] = "Epic",
+                    ["perk.rarity_legendary"] = "Legendary",
+                    ["perk.placeholder_name"] = "Unknown Perk",
+                    ["perk.placeholder_desc"] = "No description available.",
+
+                    // ── Hero HUD ───────────────────────────────────────────────────
+                    ["hud.hero_hp_label"] = "HERO",
+                    ["hud.hero_xp_label"] = "XP",
+                    ["hud.hero_ult_ready"] = "ULT READY",
+                    ["hud.hero_ult_cd"] = "{0:F1}s",
+                    ["hud.hero_level"] = "Lv{0}",
+
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "GOLD",
                     ["hud.wave_label"] = "WAVE",
@@ -123,9 +143,40 @@ namespace CrowdDefense.UI
                     ["settings.close"] = "Close",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+
+                    // ── Doctrine panel ─────────────────────────────────────────────
+                    ["doctrine.title"] = "Doctrines",
+                    ["doctrine.close"] = "Close",
+                    ["doctrine.active_label"] = "{0} Active: {1}",
+                    ["doctrine.none_active"] = "No doctrine active",
+                    ["doctrine.gems_label"] = "Gems: {0}",
+                    ["doctrine.btn_select"] = "Select",
+                    ["doctrine.btn_active"] = "Active",
+                    ["doctrine.cost_label"] = "{0} gems",
+                    ["doctrine.hud_btn"] = "Doctrines",
                 },
                 ["fr"] = new()
                 {
+                    // ── Speed control ──────────────────────────────────────────────
+                    ["hud.speed_label"] = "VITESSE",
+
+                    // ── Perk picker ────────────────────────────────────────────────
+                    ["perk.pick_title"] = "Choisir un bonus",
+                    ["perk.pick_subtitle"] = "Choisir 1 parmi 3 pour continuer",
+                    ["perk.rarity_common"] = "Commun",
+                    ["perk.rarity_rare"] = "Rare",
+                    ["perk.rarity_epic"] = "Epique",
+                    ["perk.rarity_legendary"] = "Legendaire",
+                    ["perk.placeholder_name"] = "Bonus inconnu",
+                    ["perk.placeholder_desc"] = "Aucune description disponible.",
+
+                    // ── Hero HUD ───────────────────────────────────────────────────
+                    ["hud.hero_hp_label"] = "HERO",
+                    ["hud.hero_xp_label"] = "XP",
+                    ["hud.hero_ult_ready"] = "ULT PRETE",
+                    ["hud.hero_ult_cd"] = "{0:F1}s",
+                    ["hud.hero_level"] = "Nv{0}",
+
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "OR",
                     ["hud.wave_label"] = "VAGUE",
@@ -230,6 +281,17 @@ namespace CrowdDefense.UI
                     ["settings.close"] = "Fermer",
                     ["settings.lang_en"] = "English",
                     ["settings.lang_fr"] = "Français",
+
+                    // ── Doctrine panel ─────────────────────────────────────────────
+                    ["doctrine.title"] = "Doctrines",
+                    ["doctrine.close"] = "Fermer",
+                    ["doctrine.active_label"] = "{0} Active : {1}",
+                    ["doctrine.none_active"] = "Aucune doctrine active",
+                    ["doctrine.gems_label"] = "Gemmes : {0}",
+                    ["doctrine.btn_select"] = "Choisir",
+                    ["doctrine.btn_active"] = "Active",
+                    ["doctrine.cost_label"] = "{0} gemmes",
+                    ["doctrine.hud_btn"] = "Doctrines",
                 },
             },
 

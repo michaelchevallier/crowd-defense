@@ -15,7 +15,11 @@ namespace CrowdDefense.Systems
     {
         [SerializeField] private LevelData? currentLevel;
         [SerializeField] private GameObject? castlePrefab;
+
+        [Header("Hero")]
+        [SerializeField] private HeroType? heroType;
         [SerializeField] private GameObject? heroPrefab;
+        [SerializeField] private bool spawnHero = true;
 
         public GameState State { get; private set; } = GameState.Play;
         public LevelData? CurrentLevel => currentLevel;
@@ -29,6 +33,7 @@ namespace CrowdDefense.Systems
         public event Action<int, int>? OnTotalHPChanged;
 
         private float targetSpeed = 1f;
+        private Vector3 _castleWorldPos;
 
         protected override void OnAwakeSingleton()
         {
@@ -51,29 +56,51 @@ namespace CrowdDefense.Systems
         protected override void OnDestroySingleton()
         {
             if (WaveManager.Instance != null)
+            {
                 WaveManager.Instance.OnAllWavesCompleted -= OnVictory;
+                WaveManager.Instance.OnWaveCleared      -= OnWaveCleared;
+            }
         }
 
         private void Start()
         {
             if (WaveManager.Instance != null)
+            {
                 WaveManager.Instance.OnAllWavesCompleted += OnVictory;
+                WaveManager.Instance.OnWaveCleared      += OnWaveCleared;
+            }
 
             SpawnCastle();
-            SpawnHeroFromPrefab();
-            ApplyRunStateToHero();
+            SpawnHero();
+        }
+
+        public void SetGameSpeed(int multiplier)
+        {
+            targetSpeed = Mathf.Clamp(multiplier, 1, 3);
+            ApplyTimeScale();
         }
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                targetSpeed = Mathf.Approximately(targetSpeed, 1f) ? 10f : 1f;
-                ApplyTimeScale();
-#if UNITY_EDITOR
-                Debug.Log($"[LevelRunner] speed cheat → {targetSpeed}x");
-#endif
-            }
+            UpdateHeroInput();
+        }
+
+        private void UpdateHeroInput()
+        {
+            if (Hero == null || State != GameState.Play) return;
+
+            float dx = Input.GetAxisRaw("Horizontal");
+            float dz = Input.GetAxisRaw("Vertical");
+            Hero.SetMove(dx, dz);
+
+            bool shiftHeld = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
+            Hero.SetRunning(shiftHeld);
+
+            if (Input.GetKeyDown(KeyCode.B) && _castleWorldPos != Vector3.zero)
+                Hero.transform.position = _castleWorldPos + Vector3.up * 0.5f;
+
+            if (Input.GetKeyDown(KeyCode.U))
+                Hero.TryUlt();
         }
 
         private void SpawnCastle()
@@ -82,6 +109,9 @@ namespace CrowdDefense.Systems
 
             var grid = PathManager.Instance.Grid;
             if (grid.Castles.Count == 0) return;
+
+            var castleCell = grid.Castles[0];
+            _castleWorldPos = GridCoords.CellToWorld(castleCell.x, castleCell.y, grid.Width, grid.Height, grid.CellSize);
 
             int hp = ResolveCastleHP();
             Castle castle;
@@ -111,26 +141,36 @@ namespace CrowdDefense.Systems
             PrimaryCastle = castle;
 
 #if UNITY_EDITOR
-            Debug.Log($"[LevelRunner] spawned castle hp={hp}");
+            Debug.Log($"[LevelRunner] spawned castle hp={hp} at {_castleWorldPos}");
 #endif
 
             OnTotalHPChanged?.Invoke(TotalCastleHP, TotalCastleHPMax);
         }
 
-        private void SpawnHeroFromPrefab()
+        private void SpawnHero()
         {
-            if (heroPrefab == null) return;
-            if (PathManager.Instance?.Grid == null) return;
-            var grid = PathManager.Instance.Grid;
-            float cx = grid.Width  * grid.CellSize * 0.5f;
-            float cz = grid.Height * grid.CellSize * 0.5f;
-            var go = Instantiate(heroPrefab, new Vector3(cx, 0f, cz), Quaternion.identity);
-            Hero = go.GetComponent<Hero>();
-        }
+            if (!spawnHero || heroType == null) return;
 
-        private void ApplyRunStateToHero()
-        {
-            if (Hero == null) return;
+            var grid = PathManager.Instance?.Grid;
+            float maxX = grid != null ? grid.Width  * grid.CellSize * 0.5f : 29.5f;
+            float maxZ = grid != null ? grid.Height * grid.CellSize * 0.5f : 29.5f;
+
+            Vector3 spawnPos = _castleWorldPos != Vector3.zero
+                ? _castleWorldPos + new Vector3(1.5f, 0f, 0f)
+                : Vector3.zero;
+
+            GameObject heroGo;
+            if (heroPrefab != null)
+                heroGo = Instantiate(heroPrefab, spawnPos, Quaternion.identity);
+            else
+            {
+                heroGo = new GameObject("Hero");
+                heroGo.transform.position = spawnPos;
+            }
+
+            Hero = heroGo.GetComponent<Hero>() ?? heroGo.AddComponent<Hero>();
+            Hero.Init(heroType, spawnPos, maxX, maxZ);
+
             var rs = SaveSystem.GetRunState();
             Hero.ApplyRunContext(
                 rs?.heroPerks ?? new List<string>(),
@@ -145,6 +185,10 @@ namespace CrowdDefense.Systems
                 int bonus = Mathf.RoundToInt(PrimaryCastle.HPMax * (Hero.CastleHPMaxMul - 1f));
                 PrimaryCastle.GrantBonusHP(bonus);
             }
+
+#if UNITY_EDITOR
+            Debug.Log($"[LevelRunner] spawned hero '{heroType.Id}' at {spawnPos}");
+#endif
         }
 
         public int ResolveCastleHP() => currentLevel?.CastleHP ?? 120;
@@ -170,12 +214,13 @@ namespace CrowdDefense.Systems
             if (currentLevel != null)
                 SaveSystem.MarkLevelCleared(currentLevel.Id);
 
-            // Stage B integration : level complete feedback
             AudioController.Instance?.Play("level_up", 1f);
             JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.4f), 500);
             JuiceFX.Instance?.SlowMo(0.5f, 1200);
 
             SetState(GameState.Victory);
         }
+
+        private void OnWaveCleared(int _) => Hero?.OnWaveEnd();
     }
 }

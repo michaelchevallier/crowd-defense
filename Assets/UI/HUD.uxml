@@ -25,6 +25,13 @@
                     <ui:VisualElement name="hp-bar-fill" class="hp-bar-fill" />
                 </ui:VisualElement>
             </ui:VisualElement>
+
+            <!-- Speed control -->
+            <ui:VisualElement class="speed-control">
+                <ui:Button text="x1" name="speed-1" class="speed-btn speed-active" />
+                <ui:Button text="x2" name="speed-2" class="speed-btn" />
+                <ui:Button text="x3" name="speed-3" class="speed-btn" />
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Wave launch button (visible between waves only) -->
