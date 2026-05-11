@@ -47,6 +47,7 @@ namespace CrowdDefense.Editor
             EnsureCastle(ref created, ref existing);
             EnsureCamera(ref created, ref existing);
             EnsureDirectionalLight(ref created, ref existing);
+            EnsureChild<ThemeAmbientController>(systems, "ThemeAmbientController", ref created, ref existing);
             EnsureDebugGround(ref created, ref existing);
             EnsureHUD(ref created, ref existing);
             EnsureSkyboxAndLighting();
