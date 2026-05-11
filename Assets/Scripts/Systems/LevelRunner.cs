@@ -315,6 +315,12 @@ namespace CrowdDefense.Systems
             if (State != GameState.Summary) State = GameState.Summary;
             ApplyTimeScale();
             OnSummaryReady?.Invoke(result);
+
+            // Fallback overlay: shown when LevelSummaryController is absent from scene.
+            if (isVictory)
+                UI.EndScreenController.Instance?.ShowVictory(result);
+            else
+                UI.EndScreenController.Instance?.ShowDefeat(result);
         }
 
         // ── Wave event handlers ─────────────────────────────────────────────────
