@@ -1,15 +1,13 @@
 #nullable enable
 using UnityEngine;
 using UnityEngine.UIElements;
-using CrowdDefense.Entities;
 using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
     /// <summary>
-    /// Drives tutorial panel visibility and content based on TutorialState phases.
-    /// Panel is embedded in HUD.uxml — this component is added to the same HUD GameObject.
-    /// Event-only bindings: OnTowerPlaced, OnWaveStart, OnWaveCleared.
+    /// Drives TutorialOverlay.uxml visibility and content based on TutorialState phases.
+    /// Event-only bindings: OnTowerPlaced, OnWaveStart, OnWaveCleared, OnGoldChanged.
     /// Phase 2 (upgrade L2) uses Update polling since Tower has no OnUpgraded event.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
@@ -26,7 +24,6 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            // Queries into HUD UIDocument (tutorial panel is embedded in HUD.uxml)
             var root = GetComponent<UIDocument>().rootVisualElement;
             tutorialRoot = root.Q<VisualElement>("tutorial-root");
             arrow = root.Q<VisualElement>("tutorial-arrow");
@@ -102,7 +99,7 @@ namespace CrowdDefense.UI
 
         // ── Event handlers ─────────────────────────────────────────────────────────
 
-        private void OnTowerPlaced(Tower _)
+        private void OnTowerPlaced(Entities.Tower _)
         {
             if (TutorialState.Instance == null || !TutorialState.Instance.IsTutorialActive) return;
             if (TutorialState.Instance.CurrentPhase == 0)
