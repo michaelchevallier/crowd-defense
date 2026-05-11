@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ab9dd0f5f4742a69824470e0b5e3535, type: 3}
+  m_Name: kills_10000
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.AchievementDef
+  id: kills_10000
+  titleKey: ach.kills_10000.title
+  descKey: ach.kills_10000.desc
+  iconPath: UI/Achievements/kills_10000
+  hidden: 1
+  points: 50
+  icon: {fileID: 0}
+  predicateType: 1
+  threshold: 10000
+  eventKey: enemy_killed

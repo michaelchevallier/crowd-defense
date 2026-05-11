@@ -15,6 +15,10 @@ MonoBehaviour:
   id: speedrun_w1_1
   titleKey: ach.speedrun_w1_1.title
   descKey: ach.speedrun_w1_1.desc
-  hidden: 1
-  points: 30
+  iconPath: UI/Achievements/speedrun_w1_1
+  hidden: 0
+  points: 20
   icon: {fileID: 0}
+  predicateType: 0
+  threshold: 1
+  eventKey: 

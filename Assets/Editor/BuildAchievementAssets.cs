@@ -22,30 +22,34 @@ namespace CrowdDefense.Editor
             public readonly bool Hidden;
             public readonly AchievementPredicateType Predicate;
             public readonly int Threshold;
+            public readonly string EventKey;
 
             public AchData(string id, int points = 10, bool hidden = false,
-                AchievementPredicateType predicate = AchievementPredicateType.Event, int threshold = 1)
+                AchievementPredicateType predicate = AchievementPredicateType.Event, int threshold = 1,
+                string eventKey = "")
             {
-                Id = id; Points = points; Hidden = hidden; Predicate = predicate; Threshold = threshold;
+                Id = id; Points = points; Hidden = hidden; Predicate = predicate;
+                Threshold = threshold; EventKey = eventKey;
             }
         }
 
         // 51 achievements seeded from V5 source + game semantics
+        // eventKey matches Achievements.TrackEvent("eventKey", delta) call sites
         private static readonly AchData[] k_Defs = new AchData[]
         {
             // ── V5 explicit (kills / perfection) ────────────────────────────────
-            new("kills_100",             20,  false, AchievementPredicateType.Counter, 100),
-            new("kills_1000",            30,  false, AchievementPredicateType.Counter, 1000),
-            new("kills_10000",           50,  true,  AchievementPredicateType.Counter, 10000),
+            new("kills_100",             20,  false, AchievementPredicateType.Counter, 100,    "enemy_killed"),
+            new("kills_1000",            30,  false, AchievementPredicateType.Counter, 1000,   "enemy_killed"),
+            new("kills_10000",           50,  true,  AchievementPredicateType.Counter, 10000,  "enemy_killed"),
             new("perfect_world1",        30,  false, AchievementPredicateType.Event,   1),
             new("apocalypse_unlocked",   20,  false, AchievementPredicateType.Event,   1),
             new("apocalypse_master",     50,  true,  AchievementPredicateType.Event,   1),
 
             // ── V5 daily streak ──────────────────────────────────────────────────
-            new("daily_streak_3",        10,  false, AchievementPredicateType.Counter, 3),
-            new("daily_streak_7",        20,  false, AchievementPredicateType.Counter, 7),
-            new("daily_streak_14",       30,  false, AchievementPredicateType.Counter, 14),
-            new("daily_streak_30",       50,  true,  AchievementPredicateType.Counter, 30),
+            new("daily_streak_3",        10,  false, AchievementPredicateType.Counter, 3,      "daily_streak"),
+            new("daily_streak_7",        20,  false, AchievementPredicateType.Counter, 7,      "daily_streak"),
+            new("daily_streak_14",       30,  false, AchievementPredicateType.Counter, 14,     "daily_streak"),
+            new("daily_streak_30",       50,  true,  AchievementPredicateType.Counter, 30,     "daily_streak"),
 
             // ── V5 run mode (RunMode.js) ─────────────────────────────────────────
             new("run_first_feu",         20,  false, AchievementPredicateType.Event,   1),
@@ -79,16 +83,16 @@ namespace CrowdDefense.Editor
             // ── Progression milestones ──────────────────────────────────────────
             new("tutorial_done",          5,  false, AchievementPredicateType.Event,   1),
             new("first_blood",            5,  false, AchievementPredicateType.Event,   1),
-            new("wave_clear_10",         10,  false, AchievementPredicateType.Counter, 10),
-            new("wave_clear_100",        30,  true,  AchievementPredicateType.Counter, 100),
-            new("tower_master",          20,  false, AchievementPredicateType.Counter, 50),
-            new("synergy_master",        30,  false, AchievementPredicateType.Counter, 10),
+            new("wave_clear_10",         10,  false, AchievementPredicateType.Counter, 10,     "wave_cleared"),
+            new("wave_clear_100",        30,  true,  AchievementPredicateType.Counter, 100,    "wave_cleared"),
+            new("tower_master",          20,  false, AchievementPredicateType.Counter, 50,     "tower_placed"),
+            new("synergy_master",        30,  false, AchievementPredicateType.Counter, 10,     "synergy_activated"),
             new("untouched_castle",      30,  false, AchievementPredicateType.Event,   1),
             new("untouched_world",       50,  true,  AchievementPredicateType.Event,   1),
 
             // ── Economy ──────────────────────────────────────────────────────────
-            new("million_gold",          30,  false, AchievementPredicateType.Counter, 1000000),
-            new("hoarder",               20,  false, AchievementPredicateType.Counter, 500),
+            new("million_gold",          30,  false, AchievementPredicateType.Counter, 1000000,"gold_earned"),
+            new("hoarder",               20,  false, AchievementPredicateType.Event,   1),
 
             // ── Speedrun ─────────────────────────────────────────────────────────
             new("speedrun_w1_1",         20,  false, AchievementPredicateType.Event,   1),
@@ -97,8 +101,8 @@ namespace CrowdDefense.Editor
             // ── Meta / miscellaneous ─────────────────────────────────────────────
             new("no_sell",               20,  false, AchievementPredicateType.Event,   1),
             new("max_upgrade_tower",     15,  false, AchievementPredicateType.Event,   1),
-            new("all_tower_types",       25,  false, AchievementPredicateType.Counter, 12),
-            new("perk_collector",        20,  false, AchievementPredicateType.Counter, 20),
+            new("all_tower_types",       25,  false, AchievementPredicateType.Counter, 12,     "tower_type_built"),
+            new("perk_collector",        20,  false, AchievementPredicateType.Counter, 20,     "perk_collected"),
             new("doctrine_active",       10,  false, AchievementPredicateType.Event,   1),
             new("legendary_skin",        30,  true,  AchievementPredicateType.Event,   1),
         };
@@ -140,6 +144,7 @@ namespace CrowdDefense.Editor
             so.FindProperty("points").intValue         = d.Points;
             so.FindProperty("predicateType").enumValueIndex = (int)d.Predicate;
             so.FindProperty("threshold").intValue      = d.Threshold;
+            so.FindProperty("eventKey").stringValue    = d.EventKey;
             so.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(existing);
             return existing;

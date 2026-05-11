@@ -15,6 +15,10 @@ MonoBehaviour:
   id: million_gold
   titleKey: ach.million_gold.title
   descKey: ach.million_gold.desc
+  iconPath: UI/Achievements/million_gold
   hidden: 0
-  points: 50
+  points: 30
   icon: {fileID: 0}
+  predicateType: 1
+  threshold: 1000000
+  eventKey: gold_earned

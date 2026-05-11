@@ -15,6 +15,10 @@ MonoBehaviour:
   id: wave_clear_10
   titleKey: ach.wave_clear_10.title
   descKey: ach.wave_clear_10.desc
+  iconPath: UI/Achievements/wave_clear_10
   hidden: 0
-  points: 20
+  points: 10
   icon: {fileID: 0}
+  predicateType: 1
+  threshold: 10
+  eventKey: wave_cleared

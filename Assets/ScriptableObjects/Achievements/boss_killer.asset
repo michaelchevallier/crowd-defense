@@ -15,6 +15,10 @@ MonoBehaviour:
   id: boss_killer
   titleKey: ach.boss_killer.title
   descKey: ach.boss_killer.desc
+  iconPath: UI/Achievements/boss_killer
   hidden: 0
   points: 30
   icon: {fileID: 0}
+  predicateType: 0
+  threshold: 1
+  eventKey: 

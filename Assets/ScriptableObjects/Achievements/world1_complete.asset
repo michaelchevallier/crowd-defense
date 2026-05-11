@@ -15,6 +15,10 @@ MonoBehaviour:
   id: world1_complete
   titleKey: ach.world1_complete.title
   descKey: ach.world1_complete.desc
+  iconPath: UI/Achievements/world1_complete
   hidden: 0
-  points: 50
+  points: 10
   icon: {fileID: 0}
+  predicateType: 0
+  threshold: 1
+  eventKey: 

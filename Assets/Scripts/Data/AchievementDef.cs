@@ -17,5 +17,7 @@ namespace CrowdDefense.Data
         [SerializeField] public Sprite? icon;
         [SerializeField] public AchievementPredicateType predicateType = AchievementPredicateType.Event;
         [SerializeField] public int threshold = 1;
+        // For Counter predicates: matches the eventKey passed to Achievements.TrackEvent.
+        [SerializeField] public string eventKey = "";
     }
 }

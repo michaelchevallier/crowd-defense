@@ -15,6 +15,10 @@ MonoBehaviour:
   id: untouched_castle
   titleKey: ach.untouched_castle.title
   descKey: ach.untouched_castle.desc
+  iconPath: UI/Achievements/untouched_castle
   hidden: 0
-  points: 40
+  points: 30
   icon: {fileID: 0}
+  predicateType: 0
+  threshold: 1
+  eventKey: 

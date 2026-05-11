@@ -15,6 +15,10 @@ MonoBehaviour:
   id: synergy_master
   titleKey: ach.synergy_master.title
   descKey: ach.synergy_master.desc
+  iconPath: UI/Achievements/synergy_master
   hidden: 0
-  points: 40
+  points: 30
   icon: {fileID: 0}
+  predicateType: 1
+  threshold: 10
+  eventKey: synergy_activated
