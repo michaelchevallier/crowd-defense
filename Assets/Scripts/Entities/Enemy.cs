@@ -113,6 +113,10 @@ namespace CrowdDefense.Entities
         private float _fieryTimer = 0f;
         private const float FieryInterval = 0.08f;
 
+        // ── Fire breath (boss dragon/fire/infernal) ────────────────────────────
+        private float _fireBreathTimer = 0f;
+        private const float FireBreathCooldown = 3.5f;
+
         // ── Static mode (decoration preview) ─────────────────────────────────
         private bool  _static     = false;
         private float _staticRotY = 0f;
@@ -293,6 +297,7 @@ namespace CrowdDefense.Entities
             _dustTimer        = 0f;
             _fieryTimer       = 0f;
             _stepTimer        = 0f;
+            _fireBreathTimer  = 0f;
             _static           = false;
             _staticRotY       = 0f;
             _wasWalking       = false;
@@ -672,6 +677,7 @@ namespace CrowdDefense.Entities
             UpdateSummons();
             UpdateAoeBlast();
             UpdateCharge();
+            UpdateFireBreath();
             UpdateFreeze();
 
             if (_dying)
@@ -941,6 +947,33 @@ namespace CrowdDefense.Entities
                     EventManager.Instance?.Publish(new BossChargeWarningEvent());
                 }
             }
+        }
+
+        private void UpdateFireBreath()
+        {
+            if (cfg == null || !cfg.IsBoss) return;
+
+            string id = cfg.Id ?? "";
+            bool isDragonBoss = id.IndexOf("dragon", System.StringComparison.OrdinalIgnoreCase) >= 0
+                             || id.IndexOf("fire",   System.StringComparison.OrdinalIgnoreCase) >= 0
+                             || id.IndexOf("infernal", System.StringComparison.OrdinalIgnoreCase) >= 0;
+            if (!isDragonBoss) return;
+
+            _fireBreathTimer -= Time.deltaTime;
+            if (_fireBreathTimer > 0f) return;
+
+            _fireBreathTimer = FireBreathCooldown;
+
+            // Direction vers le Castle; fallback -forward si Castle absent
+            Vector3 target = Castle.Instance != null
+                ? Castle.Instance.transform.position
+                : transform.position + transform.forward * 8f;
+            Vector3 dir = (target - transform.position).normalized;
+
+            VfxPool.Instance?.SpawnFireBreath(
+                transform.position + Vector3.up * 1.5f,
+                dir,
+                8f);
         }
 
         private void UpdateFreeze()

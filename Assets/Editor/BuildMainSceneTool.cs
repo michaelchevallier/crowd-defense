@@ -187,22 +187,18 @@ namespace CrowdDefense.Editor
 
         private static void EnsureDebugGround(ref int created, ref int existing)
         {
+            // Skip DebugGround entirely — MapRenderer builds per-cell slabs at runtime.
+            // A leftover "DebugGround" object would cover the entire map with a flat green plane.
             var ground = GameObject.Find("DebugGround");
-            if (ground != null) { existing++; return; }
-
-            ground = new GameObject("DebugGround");
-            ground.transform.position = new Vector3(0, -0.1f, 0);
-
-            var meshFilter = ground.AddComponent<MeshFilter>();
-            meshFilter.sharedMesh = Resources.GetBuiltinResource<Mesh>("Plane.fbx");
-
-            var renderer = ground.AddComponent<MeshRenderer>();
-            var mat = new Material(Shader.Find("Standard"));
-            mat.color = new Color(0.3f, 0.7f, 0.3f);
-            renderer.sharedMaterial = mat;
-
-            ground.transform.localScale = new Vector3(50, 1, 50);
-            created++;
+            if (ground != null)
+            {
+                // Destroy any stale DebugGround that was created before this fix.
+                Object.DestroyImmediate(ground);
+#if UNITY_EDITOR
+                Debug.Log("[BuildMainSceneTool] Removed stale DebugGround (MapRenderer handles ground)");
+#endif
+            }
+            existing++; // count as existing/handled — no new object created
         }
 
         private static void EnsureHUD(ref int created, ref int existing)

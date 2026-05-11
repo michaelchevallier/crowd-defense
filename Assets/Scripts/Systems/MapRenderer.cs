@@ -12,6 +12,11 @@ namespace CrowdDefense.Systems
         // Per-char cache keyed by (char, theme) so animated mats are theme-specific.
         private static readonly Dictionary<(char, LevelTheme), Material> _matCache = new();
 
+        // Procedural textures generated once and reused across all cells.
+        private static Texture2D? _texGrass;
+        private static Texture2D? _texPath;
+        private static Texture2D? _texDirt;
+
         // Theme resolved from LevelRunner at Start — default Plaine if not available.
         private LevelTheme _theme = LevelTheme.Plaine;
 
@@ -113,22 +118,77 @@ namespace CrowdDefense.Systems
                 }
             }
 
-            // Default: load pre-built Toon_Default material, apply color tint
-            var mat = Resources.Load<Material>("Materials/Toon_Default");
-            if (mat != null)
+            // Default: load pre-built Toon_Default material, apply color tint + procedural texture
+            var baseMat = Resources.Load<Material>("Materials/Toon_Default");
+            var mat = baseMat != null
+                ? new Material(baseMat)
+                : new Material(ShaderUtil.GetToonShader());
+
+            // Apply procedural texture for ground cells so _BaseColor alone isn't flat
+            var tex = GetProceduralTex(ch);
+            if (tex != null)
             {
-                // Clone to avoid modifying the source asset
-                mat = new Material(mat);
+                // URP Lit uses _BaseMap; Standard shader uses _MainTex — try both.
+                if (mat.HasProperty("_BaseMap"))
+                    mat.SetTexture("_BaseMap", tex);
+                else if (mat.HasProperty("_MainTex"))
+                    mat.SetTexture("_MainTex", tex);
+                // Keep a light color tint; white = no tint so texture shows true.
+                mat.SetColor("_BaseColor", Color.white * 0.95f);
+            }
+            else
+            {
                 mat.SetColor("_BaseColor", CellColor(ch));
-                mat.enableInstancing = true;
-                return mat;
             }
 
-            // Fallback if Toon_Default not found: create new material with shader
-            var fallback = new Material(ShaderUtil.GetToonShader());
-            fallback.SetColor("_BaseColor", CellColor(ch));
-            fallback.enableInstancing = true;
-            return fallback;
+            mat.enableInstancing = true;
+            return mat;
+        }
+
+        // Returns a lazily-created 64x64 procedural texture for the given cell type.
+        // Grass: green noise. Path: sandy/dirt noise. Dirt (decor/rock): grey-brown noise.
+        private static Texture2D? GetProceduralTex(char ch)
+        {
+            if (ch == GridCoords.GRASS || ch == GridCoords.GRASS_BLOCK || ch == GridCoords.TREE || ch == GridCoords.BUSH)
+            {
+                _texGrass ??= GenerateNoiseTexture(64, new Color(0.22f, 0.48f, 0.18f), 0.08f, 42);
+                return _texGrass;
+            }
+            if (ch == GridCoords.PATH || ch == GridCoords.BRIDGE_WATER || ch == GridCoords.BRIDGE_LAVA)
+            {
+                _texPath ??= GenerateNoiseTexture(64, new Color(0.70f, 0.58f, 0.38f), 0.10f, 7);
+                return _texPath;
+            }
+            if (ch == GridCoords.DECOR || ch == GridCoords.ROCK)
+            {
+                _texDirt ??= GenerateNoiseTexture(64, new Color(0.45f, 0.40f, 0.35f), 0.07f, 13);
+                return _texDirt;
+            }
+            return null;
+        }
+
+        // Generates a square texture with per-pixel colour jitter around baseColor.
+        // jitter=0.08 means ±8% brightness variation per channel.
+        private static Texture2D GenerateNoiseTexture(int size, Color baseColor, float jitter, int seed)
+        {
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, mipChain: true);
+            tex.wrapMode = TextureWrapMode.Repeat;
+            tex.filterMode = FilterMode.Bilinear;
+
+            var rng = new System.Random(seed);
+            var pixels = new Color[size * size];
+            for (int i = 0; i < pixels.Length; i++)
+            {
+                float n = (float)(rng.NextDouble() * 2.0 - 1.0) * jitter;
+                pixels[i] = new Color(
+                    Mathf.Clamp01(baseColor.r + n),
+                    Mathf.Clamp01(baseColor.g + n),
+                    Mathf.Clamp01(baseColor.b + n),
+                    1f);
+            }
+            tex.SetPixels(pixels);
+            tex.Apply(updateMipmaps: true);
+            return tex;
         }
 
         private static Color CellColor(char ch) => ch switch
