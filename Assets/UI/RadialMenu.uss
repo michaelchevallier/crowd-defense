@@ -1,4 +1,4 @@
-/* === Radial menu L3 upgrade (D1-03) === */
+/* === Radial menu upgrade/sell/range (D1-03) === */
 
 .radial-menu {
     position: absolute;
@@ -103,9 +103,91 @@
     -unity-text-align: middle-center;
 }
 
+/* Bouton upgrade L2 / L3 non-signature - pleine largeur */
+.radial-btn-upgrade {
+    width: 100%;
+    height: 52px;
+    background-color: rgba(30, 90, 30, 0.85);
+    border-color: rgb(80, 200, 80);
+    border-width: 2px;
+    border-radius: 10px;
+    padding: 6px 12px;
+    cursor: link;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    margin-bottom: 8px;
+}
+
+.radial-btn-upgrade:hover {
+    background-color: rgba(40, 120, 40, 0.95);
+}
+
+.radial-btn-upgrade:active {
+    background-color: rgba(20, 70, 20, 0.95);
+}
+
+.radial-btn-upgrade:disabled {
+    background-color: rgba(20, 40, 20, 0.5);
+    border-color: rgba(50, 100, 50, 0.4);
+}
+
+.radial-btn-upgrade-label {
+    color: white;
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-right: 8px;
+}
+
+.radial-btn-upgrade-cost {
+    color: rgb(255, 210, 63);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+/* Ligne action (range + sell) */
+.radial-action-row {
+    flex-direction: row;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 6px;
+}
+
+/* Bouton range toggle */
+.radial-btn-range {
+    width: 80px;
+    height: 36px;
+    background-color: rgba(40, 50, 80, 0.8);
+    border-color: rgba(100, 130, 200, 0.5);
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 0 8px;
+    cursor: link;
+    align-items: center;
+    justify-content: center;
+}
+
+.radial-btn-range:hover {
+    background-color: rgba(55, 70, 110, 0.9);
+}
+
+.radial-btn-range--active {
+    background-color: rgba(30, 80, 140, 0.9);
+    border-color: rgb(100, 180, 255);
+    border-width: 2px;
+}
+
+.radial-btn-action-label {
+    color: rgba(180, 200, 240, 0.85);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
 /* Bouton vendre */
 .radial-btn-sell {
-    width: 100%;
+    flex-grow: 1;
     height: 36px;
     background-color: rgba(60, 60, 60, 0.7);
     border-color: rgba(140, 140, 140, 0.4);
@@ -115,6 +197,7 @@
     cursor: link;
     align-items: center;
     justify-content: center;
+    margin-left: 6px;
 }
 
 .radial-btn-sell:hover {

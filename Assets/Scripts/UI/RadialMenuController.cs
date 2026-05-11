@@ -8,13 +8,13 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     /// <summary>
-    /// Gere le radial menu upgrade/sell (D1-03).
+    /// Gere le radial menu upgrade/sell/range (D1-03).
     /// Ecoute PlacementController.OnTowerSelected (event).
     /// Segments visibles par etat :
-    ///   L1 : Upgrade L2 (cost) | Sell
-    ///   L2 signature : Upgrade L3-DPS (cost) | Upgrade L3-Utility (cost) | Sell
-    ///   L2 non-signature : Upgrade L3 (cost) | Sell
-    ///   L3 : Sell uniquement
+    ///   L1 : Upgrade L2 (cost) | Range | Sell
+    ///   L2 signature : Upgrade L3-DPS (cost) | Upgrade L3-Utility (cost) | Range | Sell
+    ///   L2 non-signature : Upgrade L3 (cost) | Range | Sell
+    ///   L3 : Range | Sell uniquement
     /// Position : Camera.WorldToScreenPoint sur la tour selectionnee.
     /// Fermeture : outside-click (via OnTowerSelected null) ou ESC (PlacementController.DeselectTower).
     /// </summary>
@@ -31,6 +31,7 @@ namespace CrowdDefense.UI
         private Button? btnUpgradeL3;
         private Label? btnUpgradeL3Cost;
         private Button? btnSell;
+        private Button? btnRange;
         private Label? btnDpsLabel;
         private Label? btnDpsCost;
         private Label? btnDpsHint;
@@ -40,6 +41,7 @@ namespace CrowdDefense.UI
         private Label? btnSellLabel;
 
         private Tower? currentTower;
+        private bool _rangeVisible;
 
         private void Start()
         {
@@ -56,6 +58,7 @@ namespace CrowdDefense.UI
             btnUpgradeL3      = root.Q<Button>("btn-upgrade-l3");
             btnUpgradeL3Cost  = root.Q<Label>("btn-upgrade-l3-cost");
             btnSell           = root.Q<Button>("btn-sell");
+            btnRange          = root.Q<Button>("btn-range");
             btnDpsLabel       = root.Q<Label>("btn-dps-label");
             btnDpsCost        = root.Q<Label>("btn-dps-cost");
             btnDpsHint        = root.Q<Label>("btn-dps-hint");
@@ -69,6 +72,7 @@ namespace CrowdDefense.UI
             btnUtility?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.Utility));
             btnUpgradeL3?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.None));
             btnSell?.RegisterCallback<ClickEvent>(_ => OnSellClicked());
+            btnRange?.RegisterCallback<ClickEvent>(_ => OnRangeClicked());
 
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnTowerSelected += OnTowerSelected;
@@ -84,6 +88,11 @@ namespace CrowdDefense.UI
 
         private void OnTowerSelected(Tower? tower)
         {
+            if (currentTower != null && currentTower != tower)
+            {
+                currentTower.ShowRangeRing(false);
+                _rangeVisible = false;
+            }
             currentTower = tower;
             if (tower == null) { Hide(); return; }
             RefreshMenu(tower);
@@ -166,6 +175,15 @@ namespace CrowdDefense.UI
 
             if (btnSellLabel != null)
                 btnSellLabel.text = L.Get("hud.radial_sell", refund);
+
+            // Sync range button active class to current _rangeVisible state
+            if (btnRange != null)
+            {
+                if (_rangeVisible)
+                    btnRange.AddToClassList("radial-btn-range--active");
+                else
+                    btnRange.RemoveFromClassList("radial-btn-range--active");
+            }
 
             Show();
             PositionMenuAtTower(tower);
@@ -264,10 +282,26 @@ namespace CrowdDefense.UI
             RefreshMenu(tower);
         }
 
+        private void OnRangeClicked()
+        {
+            if (currentTower == null) return;
+            _rangeVisible = !_rangeVisible;
+            currentTower.ShowRangeRing(_rangeVisible);
+            if (btnRange != null)
+            {
+                if (_rangeVisible)
+                    btnRange.AddToClassList("radial-btn-range--active");
+                else
+                    btnRange.RemoveFromClassList("radial-btn-range--active");
+            }
+        }
+
         private void OnSellClicked()
         {
             var tower = currentTower;
             if (tower == null) return;
+            tower.ShowRangeRing(false);
+            _rangeVisible = false;
 
             int refund = CrowdDefense.Data.BalanceConfig.Get() is { } bal
                 ? UnityEngine.Mathf.RoundToInt(tower.CumulativeCost * bal.SellRefundRatio)
@@ -290,6 +324,14 @@ namespace CrowdDefense.UI
         }
 
         private void Show() => radialMenu?.RemoveFromClassList("hidden");
-        private void Hide() => radialMenu?.AddToClassList("hidden");
+
+        private void Hide()
+        {
+            radialMenu?.AddToClassList("hidden");
+            if (_rangeVisible && currentTower != null)
+                currentTower.ShowRangeRing(false);
+            _rangeVisible = false;
+            btnRange?.RemoveFromClassList("radial-btn-range--active");
+        }
     }
 }

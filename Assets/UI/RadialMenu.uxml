@@ -2,12 +2,24 @@
          xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
          editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
     <Style src="RadialMenu.uss" />
-    <!-- Radial menu L3 upgrade (D1-03) — visible quand tower L2 signature selectionnee -->
+    <!-- Radial menu upgrade/sell/range (D1-03) — visible quand tower selectionnee -->
     <ui:VisualElement name="radial-menu" class="radial-menu hidden">
         <!-- Titre contextuel : nom de la tour + niveau -->
         <ui:Label text="" name="radial-title" class="radial-title" />
 
-        <!-- Ligne de boutons upgrade L3 -->
+        <!-- Bouton upgrade L2 (visible si tower L1) -->
+        <ui:Button name="btn-upgrade-l2" class="radial-btn-upgrade">
+            <ui:Label text="Upgrade L2" name="btn-upgrade-l2-label" class="radial-btn-upgrade-label" />
+            <ui:Label text="" name="btn-upgrade-l2-cost" class="radial-btn-upgrade-cost" />
+        </ui:Button>
+
+        <!-- Bouton upgrade L3 non-signature (visible si tower L2 non-signature) -->
+        <ui:Button name="btn-upgrade-l3" class="radial-btn-upgrade">
+            <ui:Label text="Upgrade L3" name="btn-upgrade-l3-label" class="radial-btn-upgrade-label" />
+            <ui:Label text="" name="btn-upgrade-l3-cost" class="radial-btn-upgrade-cost" />
+        </ui:Button>
+
+        <!-- Ligne de boutons upgrade L3 branche (visible si tower L2 signature) -->
         <ui:VisualElement class="radial-upgrade-row">
             <ui:Button name="btn-upgrade-dps" class="radial-btn radial-btn-dps">
                 <ui:Label text="DPS" name="btn-dps-label" class="radial-btn-label" />
@@ -22,9 +34,15 @@
             </ui:Button>
         </ui:VisualElement>
 
-        <!-- Bouton vendre -->
-        <ui:Button name="btn-sell" class="radial-btn-sell">
-            <ui:Label text="" name="btn-sell-label" class="radial-btn-sell-label" />
-        </ui:Button>
+        <!-- Ligne secondaire : Range ring toggle + Sell -->
+        <ui:VisualElement class="radial-action-row">
+            <ui:Button name="btn-range" class="radial-btn-range">
+                <ui:Label text="Range" name="btn-range-label" class="radial-btn-action-label" />
+            </ui:Button>
+
+            <ui:Button name="btn-sell" class="radial-btn-sell">
+                <ui:Label text="" name="btn-sell-label" class="radial-btn-sell-label" />
+            </ui:Button>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
