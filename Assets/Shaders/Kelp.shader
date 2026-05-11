@@ -81,11 +81,11 @@ Shader "CrowdDefense/Kelp"
             ColorMask 0
 
             HLSLPROGRAM
-            #pragma vertex vertShadow
-            #pragma fragment fragShadow
+            #pragma vertex ShadowPassVertex
+            #pragma fragment ShadowPassFragment
             #pragma multi_compile_shadowcaster
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
-            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/SurfaceInput.hlsl"
+            
             #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
             ENDHLSL
         }
