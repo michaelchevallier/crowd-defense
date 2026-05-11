@@ -52,6 +52,8 @@ namespace CrowdDefense.Systems
         public float playtime = 0f;
         public int towersPlaced = 0;
         public int perksAcquired = 0;
+        public int levelsCompleted = 0;
+        public int starsEarned = 0;
         public float musicVolume = 1f;
         public float sfxVolume = 1f;
         public string lang = "fr";
@@ -257,6 +259,20 @@ namespace CrowdDefense.Systems
             Save();
         }
 
+        public static void AddLevelsCompleted(int count)
+        {
+            if (count <= 0) return;
+            Load().levelsCompleted += count;
+            Save();
+        }
+
+        public static void AddStarsEarned(int count)
+        {
+            if (count <= 0) return;
+            Load().starsEarned += count;
+            Save();
+        }
+
         public static void ResetLifetimeStats()
         {
             var data = Load();
@@ -265,8 +281,10 @@ namespace CrowdDefense.Systems
             data.totalWavesCleared = 0;
             data.bestStreak       = 0;
             data.playtime         = 0f;
-            data.towersPlaced     = 0;
-            data.perksAcquired    = 0;
+            data.towersPlaced      = 0;
+            data.perksAcquired     = 0;
+            data.levelsCompleted   = 0;
+            data.starsEarned       = 0;
             Save();
         }
 

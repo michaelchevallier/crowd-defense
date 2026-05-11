@@ -432,6 +432,8 @@ namespace CrowdDefense.Systems
             {
                 SaveSystem.SetStars(r.LevelId, r.StarsEarned);
                 if (r.GemsRewarded > 0) SaveSystem.AddGems(r.GemsRewarded);
+                SaveSystem.AddLevelsCompleted(1);
+                SaveSystem.AddStarsEarned(r.StarsEarned);
             }
 
             SaveSystem.AddKills(r.Kills);
