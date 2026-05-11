@@ -30,6 +30,8 @@ namespace CrowdDefense.Visual
         private Vector3     _dragOrigin;
         private Vector3     _orbitPivot;
         private bool        _zooming;         // boss intro in progress
+        private float       _baseY;           // Y at scene start — clamp = [baseY*0.5, baseY*2]
+        private float       _prevPinchDist;   // touch pinch previous frame distance
 
         // ── Public API ────────────────────────────────────────────────────────
         public void SetHero(Transform hero)    => _hero   = hero;
@@ -37,7 +39,11 @@ namespace CrowdDefense.Visual
         public void SetMapBounds(float halfX, float halfZ) { mapHalfX = halfX; mapHalfZ = halfZ; }
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
-        private void Start()     => EventManager.Instance?.Subscribe<BossEncounteredEvent>(OnBossSpawn);
+        private void Start()
+        {
+            _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
+            EventManager.Instance?.Subscribe<BossEncounteredEvent>(OnBossSpawn);
+        }
         private void OnDestroy() => EventManager.Instance?.Unsubscribe<BossEncounteredEvent>(OnBossSpawn);
 
         private void OnBossSpawn(BossEncounteredEvent e) => StartCoroutine(BossZoomIntro(e.BossPos));
@@ -73,6 +79,7 @@ namespace CrowdDefense.Visual
         {
             if (_zooming) return;
             HandleZoom();
+            HandlePinchZoom();
             HandleToggleFollow();
             HandlePan();
             HandleSpaceDrag();
@@ -84,15 +91,39 @@ namespace CrowdDefense.Visual
             ClampPosition();
         }
 
-        // ── Zoom (mouse wheel → camera Y) ─────────────────────────────────────
+        // ── Zoom (mouse wheel → camera Y, range 0.5x–2x base) ───────────────
         private void HandleZoom()
         {
             float scroll = Input.GetAxis("Mouse ScrollWheel");
             if (Mathf.Abs(scroll) < 0.0001f) return;
+            ApplyZoomDelta(-scroll * zoomSpeed * 10f);
+        }
+
+        // ── Pinch zoom (2 fingers touch) ──────────────────────────────────────
+        private void HandlePinchZoom()
+        {
+            if (Input.touchCount != 2) { _prevPinchDist = 0f; return; }
+
+            Touch t0 = Input.GetTouch(0);
+            Touch t1 = Input.GetTouch(1);
+            float dist = Vector2.Distance(t0.position, t1.position);
+
+            if (_prevPinchDist < 0.001f) { _prevPinchDist = dist; return; }
+
+            float delta = _prevPinchDist - dist;   // positive = fingers closing = zoom out = raise Y
+            _prevPinchDist = dist;
+            ApplyZoomDelta(delta * zoomSpeed * 0.05f);
+        }
+
+        private void ApplyZoomDelta(float deltaY)
+        {
+            // Guard: _baseY may be 0 on first frame before Start if called early
+            float baseRef = _baseY > 0.001f ? _baseY : minY;
+            float zoomMin = Mathf.Max(minY, baseRef * 0.5f);
+            float zoomMax = Mathf.Min(maxY, baseRef * 2f);
 
             var pos = transform.position;
-            pos.y -= scroll * zoomSpeed * 10f;
-            pos.y  = Mathf.Clamp(pos.y, minY, maxY);
+            pos.y = Mathf.Clamp(pos.y + deltaY, zoomMin, zoomMax);
             transform.position = pos;
         }
 
@@ -193,10 +224,14 @@ namespace CrowdDefense.Visual
         // ── Clamp within map bounds ───────────────────────────────────────────
         private void ClampPosition()
         {
+            float baseRef = _baseY > 0.001f ? _baseY : minY;
+            float zoomMin = Mathf.Max(minY, baseRef * 0.5f);
+            float zoomMax = Mathf.Min(maxY, baseRef * 2f);
+
             var pos = transform.position;
             pos.x = Mathf.Clamp(pos.x, -mapHalfX, mapHalfX);
             pos.z = Mathf.Clamp(pos.z, -mapHalfZ - 14f, mapHalfZ);
-            pos.y = Mathf.Clamp(pos.y, minY, maxY);
+            pos.y = Mathf.Clamp(pos.y, zoomMin, zoomMax);
             transform.position = pos;
         }
     }
