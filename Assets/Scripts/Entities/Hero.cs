@@ -45,45 +45,46 @@ namespace CrowdDefense.Entities
         public int   MaxLevel  { get; private set; }
 
         // ── Perk multipliers (reset + reapplied by ApplyRunContext) ───────────
-        public float FireRateMul      { get; private set; } = 1f;
-        public float RangeMul         { get; private set; } = 1f;
-        public float DamageMul        { get; private set; } = 1f;
-        public float MoveSpeedMul     { get; private set; } = 1f;
-        public float CoinGainMul      { get; private set; } = 1f;
-        public float XpMul            { get; private set; } = 1f;
-        public float CritChance       { get; private set; }
-        public float CritMul          { get; private set; } = 2f;
-        public int   CritStaggerMs    { get; private set; }
-        public int   MultiShot        { get; private set; }
-        public int   PierceCount      { get; private set; }
-        public float Lifesteal        { get; private set; }
-        public float WaveRegen        { get; private set; }
-        public int   MoveAttackPierceBonus { get; private set; }
-        public float CastleHPMaxMul   { get; private set; } = 1f;
-        public float CoinRewardMul    { get; private set; } = 1f;
-        public float TowerCostMul     { get; private set; } = 1f;
-        public float TowerFireRateAuraMul { get; private set; } = 1f;
-        public float TowerAuraRange   { get; private set; }
+        public float FireRateMul      { get; internal set; } = 1f;
+        public float RangeMul         { get; internal set; } = 1f;
+        public float DamageMul        { get; internal set; } = 1f;
+        public float MoveSpeedMul     { get; internal set; } = 1f;
+        public float CoinGainMul      { get; internal set; } = 1f;
+        public float XpMul            { get; internal set; } = 1f;
+        public float CritChance       { get; internal set; }
+        public float CritMul          { get; internal set; } = 2f;
+        public int   CritStaggerMs    { get; internal set; }
+        public int   MultiShot        { get; internal set; }
+        public int   PierceCount      { get; internal set; }
+        public float Lifesteal        { get; internal set; }
+        public float WaveRegen        { get; internal set; }
+        public int   MoveAttackPierceBonus { get; internal set; }
+        public float CastleHPMaxMul   { get; internal set; } = 1f;
+        public float CoinRewardMul    { get; internal set; } = 1f;
+        public float TowerCostMul     { get; internal set; } = 1f;
+        public float TowerFireRateAuraMul { get; internal set; } = 1f;
+        public float TowerAuraRange   { get; internal set; }
+        public int   AoeOnNthProjectile { get; internal set; }
 
         // Projectile modifiers
-        public bool  Fireball            { get; private set; }
-        public float FireballRadius      { get; private set; } = 2f;
-        public float FireballDmgMul      { get; private set; } = 0.7f;
-        public bool  Ricochet            { get; private set; }
-        public int   RicochetBounces     { get; private set; } = 3;
-        public float RicochetDecay       { get; private set; } = 0.8f;
-        public bool  Lightning           { get; private set; }
-        public int   LightningTargets    { get; private set; } = 1;
-        public float LightningDmgMul     { get; private set; } = 0.6f;
-        public bool  PierceExplode       { get; private set; }
-        public float PierceExplodeRadius { get; private set; } = 1.5f;
-        public float PierceExplodeDmgMul { get; private set; } = 0.5f;
-        public bool  Glaciation          { get; private set; }
-        public bool  Combustion          { get; private set; }
-        public bool  Pyromancie          { get; private set; }
+        public bool  Fireball            { get; internal set; }
+        public float FireballRadius      { get; internal set; } = 2f;
+        public float FireballDmgMul      { get; internal set; } = 0.7f;
+        public bool  Ricochet            { get; internal set; }
+        public int   RicochetBounces     { get; internal set; } = 3;
+        public float RicochetDecay       { get; internal set; } = 0.8f;
+        public bool  Lightning           { get; internal set; }
+        public int   LightningTargets    { get; internal set; } = 1;
+        public float LightningDmgMul     { get; internal set; } = 0.6f;
+        public bool  PierceExplode       { get; internal set; }
+        public float PierceExplodeRadius { get; internal set; } = 1.5f;
+        public float PierceExplodeDmgMul { get; internal set; } = 0.5f;
+        public bool  Glaciation          { get; internal set; }
+        public bool  Combustion          { get; internal set; }
+        public bool  Pyromancie          { get; internal set; }
 
         // FirstTowerFree gate (consumed once)
-        public bool  FirstTowerFree      { get; private set; }
+        public bool  FirstTowerFree      { get; internal set; }
         public bool  FirstTowerFreeUsed  { get; set; }
 
         // ── Perk tracking ─────────────────────────────────────────────────────
@@ -255,11 +256,10 @@ namespace CrowdDefense.Entities
             Xp       = xp;
             if (cfg != null) XpToNext = cfg.XpToNext(level);
 
-            // Perk application deferred to Phase 4 (PerkRegistry SO).
-            // For now the list is stored; callers can call ApplyPerkDirect for known perks.
-            foreach (var id in perkIds)
-                _perks.Add(id);
+            PerkSystem.Instance?.ApplyPerkList(this, perkIds);
         }
+
+        internal void AddPerkId(string id) => _perks.Add(id);
 
         /// <summary>
         /// Applique les bonus méta (méta-progression, run entre sessions).
@@ -691,6 +691,7 @@ namespace CrowdDefense.Entities
             TowerCostMul          = 1f;
             TowerFireRateAuraMul  = 1f;
             TowerAuraRange        = 0f;
+            AoeOnNthProjectile    = 0;
             Fireball              = false;
             FireballRadius        = 2f;
             FireballDmgMul        = 0.7f;
