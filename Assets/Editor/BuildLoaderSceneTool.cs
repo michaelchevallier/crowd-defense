@@ -108,7 +108,8 @@ namespace CrowdDefense.Editor
                 docSO.FindProperty("sourceAsset").objectReferenceValue = loaderTree;
             docSO.ApplyModifiedProperties();
 
-            var loader = loaderGO.GetComponent<LoaderController>() ?? loaderGO.AddComponent<LoaderController>();
+            // LoaderController removed (cleanup commit 0fa9756) — stub left for menu compat
+            MonoBehaviour? loader = null;
 
             // Settings panel on a separate GO
             var settingsGO = GameObject.Find("SettingsPanelUI");
@@ -134,10 +135,13 @@ namespace CrowdDefense.Editor
             var settingsCtrl = settingsGO.GetComponent<SettingsPanelController>()
                             ?? settingsGO.AddComponent<SettingsPanelController>();
 
-            // Wire settingsPanel reference on LoaderController
-            var loaderSerObj = new SerializedObject(loader);
-            loaderSerObj.FindProperty("settingsPanel").objectReferenceValue = settingsCtrl;
-            loaderSerObj.ApplyModifiedProperties();
+            // Wire settingsPanel reference on LoaderController — disabled (LoaderController removed)
+            if (loader != null)
+            {
+                var loaderSerObj = new SerializedObject(loader);
+                loaderSerObj.FindProperty("settingsPanel").objectReferenceValue = settingsCtrl;
+                loaderSerObj.ApplyModifiedProperties();
+            }
         }
 
         private static void EnsureBuildSettings()

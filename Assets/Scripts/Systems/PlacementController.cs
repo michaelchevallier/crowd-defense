@@ -35,6 +35,8 @@ namespace CrowdDefense.Systems
         public event Action<Tower?>? OnTowerSelected;
         // Fired each frame the mouse hovers a placement-mode cell (null = not hovering buildable cell)
         public event Action<Vector2Int?>? OnHoverPlacementCell;
+        // Fired when clicking an empty buildable cell (no tower nearby, no selectedTowerType) — opens TowerSelectMenu
+        public event Action<Vector3>? OnEmptyBuildableTileClick;
 
         protected override void OnAwakeSingleton()
         {
@@ -202,6 +204,21 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
             Debug.Log($"[Place] selectedTower={selectedTower?.Config?.Id ?? "none"} L{selectedTower?.UpgradeLevel}");
 #endif
+
+            // No tower found near click — check if cell is buildable and open select menu
+            if (closest == null && OnEmptyBuildableTileClick != null)
+            {
+                var grid = PathManager.Instance?.Grid;
+                if (grid != null)
+                {
+                    Vector2Int cell = GridCoords.WorldToCell(hitPos, grid.Width, grid.Height, grid.CellSize);
+                    if (grid.IsBuildable(cell.x, cell.y))
+                    {
+                        Vector3 cellWorld = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
+                        OnEmptyBuildableTileClick.Invoke(cellWorld);
+                    }
+                }
+            }
         }
 
         public void DeselectTower() => SetSelectedTower(null);
