@@ -10,12 +10,19 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class HudController : MonoBehaviour
     {
+        private Label? goldLabel;
         private Label? goldValue;
+        private Label? waveLabel;
         private Label? waveValue;
+        private Label? hpLabel;
         private Label? hpValue;
         private VisualElement? hpBarFill;
         private VisualElement? panelGameOver;
+        private Label? panelGameOverTitle;
+        private Label? panelGameOverSubtitle;
         private VisualElement? panelVictory;
+        private Label? panelVictoryTitle;
+        private Label? panelVictorySubtitle;
         private Button? btnRestartGo;
         private Button? btnRestartVictory;
         private Button? btnMenuGo;
@@ -36,12 +43,19 @@ namespace CrowdDefense.UI
         private void Start()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
+            goldLabel = root.Q<Label>("gold-label");
             goldValue = root.Q<Label>("gold-value");
+            waveLabel = root.Q<Label>("wave-label");
             waveValue = root.Q<Label>("wave-value");
+            hpLabel = root.Q<Label>("hp-label");
             hpValue = root.Q<Label>("hp-value");
             hpBarFill = root.Q<VisualElement>("hp-bar-fill");
             panelGameOver = root.Q<VisualElement>("panel-game-over");
+            panelGameOverTitle = root.Q<Label>("panel-game-over-title");
+            panelGameOverSubtitle = root.Q<Label>("panel-game-over-subtitle");
             panelVictory = root.Q<VisualElement>("panel-victory");
+            panelVictoryTitle = root.Q<Label>("panel-victory-title");
+            panelVictorySubtitle = root.Q<Label>("panel-victory-subtitle");
             btnRestartGo = root.Q<Button>("btn-restart-go");
             btnRestartVictory = root.Q<Button>("btn-restart-victory");
             btnMenuGo = root.Q<Button>("btn-menu-go");
@@ -61,6 +75,9 @@ namespace CrowdDefense.UI
             btnMenuVictory?.RegisterCallback<ClickEvent>(_ => GoToMenu());
 
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
+
+            ApplyLocalizedTexts();
+            L.OnLocaleChanged += ApplyLocalizedTexts;
 
             if (Economy.Instance != null)
             {
@@ -88,6 +105,7 @@ namespace CrowdDefense.UI
 
         private void OnDestroy()
         {
+            L.OnLocaleChanged -= ApplyLocalizedTexts;
             if (Economy.Instance != null) Economy.Instance.OnGoldChanged -= OnGoldChanged;
             if (LevelRunner.Instance != null)
             {
@@ -99,6 +117,22 @@ namespace CrowdDefense.UI
                 WaveManager.Instance.OnWaveStart -= OnWaveStart;
                 WaveManager.Instance.OnBreakStateChanged -= OnBreakStateChanged;
             }
+        }
+
+        private void ApplyLocalizedTexts()
+        {
+            if (goldLabel != null) goldLabel.text = L.Get("hud.gold_label");
+            if (waveLabel != null) waveLabel.text = L.Get("hud.wave_label");
+            if (hpLabel != null) hpLabel.text = L.Get("hud.hp_label");
+            if (panelGameOverTitle != null) panelGameOverTitle.text = L.Get("overlay.game_over_title");
+            if (panelGameOverSubtitle != null) panelGameOverSubtitle.text = L.Get("overlay.game_over_subtitle");
+            if (panelVictoryTitle != null) panelVictoryTitle.text = L.Get("overlay.victory_title");
+            if (panelVictorySubtitle != null) panelVictorySubtitle.text = L.Get("overlay.victory_subtitle");
+            if (btnRestartGo != null) btnRestartGo.text = L.Get("overlay.btn_restart");
+            if (btnRestartVictory != null) btnRestartVictory.text = L.Get("overlay.btn_retry");
+            if (btnMenuGo != null) btnMenuGo.text = L.Get("overlay.btn_menu");
+            if (btnMenuVictory != null) btnMenuVictory.text = L.Get("overlay.btn_menu");
+            OnBreakStateChanged();
         }
 
         private void Update()
@@ -164,10 +198,10 @@ namespace CrowdDefense.UI
 
                 // Update label text — show +30¢ hint during skip window
                 if (waveLaunchLabel != null)
-                    waveLaunchLabel.text = inWindow ? "Lancer (+30c) [N]" : "Lancer la vague [N]";
+                    waveLaunchLabel.text = inWindow ? L.Get("hud.wave_launch_bonus") : L.Get("hud.wave_launch");
 
                 if (waveLaunchSub != null)
-                    waveLaunchSub.text = $"Vague {wm.NextWaveDisplayNumber} / {wm.TotalWaves}";
+                    waveLaunchSub.text = L.Get("hud.wave_progress", wm.NextWaveDisplayNumber, wm.TotalWaves);
 
                 // Skip window ring class
                 if (inWindow) waveLaunchBtn.AddToClassList("skip-window");
@@ -180,7 +214,7 @@ namespace CrowdDefense.UI
                 bool showStreak = waiting && streak > 0;
                 SetVisible(waveLaunchStreak, showStreak);
                 if (showStreak && waveLaunchStreakText != null)
-                    waveLaunchStreakText.text = $"+{streak * 5}%";
+                    waveLaunchStreakText.text = L.Get("hud.streak_text", streak * 5);
             }
 
             // Show/hide pill timer
@@ -188,7 +222,7 @@ namespace CrowdDefense.UI
             {
                 SetVisible(waveLaunchPill, waiting && inWindow);
                 if (inWindow && waveLaunchPillText != null)
-                    waveLaunchPillText.text = $"+30c  {secondsLeft:F1}s  +{Mathf.RoundToInt(streak * 5)}%";
+                    waveLaunchPillText.text = L.Get("hud.pill_skip_text", secondsLeft, Mathf.RoundToInt(streak * 5));
             }
         }
 

@@ -201,6 +201,11 @@ namespace CrowdDefense.Entities
             if (level == 3)
                 ApplyL3Branch(branch);
 
+            // Stage B integration hooks (audio + juice + vfx)
+            AudioController.Instance?.Play("tower_upgrade", 0.8f);
+            JuiceFX.Instance?.Flash(new Color(1f, 0.9f, 0.4f, 0.3f), 200);
+            VfxPool.Instance?.SpawnCoinPickup(transform.position);
+
 #if UNITY_EDITOR
             Debug.Log($"[Tower] UpgradeTo L{level} cost={cost} cumul={CumulativeCost} dmgScale={_levelDmgScale:F2} branch={branch}");
 #endif
@@ -490,6 +495,12 @@ namespace CrowdDefense.Entities
 #endif
                 return;
             }
+
+            // Stage B integration hooks (audio + juice + vfx + anim)
+            AudioController.Instance?.Play("tower_shoot", 0.55f);
+            JuiceFX.Instance?.Shake(0.05f, 100);
+            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 0.5f, cfg.ProjectileColor);
+            if (_animator != null) _animator.SetTrigger("attackTrigger");
 
             // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
             // L3DmgMul applique la divergence de branche (D1-03)

@@ -153,6 +153,7 @@ Transform:
   - {fileID: 750000002}
   - {fileID: 837841439}
   - {fileID: 819492781}
+  - {fileID: 1401904700}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &398450625
@@ -510,6 +511,50 @@ MonoBehaviour:
   selectedTowerType: {fileID: 11400000, guid: 110e01dec9bd64e3da3d98b312b1c6de, type: 2}
   towerPrefab: {fileID: 1000000000000001, guid: c1d2e3f4a5b6789012345678cdef0101, type: 3}
   projectilePrefab: {fileID: 2000000000000001, guid: d1e2f3a4b5c6789012345678def00202, type: 3}
+--- !u!1 &750000010
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 750000011}
+  - component: {fileID: 750000012}
+  m_Layer: 0
+  m_Name: MapRoot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &750000011
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 750000010}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &750000012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 750000010}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55534cdb83df4cbf83b557b7495c658c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.MapRenderer
 --- !u!1 &819492780
 GameObject:
   m_ObjectHideFlags: 0
@@ -599,6 +644,56 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.LevelRunner
   currentLevel: {fileID: 11400000, guid: 7fb0ab0cdb28c435b84e820e174e969c, type: 2}
+  castlePrefab: {fileID: 0}
+--- !u!1 &1401904699
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1401904700}
+  - component: {fileID: 1401904701}
+  m_Layer: 0
+  m_Name: AudioController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1401904700
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401904699}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 327615480}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1401904701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401904699}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c2707a0533ea46668a50bacfae0373e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.AudioController
+  registry: {fileID: 11400000, guid: 2eec77538839549238fa3e20f2a82070, type: 2}
+  mixer: {fileID: 24100000, guid: c17353e2705b34d45be0b3393df21ad2, type: 2}
+  sfxGroup: {fileID: -2070414367194906651, guid: c17353e2705b34d45be0b3393df21ad2, type: 2}
+  musicGroup: {fileID: 1412630394163163098, guid: c17353e2705b34d45be0b3393df21ad2, type: 2}
+  uiGroup: {fileID: -5682224201860013894, guid: c17353e2705b34d45be0b3393df21ad2, type: 2}
 --- !u!21 &1495628543
 Material:
   serializedVersion: 8
@@ -846,50 +941,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &750000010
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 750000011}
-  - component: {fileID: 750000012}
-  m_Layer: 0
-  m_Name: MapRoot
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &750000011
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 750000010}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &750000012
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 750000010}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 55534cdb83df4cbf83b557b7495c658c, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.MapRenderer
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

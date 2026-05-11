@@ -3,6 +3,7 @@ using System;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Systems;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Entities
 {
@@ -39,9 +40,19 @@ namespace CrowdDefense.Entities
             // Flag interest bank — any hit resets bank for this wave (D1-01 §3.5)
             Economy.Instance?.FlagCastleDamaged();
             OnHPChanged?.Invoke(HP, HPMax);
+
+            // Stage B integration hooks (audio + juice)
+            AudioController.Instance?.Play("castle_hit", 0.65f);
+            JuiceFX.Instance?.Shake(0.1f, 200);
+            JuiceFX.Instance?.Flash(new Color(1f, 0.2f, 0.2f, 0.4f), 150);
+
             if (HP == 0)
             {
                 OnCastleDied?.Invoke(this);
+                // Stage B integration : dramatic game-over feedback
+                AudioController.Instance?.Play("enemy_die_boss", 1f);
+                JuiceFX.Instance?.SlowMo(0.2f, 1500);
+                JuiceFX.Instance?.Flash(new Color(0f, 0f, 0f, 0.7f), 1000);
 #if UNITY_EDITOR
                 Debug.Log("[Castle] destroyed");
 #endif

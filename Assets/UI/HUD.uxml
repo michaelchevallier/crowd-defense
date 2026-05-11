@@ -7,17 +7,17 @@
         <!-- Top bar pills -->
         <ui:VisualElement class="top-bar">
             <ui:VisualElement class="pill pill-gold" name="pill-gold">
-                <ui:Label text="GOLD" class="pill-label" />
+                <ui:Label text="GOLD" name="gold-label" class="pill-label" />
                 <ui:Label text="120" name="gold-value" class="pill-value" />
             </ui:VisualElement>
 
             <ui:VisualElement class="pill pill-wave" name="pill-wave">
-                <ui:Label text="WAVE" class="pill-label" />
+                <ui:Label text="WAVE" name="wave-label" class="pill-label" />
                 <ui:Label text="1/4" name="wave-value" class="pill-value" />
             </ui:VisualElement>
 
             <ui:VisualElement class="pill pill-hp" name="pill-hp">
-                <ui:Label text="HP" class="pill-label" />
+                <ui:Label text="HP" name="hp-label" class="pill-label" />
                 <ui:Label text="120/120" name="hp-value" class="pill-value" />
                 <ui:VisualElement class="hp-bar-bg">
                     <ui:VisualElement name="hp-bar-fill" class="hp-bar-fill" />
@@ -66,16 +66,16 @@
 
         <!-- Game Over panel -->
         <ui:VisualElement name="panel-game-over" class="overlay-panel overlay-game-over hidden">
-            <ui:Label text="GAME OVER" class="overlay-title" />
-            <ui:Label text="Le castle est tombé." class="overlay-subtitle" />
+            <ui:Label text="GAME OVER" name="panel-game-over-title" class="overlay-title" />
+            <ui:Label text="Le castle est tombé." name="panel-game-over-subtitle" class="overlay-subtitle" />
             <ui:Button text="Recommencer" name="btn-restart-go" class="overlay-button" />
             <ui:Button text="Retour au menu" name="btn-menu-go" class="overlay-button overlay-button-secondary" />
         </ui:VisualElement>
 
         <!-- Victory panel -->
         <ui:VisualElement name="panel-victory" class="overlay-panel overlay-victory hidden">
-            <ui:Label text="VICTOIRE" class="overlay-title" />
-            <ui:Label text="W1-1 clear." class="overlay-subtitle" />
+            <ui:Label text="VICTOIRE" name="panel-victory-title" class="overlay-title" />
+            <ui:Label text="W1-1 clear." name="panel-victory-subtitle" class="overlay-subtitle" />
             <ui:Button text="Rejouer" name="btn-restart-victory" class="overlay-button" />
             <ui:Button text="Retour au menu" name="btn-menu-victory" class="overlay-button overlay-button-secondary" />
         </ui:VisualElement>

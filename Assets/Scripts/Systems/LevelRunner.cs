@@ -4,6 +4,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
@@ -133,6 +134,12 @@ namespace CrowdDefense.Systems
         {
             if (currentLevel != null)
                 SaveSystem.MarkLevelCleared(currentLevel.Id);
+
+            // Stage B integration : level complete feedback
+            AudioController.Instance?.Play("level_up", 1f);
+            JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.4f), 500);
+            JuiceFX.Instance?.SlowMo(0.5f, 1200);
+
             SetState(GameState.Victory);
         }
     }

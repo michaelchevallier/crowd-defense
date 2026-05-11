@@ -354,9 +354,31 @@ namespace CrowdDefense.Entities
                 return;
             }
             hp -= dmg;
+
+            // Stage B integration : non-fatal hit feedback (audio + VFX impact)
+            if (hp > 0f)
+            {
+                AudioController.Instance?.Play("enemy_hit", 0.4f);
+                VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 0.3f, baseColor);
+            }
+
             if (hp <= 0f)
             {
                 IsDead = true;
+
+                // Stage B integration : death feedback (audio tier + VFX + juice for boss)
+                bool isBoss = cfg != null && (cfg.IsBoss || cfg.IsApocalypseBoss);
+                bool isMedium = cfg != null && cfg.IsMidBoss;
+                string deathClip = isBoss ? "enemy_die_boss" : (isMedium ? "enemy_die_medium" : "enemy_die_basic");
+                AudioController.Instance?.Play(deathClip, isBoss ? 1f : 0.5f);
+                VfxPool.Instance?.SpawnDeath(transform.position, baseColor, isBoss);
+                if (isBoss)
+                {
+                    JuiceFX.Instance?.Shake(0.3f, 400);
+                    JuiceFX.Instance?.SlowMo(0.3f, 800);
+                    JuiceFX.Instance?.Flash(Color.white, 250);
+                }
+                if (_animator != null) _animator.SetTrigger("dieTrigger");
 
                 // Boss reward = 0× (D1-01 §3.3, KR pattern P-U-3).
                 bool isBossVariant = cfg != null && (cfg.IsBoss || cfg.IsMidBoss || cfg.IsApocalypseBoss);
