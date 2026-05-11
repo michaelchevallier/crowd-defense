@@ -48,6 +48,8 @@ namespace CrowdDefense.Entities
         {
             if (IsDead || dmg <= 0) return;
             HP = Mathf.Max(0, HP - dmg);
+            // Flag interest bank — any hit resets bank for this wave (D1-01 §3.5)
+            Economy.Instance?.FlagCastleDamaged();
             OnHPChanged?.Invoke(HP, HPMax);
             if (HP == 0)
             {
@@ -56,6 +58,14 @@ namespace CrowdDefense.Entities
                 Debug.Log("[Castle] destroyed");
 #endif
             }
+        }
+
+        // D1-04 Q11 regen hook (no-op POC — Phase 3 passera valeur réelle)
+        public void Regen(int amount)
+        {
+            if (IsDead || amount <= 0) return;
+            HP = Mathf.Min(HPMax, HP + amount);
+            OnHPChanged?.Invoke(HP, HPMax);
         }
     }
 }

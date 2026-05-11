@@ -73,12 +73,16 @@ namespace CrowdDefense.Systems
             currentWaveIdx = idx;
             spawnCounter = 0;
             var wave = levelData!.Waves[idx];
-            float swarmMul = BalanceConfig.Get().SwarmMul;
+            var cfg = BalanceConfig.Get();
+            float swarmMul = cfg.SwarmMul;
+            // D1-04 mob pressure : mobCountMul par world
+            int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
+            float countMul = cfg.GetPressure(currentWorld).mobCountMul;
             var list = new List<EnemyType>();
             foreach (var entry in wave.entries)
             {
                 if (entry.type == null) continue;
-                int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul));
+                int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul * countMul));
                 for (int i = 0; i < count; i++) list.Add(entry.type);
             }
             // Fisher-Yates shuffle
@@ -91,6 +95,8 @@ namespace CrowdDefense.Systems
             pendingSpawns = new Queue<EnemyType>(list);
             spawnTimerMs = 0f;
             waveActive = true;
+            // D1-01 §3.5: reset castle-damage flag at wave start so bank can accumulate if clean
+            Economy.Instance?.ResetWaveDamageFlag();
 #if UNITY_EDITOR
             Debug.Log($"[WaveManager] Wave {idx + 1}/{TotalWaves} start : {list.Count} enemies, streakRewardMul={StreakRewardMul:F2}");
 #endif
@@ -115,6 +121,7 @@ namespace CrowdDefense.Systems
                 if (pendingSpawns.Count == 0 && activeEnemies.Count == 0)
                 {
                     waveActive = false;
+                    HandleWaveClearedRegen();
                     OnWaveCleared?.Invoke(currentWaveIdx);
 #if UNITY_EDITOR
                     Debug.Log($"[WaveManager] Wave {currentWaveIdx + 1} cleared — awaiting player start");
@@ -220,6 +227,20 @@ namespace CrowdDefense.Systems
                 if (meta[i].PortalIdx == wavePortalIdx) return i;
 
             return spawnCounter % pathCount;
+        }
+
+        // D1-04 Q11 — no-regen W6+ hook. POC: amount=0 (regen not yet implemented).
+        // W1-W5: regen would apply if Castle.Regen(amount) existed.
+        // W6+: skip entirely (silent).
+        private void HandleWaveClearedRegen()
+        {
+            int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
+            int regenAmount = 0; // POC — Phase 3 implémentera la valeur réelle
+            if (currentWorld < BalanceConfig.Get().NoRegenWorldThreshold)
+            {
+                LevelRunner.Instance?.PrimaryCastle?.Regen(regenAmount);
+            }
+            // W6+ : skip regen (Q11)
         }
 
         public void NotifyEnemyDied(Enemy e) => activeEnemies.Remove(e);
