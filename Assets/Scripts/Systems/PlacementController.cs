@@ -17,8 +17,6 @@ namespace CrowdDefense.Systems
         private Camera? cam;
         private readonly Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
         private readonly List<Tower> placedTowers = new();
-        // Mapping tower → cumulative cost pour calcul sell (redondant avec Tower.CumulativeCost, garde sync)
-        private readonly Dictionary<Tower, int> towerCumulativeCost = new();
 
         // Tour active (debug sell hotkey S, CORE-20 radial menu)
         private Tower? selectedTower;
@@ -126,7 +124,6 @@ namespace CrowdDefense.Systems
             {
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
-                towerCumulativeCost[tower] = tower.CumulativeCost;
                 OnTowerPlaced?.Invoke(tower);
             }
         }
@@ -153,34 +150,17 @@ namespace CrowdDefense.Systems
 #endif
         }
 
-        public void UnregisterTower(Tower t)
-        {
-            placedTowers.Remove(t);
-            towerCumulativeCost.Remove(t);
-        }
+        public void UnregisterTower(Tower t) => placedTowers.Remove(t);
 
         // Called by boss AoE blast to destroy a tower directly (POC — no HP system yet).
         public void RemoveTower(Tower t)
         {
             placedTowers.Remove(t);
-            towerCumulativeCost.Remove(t);
             Destroy(t.gameObject);
         }
 
-        /// <summary>
-        /// Sync le dict cumulativeCost après un upgrade (appelé par CORE-20 radial menu ou hotkey U debug).
-        /// Tower.CumulativeCost est déjà mis à jour dans Tower.UpgradeTo — ce sync garde le dict cohérent.
-        /// </summary>
-        public void SyncCumulativeCost(Tower t)
-        {
-            if (placedTowers.Contains(t))
-                towerCumulativeCost[t] = t.CumulativeCost;
-        }
-
-        /// <summary>
-        /// Returns cumulative cost of a placed tower (for sell refund accounting).
-        /// Reads Tower.CumulativeCost directly — dict is kept in sync by SyncCumulativeCost.
-        /// </summary>
-        public int GetCumulativeCost(Tower t) => t.CumulativeCost;
+        // Tower.CumulativeCost is the source of truth — no sync needed.
+        // Kept for RadialMenuController call-site compatibility (no-op is safe).
+        public void SyncCumulativeCost(Tower _) { }
     }
 }

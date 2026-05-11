@@ -3,6 +3,7 @@
          editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
     <Style src="HUD.uss" />
     <Style src="RadialMenu.uss" />
+    <Style src="TutorialOverlay.uss" />
     <ui:VisualElement name="hud-root" class="hud-root">
         <!-- Top bar pills -->
         <ui:VisualElement class="top-bar">
@@ -62,6 +63,18 @@
             <ui:Label text="" name="tooltip-header" class="tooltip-header" />
             <ui:Label text="" name="tooltip-stats" class="tooltip-stats" />
             <ui:Label text="" name="tooltip-synergies" class="tooltip-synergies" />
+        </ui:VisualElement>
+
+        <!-- Tutorial overlay (W1-1 only) -->
+        <ui:VisualElement name="tutorial-root" class="tutorial-root hidden">
+            <ui:VisualElement name="tutorial-arrow" class="tutorial-arrow hidden" />
+            <ui:VisualElement name="tutorial-bubble" class="tutorial-bubble">
+                <ui:Label text="" name="tutorial-text" class="tutorial-text" />
+                <ui:VisualElement class="tutorial-bubble-actions">
+                    <ui:Button text="Next" name="tutorial-btn-next" class="tutorial-btn tutorial-btn-next" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Button text="Skip Tutorial" name="tutorial-btn-skip" class="tutorial-btn-skip" />
         </ui:VisualElement>
 
         <!-- Game Over panel -->

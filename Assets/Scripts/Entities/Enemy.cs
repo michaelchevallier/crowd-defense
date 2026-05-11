@@ -388,8 +388,7 @@ namespace CrowdDefense.Entities
                 if (_animator != null) _animator.SetTrigger("dieTrigger");
 
                 // Boss reward = 0× (D1-01 §3.3, KR pattern P-U-3).
-                bool isBossVariant = cfg != null && (cfg.IsBoss || cfg.IsMidBoss || cfg.IsApocalypseBoss);
-                if (!isBossVariant)
+                if (!(isBoss || isMedium))
                 {
                     int baseReward = cfg?.Reward ?? 0;
                     float coinMul = CoinPullManager.Instance != null
@@ -403,8 +402,7 @@ namespace CrowdDefense.Entities
                     Economy.Instance?.AddGold(reward);
                 }
 #if UNITY_EDITOR
-                else
-                    Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
+                else Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
 #endif
 
                 WaveManager.Instance?.NotifyEnemyDied(this);

@@ -5,6 +5,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
@@ -91,7 +92,7 @@ namespace CrowdDefense.Systems
             // D1-01 §3.5: reset castle-damage flag at wave start so bank can accumulate if clean
             Economy.Instance?.ResetWaveDamageFlag();
             // Stage B integration : wave start feedback
-            CrowdDefense.Systems.AudioController.Instance?.Play("wave_start", 0.85f);
+            AudioController.Instance?.Play("wave_start", 0.85f);
 
 #if UNITY_EDITOR
             Debug.Log($"[WaveManager] Wave {idx + 1}/{TotalWaves} start : {list.Count} enemies, streakRewardMul={StreakRewardMul:F2}");
@@ -122,8 +123,8 @@ namespace CrowdDefense.Systems
                     Economy.Instance?.ProcessInterestBank();
 
                     // Stage B integration : wave cleared feedback
-                    CrowdDefense.Systems.AudioController.Instance?.Play("wave_clear", 0.7f);
-                    CrowdDefense.Visual.JuiceFX.Instance?.Flash(new Color(0.4f, 1f, 0.4f, 0.25f), 300);
+                    AudioController.Instance?.Play("wave_clear", 0.7f);
+                    JuiceFX.Instance?.Flash(new Color(0.4f, 1f, 0.4f, 0.25f), 300);
 
                     OnWaveCleared?.Invoke(currentWaveIdx);
 #if UNITY_EDITOR

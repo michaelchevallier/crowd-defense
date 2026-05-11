@@ -48,16 +48,6 @@ namespace CrowdDefense.Visual
         }
 
         /// <summary>
-        /// Joue un state par nom via Animator.Play — cross-fade 0.2s (équivalent fadeIn Phaser).
-        /// No-op si anim null ou state inexistant.
-        /// </summary>
-        public static void Play(Animator? anim, string stateName, float fadeDuration = 0.2f)
-        {
-            if (anim == null) return;
-            anim.CrossFade(stateName, fadeDuration);
-        }
-
-        /// <summary>
         /// Toggle de l'état Walk via bool isWalking (Mechanim parameter).
         /// Utilisé par Enemy.Update chaque frame (SetBool est O(1) Mechanim).
         /// </summary>
@@ -67,22 +57,5 @@ namespace CrowdDefense.Visual
             anim.SetBool("isWalking", walking);
         }
 
-        /// <summary>
-        /// Déclenche le trigger attackTrigger (Tower.Fire, Enemy attack).
-        /// </summary>
-        public static void TriggerAttack(Animator? anim)
-        {
-            if (anim == null) return;
-            anim.SetTrigger("attackTrigger");
-        }
-
-        /// <summary>
-        /// Déclenche le trigger dieTrigger (Enemy.TakeDamage fatal).
-        /// </summary>
-        public static void TriggerDeath(Animator? anim)
-        {
-            if (anim == null) return;
-            anim.SetTrigger("dieTrigger");
-        }
     }
 }
