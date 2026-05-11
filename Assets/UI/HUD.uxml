@@ -58,6 +58,22 @@
             </ui:Button>
         </ui:VisualElement>
 
+        <!-- Boss banner (top, permanent during boss fight) -->
+        <ui:VisualElement name="boss-banner" class="boss-banner hidden">
+            <ui:Label text="" name="boss-banner-name" class="boss-banner-name" />
+            <ui:VisualElement class="boss-bar-bg">
+                <ui:VisualElement name="boss-banner-fill" class="boss-banner-fill" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Boss cutscene (fullscreen 2s intro overlay) -->
+        <ui:VisualElement name="boss-cutscene" class="boss-cutscene hidden">
+            <ui:Label text="" name="boss-cutscene-text" class="boss-cutscene-text" />
+        </ui:VisualElement>
+
+        <!-- Danger vignette (edge flash on enraged / charge) -->
+        <ui:VisualElement name="danger-vignette" class="danger-vignette hidden" />
+
         <!-- Tower tooltip (hover sur tower placée) -->
         <ui:VisualElement name="tower-tooltip" class="tower-tooltip hidden">
             <ui:Label text="" name="tooltip-header" class="tooltip-header" />
