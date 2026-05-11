@@ -3,6 +3,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Entities
 {
@@ -63,22 +64,13 @@ namespace CrowdDefense.Entities
             transform.localScale = Vector3.one * type.Scale;
 
             rend = GetComponent<MeshRenderer>();
+            baseColor = type.BodyColor;
+            // Cel-shading toon material — port de applyToonToScene() ToonMaterial.js
+            MaterialController.ApplyToon(gameObject, type.BodyColor, type.IsStealth);
             if (rend != null)
             {
-                var mat = rend.material;
-                if (mat == null)
-                {
-                    mat = new Material(ShaderUtil.GetLitShader());
-                    rend.material = mat;
-                }
-                if (type.IsStealth)
-                {
-                    mat.SetFloat("_Surface", 1f);
-                    mat.SetFloat("_Blend", 0f);
-                    mat.renderQueue = 3000;
-                }
-                mat.color = type.BodyColor;
-                baseColor = type.BodyColor;
+                // Garde une ref au material actif pour UpdateStealth (alpha lerp)
+                // MaterialController a déjà initialisé le renderQueue stealth si IsStealth
             }
 
             var col = GetComponent<CapsuleCollider>();
@@ -208,7 +200,16 @@ namespace CrowdDefense.Entities
             float alpha = cfg.StealthOpacity + (1f - cfg.StealthOpacity)
                 * Mathf.Abs(Mathf.Sin(Time.time / cycleS * Mathf.PI));
             StealthAlpha = alpha;
-            rend.material.color = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
+            var c = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
+            // ToonCelShading uses _BaseColor; fallback to .color for Standard shader
+            var mat = rend.material;
+            if (mat != null)
+            {
+                if (mat.HasProperty("_BaseColor"))
+                    mat.SetColor("_BaseColor", c);
+                else
+                    mat.color = c;
+            }
         }
 
         private void UpdateSummons()

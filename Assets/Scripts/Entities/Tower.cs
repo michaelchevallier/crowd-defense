@@ -4,6 +4,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Entities
 {
@@ -113,12 +114,8 @@ namespace CrowdDefense.Entities
                 ? BalanceConfig.Get().LevelScale[0]
                 : 0.75f;
 
-            var renderers = GetComponentsInChildren<MeshRenderer>();
-            foreach (var rend in renderers)
-            {
-                rend.material = new Material(ShaderUtil.GetLitShader());
-                rend.material.color = type.BodyColor;
-            }
+            // Cel-shading toon material — port de applyToonToScene() ToonMaterial.js
+            MaterialController.ApplyToon(gameObject, type.BodyColor);
 
             transform.localScale = Vector3.one * type.SizeMultiplier;
         }
@@ -268,10 +265,7 @@ namespace CrowdDefense.Entities
             Color tint = UpgradeBranch == TowerBranch.Dps
                 ? new Color(0.9f, 0.15f, 0.10f)   // rouge intense DPS
                 : new Color(0.10f, 0.80f, 0.85f);  // cyan Utility
-            var renderers = GetComponentsInChildren<MeshRenderer>();
-            foreach (var rend in renderers)
-                if (rend.material != null)
-                    rend.material.color = tint;
+            MaterialController.UpdateTint(gameObject, tint);
             _l3TintApplied = true;
         }
 
