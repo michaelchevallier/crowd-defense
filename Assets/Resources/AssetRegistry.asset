@@ -49,6 +49,10 @@ MonoBehaviour:
     Prefab: {fileID: 6981720698519276914, guid: 9a5923c5ef8364f939d50e9ad842440d, type: 3}
   - Key: tower_tank_l3
     Prefab: {fileID: -4020660195866448472, guid: 2c3d0e45633794a10b3147b5a131994f, type: 3}
+  - Key: tower_acid
+    Prefab: {fileID: 2107409826236812522, guid: c524a48550e714a0780bc7b99a9b0cbf, type: 3}
+  - Key: tower_skyguard
+    Prefab: {fileID: 2107409826236812522, guid: c524a48550e714a0780bc7b99a9b0cbf, type: 3}
   - Key: mob_alpaking
     Prefab: {fileID: 8771091787928289351, guid: aa34abf2eb5344e139015e759d4acbf3, type: 3}
   - Key: mob_armabee
