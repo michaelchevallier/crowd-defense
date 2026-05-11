@@ -44,6 +44,7 @@ namespace CrowdDefense.UI
                     ["hud.wave_progress"] = "Wave {0} / {1}",
                     ["hud.pill_skip_text"] = "+30c  {0:F1}s  +{1}%",
                     ["hud.streak_text"] = "+{0}%",
+                    ["hud.wave_preview_title"] = "Wave {0}:",
 
                     // ── Hero panel ──────────────────────────────────────────────────
                     ["hud.hero_hp_label"] = "HERO",
@@ -215,6 +216,7 @@ namespace CrowdDefense.UI
                     ["hud.wave_progress"] = "Vague {0} / {1}",
                     ["hud.pill_skip_text"] = "+30c  {0:F1}s  +{1}%",
                     ["hud.streak_text"] = "+{0}%",
+                    ["hud.wave_preview_title"] = "Vague {0} :",
 
                     // ── Hero panel ──────────────────────────────────────────────────
                     ["hud.hero_hp_label"] = "HÉROS",

@@ -45,6 +45,12 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <!-- Wave preview (visible between waves, shows next wave roster) -->
+        <ui:VisualElement name="wave-preview" class="wave-preview hidden">
+            <ui:Label text="" name="wave-preview-title" class="wave-preview-title" />
+            <ui:VisualElement name="wave-preview-roster" class="wave-preview-roster" />
+        </ui:VisualElement>
+
         <!-- Wave launch button (visible between waves only) -->
         <ui:VisualElement name="wave-launch-pill" class="wave-launch-pill hidden">
             <ui:Label text="+30¢ · 5.0s" name="wave-launch-pill-text" class="wave-launch-pill-text" />
