@@ -217,6 +217,7 @@ namespace CrowdDefense.Systems
             enemy.Init(type, resolvedPathIdx);
             activeEnemies.Add(enemy);
             spawnCounter++;
+            EventManager.Instance?.Publish(new EnemySpawnedEvent(enemy));
 #if UNITY_EDITOR
             Debug.Log($"[WaveManager] spawned {type.Id} pathIdx={resolvedPathIdx} active={activeEnemies.Count}");
 #endif
