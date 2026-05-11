@@ -38,6 +38,7 @@ namespace CrowdDefense.Systems
             enemy.transform.position = position;
             enemy.transform.rotation = Quaternion.identity;
             enemy.Init(type, pathIdx);
+            if (Random.value < 0.05f) enemy.ApplyElite();
 
 #if UNITY_EDITOR
             Vector3 target = (pm != null && pm.WaypointCountOnPath(pathIdx) > 1)

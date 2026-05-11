@@ -133,8 +133,30 @@ namespace CrowdDefense.Entities
         // Tracks which per-type sub-pool this instance belongs to (set by EnemyPool.SpawnFromType)
         internal string _poolTypeId = "";
 
+        // Set by EnemyPool when this instance spawns as an elite variant
+        internal bool _isElite = false;
+
         // Called once by EnemyPool after Instantiate to back-link the pool
         public void SetPool(EnemyPool p) => pool = p;
+
+        // Called by EnemyPool after Init when the 5% elite roll succeeds.
+        public void ApplyElite()
+        {
+            _isElite = true;
+            transform.localScale *= 1.3f;
+            hp    *= 2.5f;
+            maxHp *= 2.5f;
+            // Gold tint via MPB — reuses the already-allocated _mpb from Init
+            if (_cachedRenderers != null)
+            {
+                _mpb ??= new MaterialPropertyBlock();
+                var gold = new Color(1f, 0.84f, 0f);
+                _mpb.SetColor(_baseColorId, gold);
+                _mpb.SetColor(_colorId,     gold);
+                for (int i = 0; i < _cachedRenderers.Length; i++)
+                    _cachedRenderers[i].SetPropertyBlock(_mpb);
+            }
+        }
 
         // Called by BossSystem when enraged phase threshold is crossed
         public void ApplyEnragedPhase(float speedMul, float summonCdMul)
@@ -203,6 +225,7 @@ namespace CrowdDefense.Entities
             _staticRotY       = 0f;
             _wasWalking       = false;
             _lastDamageDirection = Vector3.back;
+            _isElite = false;
 
             // Clean up any Rigidbodies/CapsuleColliders added by ragdoll on previous life
             CleanupRagdoll();
@@ -1022,7 +1045,8 @@ namespace CrowdDefense.Entities
                 int baseReward = cfg?.Reward ?? 0;
                 float coinMul  = CoinPullManager.Instance?.GetCoinMulAt(transform.position) ?? 1f;
                 float streakMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
-                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul));
+                float eliteMul = _isElite ? 3f : 1f;
+                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul * eliteMul));
 #if UNITY_EDITOR
                 Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} streakMul={streakMul:F2} reward={reward}");
 #endif
