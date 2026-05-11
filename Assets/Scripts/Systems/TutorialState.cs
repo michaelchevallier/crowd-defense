@@ -2,100 +2,185 @@
 using System;
 using UnityEngine;
 using CrowdDefense.Common;
+using CrowdDefense.Data;
+using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
-    /// <summary>
-    /// Persistent singleton tracking W1-1 tutorial progress.
-    /// Active only when the current level is "world1-1".
-    /// PlayerPrefs key "tutorial_skipped" persists across sessions.
-    /// </summary>
+    public enum TutorialStep
+    {
+        NotStarted          = -1,
+        Step1_PlaceTower    = 0,
+        Step2_StartWave     = 1,
+        Step3_KillEnemy     = 2,
+        Step4_PlaceHero     = 3,
+        Step5_CollectCoins  = 4,
+        Done                = 5,
+    }
+
     public class TutorialState : MonoSingleton<TutorialState>
     {
-        private const string PrefKey = "tutorial_skipped";
         private const string TutorialLevelId = "world1-1";
 
-        // Total phases defined in W1-1 spec (0..4 inclusive)
-        public const int PhaseCount = 5;
+        public bool IsActive { get; private set; }
+        public TutorialStep CurrentStep { get; private set; } = TutorialStep.NotStarted;
+        public TutorialStepDef? CurrentStepDef { get; private set; }
 
-        public bool IsTutorialActive { get; private set; }
-        public int CurrentPhase { get; private set; }
-        public bool PersistedSkippedTutorial => PlayerPrefs.GetInt(PrefKey, 0) == 1;
+        // Compat shims for existing callers (TutorialOverlayController old bindings)
+        public bool IsTutorialActive => IsActive;
+        public int CurrentPhase => (int)CurrentStep;
 
-        public event Action<int>? OnPhaseChanged;
+        public event Action<TutorialStep>? OnStepChanged;
         public event Action? OnTutorialCompleted;
         public event Action? OnTutorialSkipped;
 
+        private TutorialRegistry? _registry;
+        private int _coinsAtStep5Entry;
+
+        public static bool IsCompleted() => SaveSystem.IsTutorialCompleted();
+
         protected override void OnAwakeSingleton()
         {
-            // Don't activate tutorial if it was already skipped/completed
-            if (PersistedSkippedTutorial)
+            if (IsCompleted())
             {
-                IsTutorialActive = false;
-                return;
+                IsActive = false;
+                CurrentStep = TutorialStep.Done;
             }
-
-            // Defer level check to Start (LevelRunner not yet available in Awake)
         }
 
         private void Start()
         {
-            var levelId = LevelRunner.Instance?.CurrentLevel?.Id;
-            IsTutorialActive = levelId == TutorialLevelId && !PersistedSkippedTutorial;
-            CurrentPhase = 0;
+            if (IsCompleted()) return;
 
-            if (LevelRunner.Instance != null)
-                LevelRunner.Instance.OnStateChanged += OnGameStateChanged;
+            var levelId = LevelRunner.Instance?.CurrentLevel?.Id;
+            if (levelId != TutorialLevelId) return;
+
+            _registry = TutorialRegistry.Get();
+            IsActive = true;
+            EnterStep(TutorialStep.Step1_PlaceTower);
+            SubscribeToGameEvents();
         }
 
         protected override void OnDestroySingleton()
         {
-            if (LevelRunner.Instance != null)
-                LevelRunner.Instance.OnStateChanged -= OnGameStateChanged;
+            UnsubscribeFromGameEvents();
         }
 
-        public void AdvancePhase()
+        // ── Public API ─────────────────────────────────────────────────────────────
+
+        public void AdvanceStep()
         {
-            if (!IsTutorialActive) return;
-            CurrentPhase++;
-            if (CurrentPhase >= PhaseCount)
-            {
-                CompleteTutorial();
-                return;
-            }
-            OnPhaseChanged?.Invoke(CurrentPhase);
+            if (!IsActive) return;
+            var next = CurrentStep + 1;
+            if (next >= TutorialStep.Done)
+                Complete();
+            else
+                EnterStep(next);
         }
+
+        // Legacy compat: TutorialOverlayController calls AdvancePhase()
+        public void AdvancePhase() => AdvanceStep();
 
         public void SkipTutorial()
         {
-            if (!IsTutorialActive) return;
-            IsTutorialActive = false;
-            PlayerPrefs.SetInt(PrefKey, 1);
-            PlayerPrefs.Save();
+            if (!IsActive) return;
+            IsActive = false;
+            CurrentStep = TutorialStep.Done;
+            SaveSystem.SetTutorialCompleted();
+            UnsubscribeFromGameEvents();
             OnTutorialSkipped?.Invoke();
         }
 
-        private void CompleteTutorial()
+        public void OnLevelLoaded(string levelId)
         {
-            IsTutorialActive = false;
-            PlayerPrefs.SetInt(PrefKey, 1);
-            PlayerPrefs.Save();
+            if (IsCompleted()) { IsActive = false; return; }
+            if (levelId != TutorialLevelId) { IsActive = false; return; }
+            _registry = TutorialRegistry.Get();
+            IsActive = true;
+            EnterStep(TutorialStep.Step1_PlaceTower);
+        }
+
+        // Wired externally when an enemy is killed (no generic event on WaveManager yet)
+        public void NotifyEnemyKilled(Enemy enemy)
+        {
+            if (!IsActive || CurrentStep != TutorialStep.Step3_KillEnemy) return;
+            AdvanceStep();
+        }
+
+        // Wired externally when the hero is placed on the grid
+        public void NotifyHeroPlaced()
+        {
+            if (!IsActive || CurrentStep != TutorialStep.Step4_PlaceHero) return;
+            AdvanceStep();
+        }
+
+        // ── FSM ────────────────────────────────────────────────────────────────────
+
+        private void EnterStep(TutorialStep step)
+        {
+            CurrentStep = step;
+            CurrentStepDef = StepDef(step);
+            if (step == TutorialStep.Step5_CollectCoins)
+                _coinsAtStep5Entry = Economy.Instance?.Gold ?? 0;
+            OnStepChanged?.Invoke(step);
+        }
+
+        private void Complete()
+        {
+            IsActive = false;
+            CurrentStep = TutorialStep.Done;
+            SaveSystem.SetTutorialCompleted();
+            UnsubscribeFromGameEvents();
             OnTutorialCompleted?.Invoke();
         }
 
-        private void OnGameStateChanged(GameState state)
+        private TutorialStepDef? StepDef(TutorialStep step)
         {
-            // Wave cleared = phase 4 (congrats) if we haven't reached it yet
-            if (!IsTutorialActive) return;
-            if (state == GameState.Victory && CurrentPhase < PhaseCount - 1)
-                AdvancePhase();
+            if (_registry == null) return null;
+            int idx = (int)step;
+            var arr = _registry.Steps;
+            return idx >= 0 && idx < arr.Length ? arr[idx] : null;
         }
 
-        // Called externally when a level is hot-reloaded (editor / restart) — resets to phase 0
-        public void OnLevelLoaded(string levelId)
+        // ── Game-event auto-advance ────────────────────────────────────────────────
+
+        private void OnTowerPlacedHandler(Tower _)
         {
-            IsTutorialActive = levelId == TutorialLevelId && !PersistedSkippedTutorial;
-            CurrentPhase = 0;
+            if (!IsActive || CurrentStep != TutorialStep.Step1_PlaceTower) return;
+            AdvanceStep();
+        }
+
+        private void OnWaveStartHandler(int _)
+        {
+            if (!IsActive || CurrentStep != TutorialStep.Step2_StartWave) return;
+            AdvanceStep();
+        }
+
+        private void OnGoldChangedHandler(int _)
+        {
+            if (!IsActive || CurrentStep != TutorialStep.Step5_CollectCoins) return;
+            if (Economy.Instance != null && Economy.Instance.Gold > _coinsAtStep5Entry)
+                AdvanceStep();
+        }
+
+        private void SubscribeToGameEvents()
+        {
+            if (PlacementController.Instance != null)
+                PlacementController.Instance.OnTowerPlaced += OnTowerPlacedHandler;
+            if (WaveManager.Instance != null)
+                WaveManager.Instance.OnWaveStart += OnWaveStartHandler;
+            if (Economy.Instance != null)
+                Economy.Instance.OnGoldChanged += OnGoldChangedHandler;
+        }
+
+        private void UnsubscribeFromGameEvents()
+        {
+            if (PlacementController.Instance != null)
+                PlacementController.Instance.OnTowerPlaced -= OnTowerPlacedHandler;
+            if (WaveManager.Instance != null)
+                WaveManager.Instance.OnWaveStart -= OnWaveStartHandler;
+            if (Economy.Instance != null)
+                Economy.Instance.OnGoldChanged -= OnGoldChangedHandler;
         }
     }
 }
