@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="PerkPicker.uss" />
+    <ui:VisualElement name="perk-picker-root" class="perk-picker-root hidden">
+        <ui:VisualElement class="perk-picker-panel">
+            <ui:Label text="Choose a perk" name="perk-title" class="perk-title" />
+            <ui:Label text="Pick 1 of 3 to continue" name="perk-subtitle" class="perk-subtitle" />
+            <ui:VisualElement name="perk-cards-row" class="perk-cards-row">
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

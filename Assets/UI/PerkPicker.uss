@@ -1,0 +1,102 @@
+.perk-picker-root {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.82);
+    align-items: center;
+    justify-content: center;
+}
+
+.perk-picker-panel {
+    align-items: center;
+    max-width: 800px;
+    width: 90%;
+}
+
+.perk-title {
+    color: white;
+    font-size: 48px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 8px;
+}
+
+.perk-subtitle {
+    color: rgba(220, 220, 220, 0.75);
+    font-size: 18px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 32px;
+}
+
+.perk-cards-row {
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+
+.perk-card {
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(18, 22, 30, 0.95);
+    border-radius: 16px;
+    border-width: 2px;
+    border-color: rgba(100, 120, 160, 0.5);
+    padding: 20px 16px;
+    margin: 0 12px;
+    width: 200px;
+    cursor: link;
+}
+
+.perk-card:hover {
+    background-color: rgba(28, 36, 50, 0.98);
+    border-color: rgba(180, 200, 240, 0.8);
+    translate: 0 -4px;
+}
+
+.perk-card:active {
+    translate: 0 0;
+    background-color: rgba(40, 50, 70, 1);
+}
+
+.perk-card.rarity-common { border-color: rgba(160, 160, 160, 0.7); }
+.perk-card.rarity-rare { border-color: rgb(64, 156, 255); }
+.perk-card.rarity-epic { border-color: rgb(180, 80, 255); }
+.perk-card.rarity-legendary { border-color: rgb(255, 180, 30); }
+
+.perk-card-icon {
+    width: 64px;
+    height: 64px;
+    background-color: rgba(60, 70, 90, 0.6);
+    border-radius: 12px;
+    margin-bottom: 12px;
+}
+
+.perk-card-rarity {
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 6px;
+    color: rgba(200, 200, 200, 0.7);
+}
+
+.perk-card.rarity-rare .perk-card-rarity { color: rgb(64, 156, 255); }
+.perk-card.rarity-epic .perk-card-rarity { color: rgb(180, 80, 255); }
+.perk-card.rarity-legendary .perk-card-rarity { color: rgb(255, 180, 30); }
+
+.perk-card-name {
+    color: white;
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 8px;
+    -unity-text-align: upper-center;
+    white-space: normal;
+}
+
+.perk-card-desc {
+    color: rgba(200, 210, 230, 0.8);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    white-space: normal;
+}
