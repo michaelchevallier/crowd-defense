@@ -119,6 +119,11 @@ namespace CrowdDefense.Editor
             c += EnsureComponent<SkinPickerController>(hud);
             c += EnsureComponent<CutsceneController>(hud);
             c += EnsureComponent<WorldMapController>(hud);
+            c += EnsureComponent<WavePreviewController>(hud);
+            c += EnsureComponent<AchievementToastController>(hud);
+            c += EnsureComponent<ComboHudController>(hud);
+            c += EnsureComponent<SpeedControlController>(hud);
+            c += EnsureComponent<TutorialOverlayController>(hud);
             // PerkChoiceOverlay is Canvas-based — needs a separate GO, not added here
             return c;
         }
