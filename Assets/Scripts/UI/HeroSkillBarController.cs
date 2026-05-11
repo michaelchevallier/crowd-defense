@@ -73,16 +73,14 @@ namespace CrowdDefense.UI
         private void TriggerSlot(int index)
         {
             if (_hero == null) return;
-            // Hero.Cast not yet implemented — stub (will wire when Hero gets skill API)
+            _hero.Cast(index);
         }
 
         private void RefreshSlot(int index)
         {
             if (_overlays[index] == null || _cdLabels[index] == null) return;
 
-            // Hero.GetCooldownRatio not yet implemented — stub returns 0 (always ready)
-            float ratio = 0f;
-            ratio = Mathf.Clamp01(ratio);
+            float ratio = Mathf.Clamp01(_hero != null ? _hero.GetCooldownRatio(index) : 0f);
 
             // Radial fill: height % from top encodes the cooldown fraction
             _overlays[index]!.style.height = new StyleLength(new Length(ratio * 100f, LengthUnit.Percent));
@@ -92,8 +90,7 @@ namespace CrowdDefense.UI
 
             if (onCooldown && _hero != null)
             {
-                // Hero.GetCooldownRemaining not yet implemented — stub returns 0
-                float remaining = 0f;
+                float remaining = _hero.GetCooldownRemaining(index);
                 _cdLabels[index]!.text = remaining > 0f ? $"{remaining:F1}" : "";
                 _cdLabels[index]!.style.display = DisplayStyle.Flex;
             }

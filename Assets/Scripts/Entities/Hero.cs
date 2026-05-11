@@ -405,6 +405,27 @@ namespace CrowdDefense.Entities
                 ? _ultCooldown / (cfg.UltCooldownMs / 1000f)
                 : 0f;
 
+        // ── Skill bar API (HeroSkillBarController) ────────────────────────────
+
+        public float GetCooldownRatio(int slotIndex) => slotIndex switch
+        {
+            0 => cfg != null && cfg.FireRateMs > 0 ? _cooldown / (cfg.FireRateMs / 1000f) : 0f,
+            2 => UltCooldownFraction,
+            _ => 0f,
+        };
+
+        public float GetCooldownRemaining(int slotIndex) => slotIndex switch
+        {
+            0 => _cooldown,
+            2 => _ultCooldown,
+            _ => 0f,
+        };
+
+        public void Cast(int slotIndex)
+        {
+            if (slotIndex == 2) TryUlt();
+        }
+
         /// <summary>
         /// Consumes the FirstTowerFree token. Returns true and marks used if available.
         /// Called by Economy.cs when the player places the first tower.

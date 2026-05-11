@@ -88,6 +88,8 @@ namespace CrowdDefense.UI
             EnsureSibling<RadialMenuController>();
             EnsureSibling<TowerSelectMenuController>();
             EnsureSibling<MuteToggleController>();
+            EnsureSibling<HeroSkillBarController>();
+            EnsureSibling<MinimapController>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;
             ApplyDeviceClasses(root);
