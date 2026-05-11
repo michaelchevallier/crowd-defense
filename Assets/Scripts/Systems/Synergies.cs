@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 
@@ -11,23 +12,10 @@ namespace CrowdDefense.Systems
     /// Resets synergy output fields on every Tower before recomputing, preventing stale accumulation.
     /// Covers all 15 synergies ported from Phaser Synergies.js.
     /// </summary>
-    public class Synergies : MonoBehaviour
+    public class Synergies : MonoSingleton<Synergies>
     {
-        public static Synergies? Instance { get; private set; }
-
         private const float TickInterval = 0.2f;
         private float _tickTimer;
-
-        private void Awake()
-        {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
-        }
-
-        private void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
-        }
 
         private void LateUpdate()
         {
