@@ -1,22 +1,19 @@
 #nullable enable
 using UnityEngine;
 using UnityEngine.Pool;
+using CrowdDefense.Common;
 using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
-    public class ProjectilePool : MonoBehaviour
+    public class ProjectilePool : MonoSingleton<ProjectilePool>
     {
-        public static ProjectilePool? Instance { get; private set; }
-
         [SerializeField] private GameObject? projectilePrefab;
 
         private ObjectPool<Projectile>? pool;
 
-        private void Awake()
+        protected override void OnAwakeSingleton()
         {
-            if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-            Instance = this;
             pool = new ObjectPool<Projectile>(
                 createFunc: CreateProjectile,
                 actionOnGet: OnGet,
@@ -26,11 +23,6 @@ namespace CrowdDefense.Systems
                 defaultCapacity: 30,
                 maxSize: 100
             );
-        }
-
-        private void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
         }
 
         private Projectile CreateProjectile()
