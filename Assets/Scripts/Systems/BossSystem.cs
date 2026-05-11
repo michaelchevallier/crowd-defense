@@ -30,7 +30,7 @@ namespace CrowdDefense.Systems
             var em = EventManager.Instance;
             if (em == null) return;
             em.Subscribe<EnemySpawnedEvent>(OnEnemySpawned);
-            em.Subscribe<LevelEndedEvent>(_ => ResetBoss());
+            em.Subscribe<LevelEndedEvent>(OnLevelEnded);
         }
 
         protected override void OnDestroySingleton()
