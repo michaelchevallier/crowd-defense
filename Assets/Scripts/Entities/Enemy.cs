@@ -87,6 +87,11 @@ namespace CrowdDefense.Entities
         private MeshRenderer? _bossAuraMR;
         private bool _bossEncounteredPublished = false;
 
+        // ── Boss skin phases (visual: scale + tint + emission) ─────────────────
+        private int   _bossPhase        = 0;   // 0=init, 1=default, 2=darkred, 3=fire
+        private float _bossBaseScale    = 1f;  // type.Scale captured at Init, before elite mul
+        private Color _bossPhaseEmission = Color.black; // current phase emission, restored after hit flash
+
         // ── Apocalypse boss phases ─────────────────────────────────────────────
         private int   _apocPhase        = 0;
         private float _invulUntilTime   = 0f;
@@ -126,6 +131,21 @@ namespace CrowdDefense.Entities
 
         // Modified by SlowEffectManager each frame (slow) or by Freeze logic below
         public float currentSpeedMul = 1f;
+
+        // Used by EnemyPathingSystem — exposes speed without touching Transform
+        public float GetEffectiveSpeed() => ComputeEffectiveSpeed();
+
+        // Used by EnemyPathingSystem — advances waypoint index after position is applied externally
+        public void AdvanceWaypoint()
+        {
+            if (pathManager == null || cfg == null) return;
+            int wpCount = pathManager.WaypointCountOnPath(pathIdx);
+            if (currentWaypoint < wpCount)
+                currentWaypoint++;
+        }
+
+        // Used by EnemyPathingSystem — true when enemy is suitable for external pathing tick
+        public bool IsPathable => !IsDead && !_dying && cfg != null && !cfg.IsFlyer && !_static && pathManager != null;
 
         // World pressure scaling (D1-04) — set once in Init
         private float pressureSpeedMul = 1f;
@@ -174,6 +194,56 @@ namespace CrowdDefense.Entities
             _dmgTakenMulUntil  = Mathf.Max(_dmgTakenMulUntil, until);
         }
 
+        // Boss skin phase (apocalypse visual: scale + tint + emission). phase 1=default, 2=darkred, 3=fire.
+        public void ApplyBossPhase(int phase)
+        {
+            if (_cachedRenderers == null || _mpb == null) return;
+            if (_bossPhase == phase) return;
+            _bossPhase = phase;
+
+            float scaleMul;
+            Color tint;
+            Color emission;
+
+            switch (phase)
+            {
+                case 2:
+                    scaleMul = 1.15f;
+                    tint     = new Color(0.7f, 0.3f, 0.3f);
+                    emission = new Color(0.3f, 0f, 0f);
+                    break;
+                case 3:
+                    scaleMul = 1.3f;
+                    tint     = new Color(1f, 0.4f, 0.1f);
+                    emission = new Color(0.8f, 0.24f, 0f);
+                    break;
+                default: // phase 1 — restore defaults
+                    scaleMul = 1f;
+                    tint     = baseColor;
+                    emission = Color.black;
+                    break;
+            }
+
+            // Scale applied relative to base (includes elite mul already on localScale at this point)
+            float eliteMul = _isElite ? (_bossBaseScale > 0f ? transform.localScale.x / _bossBaseScale : 1f) : 1f;
+            transform.localScale = Vector3.one * (_bossBaseScale * scaleMul * eliteMul);
+
+            // Phase color BEFORE flash — flash only writes _emissiveId, tint keys are separate
+            _mpb.SetColor(_baseColorId, tint);
+            _mpb.SetColor(_colorId,     tint);
+            _bossPhaseEmission = emission;
+            // Write emission only if no hit flash is currently running (flash takes priority)
+            if (_hitFlashTimer <= 0f)
+                _mpb.SetColor(_emissiveId, emission);
+
+            for (int i = 0; i < _cachedRenderers.Length; i++)
+                _cachedRenderers[i].SetPropertyBlock(_mpb);
+
+            // Phase 3: ember burst via VfxPool if available
+            if (phase == 3)
+                VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.8f, 1.8f);
+        }
+
         // Knockback along path — rewind current waypoint progress to push enemy back.
         public void ApplyKnockback(float strength)
         {
@@ -214,6 +284,8 @@ namespace CrowdDefense.Entities
             _freezeUntilTime  = 0f;
             _frozenTinted     = false;
             _bossEncounteredPublished = false;
+            _bossPhase        = 0;
+            _bossPhaseEmission = Color.black;
             _apocPhase        = 0;
             _invulUntilTime   = 0f;
             _summonHordePending = false;
@@ -240,6 +312,7 @@ namespace CrowdDefense.Entities
             pathIdx  = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
             transform.localScale = Vector3.one * type.Scale;
+            _bossBaseScale = type.Scale;
 
             rend      = GetComponent<MeshRenderer>();
             baseColor = type.BodyColor;
@@ -553,7 +626,8 @@ namespace CrowdDefense.Entities
         private void ClearHitFlash()
         {
             if (_cachedRenderers == null || _mpb == null) return;
-            _mpb.SetColor(_emissiveId, Color.black);
+            // Restore boss phase emission (if any) instead of hard black
+            _mpb.SetColor(_emissiveId, _bossPhaseEmission);
             for (int i = 0; i < _cachedRenderers.Length; i++)
                 _cachedRenderers[i].SetPropertyBlock(_mpb);
         }
@@ -952,6 +1026,17 @@ namespace CrowdDefense.Entities
             // Boss HP bar tracking
             if (cfg != null && cfg.IsBoss)
                 EventManager.Instance?.Publish(new BossHpChangedEvent(ratio));
+
+            // Boss skin phase transitions — check after HP update, before flash
+            if (cfg != null && cfg.IsBoss)
+            {
+                if (ratio < 0.33f && _bossPhase < 3)
+                    ApplyBossPhase(3);
+                else if (ratio < 0.66f && _bossPhase < 2)
+                    ApplyBossPhase(2);
+                else if (_bossPhase == 0)
+                    ApplyBossPhase(1);
+            }
 
             // Hit flash + particles
             TriggerHitFlash();
