@@ -35,6 +35,10 @@ namespace CrowdDefense.Systems
 
         // Fired after a tower is successfully placed (tutorial + achievements hooks)
         public event Action<Tower>? OnTowerPlaced;
+        // Fired after a tower is upgraded (called by RadialMenuController)
+        public event Action<Tower, int>? OnTowerUpgraded;
+        // Fired after a tower is sold (called by RadialMenuController); int = refund amount
+        public event Action<Tower, int>? OnTowerSold;
         // Fired when selected tower changes (null = deselected) — consumed by RadialMenuController
         public event Action<Tower?>? OnTowerSelected;
         // Fired each frame the mouse hovers a placement-mode cell (null = not hovering buildable cell)
@@ -360,5 +364,13 @@ namespace CrowdDefense.Systems
         // Tower.CumulativeCost is the source of truth — no sync needed.
         // Kept for RadialMenuController call-site compatibility (no-op is safe).
         public void SyncCumulativeCost(Tower _) { }
+
+        // Called by RadialMenuController after a successful UpgradeTo
+        public void NotifyTowerUpgraded(Tower tower, int newLevel) =>
+            OnTowerUpgraded?.Invoke(tower, newLevel);
+
+        // Called by RadialMenuController before tower.Sell(); refund computed by caller
+        public void NotifyTowerSold(Tower tower, int refund) =>
+            OnTowerSold?.Invoke(tower, refund);
     }
 }

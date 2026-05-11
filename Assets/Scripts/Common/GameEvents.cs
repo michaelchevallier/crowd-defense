@@ -53,4 +53,10 @@ namespace CrowdDefense.Common
     public record BossPhaseChangedEvent(string PhaseName, int PhaseIdx);
     public record BossDefeatedEvent(string DisplayName);
     public record BossChargeWarningEvent;
+
+    // Hero
+    public record HeroLevelUpEvent(int NewLevel, int Xp, int XpToNext);
+
+    // Perks
+    public record PerkPickedEvent(string PerkId, string HeroId);
 }
