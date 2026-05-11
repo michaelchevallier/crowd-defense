@@ -40,6 +40,7 @@ namespace CrowdDefense.Systems
         public int GemsRewarded;
     }
 
+    [DefaultExecutionOrder(-50)]
     public class LevelRunner : MonoSingleton<LevelRunner>
     {
         [SerializeField] private LevelData? currentLevel;

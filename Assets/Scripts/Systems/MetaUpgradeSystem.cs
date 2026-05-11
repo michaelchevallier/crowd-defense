@@ -23,6 +23,7 @@ namespace CrowdDefense.Systems
         public float towerUpgradeDiscount = 0f;
     }
 
+    [DefaultExecutionOrder(-50)]
     public class MetaUpgradeSystem : MonoSingleton<MetaUpgradeSystem>
     {
         public RunBonuses ActiveBonuses { get; private set; } = new();
