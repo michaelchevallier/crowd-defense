@@ -46,7 +46,8 @@ namespace CrowdDefense.Systems
         private readonly List<GameObject> _pathDots = new();
 
         // Reusable property block — avoids per-frame GC
-        private readonly MaterialPropertyBlock _mpb = new();
+        // Lazy-init: MaterialPropertyBlock native ctor fails during Unity serialization
+        private MaterialPropertyBlock? _mpb;
 
         // Cache for raw mouse-tracked world position (used when no valid cell)
         private Vector3 lastMouseWorld;
@@ -212,6 +213,7 @@ namespace CrowdDefense.Systems
         private void ApplyTintToGhost(Color tint)
         {
             if (ghost == null) return;
+            _mpb ??= new MaterialPropertyBlock();
             _mpb.SetColor("_BaseColor", tint);
             foreach (var rend in ghost.GetComponentsInChildren<Renderer>(true))
                 rend.SetPropertyBlock(_mpb);
