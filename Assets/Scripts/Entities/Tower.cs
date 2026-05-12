@@ -251,6 +251,14 @@ namespace CrowdDefense.Entities
         private GameObject? _glowRing;
         private Coroutine? _glowPulseRoutine;
 
+        // Star row — 3 quads above tower indicating upgrade level (L1=silver, L2=gold, L3=rainbow)
+        private GameObject? _starRow;
+        private readonly Renderer?[] _starRenderers = new Renderer?[3];
+        private readonly Material?[] _starMaterials = new Material?[3];
+        private static readonly Color StarSilver  = new(0.8f, 0.8f, 0.85f, 1f);
+        private static readonly Color StarGold    = new(1f, 0.85f, 0.2f, 1f);
+        private const float StarDimAlpha = 0.15f;
+
         // L4 elite tier (UpgradeLevel >= 3 + all research nodes unlocked)
         private bool _l4EliteApplied = false;
         private Coroutine? _sparkleRoutine;
@@ -513,6 +521,7 @@ namespace CrowdDefense.Entities
             BuildClusterHighlight();
             BuildDamageIcon(type.DamageType);
             BuildSelectionRing();
+            BuildStarRow();
             if (type.Behavior == TowerBehavior.CoinPull)
                 BuildMagnetAuraCircle(BalanceConfig.Get().MagnetSlowRadius);
 
@@ -1686,6 +1695,91 @@ namespace CrowdDefense.Entities
             mat.renderQueue = 3000;
         }
 
+        // ── LateUpdate — billboard stars toward camera ────────────────────────
+
+        private void LateUpdate()
+        {
+            if (_starRow == null) return;
+            var cam = Camera.main;
+            if (cam == null) return;
+            // Billboard: rotate star row to face the camera each frame.
+            _starRow.transform.rotation = cam.transform.rotation;
+            // Animate star 3 (index 2) rainbow when L3 active — no alloc, cached material.
+            if (UpgradeLevel >= 3 && _starMaterials[2] != null)
+            {
+                Color rainbow = Color.HSVToRGB(Time.time * 0.5f % 1f, 0.7f, 1f);
+                _starMaterials[2]!.color = rainbow;
+            }
+        }
+
+        // ── Star Row ──────────────────────────────────────────────────────────
+
+        private void BuildStarRow()
+        {
+            if (_starRow != null) Destroy(_starRow);
+
+            _starRow = new GameObject("StarRow");
+            _starRow.transform.SetParent(transform, false);
+            _starRow.transform.localPosition = new Vector3(0f, 2.2f, 0f);
+
+            var spriteMat = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+
+            float spacing = 0.38f;
+            float startX  = -(spacing);   // -0.38, 0, +0.38
+
+            for (int i = 0; i < 3; i++)
+            {
+                var star = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                star.name = "Star_" + (i + 1);
+                Object.Destroy(star.GetComponent<Collider>());
+                star.transform.SetParent(_starRow.transform, false);
+                star.transform.localPosition = new Vector3(startX + i * spacing, 0f, 0f);
+                star.transform.localScale = Vector3.one * 0.28f;
+
+                var mat = new Material(spriteMat);
+                mat.color = new Color(StarSilver.r, StarSilver.g, StarSilver.b, StarDimAlpha);
+                var rend = star.GetComponent<Renderer>();
+                if (rend != null) rend.material = mat;
+
+                _starRenderers[i] = rend;
+                _starMaterials[i] = mat;
+            }
+
+            // Destroy the shared template material — each star has its own copy above.
+            Object.Destroy(spriteMat);
+            UpdateStarRow();
+        }
+
+        private void UpdateStarRow()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                var mat = _starMaterials[i];
+                if (mat == null) continue;
+
+                bool lit = UpgradeLevel > i;   // star[0] lit at L1+, star[1] at L2+, star[2] at L3+
+                if (!lit)
+                {
+                    // Colour the dim star its target colour but at low alpha so shape is visible.
+                    Color dimBase = i == 0 ? StarSilver : i == 1 ? StarGold : StarGold;
+                    mat.color = new Color(dimBase.r, dimBase.g, dimBase.b, StarDimAlpha);
+                }
+                else if (i == 0)
+                {
+                    mat.color = StarSilver;
+                }
+                else if (i == 1)
+                {
+                    mat.color = StarGold;
+                }
+                else
+                {
+                    // Star 3 (L3 rainbow): initial colour — will be updated each frame in LateUpdate.
+                    mat.color = StarGold;
+                }
+            }
+        }
+
         // ── Tier Pips ─────────────────────────────────────────────────────────
 
         /// <summary>
@@ -2163,6 +2257,7 @@ namespace CrowdDefense.Entities
         private void PostUpgradeVisuals(int level)
         {
             DrawTierPips(level);
+            UpdateStarRow();
             if (cfg != null)
             {
                 BuildRangeRing(cfg.Range);
@@ -2427,6 +2522,12 @@ namespace CrowdDefense.Entities
             if (_glowPulseRoutine != null) StopCoroutine(_glowPulseRoutine);
             if (_glowRing != null) Destroy(_glowRing);
             if (_sparkleRoutine != null) StopCoroutine(_sparkleRoutine);
+            if (_starRow != null) Destroy(_starRow);
+            for (int i = 0; i < 3; i++)
+            {
+                if (_starMaterials[i] != null) Object.Destroy(_starMaterials[i]);
+                _starMaterials[i] = null;
+            }
         }
 
 #if UNITY_EDITOR
