@@ -72,6 +72,10 @@ namespace CrowdDefense.UI
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
 
+        // Wave countdown overlay (3-2-1-GO)
+        private Label? _waveCountdownLabel;
+        private Coroutine? _countdownCoroutine;
+
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
 
@@ -207,6 +211,7 @@ namespace CrowdDefense.UI
             _bankTooltip = root.Q<VisualElement>("bank-tooltip");
 
             BuildBossHpBar(root);
+            BuildWaveCountdownLabel(root);
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -512,14 +517,33 @@ namespace CrowdDefense.UI
 
             bool wasInWindow = wm.SkipWindowSecondsRemaining > 0f;
             int streakBefore = wm.StreakCount;
+
+            // Show 3-2-1-GO then start wave
+            if (_countdownCoroutine != null) StopCoroutine(_countdownCoroutine);
+            _countdownCoroutine = StartCoroutine(CountdownThenStart(wm, wasInWindow, streakBefore));
+        }
+
+        private System.Collections.IEnumerator CountdownThenStart(WaveManager wm, bool wasInWindow, int streakBefore)
+        {
+            // Hide launch controls immediately
+            if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
+            if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
+
+            string[] steps = { "3", "2", "1", "GO!" };
+            foreach (var step in steps)
+            {
+                ShowWaveCountdown(step);
+                yield return new WaitForSecondsRealtime(1f);
+            }
+            HideWaveCountdown();
+
+            if (wm == null || !wm.IsWaitingForPlayerStart) yield break;
             wm.StartNextWave();
 
             if (wasInWindow)
             {
-                // Flash the wave launch button green
-                StartCoroutine(FlashButtonGreen(waveLaunchBtn, 0.35f));
+                if (waveLaunchBtn != null) StartCoroutine(FlashButtonGreen(waveLaunchBtn, 0.35f));
 
-                // Skip bonus popup — use Toast (HUD-space, no 3D position needed)
                 var cfg = BalanceConfig.Get();
                 Toast.Show(
                     L.Get("hud.skip_toast_title"),
@@ -529,8 +553,7 @@ namespace CrowdDefense.UI
                     ToastType.Perk
                 );
 
-                // Streak toast when streak just incremented
-                int newStreak = streakBefore + 1; // WaveManager caps at StreakCap but we show intent
+                int newStreak = streakBefore + 1;
                 if (newStreak > 0)
                 {
                     int pctBonus = Mathf.RoundToInt(Mathf.Min(newStreak, cfg.StreakCap) * cfg.StreakBonusPerWave * 100f);
@@ -543,6 +566,49 @@ namespace CrowdDefense.UI
                     );
                 }
             }
+        }
+
+        private void BuildWaveCountdownLabel(VisualElement root)
+        {
+            _waveCountdownLabel = new Label { name = "wave-countdown-label", text = "" };
+            _waveCountdownLabel.style.position       = Position.Absolute;
+            _waveCountdownLabel.style.top            = new Length(50f, LengthUnit.Percent);
+            _waveCountdownLabel.style.left           = new Length(50f, LengthUnit.Percent);
+            _waveCountdownLabel.style.translate      = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
+            _waveCountdownLabel.style.fontSize       = new Length(120f, LengthUnit.Pixel);
+            _waveCountdownLabel.style.color          = new StyleColor(new Color(1f, 0.84f, 0f));
+            _waveCountdownLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            _waveCountdownLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+            _waveCountdownLabel.style.textShadow     = new TextShadow { color = new Color(0f, 0f, 0f, 0.85f), offset = new Vector2(4f, 4f), blurRadius = 8f };
+            _waveCountdownLabel.style.display        = DisplayStyle.None;
+            _waveCountdownLabel.style.alignSelf      = Align.Center;
+            root.Add(_waveCountdownLabel);
+        }
+
+        private void ShowWaveCountdown(string text)
+        {
+            if (_waveCountdownLabel == null) return;
+            _waveCountdownLabel.text = text;
+            _waveCountdownLabel.style.display  = DisplayStyle.Flex;
+            _waveCountdownLabel.style.opacity  = 1f;
+            _waveCountdownLabel.style.scale    = new Scale(new Vector3(1.3f, 1.3f, 1f));
+            // Trigger scale-down pulse via inline transition over 0.8s
+            _waveCountdownLabel.schedule.Execute(() =>
+            {
+                if (_waveCountdownLabel == null) return;
+                _waveCountdownLabel.style.transitionProperty  = new StyleList<StylePropertyName>(new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("scale"), new StylePropertyName("opacity") });
+                _waveCountdownLabel.style.transitionDuration  = new StyleList<TimeValue>(new System.Collections.Generic.List<TimeValue> { new TimeValue(0.8f, TimeUnit.Second), new TimeValue(0.8f, TimeUnit.Second) });
+                _waveCountdownLabel.style.transitionTimingFunction = new StyleList<EasingFunction>(new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOut), new EasingFunction(EasingMode.EaseIn) });
+                _waveCountdownLabel.style.scale   = new Scale(new Vector3(1f, 1f, 1f));
+                _waveCountdownLabel.style.opacity = 0f;
+            }).ExecuteLater(100);
+        }
+
+        private void HideWaveCountdown()
+        {
+            if (_waveCountdownLabel == null) return;
+            _waveCountdownLabel.style.display = DisplayStyle.None;
+            _waveCountdownLabel.style.opacity = 1f;
         }
 
         private System.Collections.IEnumerator FlashButtonGreen(VisualElement? btn, float duration)
