@@ -35,6 +35,7 @@ namespace CrowdDefense.UI
         private Button? btnSell;
         private Button? btnRange;
         private Button? btnTarget;
+        private Button? btnGuard;
         private Label? btnDpsLabel;
         private Label? btnDpsCost;
         private Label? btnDpsHint;
@@ -69,6 +70,7 @@ namespace CrowdDefense.UI
             btnSell           = root.Q<Button>("btn-sell");
             btnRange          = root.Q<Button>("btn-range");
             btnTarget         = root.Q<Button>("btn-target");
+            btnGuard          = root.Q<Button>("btn-guard");
             btnDpsLabel       = root.Q<Label>("btn-dps-label");
             btnDpsCost        = root.Q<Label>("btn-dps-cost");
             btnDpsHint        = root.Q<Label>("btn-dps-hint");
@@ -84,6 +86,7 @@ namespace CrowdDefense.UI
             btnSell?.RegisterCallback<ClickEvent>(_ => OnSellClicked());
             btnRange?.RegisterCallback<ClickEvent>(_ => OnRangeClicked());
             btnTarget?.RegisterCallback<ClickEvent>(_ => OnTargetClicked());
+            btnGuard?.RegisterCallback<ClickEvent>(_ => OnGuardClicked());
 
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnTowerSelected += OnTowerSelected;
@@ -189,6 +192,7 @@ namespace CrowdDefense.UI
                 btnSellLabel.text = L.Get("hud.radial_sell", refund);
 
             RefreshTargetButton(tower);
+            RefreshGuardButton(tower);
 
             // Sync range button active class to current _rangeVisible state
             if (btnRange != null)
@@ -317,6 +321,26 @@ namespace CrowdDefense.UI
             var next = (TargetPriority)(((int)currentTower.CurrentTargetPriority + 1) % 5);
             currentTower.SetTargetPriority(next);
             RefreshTargetButton(currentTower);
+        }
+
+        private void RefreshGuardButton(Tower tower)
+        {
+            if (btnGuard == null) return;
+            btnGuard.text = tower.CurrentGuardMode switch
+            {
+                GuardMode.All        => "Mode: Tout",
+                GuardMode.AirOnly    => "Mode: Air",
+                GuardMode.GroundOnly => "Mode: Sol",
+                _                    => "Mode: Tout",
+            };
+        }
+
+        private void OnGuardClicked()
+        {
+            if (currentTower == null) return;
+            var next = (GuardMode)(((int)currentTower.CurrentGuardMode + 1) % 3);
+            currentTower.SetGuardMode(next);
+            RefreshGuardButton(currentTower);
         }
 
         private void OnRangeClicked()

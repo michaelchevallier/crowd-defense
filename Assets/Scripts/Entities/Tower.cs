@@ -18,6 +18,8 @@ namespace CrowdDefense.Entities
 
     public enum TargetPriority { First, Last, Strongest, Weakest, Closest }
 
+    public enum GuardMode { All, AirOnly, GroundOnly }
+
     public class Tower : MonoBehaviour
     {
         [SerializeField] private GameObject? projectilePrefab;
@@ -163,6 +165,9 @@ namespace CrowdDefense.Entities
 
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
+
+        [SerializeField] private GuardMode _guardMode = GuardMode.All;
+        public GuardMode CurrentGuardMode => _guardMode;
 
         // Coût cumulé pour le calcul du refund sell
         public int CumulativeCost { get; private set; }
@@ -712,6 +717,9 @@ namespace CrowdDefense.Entities
                 if (e.IsFlyer && !cfg.FlyerOnly && !cfg.CanHitFlyers) continue;
                 if (e.StealthAlpha < 0.4f) continue;
 
+                if (_guardMode == GuardMode.AirOnly    && !e.IsFlyer) continue;
+                if (_guardMode == GuardMode.GroundOnly &&  e.IsFlyer) continue;
+
                 float score;
                 if (e.IsFlyer)
                 {
@@ -889,6 +897,12 @@ namespace CrowdDefense.Entities
         {
             _targetPriority = priority;
             target = null; // force re-acquire with new priority
+        }
+
+        public void SetGuardMode(GuardMode mode)
+        {
+            _guardMode = mode;
+            target = null; // force re-acquire with new filter
         }
 
         // ── Aim Line ──────────────────────────────────────────────────────────
