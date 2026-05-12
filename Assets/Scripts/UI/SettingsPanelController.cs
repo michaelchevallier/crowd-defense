@@ -31,6 +31,8 @@ namespace CrowdDefense.UI
         private Label?  _followHeroLabel;
         private Toggle? _joystickToggle;
         private Label?  _joystickLabel;
+        private Toggle? _heroAutoAttackToggle;
+        private Label?  _heroAutoAttackLabel;
         private Button? _resetCameraBtn;
         private Button? _changeNameBtn;
         private Button? _resetProgressBtn;
@@ -114,6 +116,8 @@ namespace CrowdDefense.UI
             _followHeroLabel  = _root.Q<Label>("follow-hero-label");
             _joystickToggle   = _root.Q<Toggle>("joystick-toggle");
             _joystickLabel    = _root.Q<Label>("joystick-label");
+            _heroAutoAttackToggle = _root.Q<Toggle>("hero-auto-attack-toggle");
+            _heroAutoAttackLabel  = _root.Q<Label>("hero-auto-attack-label");
             _resetCameraBtn      = _root.Q<Button>("settings-reset-camera-btn");
             _changeNameBtn       = _root.Q<Button>("settings-change-name-btn");
             _resetProgressBtn    = _root.Q<Button>("settings-reset-progress-btn");
@@ -178,6 +182,7 @@ namespace CrowdDefense.UI
             SyncFromRegistry();
             SyncFollowHero();
             SyncJoystick();
+            SyncHeroAutoAttack();
         }
 
         private void OnEnable()
@@ -238,6 +243,10 @@ namespace CrowdDefense.UI
                 _joystickLabel.text = L.CurrentLocale == "fr" ? "Joystick virtuel"
                     : L.CurrentLocale == "es" ? "Joystick virtual"
                     : "Virtual joystick";
+            if (_heroAutoAttackLabel != null)
+                _heroAutoAttackLabel.text = L.CurrentLocale == "fr" ? "Attaque auto du Héro"
+                    : L.CurrentLocale == "es" ? "Ataque automático del Héroe"
+                    : "Hero auto-attack";
 
             if (_qualityDropdown != null) _qualityDropdown.choices = QualityChoices;
             if (_langDropdown != null)    _langDropdown.choices    = LangChoices;
@@ -312,6 +321,14 @@ namespace CrowdDefense.UI
                 if (joystick != null) joystick.Enabled = evt.newValue;
             });
 
+            _heroAutoAttackToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents) return;
+                var hero = Systems.LevelRunner.Instance?.Hero;
+                if (hero != null) hero.AutoAttack = evt.newValue;
+                else PlayerPrefs.SetInt("hero_auto_attack_v1", evt.newValue ? 1 : 0);
+            });
+
             _qualityDropdown?.RegisterValueChangedCallback(evt =>
             {
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
@@ -384,6 +401,7 @@ namespace CrowdDefense.UI
             SyncFromRegistry();
             SyncFollowHero();
             SyncJoystick();
+            SyncHeroAutoAttack();
             UpdateFullscreenLabel();
             _settingsRoot?.RemoveFromClassList("hidden");
         }
@@ -471,6 +489,16 @@ namespace CrowdDefense.UI
             var joystick = VirtualJoystick.Instance;
             _suppressEvents = true;
             _joystickToggle.value = joystick != null && joystick.Enabled;
+            _suppressEvents = false;
+        }
+
+        private void SyncHeroAutoAttack()
+        {
+            if (_heroAutoAttackToggle == null) return;
+            var hero = Systems.LevelRunner.Instance?.Hero;
+            bool val = hero != null ? hero.AutoAttack : PlayerPrefs.GetInt("hero_auto_attack_v1", 1) != 0;
+            _suppressEvents = true;
+            _heroAutoAttackToggle.value = val;
             _suppressEvents = false;
         }
 

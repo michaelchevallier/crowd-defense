@@ -533,7 +533,43 @@ namespace CrowdDefense.Entities
 
         public void Cast(int slotIndex)
         {
+            if (slotIndex == 0 && !_autoAttack) TryManualFire();
             if (slotIndex == 2) TryUlt();
+        }
+
+        private void TryManualFire()
+        {
+            if (cfg == null || _running || ChannelingPill || _cooldown > 0f) return;
+
+            float range2 = cfg.Range * RangeMul;
+            range2 *= range2;
+            var myPos = transform.position;
+
+            Enemy? target = null;
+            float bestDist2 = range2 + 1f;
+
+            if (WaveManager.Instance != null)
+            {
+                var active = WaveManager.Instance.ActiveEnemies;
+                for (int i = 0; i < active.Count; i++)
+                {
+                    var e = active[i];
+                    if (e == null || e.IsDead) continue;
+                    float d2 = (e.transform.position - myPos).sqrMagnitude;
+                    if (d2 < range2 && d2 < bestDist2) { bestDist2 = d2; target = e; }
+                }
+            }
+
+            if (target == null) return;
+
+            Vector3 toTarget = target.transform.position - myPos;
+            toTarget.y = 0f;
+            if (toTarget != Vector3.zero) transform.rotation = Quaternion.LookRotation(toTarget);
+
+            float rateMs = cfg.FireRateMs * FireRateMul;
+            _cooldown = rateMs / 1000f;
+            Fire(target);
+            if (Lightning) LightningStrike(target);
         }
 
         /// <summary>
@@ -721,7 +757,7 @@ namespace CrowdDefense.Entities
                 if (toTarget != Vector3.zero)
                     transform.rotation = Quaternion.LookRotation(toTarget);
 
-                if (_cooldown <= 0f)
+                if (_autoAttack && _cooldown <= 0f)
                 {
                     float rateMs = cfg.FireRateMs * FireRateMul;
                     _cooldown = rateMs / 1000f;
