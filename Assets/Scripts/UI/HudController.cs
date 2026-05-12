@@ -166,37 +166,37 @@ namespace CrowdDefense.UI
         {
             ["apocalypse"] = new[]
             {
-                "Witness the end of all things...",
-                "Your defenses are but dust before me.",
-                "I have destroyed a thousand worlds.",
-                "Even the stars tremble at my approach.",
-                "Kneel... or be unmade.",
+                "Contemplez la fin de toutes choses...",
+                "Vos défenses ne sont que poussière face à moi.",
+                "J'ai détruit mille mondes.",
+                "Même les étoiles tremblent à mon approche.",
+                "Agenouillez-vous... ou soyez anéantis.",
             },
             ["titan"] = new[]
             {
-                "Your towers are toys.",
-                "I have walked since before your kind existed.",
-                "Size is power. You have neither.",
-                "Every wall falls. Every time.",
-                "You cannot stop what you cannot understand.",
+                "Vos tours sont des jouets.",
+                "J'existe depuis avant votre espèce.",
+                "La taille, c'est le pouvoir. Vous n'avez ni l'un ni l'autre.",
+                "Chaque mur finit par tomber. Toujours.",
+                "On ne peut arrêter ce que l'on ne comprend pas.",
             },
             ["phantom"] = new[]
             {
-                "You cannot see what you cannot fear.",
-                "I move between your bullets like smoke.",
-                "Death wears many faces. This is mine.",
-                "Your eyes deceive you... as always.",
-                "Shadows do not bleed.",
+                "On ne peut voir ce que l'on ne craint pas.",
+                "Je glisse entre vos projectiles comme de la fumée.",
+                "La mort a bien des visages. Voici le mien.",
+                "Vos yeux vous trompent... comme toujours.",
+                "Les ombres ne saignent pas.",
             },
         };
 
         private static readonly string[] DefaultBossQuotes =
         {
-            "Behold... the destroyer of worlds!",
-            "Your resistance ends here.",
-            "I have come to collect what is owed.",
-            "Fear is the only weapon you have left.",
-            "Every castle falls in time.",
+            "Voici... le destructeur de mondes !",
+            "Votre résistance s'arrête ici.",
+            "Je suis venu réclamer ce qui m'est dû.",
+            "La peur est votre dernière arme.",
+            "Chaque château finit par tomber.",
         };
 
         // Level start banner (full-width top, slide-down 0.4s / hold 1.0s / slide-up 0.4s = 1.8s total)
@@ -791,10 +791,10 @@ namespace CrowdDefense.UI
             var goGold = HexColor(1f, 0.84f, 0f);
             var steps = new (string text, float pitch, float vol, Color color)[]
             {
-                ("3",   0.70f, 1.0f, Color.white),
-                ("2",   0.85f, 1.0f, Color.white),
-                ("1",   1.00f, 1.0f, Color.white),
-                ("GO!", 1.30f, 1.2f, goGold),
+                ("3",         0.70f, 1.0f, Color.white),
+                ("2",         0.85f, 1.0f, Color.white),
+                ("1",         1.00f, 1.0f, Color.white),
+                ("PARTEZ !", 1.30f, 1.2f, goGold),
             };
             foreach (var (text, pitch, vol, color) in steps)
             {
@@ -807,8 +807,8 @@ namespace CrowdDefense.UI
                     else
                         ac.PlayPitched("ui_click", vol, pitch);
                 }
-                // On GO! fire a particle burst at screen center (world pos via camera)
-                if (text == "GO!")
+                // On PARTEZ ! fire a particle burst at screen center (world pos via camera)
+                if (text == "PARTEZ !")
                 {
                     var cam = Camera.main;
                     var vfx = VfxPool.Instance;
@@ -1869,7 +1869,7 @@ namespace CrowdDefense.UI
             else if (_bossLastPhaseCrossed < 3 && ratio < 0.25f)
             {
                 _bossLastPhaseCrossed = 3;
-                TriggerBossPhaseToast("PHASE 4 - ENRAGE");
+                TriggerBossPhaseToast("PHASE 4 - ENRAGÉ");
             }
         }
 
@@ -2007,8 +2007,8 @@ namespace CrowdDefense.UI
             if (_waveIntroBanner == null || _waveIntroLabel == null) return;
 
             _waveIntroLabel.text = string.IsNullOrEmpty(enemyName)
-                ? $"Wave {waveNum}"
-                : $"Wave {waveNum}  •  {enemyName}";
+                ? $"Vague {waveNum}"
+                : $"Vague {waveNum}  •  {enemyName}";
 
             if (_waveIntroCoroutine != null) StopCoroutine(_waveIntroCoroutine);
             _waveIntroCoroutine = StartCoroutine(WaveIntroBannerCoroutine());
@@ -2345,7 +2345,7 @@ namespace CrowdDefense.UI
                 _waveSummaryCoroutine = null;
             }
 
-            if (_waveSummaryTitle  != null) _waveSummaryTitle.text  = $"WAVE {waveNum} CLEAR";
+            if (_waveSummaryTitle  != null) _waveSummaryTitle.text  = $"VAGUE {waveNum} TERMINÉE";
             if (_waveSummaryGold   != null) _waveSummaryGold.text   = $"Or gagné : +{goldEarned}";
             if (_waveSummaryKills  != null) _waveSummaryKills.text  = $"Ennemis : {killCount}";
             if (_waveSummaryTime   != null) _waveSummaryTime.text   = $"Temps : {TimeFormatter.FormatMMSS(elapsedSeconds)}";
@@ -2480,7 +2480,7 @@ namespace CrowdDefense.UI
         {
             if (_perfectStreakBanner == null || _perfectStreakLabel == null) return;
 
-            _perfectStreakLabel.text = $"PERFECT WAVE STREAK x{streak}";
+            _perfectStreakLabel.text = $"ENCHAÎNEMENT PARFAIT x{streak}";
             _perfectStreakBanner.style.display = DisplayStyle.Flex;
             _perfectStreakBanner.style.opacity = 0f;
             _perfectStreakBanner.style.scale   = new Scale(new Vector3(0.8f, 0.8f, 1f));
@@ -2928,7 +2928,7 @@ namespace CrowdDefense.UI
             string name = DifficultySelector.DifficultyName(diff);
             Color bg    = DifficultySelector.DifficultyColor(diff);
 
-            _difficultyBadge = new Label($"DIFFICULTE: {name}");
+            _difficultyBadge = new Label($"DIFFICULTÉ : {name}");
             _difficultyBadge.style.position   = Position.Absolute;
             _difficultyBadge.style.top        = 8;
             _difficultyBadge.style.right      = 8;

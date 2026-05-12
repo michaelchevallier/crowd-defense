@@ -7,7 +7,7 @@ namespace CrowdDefense.UI
 {
     public static class L
     {
-        private static string _locale = "en";
+        private static string _locale = "fr";
 
         public static event Action? OnLocaleChanged;
 

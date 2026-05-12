@@ -49,7 +49,7 @@ namespace CrowdDefense.UI
         private bool _largeText;
         private int _fontSize = 1; // 0=S 1=M 2=L
         private bool _highContrast;
-        private string _locale = "en";
+        private string _locale = "fr";
         private int _gameSpeed = 1;
         private int _difficulty = 1; // 0=Easy 1=Normal 2=Hard
         private bool _autoPauseOnBlur = true;
@@ -212,6 +212,7 @@ namespace CrowdDefense.UI
         protected override void OnAwakeSingleton()
         {
             Load();
+            L.SetLocale(_locale);
             ApplyAudio();
             ApplyQuality();
             ApplyBloom();
@@ -264,7 +265,7 @@ namespace CrowdDefense.UI
             _largeText = PlayerPrefs.GetInt(KLargeText, 0) == 1;
             _fontSize = PlayerPrefs.GetInt(KFontSize, 1);
             _highContrast = PlayerPrefs.GetInt(KHighContrast, 0) == 1;
-            _locale = PlayerPrefs.GetString(KLocale, "en");
+            _locale = PlayerPrefs.GetString(KLocale, "fr");
             _gameSpeed = PlayerPrefs.GetInt(KGameSpeed, 1);
             _difficulty = PlayerPrefs.GetInt(KDifficulty, PlayerPrefs.GetInt("difficulty_v1", 1));
             _autoPauseOnBlur = PlayerPrefs.GetInt(KAutoPauseOnBlur, 1) == 1;
