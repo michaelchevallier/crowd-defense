@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W6-3
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world6-3
-  displayName: "Apocalypse \u2014 Le Seigneur de Guerre"
+  displayName: "Apocalypse — Le Seigneur de Guerre"
   theme: apocalypse
   world: 6
   level: 3
@@ -31,7 +31,6 @@ MonoBehaviour:
   startCoins: 264
   overrideCastleHP: 1
   castleHPOverride: 300
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W6-2
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world6-2
-  displayName: "Apocalypse \u2014 Ruines Fumantes"
+  displayName: "Apocalypse — Ruines Fumantes"
   theme: apocalypse
   world: 6
   level: 2
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 255
   overrideCastleHP: 1
   castleHPOverride: 290
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

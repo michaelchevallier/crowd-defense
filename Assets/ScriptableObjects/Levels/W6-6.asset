@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W6-6
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world6-6
-  displayName: "Apocalypse \u2014 Le Corsaire Maudit"
+  displayName: "Apocalypse — Le Corsaire Maudit"
   theme: apocalypse
   world: 6
   level: 6
@@ -31,7 +31,6 @@ MonoBehaviour:
   startCoins: 289
   overrideCastleHP: 1
   castleHPOverride: 360
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

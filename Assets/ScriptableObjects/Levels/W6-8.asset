@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W6-8
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world6-8
-  displayName: "Apocalypse \u2014 Confrontation Finale"
+  displayName: "Apocalypse — Confrontation Finale"
   theme: apocalypse
   world: 6
   level: 8
@@ -33,7 +33,6 @@ MonoBehaviour:
   startCoins: 298
   overrideCastleHP: 1
   castleHPOverride: 400
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

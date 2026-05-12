@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W6-4
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world6-4
-  displayName: "Apocalypse \u2014 Mar\u00e9e de Fer"
+  displayName: "Apocalypse — Marée de Fer"
   theme: apocalypse
   world: 6
   level: 4
@@ -31,7 +31,6 @@ MonoBehaviour:
   startCoins: 272
   overrideCastleHP: 1
   castleHPOverride: 320
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

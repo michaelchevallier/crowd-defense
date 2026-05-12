@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W6-5
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world6-5
-  displayName: "Apocalypse \u2014 Flancs D\u00e9couverts"
+  displayName: "Apocalypse — Flancs Découverts"
   theme: apocalypse
   world: 6
   level: 5
@@ -31,7 +31,6 @@ MonoBehaviour:
   startCoins: 281
   overrideCastleHP: 1
   castleHPOverride: 340
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

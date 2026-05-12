@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W6-7
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world6-7
-  displayName: "Apocalypse \u2014 Avant le Cr\u00e9puscule"
+  displayName: "Apocalypse — Avant le Crépuscule"
   theme: apocalypse
   world: 6
   level: 7
@@ -32,7 +32,6 @@ MonoBehaviour:
   startCoins: 298
   overrideCastleHP: 1
   castleHPOverride: 380
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

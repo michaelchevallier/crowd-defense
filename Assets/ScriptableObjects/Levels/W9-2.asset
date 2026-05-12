@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 238
   overrideCastleHP: 1
   castleHPOverride: 260
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

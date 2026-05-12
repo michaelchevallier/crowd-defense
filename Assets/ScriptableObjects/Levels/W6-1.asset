@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W6-1
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world6-1
-  displayName: "Apocalypse \u2014 Cendres Chaudes"
+  displayName: "Apocalypse — Cendres Chaudes"
   theme: apocalypse
   world: 6
   level: 1
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 247
   overrideCastleHP: 1
   castleHPOverride: 280
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:
