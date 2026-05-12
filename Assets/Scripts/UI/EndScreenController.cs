@@ -322,9 +322,9 @@ namespace CrowdDefense.UI
             }
         }
 
-        // Panel is 600x560. Chart anchor spans x:[0.04,0.96] y:[0.31,0.42].
-        private const float ChartW = 600f * (0.96f - 0.04f);
-        private const float ChartH = 560f * (0.42f - 0.31f);
+        // Panel is 600x560. Chart anchor spans x:[0.04,0.96] y:[0.42,0.53].
+        private const float ChartW = 600f * (0.96f - 0.04f);   // 552
+        private const float ChartH = 560f * (0.53f - 0.42f);   // 61.6
 
         private void RefreshKillsChart()
         {
