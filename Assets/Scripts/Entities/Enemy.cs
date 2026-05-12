@@ -271,23 +271,34 @@ namespace CrowdDefense.Entities
             Color tint;
             Color emission;
 
-            switch (phase)
+            // Look up tint from AssetVariants.BossTints registry; fallback to legacy hard-coded values.
+            string bossId = cfg?.Id ?? "";
+            if (AssetVariants.BossTints.TryGetValue((bossId, phase), out Color registryTint))
             {
-                case 2:
-                    scaleMul = 1.15f;
-                    tint     = new Color(0.7f, 0.3f, 0.3f);
-                    emission = new Color(0.3f, 0f, 0f);
-                    break;
-                case 3:
-                    scaleMul = 1.3f;
-                    tint     = new Color(1f, 0.4f, 0.1f);
-                    emission = new Color(0.8f, 0.24f, 0f);
-                    break;
-                default: // phase 1 — restore defaults
-                    scaleMul = 1f;
-                    tint     = baseColor;
-                    emission = Color.black;
-                    break;
+                scaleMul = phase switch { 2 => 1.15f, 3 => 1.3f, 4 => 1.4f, _ => 1f };
+                tint     = registryTint;
+                emission = phase >= 2 ? registryTint * 0.35f : Color.black;
+            }
+            else
+            {
+                switch (phase)
+                {
+                    case 2:
+                        scaleMul = 1.15f;
+                        tint     = new Color(0.7f, 0.3f, 0.3f);
+                        emission = new Color(0.3f, 0f, 0f);
+                        break;
+                    case 3:
+                        scaleMul = 1.3f;
+                        tint     = new Color(1f, 0.4f, 0.1f);
+                        emission = new Color(0.8f, 0.24f, 0f);
+                        break;
+                    default: // phase 1 — restore defaults
+                        scaleMul = 1f;
+                        tint     = baseColor;
+                        emission = Color.black;
+                        break;
+                }
             }
 
             // Scale applied relative to base (includes elite mul already on localScale at this point)

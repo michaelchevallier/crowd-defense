@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using CrowdDefense.Data;
 using UnityEngine;
 
@@ -8,6 +9,32 @@ namespace CrowdDefense.Visual
     // Traverse tous les MeshRenderer du subtree et applique la palette de la SkinDef.
     public static class AssetVariants
     {
+        // ── Boss phase tints ────────────────────────────────────────────────────
+        // Key: (bossId, phase). Spec V5: apocalypse phases 1-4.
+        public static readonly Dictionary<(string bossId, int phase), Color> BossTints = new()
+        {
+            [("apocalypse", 1)] = new Color(0.9f, 0.2f, 0.2f),
+            [("apocalypse", 2)] = new Color(1f, 0.5f, 0.1f),
+            [("apocalypse", 3)] = new Color(1f, 0.9f, 0.2f),
+            [("apocalypse", 4)] = Color.white,
+        };
+
+        // ── Castle HP threshold tints ───────────────────────────────────────────
+        // Per theme: [≥80%, ≥50%, ≥20%, <20%]. "default" fallback used when themeId not found.
+        public static readonly Dictionary<string, Color[]> CastleTintsByThemeOrDefault = new()
+        {
+            ["default"] = new[] { new Color(0.3f, 0.7f, 1f), Color.yellow, new Color(1f, 0.5f, 0f), Color.red },
+        };
+
+        public static Color GetCastleTint(float hpPct, string themeId = "default")
+        {
+            var tints = CastleTintsByThemeOrDefault.TryGetValue(themeId, out var t) ? t : CastleTintsByThemeOrDefault["default"];
+            if (hpPct >= 0.8f) return tints[0];
+            if (hpPct >= 0.5f) return tints[1];
+            if (hpPct >= 0.2f) return tints[2];
+            return tints[3];
+        }
+
         // Palette thème — correspondance couleur/emissive par monde.
         // Référence: THEME_TINTS in AssetVariants.js
         private static readonly (Color body, Color emissive, float emissiveIntensity)[] ThemePalette =

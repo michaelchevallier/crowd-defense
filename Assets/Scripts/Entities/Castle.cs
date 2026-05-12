@@ -283,18 +283,24 @@ namespace CrowdDefense.Entities
             if (next != null) _meshFilter.sharedMesh = next;
         }
 
-        // Red tint on all child renderers when HP < 30 %
+        // HP-threshold tint via AssetVariants.GetCastleTint (spec V5 CASTLE_TINTS).
+        // Uses MaterialPropertyBlock to avoid material instancing.
+        private static readonly int _baseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int _colorId     = Shader.PropertyToID("_Color");
+        private MaterialPropertyBlock? _castleMpb;
+
         private void UpdateTint()
         {
             float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
-            if (ratio >= 0.3f) return;
-            var red = new Color(1f, 0f, 0f);
+            Color tint  = AssetVariants.GetCastleTint(ratio);
+            _castleMpb ??= new MaterialPropertyBlock();
+            _castleMpb.SetColor(_baseColorId, tint);
+            _castleMpb.SetColor(_colorId,     tint);
+
             foreach (var rend in GetComponentsInChildren<Renderer>())
             {
-                // Skip HP bar quads
                 if (rend.gameObject.name.StartsWith("CastleHPBar")) continue;
-                foreach (var mat in rend.materials)
-                    mat.color = Color.Lerp(mat.color, red, 0.3f);
+                rend.SetPropertyBlock(_castleMpb);
             }
         }
 
