@@ -103,8 +103,7 @@ namespace CrowdDefense.Systems
             if (_activeChest == null) return;
             var hero = LevelRunner.Instance?.Hero;
             if (hero == null) return;
-            float dist = Vector3.Distance(hero.transform.position, _activeChest.transform.position);
-            if (dist < AutoPickupRadius) AutoCollect();
+            if ((hero.transform.position - _activeChest.transform.position).sqrMagnitude < AutoPickupRadius * AutoPickupRadius) AutoCollect();
         }
 
         // Called by ChestClickReceiver

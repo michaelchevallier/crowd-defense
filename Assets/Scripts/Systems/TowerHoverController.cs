@@ -34,14 +34,14 @@ namespace CrowdDefense.Systems
 
             Vector3 hitPos = ray.GetPoint(dist);
             Tower? found = null;
-            float bestDist = 1.5f;
+            float bestDist = 1.5f * 1.5f; // sqrMagnitude comparison
             var towers = PlacementController.Instance.PlacedTowers;
             for (int i = 0; i < towers.Count; i++)
             {
                 var t = towers[i];
                 if (t == null) continue;
-                float d = (t.transform.position - hitPos).magnitude;
-                if (d < bestDist) { bestDist = d; found = t; }
+                float sqrD = (t.transform.position - hitPos).sqrMagnitude;
+                if (sqrD < bestDist) { bestDist = sqrD; found = t; }
             }
 
             if (found == hoveredTower) return;
@@ -72,7 +72,7 @@ namespace CrowdDefense.Systems
                 var t = towers[i];
                 if (t == null || t == source) continue;
                 if (t.Config?.Id != sourceId) continue;
-                if (Vector3.Distance(t.transform.position, sourcePos) > 2f) continue;
+                if ((t.transform.position - sourcePos).sqrMagnitude > 2f * 2f) continue;
                 t.ShowClusterHighlight(true);
             }
         }
