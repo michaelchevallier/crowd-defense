@@ -50,7 +50,7 @@ namespace CrowdDefense.Systems
     [Serializable]
     public class ProgressData
     {
-        public int Version = 2;
+        public int Version = 3;
         public List<string> clearedLevels = new();
         public List<string> unlockedLevels = new() { "world1-1" };
         public List<LevelStars> levelStars = new();
@@ -131,6 +131,31 @@ namespace CrowdDefense.Systems
 
     public static class SaveSystem
     {
+        private const int CurrentSaveVersion = 3;
+
+        private static ProgressData MigrateIfNeeded(ProgressData data)
+        {
+            if (data.Version == CurrentSaveVersion) return data;
+            if (data.Version == 2) return MigrateV2ToV3(data);
+            if (data.Version == 1) return MigrateV2ToV3(MigrateV1ToV2(data));
+            throw new InvalidOperationException("Unknown save version: " + data.Version);
+        }
+
+        // v1→v2 was key-based (PlayerPrefs rename), no field-level migration needed
+        private static ProgressData MigrateV1ToV2(ProgressData v1)
+        {
+            v1.Version = 2;
+            return v1;
+        }
+
+        private static ProgressData MigrateV2ToV3(ProgressData v2)
+        {
+            v2.heroFavorites        ??= new List<string>();
+            v2.endlessLeaderboardV3 ??= new List<EndlessRunRecord>();
+            v2.Version = 3;
+            return v2;
+        }
+
         private const string KEY_PREFIX        = "cd_progression_v2_slot";
         private const string RUN_KEY_PREFIX    = "cd_runstate_v2_slot";
         private const string RUNMAP_KEY_PREFIX = "cd_runmap_v2_slot";
@@ -283,7 +308,10 @@ namespace CrowdDefense.Systems
             }
             try
             {
-                _cachedSlots[s] = JsonUtility.FromJson<ProgressData>(json) ?? new ProgressData();
+                var loaded = JsonUtility.FromJson<ProgressData>(json) ?? new ProgressData();
+                bool needsMigration = loaded.Version != CurrentSaveVersion;
+                _cachedSlots[s] = MigrateIfNeeded(loaded);
+                if (needsMigration) Save();
             }
             catch (Exception ex)
             {
