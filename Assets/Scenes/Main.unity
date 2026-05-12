@@ -2317,6 +2317,148 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: add92cf2ebc9a44ff81528e5c824f9fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Visual.JuiceFX
+--- !u!1 &2000000001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2000000002}
+  - component: {fileID: 2000000003}
+  m_Layer: 0
+  m_Name: SkyboxController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2000000002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000000001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ef61924db7b39d6b60c0b42264c719db, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Visual.SkyboxController
+  skyboxPlaine: {fileID: 2100000, guid: 3a4c0e00f165085d1192ab5ff0f9c96b, type: 2}
+  skyboxForet: {fileID: 2100000, guid: 6361012ada938e1ca055928b39ed2d1c, type: 2}
+  skyboxDesert: {fileID: 2100000, guid: 7ce0dad5962f1e22f10f6d7bda3fa7b0, type: 2}
+  skyboxVolcan: {fileID: 2100000, guid: ff7c4e187edbfdb052dc28390d394468, type: 2}
+  skyboxApocalypse: {fileID: 2100000, guid: 46514ca551059a670bec0b05cae9f5d6, type: 2}
+  skyboxEspace: {fileID: 2100000, guid: 0b9e89812a46592f36e13f5c9d57fbf2, type: 2}
+  skyboxSubmarin: {fileID: 2100000, guid: dfe717a22094a73c0cd0db2d8740f2dd, type: 2}
+  skyboxMedieval: {fileID: 2100000, guid: 3f07d3591ce26b4d83168e22f304e883, type: 2}
+  skyboxCyberpunk: {fileID: 2100000, guid: 16b89952ca51fc1e095e9c21a720f35e, type: 2}
+  skyboxFoire: {fileID: 2100000, guid: b84a3824017c43b5cee977a3f86cd45b, type: 2}
+--- !u!1 &2000000004
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2000000005}
+  - component: {fileID: 2000000006}
+  m_Layer: 0
+  m_Name: CastleSkinController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2000000005
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000000004}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000000004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec5c73fc2ba9340ec87dc369553d7257, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Visual.CastleSkinController
+--- !u!1 &2000000007
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2000000008}
+  - component: {fileID: 2000000009}
+  m_Layer: 0
+  m_Name: SceneDecor
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2000000008
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000000007}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2000000009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2000000007}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80070ecc80b42456f8dc7dff07c990fa, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.SceneDecorController
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2327,3 +2469,6 @@ SceneRoots:
   - {fileID: 462220667}
   - {fileID: 1881706281}
   - {fileID: 750000011}
+  - {fileID: 2000000002}
+  - {fileID: 2000000005}
+  - {fileID: 2000000008}
