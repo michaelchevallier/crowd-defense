@@ -40,6 +40,14 @@ namespace CrowdDefense.Entities
         // Shake throttle — avoid spam when hit repeatedly within 100 ms
         private float         _lastShakeTime = -1f;
 
+        // Overrun detection — 3+ hits in 3 s triggers red vignette + alert, 10 s cooldown
+        private const int   OverrunHitThreshold  = 3;
+        private const float OverrunWindowSec      = 3f;
+        private const float OverrunCooldownSec    = 10f;
+        private const float OverrunVignetteDurSec = 0.5f;
+        private readonly System.Collections.Generic.Queue<float> _hitTimestamps = new();
+        private float _overrunCooldownUntil = -1f;
+
         // Visual state
         private bool          _smokeActive;
         private Coroutine?    _smokeCoroutine;
@@ -52,6 +60,9 @@ namespace CrowdDefense.Entities
         private ParticleSystem? _smokePs;
         private ParticleSystem? _firePs;
         private bool            _firePsSpawned;
+
+        // Ambient candle flames — 4 corner PS, always on while alive
+        private readonly ParticleSystem?[] _candlePs = new ParticleSystem?[4];
 
         // HP bar (world-space canvas child)
         private Transform?    _hpBarFill;
@@ -84,6 +95,7 @@ namespace CrowdDefense.Entities
 
             BuildHpBar();
             ApplyWorldDecoration(world);
+            SpawnCandleParticles();
             OnHPChanged?.Invoke(HP, HPMax);
         }
 
@@ -249,6 +261,7 @@ namespace CrowdDefense.Entities
 
             AudioController.Instance?.Play3D("castle_hit", transform.position);
             VfxPool.Instance?.SpawnHitFlash(transform);
+            CheckOverrun();
 
             // Siege debris — brown chunks burst when HP < 30 % and hit is significant
             if (actualDmg > 5 && HPMax > 0 && (float)HP / HPMax < 0.3f)
@@ -533,6 +546,27 @@ namespace CrowdDefense.Entities
                     UnityEngine.Random.Range(-0.6f, 0.6f));
                 VfxPool.Instance?.SpawnImpact(transform.position + offset, brown);
             }
+        }
+
+        // Overrun: 3+ hits in 3 s window → red vignette 0.5 s + "overrun_alert" audio, 10 s cooldown
+        private void CheckOverrun()
+        {
+            float now = Time.time;
+
+            // Purge timestamps outside the rolling window
+            while (_hitTimestamps.Count > 0 && now - _hitTimestamps.Peek() > OverrunWindowSec)
+                _hitTimestamps.Dequeue();
+
+            _hitTimestamps.Enqueue(now);
+
+            if (_hitTimestamps.Count < OverrunHitThreshold) return;
+            if (now < _overrunCooldownUntil) return;
+
+            _overrunCooldownUntil = now + OverrunCooldownSec;
+            _hitTimestamps.Clear();
+
+            JuiceFX.Instance?.Flash(new Color(1f, 0f, 0f, 0.55f), Mathf.RoundToInt(OverrunVignetteDurSec * 1000f));
+            AudioController.Instance?.Play("overrun_alert", 1f);
         }
 
         // Smoke below 50 %, danger light below 20 %
