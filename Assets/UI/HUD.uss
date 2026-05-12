@@ -246,6 +246,28 @@
     background-color: rgba(100, 100, 100, 0.7);
 }
 
+/* === Responsive breakpoints (runtime class toggle in HudController) === */
+
+/* Mobile (< 720px) */
+.hud-mobile .perk-row {
+    flex-direction: column;
+}
+
+.hud-mobile .tower-toolbar {
+    width: 96px;
+}
+
+/* Tablet (720-1279px) — default layout, no overrides needed */
+
+/* Desktop (>= 1280px) */
+.hud-desktop .tower-toolbar {
+    width: 200px;
+}
+
+.hud-desktop .perk-row {
+    flex-direction: row;
+}
+
 /* === Wave launch button (D1-02) === */
 .wave-launch-btn {
     position: absolute;

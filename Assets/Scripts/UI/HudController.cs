@@ -77,6 +77,9 @@ namespace CrowdDefense.UI
         private float _waveStartTime = -1f;
         private float _lastWaveTickTime = -1f;
 
+        // Responsive breakpoints
+        private int _lastWidth = -1;
+
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
 
@@ -294,6 +297,12 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
+            if (Screen.width != _lastWidth)
+            {
+                _lastWidth = Screen.width;
+                ApplyResponsiveClass();
+            }
+
             // Resolve WaveManager race condition: if not subscribed in Start(), try again here
             if (!_waveManagerSubscribed && WaveManager.Instance != null)
             {
@@ -622,6 +631,17 @@ namespace CrowdDefense.UI
                 if (waveLaunchBtn != null)  SetVisible(waveLaunchBtn,  false);
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
             }
+        }
+
+        private void ApplyResponsiveClass()
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            root.RemoveFromClassList("hud-mobile");
+            root.RemoveFromClassList("hud-tablet");
+            root.RemoveFromClassList("hud-desktop");
+            if (Screen.width < 720) root.AddToClassList("hud-mobile");
+            else if (Screen.width < 1280) root.AddToClassList("hud-tablet");
+            else root.AddToClassList("hud-desktop");
         }
 
         private static void ApplyDeviceClasses(VisualElement root)
