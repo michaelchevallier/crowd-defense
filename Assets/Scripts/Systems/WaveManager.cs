@@ -418,6 +418,12 @@ namespace CrowdDefense.Systems
             return levelData.Waves[nextWaveToStart];
         }
 
+        public WaveDef? GetWaveDef(int idx)
+        {
+            if (levelData == null || idx < 0 || idx >= levelData.Waves.Count) return null;
+            return levelData.Waves[idx];
+        }
+
         public void NotifyEnemyDied(Enemy e)
         {
             activeEnemies.Remove(e);
