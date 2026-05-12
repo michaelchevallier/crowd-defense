@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using UnityEngine;
 using CrowdDefense.Data;
 
@@ -14,6 +15,8 @@ namespace CrowdDefense.Systems
     //   node2 = -10% fire rate interval (faster)
     public static class TowerResearchTree
     {
+        // Fired after a node is successfully unlocked: (towerId, nodeIndex)
+        public static event Action<string, int>? OnResearchUnlocked;
         public const int NodeCount = 3;
 
         private const string PrefPrefix = "cd.research.";
@@ -50,6 +53,7 @@ namespace CrowdDefense.Systems
             if (!TalentSystem.TrySpendPoint()) return false;
             PlayerPrefs.SetInt(Key(towerId, node), 1);
             PlayerPrefs.Save();
+            OnResearchUnlocked?.Invoke(towerId, node);
             return true;
         }
 

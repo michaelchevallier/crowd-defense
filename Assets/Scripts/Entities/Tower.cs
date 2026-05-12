@@ -6,6 +6,7 @@ using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using CrowdDefense.Visual;
+using CrowdDefense.UI;
 
 namespace CrowdDefense.Entities
 {
@@ -363,6 +364,8 @@ namespace CrowdDefense.Entities
             UpgradeBranch = TowerBranch.None;
             CumulativeCost = type.Cost;
             _l3TintApplied = false;
+            TowerResearchTree.OnResearchUnlocked -= OnResearchUnlocked;
+            TowerResearchTree.OnResearchUnlocked += OnResearchUnlocked;
             Achievements.Instance?.TrackEvent("tower_placed", 1);
             // L1 damage scale : Phaser LEVEL_SCALE[0] = 0.75
             _levelDmgScale = BalanceConfig.Get().LevelScale.Length > 0
@@ -1976,11 +1979,24 @@ namespace CrowdDefense.Entities
             }
         }
 
+        // Fired by TowerResearchTree.TryUnlock for any tower type.
+        // Only the first live tower of the matching type plays the fanfare.
+        private void OnResearchUnlocked(string towerId, int node)
+        {
+            if (cfg == null || cfg.Id != towerId) return;
+            var pos = transform.position + Vector3.up * 1.5f;
+            VfxPool.Instance?.SpawnConfetti(pos, 1.2f, new Color(0.4f, 0.8f, 1f));
+            Toast.Show("Recherche debloquee", $"{cfg.DisplayName} — {TowerResearchTree.NodeLabel(node)}", 3500, null, ToastType.Achievement);
+            // Unsubscribe so only one tower fires the fanfare per unlock event.
+            TowerResearchTree.OnResearchUnlocked -= OnResearchUnlocked;
+        }
+
         private void OnDestroy()
         {
             target?.SetTargetedBy(false);
             var settings = CrowdDefense.UI.SettingsRegistry.Instance;
             if (settings != null) settings.OnSettingsChanged -= RefreshDamageIconVisibility;
+            TowerResearchTree.OnResearchUnlocked -= OnResearchUnlocked;
             if (_glowPulseRoutine != null) StopCoroutine(_glowPulseRoutine);
             if (_glowRing != null) Destroy(_glowRing);
         }
