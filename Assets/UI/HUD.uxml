@@ -358,6 +358,12 @@
             <ui:Label name="hover-card-stats" class="hover-card-stats" text="" />
         </ui:VisualElement>
 
+        <!-- Tower stats card (TowerStatsCard — hover on placed tower, fade-in 0.2s) -->
+        <ui:VisualElement name="tower-stats-card" class="tower-stats-card tower-stats-card--hidden" picking-mode="Ignore">
+            <ui:Label name="stats-card-header" class="stats-card-header" text="" />
+            <ui:Label name="stats-card-body" class="stats-card-body" text="" />
+        </ui:VisualElement>
+
         <!-- L3 Branch Choice modal (UpgradeMenuController — signature towers only) -->
         <ui:VisualElement name="l3-choice-panel" class="l3-choice-panel hidden">
             <ui:VisualElement class="l3-choice-box">

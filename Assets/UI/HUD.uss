@@ -1852,6 +1852,45 @@
     white-space: normal;
 }
 
+/* === Tower stats card (placed-tower hover, opacity fade-in 0.2s) === */
+.tower-stats-card {
+    position: absolute;
+    background-color: rgba(10, 14, 20, 0.93);
+    border-color: rgba(140, 170, 240, 0.55);
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 190px;
+    max-width: 270px;
+    flex-direction: column;
+    pointer-events: none;
+    opacity: 1;
+    transition-property: opacity;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out;
+}
+
+.tower-stats-card--hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.stats-card-header {
+    color: rgb(220, 230, 255);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 6px;
+    white-space: normal;
+}
+
+.stats-card-body {
+    color: rgba(200, 215, 235, 0.9);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+}
+
 /* Runtime debug profile overlay (F3) */
 .profile {
     position: absolute;

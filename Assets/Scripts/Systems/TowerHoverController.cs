@@ -8,6 +8,8 @@ namespace CrowdDefense.Systems
 {
     public class TowerHoverController : MonoSingleton<TowerHoverController>
     {
+        public Tower? HoveredTower => hoveredTower;
+
         private Camera? cam;
         private Tower? hoveredTower;
         private readonly Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
