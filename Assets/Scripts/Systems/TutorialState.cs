@@ -130,7 +130,8 @@ namespace CrowdDefense.Systems
 
         private void Update()
         {
-            if (Hero.Instance != null) CheckProximity(Hero.Instance.transform.position);
+            var hero = Object.FindFirstObjectByType<Hero>();
+            if (hero != null) CheckProximity(hero.transform.position);
         }
 
         private void CheckProximity(Vector3 playerPos)

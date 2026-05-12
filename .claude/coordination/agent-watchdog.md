@@ -1,35 +1,37 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 04:00
+## 2026-05-12 04:14
 
 ### Snapshot
 
-- Actifs (<8 min) : 1 (smoke test post-deploy)
-- Stalled (8-30 min) : 10 (b* anciennes sessions, inertes)
+- Actifs (<8 min) : 1 (current watchdog scan)
+- Stalled (8-30 min) : 6 (b* anciennes sessions, inertes)
 - Worktrees : 16
-- Unity batch : **DONE** (PID 93091 terminated, Builds/WebGL/index.html exists)
-- Lockfile : absent (clean)
-- Build log silence : 292s (Unity quit successfully)
+- Unity batch : **AMBIGU** (Lockfile present, mais ps grep ne montre pas PID — peut-être r3 dead encore not cleaned, ou r4 démarre)
 
-### 🚨 Key event detected
+### 🚨 Build state
 
-**Build SUCCESS missed by Monitor** : grep filter ne matchait pas "[Package Manager] Server process was shutdown". Tundra build success confirmé (final 0.68s, 15 items updated). 
+- **r2 FAIL** : CS0246 PathTiles + VfxPool — fixé `0d77bb8`
+- **r3 FAIL** : 3 errors (Hero.Instance, CrowdDefense.Editor namespace, MemoryExtensions.Contains StringComparison) — bug-fixer en flight `a0cc47166076bd43a`
+- **r4** : pas encore lancé par l'agent — log n'existe pas
 
-**Deploy LIVE** : commit `2a6efa5` sur gh-pages (MD5 309da8c... verified).
-URL : https://michaelchevallier.github.io/crowd-defense/v6/?cb=2a6efa5
+### Sonnet en flight
+
+- aafa0326f308a7f56 (RunContext + Audio split + MetaUpgrade enum polish)
+- a0cc47166076bd43a (Fix r3 3 errors + relaunch r4)
 
 ### Killed
 
-0. Stale Monitor `bbissrkip` stoppé (missed event, useless).
+0. Aucun. Bug-fixer en travail.
 
 ### Stalled outputs
 
-10 b* anciennes sessions, inertes — pas d'agents Sonnet vivants.
+b6fvxpo8v (29m), b7qv8x35l (27m), bbissrkip (25m), bcfdtqjt1 (27m), blq3tmdg2 (27m), bo011oebo (22m). Tous artifacts inertes.
 
 ### Notes
 
-Smoke test post-deploy en flight pour valider shader fix appliqué. Next watchdog : check smoke verdict + dispatch suite.
+Lockfile présent sans PID → cleanup nécessaire si bug-fixer pas auto-clean. Watchdog next iter check : r4 log existe + Unity batch actif.
 
 ### Stdout
 
-`Actifs:1 Stalled:10 Killed:1Monitor Worktrees:16 UnityBatch:DONE Deploy:2a6efa5 LIVE`
+`Actifs:1 Stalled:6 Killed:0 Worktrees:16 UnityBatch:AMBIGU LockfileStale BuildStatus:r3-failed-r4-pending`
