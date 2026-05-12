@@ -58,46 +58,17 @@ namespace CrowdDefense.UI
         // BluePill button ref
         private Button? bluePillBtn;
 
-        // Perk badges — sibling component wired after UIDocument root is ready
-        private HudPerkBadges? _perkBadges;
-
-        // Sidebar showing all active perks of the current run
-        private CurrentRunPerksPanel? _perksPanel;
-
         // Castle HP regen icon — flashes 200 ms on +HP
         private Label? _castleRegenIcon;
         private int    _lastKnownCastleHP = -1;
         private Coroutine? _regenIconCoroutine;
 
-        // Heartbeat — audio loop + red vignette + icon pulse when castle HP < 25 %
-        private Coroutine? _heartbeatCoroutine;
-        private bool       _heartbeatActive;
-        private static readonly Color _hpIconDefaultColor = new Color(0.86f, 0.20f, 0.13f);
-        private static readonly Color _hpIconPulseColor   = Color.red;
-
         // Bank pill (D1-01 §3.5)
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
 
-        // Gold rolling animation state
-        private float _displayedGold = 0f;
-        private int   _targetGold    = 0;
-        private Coroutine? _goldFlashCoroutine;
-        private int   _lastTickedGoldMultiple = 0;
-        private static readonly Color _goldFlashColor    = new Color(1f, 0.92f, 0.2f);
-        private static readonly Color _goldDefaultColor  = new Color(0.95f, 0.95f, 0.95f);
-
-        // Coin icon rotation animation
-        private Label?  _coinIcon;
-        private float   _coinIconAngle    = 0f;   // degrees, Y-axis simulated via scaleX
-        private float   _coinIconSpeedMul = 1f;   // 3× on gain, decays to 1× over 0.5 s
-        private float   _coinIconBoostTimer = 0f;
-        private float   _coinIconPunchTimer = 0f;
-        private const float CoinBaseDegreesPerSec = 72f;  // 360°/5 s
-        private const float CoinBoostMul          = 3f;
-        private const float CoinBoostDuration     = 0.5f;
-        private const float CoinPunchDuration     = 0.2f;
-        private const float CoinPunchPeak         = 1.15f;
+        // Combo multiplier badge (top-right, persistent while combo active)
+        private Label? _comboMultiplierLabel;
 
         // Wave progress dots (top-center)
         private VisualElement? _waveDotsRow;
@@ -106,17 +77,6 @@ namespace CrowdDefense.UI
         // Wave preview panel (between waves — enemy roster chips)
         private VisualElement? _wavePreviewPanel;
         private VisualElement? _wavePreviewRoster;
-
-        // Enemy intel popup (hover on chip in wave preview)
-        private VisualElement? _enemyIntelPopup;
-        private Label?         _enemyIntelName;
-        private Label?         _enemyIntelStats;
-        private Coroutine?     _enemyIntelFadeCoroutine;
-        private static readonly Color _kIntelGold  = new Color(1f, 0.80f, 0.20f);
-        private static readonly Color _kIntelWhite = new Color(0.92f, 0.92f, 0.92f);
-
-        // Combo multiplier badge (top-right, persistent while combo active)
-        private Label? _comboMultiplierLabel;
 
         // Boss intro banner (bottom-center, 4s then fade)
         private VisualElement? _bossIntroBanner;
@@ -167,20 +127,6 @@ namespace CrowdDefense.UI
         private Label?         _bossNameLabel;
         private Label?         _bossHpPctLabel;
         private Enemy?         _trackedBoss;
-        // Smooth fill lerp — no alloc per frame
-        private float          _bossHpFillCurrent   = 1f;
-        private float          _bossHpFillTarget    = 1f;
-        // Phase markers (25 / 50 / 75 %) — built once, stored for show/hide
-        private VisualElement? _bossPhaseMarker25;
-        private VisualElement? _bossPhaseMarker50;
-        private VisualElement? _bossPhaseMarker75;
-        // Phase toast ("PHASE 2" flash label)
-        private Label?         _bossPhaseToastLabel;
-        private Coroutine?     _bossPhaseToastCoroutine;
-        // Track last phase crossed to avoid re-triggering
-        private int            _bossLastPhaseCrossed = 0; // 0=none, 1=75%, 2=50%, 3=25%
-        // Slide-out coroutine on boss death
-        private Coroutine?     _bossHpSlideOutCoroutine;
 
         // Keyboard hints footer label
         private Label? keyboardHintsLabel;
@@ -226,7 +172,6 @@ namespace CrowdDefense.UI
         private void BindUiRefs()
         {
             _doctrineCtrl = GetComponent<DoctrineController>();
-            _perkBadges = GetComponent<HudPerkBadges>();
 
             // Auto-add UI sibling controllers that share the HUD UIDocument (each Qs its own
             // elements out of HUD.uxml). Idempotent: only added when not already present.
@@ -236,7 +181,6 @@ namespace CrowdDefense.UI
             EnsureSibling<TowerToolbarController>();
             EnsureSibling<TowerTooltipController>();
             EnsureSibling<SynergyHudController>();
-            EnsureSibling<SynergyHudPanel>();
             EnsureSibling<FloatingPopupController>();
             EnsureSibling<RadialMenuController>();
             EnsureSibling<TowerSelectMenuController>();
@@ -246,16 +190,13 @@ namespace CrowdDefense.UI
             EnsureSibling<HelpOverlayController>();
             EnsureSibling<QuickSaveHotkey>();
             EnsureSibling<KeyBindingsPanel>();
-            EnsureSibling<CurrentRunPerksPanel>();
             EnsureSibling<RuntimeProfilePanel>();
             EnsureSibling<AchievementToastController>();
-            _perksPanel = GetComponent<CurrentRunPerksPanel>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;
             ApplyDeviceClasses(root);
             goldLabel = root.Q<Label>("gold-label");
             goldValue = root.Q<Label>("gold-value");
-            _coinIcon = root.Q<Label>("coin-icon");
             waveLabel = root.Q<Label>("wave-label");
             waveValue = root.Q<Label>("wave-value");
             hpLabel = root.Q<Label>("hp-label");
@@ -320,9 +261,8 @@ namespace CrowdDefense.UI
             BuildBossIntroBanner(root);
             BuildWaveProgressDots(root);
             BindWavePreview(root);
-            BuildEnemyIntelPopup(root);
             // Force initial values so top-bar is never blank at runtime
-            if (goldValue != null) goldValue.text = "0";
+            if (goldValue != null) goldValue.text = "$0";
             if (waveValue != null) waveValue.text = "—";
             if (hpValue != null) hpValue.text = "—";
         }
@@ -349,8 +289,6 @@ namespace CrowdDefense.UI
 
         private void SubscribeSystems()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
-
             ApplyLocalizedTexts();
             L.OnLocaleChanged += ApplyLocalizedTexts;
 
@@ -392,13 +330,6 @@ namespace CrowdDefense.UI
             EventManager.Instance?.Subscribe<ComboResetEvent>(HandleComboReset);
             EventManager.Instance?.Subscribe<EnemySpawnedEvent>(HandleEnemySpawned);
             Enemy.OnDeathStatic += HandleEnemyDeath;
-
-            // Wire perk badges + sidebar once hero is known
-            var hero = LevelRunner.Instance?.Hero;
-            if (_perkBadges != null && hero != null)
-                _perkBadges.Init(root, hero);
-            if (_perksPanel != null && hero != null)
-                _perksPanel.Init(root, hero);
         }
 
         private void OnDestroy()
@@ -416,7 +347,6 @@ namespace CrowdDefense.UI
             }
             if (Castle.Instance != null)
                 Castle.Instance.OnHPChanged -= OnCastleHPChanged;
-            if (_heartbeatActive) StopHeartbeat();
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.OnWaveStart -= OnWaveStart;
@@ -486,7 +416,6 @@ namespace CrowdDefense.UI
                 OnBreakStateChanged();
             }
 
-
             // N hotkey — debounced, shared with click (Q7)
             if (Input.GetKeyDown(KeyCode.N))
                 TryLaunchWave();
@@ -499,9 +428,6 @@ namespace CrowdDefense.UI
             TickWaveTime();
             UpdateHeroPanel();
             TickBossHpBar();
-            TickGoldRoll();
-            TickCoinIcon();
-            TickCastleHpPulse();
         }
 
         // Per-frame smooth countdown on the pill badge and main label during the skip bonus window
@@ -528,31 +454,6 @@ namespace CrowdDefense.UI
             if (waveLaunchLabel != null)
                 waveLaunchLabel.text = L.Get("hud.wave_launch_countdown", wm.NextWaveDisplayNumber, secondsLeft);
 
-            // Pulse red warning + tick audio when < 5 s remain
-            if (secondsLeft < 5.0f)
-            {
-                // Tick audio on each integer second boundary (no allocation per frame)
-                if (_prevSkipRemaining >= 0f && Mathf.Floor(_prevSkipRemaining) != Mathf.Floor(secondsLeft))
-                    PlayCountdownTick();
-
-                // Scale pulse on the pill text label (no allocation: StyleScale reuses struct)
-                float s = 1.0f + Mathf.Sin(Time.time * 8f) * 0.1f;
-                if (waveLaunchPillText != null)
-                {
-                    waveLaunchPillText.style.color = new StyleColor(_skipTimerWarningColor);
-                    waveLaunchPillText.style.scale = new StyleScale(new Vector3(s, s, 1f));
-                }
-                if (waveLaunchLabel != null)
-                {
-                    waveLaunchLabel.style.color = new StyleColor(_skipTimerWarningColor);
-                    waveLaunchLabel.style.scale = new StyleScale(new Vector3(s, s, 1f));
-                }
-            }
-            else
-            {
-                ResetSkipTimerWarning();
-            }
-
             _prevSkipRemaining = secondsLeft;
         }
 
@@ -568,18 +469,6 @@ namespace CrowdDefense.UI
                 waveLaunchLabel.style.color = new StyleColor(_skipTimerDefaultColor);
                 waveLaunchLabel.style.scale = new StyleScale(new Vector3(1f, 1f, 1f));
             }
-        }
-
-        private static void PlayCountdownTick()
-        {
-            var ac = AudioController.Instance;
-            if (ac == null) return;
-            try
-            {
-                if (ac.GetClip("countdown_tick") != null)
-                    ac.Play("countdown_tick", 0.5f);
-            }
-            catch { /* clip absent — skip silently */ }
         }
 
         private void TickWaveTime()
@@ -832,126 +721,7 @@ namespace CrowdDefense.UI
 
         private void OnGoldChanged(int gold)
         {
-            int delta = gold - _targetGold;
-            _targetGold = gold;
-
-            if (delta < 0)
-            {
-                // Loss — update display instantly so the player sees the deduction right away
-                _displayedGold = gold;
-                _lastTickedGoldMultiple = (gold / 50) * 50;
-                if (goldValue != null) goldValue.text = gold.ToString();
-                return;
-            }
-
-            if (delta < 5)
-            {
-                // Micro-change — skip rolling, instant update
-                _displayedGold = gold;
-                _lastTickedGoldMultiple = (gold / 50) * 50;
-                if (goldValue != null) goldValue.text = gold.ToString();
-                return;
-            }
-
-            // Gold gain >= 5: rolling animation + flash
-            if (goldValue != null)
-            {
-                if (_goldFlashCoroutine != null) StopCoroutine(_goldFlashCoroutine);
-                _goldFlashCoroutine = StartCoroutine(FlashGoldLabel());
-            }
-
-            // Coin icon: speed boost 3× for 0.5 s + scale punch
-            _coinIconSpeedMul  = CoinBoostMul;
-            _coinIconBoostTimer = CoinBoostDuration;
-            _coinIconPunchTimer = CoinPunchDuration;
-        }
-
-        private void TickGoldRoll()
-        {
-            if (goldValue == null) return;
-            if (_displayedGold == _targetGold) return;
-
-            float prevDisplayed = _displayedGold;
-            float speed = Mathf.Max(50f, Mathf.Abs(_targetGold - _displayedGold) * 5f);
-            _displayedGold = Mathf.MoveTowards(_displayedGold, _targetGold, speed * Time.deltaTime);
-
-            int displayInt = (int)_displayedGold;
-            goldValue.text = displayInt.ToString();
-
-            // Coin tick every time we cross a multiple of 50 during upward roll
-            if (_displayedGold > prevDisplayed)
-            {
-                int prevMultiple = ((int)prevDisplayed / 50) * 50;
-                int currMultiple = (displayInt / 50) * 50;
-                if (currMultiple > prevMultiple && currMultiple > _lastTickedGoldMultiple)
-                {
-                    _lastTickedGoldMultiple = currMultiple;
-                    PlayCoinTick();
-                }
-            }
-        }
-
-        private void TickCoinIcon()
-        {
-            if (_coinIcon == null) return;
-
-            float dt = Time.unscaledDeltaTime;
-
-            // Speed boost decay
-            if (_coinIconBoostTimer > 0f)
-            {
-                _coinIconBoostTimer -= dt;
-                if (_coinIconBoostTimer <= 0f)
-                {
-                    _coinIconBoostTimer = 0f;
-                    _coinIconSpeedMul = 1f;
-                }
-            }
-
-            // Advance angle
-            _coinIconAngle = (_coinIconAngle + CoinBaseDegreesPerSec * _coinIconSpeedMul * dt) % 360f;
-
-            // Map angle to cosine for Y-axis flip illusion via scaleX: cos(angle)
-            float cosA = Mathf.Cos(_coinIconAngle * Mathf.Deg2Rad);
-
-            // Scale punch decay (0 → peak → 0 over CoinPunchDuration using sine arch)
-            float uniformScale;
-            if (_coinIconPunchTimer > 0f)
-            {
-                _coinIconPunchTimer -= dt;
-                if (_coinIconPunchTimer < 0f) _coinIconPunchTimer = 0f;
-                float t = 1f - _coinIconPunchTimer / CoinPunchDuration; // 0→1 over duration
-                float punchMag = Mathf.Sin(t * Mathf.PI);               // arch 0→1→0
-                uniformScale = 1f + (CoinPunchPeak - 1f) * punchMag;
-            }
-            else
-            {
-                uniformScale = 1f;
-            }
-
-            _coinIcon.style.scale = new StyleScale(new Scale(new Vector3(cosA * uniformScale, uniformScale, 1f)));
-        }
-
-        private static void PlayCoinTick()
-        {
-            var ac = AudioController.Instance;
-            if (ac == null) return;
-            try
-            {
-                if (ac.GetClip("coin_tick") != null)
-                    ac.PlayPitched("coin_tick", 0.3f, UnityEngine.Random.Range(0.95f, 1.05f));
-            }
-            catch { /* clip absent — skip silently */ }
-        }
-
-        private System.Collections.IEnumerator FlashGoldLabel()
-        {
-            if (goldValue == null) yield break;
-            goldValue.style.color = new StyleColor(_goldFlashColor);
-            yield return new WaitForSecondsRealtime(0.2f);
-            if (goldValue != null)
-                goldValue.style.color = new StyleColor(_goldDefaultColor);
-            _goldFlashCoroutine = null;
+            if (goldValue != null) goldValue.text = $"${gold}";
         }
 
         // gain=0 means bank reset (castle damaged); gain>0 means interest ticked
@@ -1109,7 +879,6 @@ namespace CrowdDefense.UI
                 if (waveLaunchBtn != null)  SetVisible(waveLaunchBtn,  false);
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
                 if (_wavePreviewPanel != null) _wavePreviewPanel.AddToClassList("hidden");
-                if (_enemyIntelPopup != null)  _enemyIntelPopup.style.display = DisplayStyle.None;
             }
         }
 
@@ -1122,69 +891,6 @@ namespace CrowdDefense.UI
                 _regenIconCoroutine = StartCoroutine(FlashRegenIcon());
             }
             _lastKnownCastleHP = hp;
-
-            bool danger = hpMax > 0 && (float)hp / hpMax < 0.25f && hp > 0;
-            if (danger && !_heartbeatActive)
-                StartHeartbeat();
-            else if (!danger && _heartbeatActive)
-                StopHeartbeat();
-        }
-
-        private void StartHeartbeat()
-        {
-            _heartbeatActive = true;
-            var root = GetComponent<UIDocument>().rootVisualElement;
-            root.AddToClassList("castle-danger-vignette");
-            if (_heartbeatCoroutine != null) StopCoroutine(_heartbeatCoroutine);
-            _heartbeatCoroutine = StartCoroutine(HeartbeatLoop());
-        }
-
-        private void TickCastleHpPulse()
-        {
-            if (hpBarFill == null || !_heartbeatActive) return;
-            float sin  = Mathf.Sin(Time.time * 4f);
-            float s    = 1.0f + sin * 0.15f;
-            float t    = sin * 0.5f + 0.5f;
-            var color  = Color.Lerp(_hpIconDefaultColor, _hpIconPulseColor, t);
-            hpBarFill.style.scale           = new StyleScale(new Vector3(s, s, 1f));
-            hpBarFill.style.backgroundColor = new StyleColor(color);
-        }
-
-        private void StopHeartbeat()
-        {
-            _heartbeatActive = false;
-            var root = GetComponent<UIDocument>().rootVisualElement;
-            root.RemoveFromClassList("castle-danger-vignette");
-            if (_heartbeatCoroutine != null)
-            {
-                StopCoroutine(_heartbeatCoroutine);
-                _heartbeatCoroutine = null;
-            }
-            // Reset hpBarFill visual state — OnHPChanged will restore correct color/width
-            if (hpBarFill != null)
-                hpBarFill.style.scale = new StyleScale(new Vector3(1f, 1f, 1f));
-        }
-
-        private System.Collections.IEnumerator HeartbeatLoop()
-        {
-            while (_heartbeatActive)
-            {
-                float ratio = Castle.Instance != null && Castle.Instance.HPMax > 0
-                    ? (float)Castle.Instance.HP / Castle.Instance.HPMax
-                    : 0.25f;
-                // Pitch rises as HP drops: 1.0 at 25 % → 1.5 at 0 %
-                float intensity = Mathf.Clamp01(1f - ratio / 0.25f);
-                float pitch = 1f + intensity * 0.5f;
-                var ac = AudioController.Instance;
-                if (ac != null)
-                {
-                    string clip = ac.GetClip("heartbeat") != null ? "heartbeat" : "castle_hit";
-                    ac.PlayPitched(clip, 0.6f * (0.7f + intensity * 0.3f), pitch);
-                }
-                // Faster beat interval as HP drops: 1.2s at 25 % → 0.55s near 0 %
-                float interval = Mathf.Lerp(1.2f, 0.55f, intensity);
-                yield return new WaitForSecondsRealtime(interval);
-            }
         }
 
         private System.Collections.IEnumerator FlashRegenIcon()
@@ -1227,11 +933,11 @@ namespace CrowdDefense.UI
             else el.AddToClassList("hidden");
         }
 
-        // ── Boss HP bar ───────────────────────────────────────────────────────
+        // ── Boss HP bar (minimal: name + fill, no phase markers) ──────────────
 
         private void BuildBossHpBar(VisualElement root)
         {
-            // Outer container — top-center, 600 px wide, column layout
+            // Outer container — top-center, column layout
             _bossHpRoot = new VisualElement { name = "boss-hp-root" };
             _bossHpRoot.style.position         = Position.Absolute;
             _bossHpRoot.style.top              = new Length(80f, LengthUnit.Pixel);
@@ -1242,25 +948,19 @@ namespace CrowdDefense.UI
             _bossHpRoot.style.width            = new Length(100f, LengthUnit.Percent);
             _bossHpRoot.AddToClassList("hidden");
 
-            // Boss name — gold, 24 px, bold
+            // Boss name — gold, 20 px, bold
             _bossNameLabel = new Label { name = "boss-name-label", text = "" };
             _bossNameLabel.style.color         = new StyleColor(new Color(1f, 0.84f, 0f));
-            _bossNameLabel.style.fontSize      = new Length(24f, LengthUnit.Pixel);
+            _bossNameLabel.style.fontSize      = new Length(20f, LengthUnit.Pixel);
             _bossNameLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
             _bossNameLabel.style.unityTextAlign = TextAnchor.UpperCenter;
             _bossNameLabel.style.marginBottom  = new Length(4f, LengthUnit.Pixel);
-            _bossNameLabel.style.textShadow    = new TextShadow
-            {
-                color      = new Color(0f, 0f, 0f, 0.9f),
-                offset     = new Vector2(1f, 2f),
-                blurRadius = 5f,
-            };
             _bossHpRoot.Add(_bossNameLabel);
 
-            // Track wrapper — 600 px × 50 px, dark bg + gold border
+            // Track wrapper — 400 px × 30 px
             var trackWrapper = new VisualElement { name = "boss-hp-track-wrapper" };
-            trackWrapper.style.width            = new Length(600f, LengthUnit.Pixel);
-            trackWrapper.style.height           = new Length(50f,  LengthUnit.Pixel);
+            trackWrapper.style.width  = new Length(400f, LengthUnit.Pixel);
+            trackWrapper.style.height = new Length(30f,  LengthUnit.Pixel);
             _bossHpRoot.Add(trackWrapper);
 
             var track = new VisualElement { name = "boss-hp-track" };
@@ -1275,30 +975,19 @@ namespace CrowdDefense.UI
             track.style.borderTopColor  = track.style.borderBottomColor =
             track.style.borderLeftColor = track.style.borderRightColor = new StyleColor(new Color(0.85f, 0.65f, 0.1f));
             track.style.borderTopLeftRadius    = track.style.borderTopRightRadius    =
-            track.style.borderBottomLeftRadius = track.style.borderBottomRightRadius = new Length(5f, LengthUnit.Pixel);
+            track.style.borderBottomLeftRadius = track.style.borderBottomRightRadius = new Length(4f, LengthUnit.Pixel);
             track.style.overflow        = Overflow.Hidden;
             trackWrapper.Add(track);
 
-            // Red gradient fill — width driven each frame by TickBossHpBar
+            // Red fill
             _bossHpFill = new VisualElement { name = "boss-hp-fill" };
-            _bossHpFill.style.position      = Position.Absolute;
-            _bossHpFill.style.left          = 0f;
-            _bossHpFill.style.top           = 0f;
-            _bossHpFill.style.bottom        = 0f;
-            _bossHpFill.style.width         = new Length(100f, LengthUnit.Percent);
-            // Deep red to bright red gradient effect via pseudo-overlay on top
+            _bossHpFill.style.position        = Position.Absolute;
+            _bossHpFill.style.left            = 0f;
+            _bossHpFill.style.top             = 0f;
+            _bossHpFill.style.bottom          = 0f;
+            _bossHpFill.style.width           = new Length(100f, LengthUnit.Percent);
             _bossHpFill.style.backgroundColor = new StyleColor(new Color(0.78f, 0.08f, 0.06f));
             track.Add(_bossHpFill);
-
-            // Lighter red highlight strip (top 40%) for gradient illusion — no alloc
-            var fillHighlight = new VisualElement { name = "boss-hp-fill-highlight" };
-            fillHighlight.style.position        = Position.Absolute;
-            fillHighlight.style.left            = 0f;
-            fillHighlight.style.top             = 0f;
-            fillHighlight.style.right           = 0f;
-            fillHighlight.style.height          = new Length(40f, LengthUnit.Percent);
-            fillHighlight.style.backgroundColor = new StyleColor(new Color(1f, 0.22f, 0.18f, 0.35f));
-            _bossHpFill.Add(fillHighlight);
 
             // HP percentage label — centered on track
             _bossHpPctLabel = new Label { name = "boss-hp-pct", text = "100%" };
@@ -1307,53 +996,9 @@ namespace CrowdDefense.UI
             _bossHpPctLabel.style.top               = new Length(50f, LengthUnit.Percent);
             _bossHpPctLabel.style.translate         = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
             _bossHpPctLabel.style.color             = new StyleColor(Color.white);
-            _bossHpPctLabel.style.fontSize          = new Length(15f, LengthUnit.Pixel);
+            _bossHpPctLabel.style.fontSize          = new Length(13f, LengthUnit.Pixel);
             _bossHpPctLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
-            _bossHpPctLabel.style.textShadow        = new TextShadow
-            {
-                color      = new Color(0f, 0f, 0f, 0.85f),
-                offset     = new Vector2(0f, 1f),
-                blurRadius = 3f,
-            };
             track.Add(_bossHpPctLabel);
-
-            // Phase marker helper — builds a white vertical line at x%
-            VisualElement MakeMarker(string name, float xPct)
-            {
-                var m = new VisualElement { name = name };
-                m.style.position  = Position.Absolute;
-                m.style.top       = 0f;
-                m.style.bottom    = 0f;
-                m.style.width     = new Length(2f, LengthUnit.Pixel);
-                m.style.left      = new Length(xPct, LengthUnit.Percent);
-                m.style.backgroundColor = new StyleColor(new Color(1f, 1f, 1f, 0.6f));
-                return m;
-            }
-            _bossPhaseMarker75 = MakeMarker("boss-phase-75", 75f);
-            _bossPhaseMarker50 = MakeMarker("boss-phase-50", 50f);
-            _bossPhaseMarker25 = MakeMarker("boss-phase-25", 25f);
-            track.Add(_bossPhaseMarker75);
-            track.Add(_bossPhaseMarker50);
-            track.Add(_bossPhaseMarker25);
-
-            // Phase toast label — top of bar, hidden until phase crossed
-            _bossPhaseToastLabel = new Label { name = "boss-phase-toast", text = "" };
-            _bossPhaseToastLabel.style.position           = Position.Absolute;
-            _bossPhaseToastLabel.style.left               = new Length(50f, LengthUnit.Percent);
-            _bossPhaseToastLabel.style.top                = new Length(-32f, LengthUnit.Pixel);
-            _bossPhaseToastLabel.style.translate          = new Translate(new Length(-50f, LengthUnit.Percent), Length.Auto());
-            _bossPhaseToastLabel.style.color              = new StyleColor(new Color(1f, 0.84f, 0f));
-            _bossPhaseToastLabel.style.fontSize           = new Length(20f, LengthUnit.Pixel);
-            _bossPhaseToastLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
-            _bossPhaseToastLabel.style.unityTextAlign     = TextAnchor.MiddleCenter;
-            _bossPhaseToastLabel.style.textShadow         = new TextShadow
-            {
-                color      = new Color(0.6f, 0f, 0f, 0.9f),
-                offset     = new Vector2(1f, 2f),
-                blurRadius = 6f,
-            };
-            _bossPhaseToastLabel.style.opacity = 0f;
-            trackWrapper.Add(_bossPhaseToastLabel);
 
             root.Add(_bossHpRoot);
         }
@@ -1362,23 +1007,11 @@ namespace CrowdDefense.UI
         {
             if (evt.Enemy == null) return;
             if (evt.Enemy.Config == null || !evt.Enemy.Config.IsBoss) return;
-            _trackedBoss         = evt.Enemy;
-            _bossHpFillCurrent   = 1f;
-            _bossHpFillTarget    = 1f;
-            _bossLastPhaseCrossed = 0;
-            if (_bossHpSlideOutCoroutine != null)
-            {
-                StopCoroutine(_bossHpSlideOutCoroutine);
-                _bossHpSlideOutCoroutine = null;
-            }
+            _trackedBoss = evt.Enemy;
             if (_bossNameLabel != null)
                 _bossNameLabel.text = (evt.Enemy.Config.DisplayName ?? evt.Enemy.Config.Id ?? "BOSS").ToUpper();
             if (_bossHpRoot != null)
-            {
-                _bossHpRoot.style.top     = new Length(80f, LengthUnit.Pixel);
-                _bossHpRoot.style.opacity = 1f;
                 SetVisible(_bossHpRoot, true);
-            }
             ShowBossIntroBanner(evt.Enemy.Config.Id);
         }
 
@@ -1464,7 +1097,7 @@ namespace CrowdDefense.UI
         {
             if (!isBoss || enemy != _trackedBoss) return;
             _trackedBoss = null;
-            StartBossHpSlideOut();
+            if (_bossHpRoot != null) SetVisible(_bossHpRoot, false);
         }
 
         private void TickBossHpBar()
@@ -1473,112 +1106,13 @@ namespace CrowdDefense.UI
             if (_trackedBoss.IsDead)
             {
                 _trackedBoss = null;
-                StartBossHpSlideOut();
+                if (_bossHpRoot != null) SetVisible(_bossHpRoot, false);
                 return;
             }
 
             float ratio = _trackedBoss.HpRatio;
-            _bossHpFillTarget = ratio;
-
-            // Smooth lerp — ~0.2s settle (12× per frame at 60 fps ≈ 5 frames)
-            _bossHpFillCurrent = Mathf.Lerp(_bossHpFillCurrent, _bossHpFillTarget, Time.deltaTime * 12f);
-
-            _bossHpFill.style.width = new Length(_bossHpFillCurrent * 100f, LengthUnit.Percent);
+            _bossHpFill.style.width = new Length(ratio * 100f, LengthUnit.Percent);
             _bossHpPctLabel.text = $"{Mathf.RoundToInt(ratio * 100f)}%";
-
-            // Dim phase markers when fill passes them
-            if (_bossPhaseMarker75 != null)
-                _bossPhaseMarker75.style.opacity = ratio < 0.75f ? 0.25f : 0.6f;
-            if (_bossPhaseMarker50 != null)
-                _bossPhaseMarker50.style.opacity = ratio < 0.50f ? 0.25f : 0.6f;
-            if (_bossPhaseMarker25 != null)
-                _bossPhaseMarker25.style.opacity = ratio < 0.25f ? 0.25f : 0.6f;
-
-            // Phase crossing detection — each threshold triggers once
-            // Phase 1 → 2 : cross 75%
-            if (_bossLastPhaseCrossed < 1 && ratio < 0.75f)
-            {
-                _bossLastPhaseCrossed = 1;
-                TriggerBossPhaseToast("PHASE 2");
-            }
-            // Phase 2 → 3 : cross 50%
-            else if (_bossLastPhaseCrossed < 2 && ratio < 0.50f)
-            {
-                _bossLastPhaseCrossed = 2;
-                TriggerBossPhaseToast("PHASE 3");
-            }
-            // Phase 3 → 4 : cross 25%
-            else if (_bossLastPhaseCrossed < 3 && ratio < 0.25f)
-            {
-                _bossLastPhaseCrossed = 3;
-                TriggerBossPhaseToast("PHASE 4 - ENRAGÉ");
-            }
-        }
-
-        private void StartBossHpSlideOut()
-        {
-            if (_bossHpSlideOutCoroutine != null) StopCoroutine(_bossHpSlideOutCoroutine);
-            _bossHpSlideOutCoroutine = StartCoroutine(BossHpSlideOutCoroutine());
-        }
-
-        private System.Collections.IEnumerator BossHpSlideOutCoroutine()
-        {
-            if (_bossHpRoot == null) yield break;
-            // Slide up + fade over 0.4 s
-            const float dur = 0.4f;
-            float elapsed = 0f;
-            float startTop = 80f;
-            float endTop   = -80f;
-            while (elapsed < dur)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.SmoothStep(0f, 1f, elapsed / dur);
-                float topPx = Mathf.Lerp(startTop, endTop, t);
-                _bossHpRoot.style.top     = new Length(topPx, LengthUnit.Pixel);
-                _bossHpRoot.style.opacity = 1f - t;
-                yield return null;
-            }
-            SetVisible(_bossHpRoot, false);
-            _bossHpRoot.style.top     = new Length(80f, LengthUnit.Pixel);
-            _bossHpRoot.style.opacity = 1f;
-            _bossLastPhaseCrossed = 0;
-            _bossHpFillCurrent    = 1f;
-            _bossHpSlideOutCoroutine = null;
-        }
-
-        private void TriggerBossPhaseToast(string text)
-        {
-            if (_bossPhaseToastLabel == null) return;
-            if (_bossPhaseToastCoroutine != null) StopCoroutine(_bossPhaseToastCoroutine);
-            _bossPhaseToastLabel.text = text;
-            _bossPhaseToastCoroutine = StartCoroutine(BossPhaseToastCoroutine());
-        }
-
-        private System.Collections.IEnumerator BossPhaseToastCoroutine()
-        {
-            if (_bossPhaseToastLabel == null) yield break;
-            // Fade in 0.15 s
-            const float fadeIn  = 0.15f;
-            const float hold    = 1.2f;
-            const float fadeOut = 0.5f;
-            float elapsed = 0f;
-            while (elapsed < fadeIn)
-            {
-                elapsed += Time.deltaTime;
-                _bossPhaseToastLabel.style.opacity = elapsed / fadeIn;
-                yield return null;
-            }
-            _bossPhaseToastLabel.style.opacity = 1f;
-            yield return new WaitForSeconds(hold);
-            elapsed = 0f;
-            while (elapsed < fadeOut)
-            {
-                elapsed += Time.deltaTime;
-                _bossPhaseToastLabel.style.opacity = 1f - elapsed / fadeOut;
-                yield return null;
-            }
-            _bossPhaseToastLabel.style.opacity = 0f;
-            _bossPhaseToastCoroutine = null;
         }
 
         private void BuildEnemyCountLabel(VisualElement root)
@@ -1654,7 +1188,6 @@ namespace CrowdDefense.UI
             var wm = WaveManager.Instance;
             if (wm == null || !wm.IsWaitingForPlayerStart)
             {
-                _wavePreviewPanel.RemoveFromClassList("hidden");
                 _wavePreviewPanel.AddToClassList("hidden");
                 return;
             }
@@ -1666,47 +1199,22 @@ namespace CrowdDefense.UI
                 return;
             }
 
-            // Clear old chips — remove all children without allocating
             _wavePreviewRoster.Clear();
 
             foreach (var entry in waveDef.Value.entries)
             {
                 if (entry.type == null) continue;
-                var et = entry.type;
-                var chip = BuildChip(et, entry.count);
+                var chip = BuildChip(entry.type, entry.count);
                 _wavePreviewRoster.Add(chip);
             }
 
             _wavePreviewPanel.RemoveFromClassList("hidden");
         }
 
-        // Threat tier border colors — evaluated once per card, no per-frame cost
-        private static readonly Color _kThreatLow    = new(0.4f,  0.9f,  0.4f,  1f);  // HP < 50
-        private static readonly Color _kThreatMedium = new(1f,    0.9f,  0.2f,  1f);  // HP 50-150
-        private static readonly Color _kThreatHigh   = new(1f,    0.3f,  0.2f,  1f);  // HP > 150
-        private static readonly Color _kThreatBoss   = new(1f,    0.85f, 0.2f,  1f);  // Boss
-
         private VisualElement BuildChip(EnemyType et, int count)
         {
             var card = new VisualElement();
             card.AddToClassList("wave-preview-chip");
-
-            // Border color by threat tier
-            Color border;
-            if (et.IsBoss || et.IsMidBoss)
-                border = _kThreatBoss;
-            else if (et.Hp < 50f)
-                border = _kThreatLow;
-            else if (et.Hp <= 150f)
-                border = _kThreatMedium;
-            else
-                border = _kThreatHigh;
-
-            var borderStyle = new StyleColor(border);
-            card.style.borderTopColor    = borderStyle;
-            card.style.borderBottomColor = borderStyle;
-            card.style.borderLeftColor   = borderStyle;
-            card.style.borderRightColor  = borderStyle;
 
             var icon = new Label { text = et.IconEmoji };
             icon.AddToClassList("wave-preview-chip-icon");
@@ -1721,133 +1229,7 @@ namespace CrowdDefense.UI
             card.Add(nameLabel);
             card.Add(countLabel);
 
-            card.RegisterCallback<MouseEnterEvent>(evt => ShowEnemyIntelPopup(et, evt.mousePosition));
-            card.RegisterCallback<MouseLeaveEvent>(_ => HideEnemyIntelPopup());
-
             return card;
         }
-
-        // ── Enemy intel popup ────────────────────────────────────────────────
-
-        private void BuildEnemyIntelPopup(VisualElement root)
-        {
-            _enemyIntelPopup = new VisualElement { name = "enemy-intel-popup" };
-            _enemyIntelPopup.style.position         = Position.Absolute;
-            _enemyIntelPopup.style.width            = new Length(300f, LengthUnit.Pixel);
-            _enemyIntelPopup.style.minHeight        = new Length(120f, LengthUnit.Pixel);
-            _enemyIntelPopup.style.backgroundColor  = new StyleColor(new Color(0f, 0f, 0f, 0.90f));
-            _enemyIntelPopup.style.borderTopWidth    = _enemyIntelPopup.style.borderBottomWidth =
-            _enemyIntelPopup.style.borderLeftWidth   = _enemyIntelPopup.style.borderRightWidth  = 2f;
-            var goldBorder = new StyleColor(_kIntelGold);
-            _enemyIntelPopup.style.borderTopColor    = _enemyIntelPopup.style.borderBottomColor =
-            _enemyIntelPopup.style.borderLeftColor   = _enemyIntelPopup.style.borderRightColor  = goldBorder;
-            _enemyIntelPopup.style.borderTopLeftRadius    = _enemyIntelPopup.style.borderTopRightRadius =
-            _enemyIntelPopup.style.borderBottomLeftRadius = _enemyIntelPopup.style.borderBottomRightRadius = new Length(8f, LengthUnit.Pixel);
-            _enemyIntelPopup.style.paddingTop    = new Length(12f, LengthUnit.Pixel);
-            _enemyIntelPopup.style.paddingBottom = new Length(12f, LengthUnit.Pixel);
-            _enemyIntelPopup.style.paddingLeft   = new Length(14f, LengthUnit.Pixel);
-            _enemyIntelPopup.style.paddingRight  = new Length(14f, LengthUnit.Pixel);
-            _enemyIntelPopup.style.display       = DisplayStyle.None;
-            _enemyIntelPopup.style.opacity       = 0f;
-            _enemyIntelPopup.pickingMode         = PickingMode.Ignore;
-
-            _enemyIntelName = new Label { name = "enemy-intel-name", text = "" };
-            _enemyIntelName.style.color                   = new StyleColor(_kIntelGold);
-            _enemyIntelName.style.fontSize                = new Length(18f, LengthUnit.Pixel);
-            _enemyIntelName.style.unityFontStyleAndWeight = FontStyle.Bold;
-            _enemyIntelName.style.marginBottom            = new Length(8f, LengthUnit.Pixel);
-            _enemyIntelPopup.Add(_enemyIntelName);
-
-            _enemyIntelStats = new Label { name = "enemy-intel-stats", text = "" };
-            _enemyIntelStats.style.color        = new StyleColor(_kIntelWhite);
-            _enemyIntelStats.style.fontSize     = new Length(13f, LengthUnit.Pixel);
-            _enemyIntelStats.style.whiteSpace   = WhiteSpace.Normal;
-            _enemyIntelPopup.Add(_enemyIntelStats);
-
-            root.Add(_enemyIntelPopup);
-        }
-
-        private void ShowEnemyIntelPopup(EnemyType et, Vector2 mousePos)
-        {
-            if (_enemyIntelPopup == null || Time.timeScale == 0f) return;
-
-            // Position: clamp so popup stays on screen
-            float px = mousePos.x + 20f;
-            float py = mousePos.y - 100f;
-            if (py < 4f) py = 4f;
-
-            _enemyIntelPopup.style.left = new Length(px, LengthUnit.Pixel);
-            _enemyIntelPopup.style.top  = new Length(py, LengthUnit.Pixel);
-
-            if (_enemyIntelName != null)
-                _enemyIntelName.text = string.IsNullOrEmpty(et.BossName) ? et.DisplayName : et.BossName;
-
-            if (_enemyIntelStats != null)
-                _enemyIntelStats.text = BuildIntelText(et);
-
-            if (_enemyIntelFadeCoroutine != null) StopCoroutine(_enemyIntelFadeCoroutine);
-            _enemyIntelPopup.style.display = DisplayStyle.Flex;
-            _enemyIntelFadeCoroutine = StartCoroutine(FadeEnemyIntel(0f, 1f, 0.15f));
-        }
-
-        private void HideEnemyIntelPopup()
-        {
-            if (_enemyIntelPopup == null) return;
-            if (_enemyIntelFadeCoroutine != null) StopCoroutine(_enemyIntelFadeCoroutine);
-            _enemyIntelFadeCoroutine = StartCoroutine(FadeEnemyIntelOut());
-        }
-
-        private static string BuildIntelText(EnemyType et)
-        {
-            var sb = new System.Text.StringBuilder(128);
-            sb.Append($"HP: {et.Hp:0}");
-            if (et.ShieldHP > 0f) sb.Append($"  Bouclier: {et.ShieldHP:0}");
-            sb.Append($"\nVitesse: {et.Speed:0.0}");
-            sb.Append($"\nDegats: {et.Damage}");
-            if (et.IsFlyer)    sb.Append("\nVolant");
-            if (et.IsStealth)  sb.Append("\nFurtif");
-            if (et.IsBrigand)  sb.Append("\nCharge");
-            if (et.IsCorsair)  sb.Append("\nCorsaire");
-            if (et.IsFiery)    sb.Append("\nFlammes");
-            if (et.SummonsMinions) sb.Append("\nInvocateur");
-            if (et.AoeBlastMs > 0) sb.Append("\nExplosion AoE");
-            if (et.AoEAttack)  sb.Append("\nAttaque de zone");
-            if (et.ImmuneToFlyerBonus) sb.Append("\nImmun bonus volant");
-            if (et.IsBoss || et.IsMidBoss || et.IsApocalypseBoss)
-                sb.Append("\nBOSS");
-            return sb.ToString();
-        }
-
-        private System.Collections.IEnumerator FadeEnemyIntel(float from, float to, float dur)
-        {
-            if (_enemyIntelPopup == null) yield break;
-            float t = 0f;
-            while (t < dur)
-            {
-                t += Time.unscaledDeltaTime;
-                _enemyIntelPopup.style.opacity = Mathf.Lerp(from, to, Mathf.Clamp01(t / dur));
-                yield return null;
-            }
-            _enemyIntelPopup.style.opacity = to;
-            _enemyIntelFadeCoroutine = null;
-        }
-
-        private System.Collections.IEnumerator FadeEnemyIntelOut()
-        {
-            if (_enemyIntelPopup == null) yield break;
-            float startOpacity = _enemyIntelPopup.resolvedStyle.opacity;
-            float t = 0f;
-            const float dur = 0.1f;
-            while (t < dur)
-            {
-                t += Time.unscaledDeltaTime;
-                _enemyIntelPopup.style.opacity = Mathf.Lerp(startOpacity, 0f, Mathf.Clamp01(t / dur));
-                yield return null;
-            }
-            _enemyIntelPopup.style.opacity = 0f;
-            _enemyIntelPopup.style.display = DisplayStyle.None;
-            _enemyIntelFadeCoroutine = null;
-        }
-
     }
 }
