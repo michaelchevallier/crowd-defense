@@ -31,8 +31,12 @@ namespace CrowdDefense.Visual
             SceneDecor.Instance?.SpawnForLevel(theme, level.Id, gridBounds);
 
             var pm = Systems.PathManager.Instance;
-            if (pm?.Grid != null)
-                PathTiles.Instance?.BuildForLevel(pm.Grid, theme);
+            if (pm?.Grid == null || PathTiles.Instance == null) return;
+
+            var grid = pm.Grid;
+            // Use first portal as BFS origin for stagger; fall back to (0,0) if none.
+            var spawnPos = grid.Portals.Count > 0 ? grid.Portals[0] : UnityEngine.Vector2Int.zero;
+            PathTiles.Instance.BuildForLevelProgressive(grid, theme, spawnPos);
         }
 
         private static void HandleLevelEnd()
