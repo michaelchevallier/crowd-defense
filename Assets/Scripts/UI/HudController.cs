@@ -135,6 +135,9 @@ namespace CrowdDefense.UI
         // Wave kill counter label
         private Label? waveKillCounter;
 
+        // Wave enemy count remaining label (top-left, "Enemies: 12 / 50")
+        private Label? _enemyCountLabel;
+
         // Wave elapsed time label
         private Label? waveTimeLabel;
         private float _waveStartTime = -1f;
@@ -248,6 +251,7 @@ namespace CrowdDefense.UI
             keyboardHintsLabel = root.Q<Label>("keyboard-hints-label");
             waveKillCounter = root.Q<Label>("wave-kill-counter");
             waveTimeLabel = root.Q<Label>("wave-time");
+            BuildEnemyCountLabel(root);
             bluePillBtn = root.Q<Button>("bluepill-btn");
             _comboMultiplierLabel = root.Q<Label>("combo-multiplier-label");
             _bankLabel = root.Q<Label>("bank-label");
@@ -719,6 +723,12 @@ namespace CrowdDefense.UI
                 waveKillCounter.text = "\U0001F480 0 / 0";
                 SetVisible(waveKillCounter, true);
             }
+            // Show enemy count remaining label
+            if (_enemyCountLabel != null)
+            {
+                _enemyCountLabel.text = "Ennemis: ... / ...";
+                SetVisible(_enemyCountLabel, true);
+            }
             // Reset and show wave timer
             _waveStartTime = Time.unscaledTime;
             _lastWaveTickTime = -1f;
@@ -733,6 +743,14 @@ namespace CrowdDefense.UI
         {
             if (waveKillCounter == null) return;
             waveKillCounter.text = $"\U0001F480 {kills} / {total}";
+            RefreshEnemyCount(kills, total);
+        }
+
+        private void RefreshEnemyCount(int kills, int total)
+        {
+            if (_enemyCountLabel == null) return;
+            int remaining = Mathf.Max(0, total - kills);
+            _enemyCountLabel.text = $"Ennemis: {remaining} / {total}";
         }
 
         private void OnBreakStateChanged()
@@ -750,6 +768,9 @@ namespace CrowdDefense.UI
                 _waveStartTime = -1f;
                 SetVisible(waveTimeLabel, false);
             }
+            // Hide enemy count label during break
+            if (waiting && _enemyCountLabel != null)
+                SetVisible(_enemyCountLabel, false);
 
             // Show/hide launch button
             if (waveLaunchBtn != null)
@@ -1023,6 +1044,34 @@ namespace CrowdDefense.UI
                     : new Color(0.88f, 0.15f, 0.1f);
             _bossHpFill.style.backgroundColor = new StyleColor(fill);
             _bossHpPctLabel.text = $"{Mathf.RoundToInt(ratio * 100f)}%";
+        }
+
+        private void BuildEnemyCountLabel(VisualElement root)
+        {
+            _enemyCountLabel = new Label { name = "wave-enemy-count", text = "" };
+            _enemyCountLabel.style.position    = Position.Absolute;
+            _enemyCountLabel.style.top         = new Length(8f,  LengthUnit.Pixel);
+            _enemyCountLabel.style.left        = new Length(8f,  LengthUnit.Pixel);
+            _enemyCountLabel.style.fontSize    = new Length(13f, LengthUnit.Pixel);
+            _enemyCountLabel.style.color       = new StyleColor(new Color(0.95f, 0.95f, 0.95f));
+            _enemyCountLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            _enemyCountLabel.style.textShadow  = new TextShadow
+            {
+                color      = new Color(0f, 0f, 0f, 0.75f),
+                offset     = new Vector2(1f, 1f),
+                blurRadius = 3f,
+            };
+            _enemyCountLabel.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.45f));
+            _enemyCountLabel.style.paddingTop    = new Length(3f, LengthUnit.Pixel);
+            _enemyCountLabel.style.paddingBottom = new Length(3f, LengthUnit.Pixel);
+            _enemyCountLabel.style.paddingLeft   = new Length(7f, LengthUnit.Pixel);
+            _enemyCountLabel.style.paddingRight  = new Length(7f, LengthUnit.Pixel);
+            _enemyCountLabel.style.borderTopLeftRadius    = new Length(4f, LengthUnit.Pixel);
+            _enemyCountLabel.style.borderTopRightRadius   = new Length(4f, LengthUnit.Pixel);
+            _enemyCountLabel.style.borderBottomLeftRadius = new Length(4f, LengthUnit.Pixel);
+            _enemyCountLabel.style.borderBottomRightRadius = new Length(4f, LengthUnit.Pixel);
+            _enemyCountLabel.AddToClassList("hidden");
+            root.Add(_enemyCountLabel);
         }
 
         private void EnsureSibling<T>() where T : Component
