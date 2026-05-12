@@ -2116,6 +2116,8 @@ namespace CrowdDefense.Entities
                 {
                     popup?.SpawnCrit(actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
                     JuiceFX.Instance?.ShakeOnCritHit();
+                    if (!(LevelRunner.Instance?.IsPaused ?? false))
+                        CameraController.Instance?.Shake(0.15f, 0.12f);
                 }
                 else
                     popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
@@ -2156,14 +2158,25 @@ namespace CrowdDefense.Entities
                 VfxPool.Instance.SpawnSpark(splashPos - _lastDamageDirection * 0.15f, _hitSplashColor);
                 VfxPool.Instance.SpawnSpark(splashPos + Vector3.right * 0.1f, _hitSplashColor);
                 VfxPool.Instance.SpawnSpark(splashPos + Vector3.left  * 0.1f, _hitSplashColor);
-                StartCoroutine(CritSlowMoCoroutine());
+                if (!(LevelRunner.Instance?.IsPaused ?? false))
+                {
+                    if (actualDmg > 100f)
+                    {
+                        CameraController.Instance?.Shake(0.3f, 0.2f);
+                        StartCoroutine(CritSlowMoCoroutine(0.7f, 0.1f));
+                    }
+                    else
+                    {
+                        StartCoroutine(CritSlowMoCoroutine(0.85f, 0.05f));
+                    }
+                }
             }
         }
 
-        private IEnumerator CritSlowMoCoroutine()
+        private IEnumerator CritSlowMoCoroutine(float scale, float duration)
         {
-            Time.timeScale = 0.85f;
-            yield return new WaitForSecondsRealtime(0.05f);
+            Time.timeScale = scale;
+            yield return new WaitForSecondsRealtime(duration);
             Time.timeScale = 1f;
         }
 
