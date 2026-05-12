@@ -424,5 +424,76 @@ CI/CD hygiène standard, catégorie A. Pas de Mike notif (T3 silent côté super
 
 ⏳ pending exec deploy trigger sur HEAD `a49ed12`
 
+---
+
+### 2026-05-12 16h32 — 🔧 POST-P1-FIXES (catégorie A délégué, non-bloquant)
+
+**Type** : ACTION groupée
+**From** : Opus superviseur (audit batch deep `a649d44a` complete, output `.claude/audit/2026-05-12-batch-p1-audit.md`)
+**Verdict audit** : ⚠️ batch P1 = 1 critique + 4 mineures, **fonctionnellement complet, refs croisées OK, compile-readiness OK**
+
+## 3 fixes groupés à dispatcher (1 bug-fixer Sonnet ~15 min total)
+
+### Fix #1 — SPLIT EnemyBossBehaviors.cs (P0 critique)
+
+**Violation** : `Assets/Scripts/Entities/EnemyBossBehaviors.cs` = **582 LOC** > cap 500 charter §1 règle #3 TOLERANCE ZERO.
+
+**Origine** : Commit 014 a créé 446 LOC (partial Enemy boss methods : UpdateCharge, UpdateFireBreath, Apocalypse phases, EnrageVFX, EnrageRing). Merge `08d7229` ajoute +136 LOC (static class wizard_king teleport+rain + ai_hub burst + kraken tentacles) sans split.
+
+**Fix proposé** : Extraire `static class EnemyBossBehaviors` (138 LOC : wizard/ai_hub/kraken) vers nouveau fichier `Assets/Scripts/Entities/EnemyBossBehaviorsStatic.cs`. Ramène partial class Enemy à ~444 LOC.
+
+**Action** :
+- Bug-fixer Sonnet : split + verify compile + commit `fix(parity-v4-p1): split EnemyBossBehaviors 582 → partial Enemy ~444 + static ~138 LOC (charter §1 cap)`
+
+### Fix #2 — DynamicEventManager bug `_prevRangeMul/_prevSpeedMul` écrasés en boucle (mineur)
+
+**Bug** : Dans `StartSandStorm` L83-100 et équivalents, `_prevRangeMul` (et `_prevSpeedMul` côté `lava_surge` ?) est réassigné à chaque itération du `foreach` → seul le dernier tower a sa valeur préservée. `StopSandStorm` restaure mauvaise valeur si entités hétérogènes (cluster boost ≠ 1f).
+
+**Impact réel** : Zero si toutes towers `EventRangeMul=1f` au start (cas nominal). Bug subtil mais réel pour synergies cluster.
+
+**Fix proposé** : Stocker les `_prev*` dans un `Dictionary<Tower, float>` puis restore from dict dans `StopSandStorm`. Ou rester sur mul global runner (cohérent V4 EventManager).
+
+**Action** :
+- Bug-fixer Sonnet : refacto fix + commit `fix(parity-v4-012): DynamicEventManager per-entity prev-mul tracking via Dictionary`
+
+### Fix #3 — Regen VfxPoolFactions.cs.meta (hygiène)
+
+**Issue** : `Assets/Scripts/Visual/VfxPoolFactions.cs.meta` absent du commit `46a48db`. Unity régénère un nouveau GUID au prochain open editor → warning console, pas blocker compile mais asset references inconsistants si fichier étendu later.
+
+**Fix proposé** : Touch VfxPoolFactions.cs.meta (Unity Editor auto-regen au reopen) OU script manuel pour générer .meta vide.
+
+**Action** :
+- Bug-fixer Sonnet : si Unity Editor accessible, juste open project + close puis commit le .meta généré. Sinon manual generation.
+
+## P2 backlog (différer, à discuter avec Mike post-P2/P3 decision)
+
+### Backlog #1 — R6-PARITY-012-V4-FIDELITY (5 events V4 missing + trigger divergence)
+
+V4 EventManager : 8 events data-driven via `level.events[]` (def.waveIndex === wave). Unity DynamicEventManager : 3 events random `% 5` auto-trigger.
+
+**5 events V4 absents** : void_pulse / zero_g / undertow / battle_cry / hack.
+
+**Question design** : revenir à data-driven `level.events[]` per V4 fidelity, OU keep Unity simplification mais documenter comme "intentional V4 divergence" ?
+
+→ **Mike decision needed** (catégorie B escalation si Mike veut V4 stricte, sinon catégorie A si Mike accepte Unity simplification).
+
+### Backlog #2 — R6-PARITY-011-COMPLETE (Foire + Medieval castle skin)
+
+ThemeSkins[] couvre 8/10 themes. Foire et Medieval → default tint silencieux.
+
+**Action P2** : créer 2 ThemeSkin entries (Foire + Medieval) avec texture-swap mappé.
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-post-p1-fixes-ack.md` :
+- Bug-fixer dispatched (paths fixes 1+2+3)
+- Time estimate complete
+- P2 backlog noté dans `.claude/backlog/R6-found-during-exec.md` (issues 4+5)
+
+## Status
+
+⏳ pending exec bug-fixer dispatch (~15 min total)
+
+
 
 
