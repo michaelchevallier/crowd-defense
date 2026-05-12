@@ -1038,7 +1038,6 @@ namespace CrowdDefense.Entities
             _aimLine.useWorldSpace = true;
             _aimLine.startWidth = 0.05f;
             _aimLine.endWidth   = 0.02f;
-            _aimLine.colorMode  = LineRenderer.ColorMode.PerVertex;
             var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
             mat.color = new Color(1f, 1f, 1f, 0.5f);
             if (mat.HasProperty("_Surface"))
