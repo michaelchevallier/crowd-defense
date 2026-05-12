@@ -144,8 +144,12 @@ namespace CrowdDefense.Systems
 
         // ── Perks ────────────────────────────────────────────────────────────
 
-        private void HandlePerkApplied(Hero hero, PerkDef def) =>
+        private void HandlePerkApplied(Hero hero, PerkDef def)
+        {
             EventManager.Instance?.Publish(new PerkPickedEvent(def.id, "hero"));
+            string label = !string.IsNullOrEmpty(def.displayName) ? def.displayName : def.id;
+            WaveHistoryLog.Instance?.Log("perk", $"Perk : {label}");
+        }
 
         // ── Hero ─────────────────────────────────────────────────────────────
 

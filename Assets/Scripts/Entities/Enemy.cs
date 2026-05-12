@@ -203,6 +203,9 @@ namespace CrowdDefense.Entities
         // Set by EnemyPool when this instance spawns as an elite variant
         internal bool _isElite = false;
 
+        // 10% of non-boss enemies chase the Hero instead of the castle
+        private bool _chaseHero = false;
+
         // Called once by EnemyPool after Instantiate to back-link the pool
         public void SetPool(EnemyPool p) => pool = p;
 
@@ -327,7 +330,7 @@ namespace CrowdDefense.Entities
         }
 
         // ── Init ──────────────────────────────────────────────────────────────
-        public void Init(EnemyType type, int assignedPathIdx = 0)
+        public void Init(EnemyType type, int assignedPathIdx = 0, float endlessMul = 1f)
         {
             cfg = type;
             IsDead       = false;
@@ -369,6 +372,7 @@ namespace CrowdDefense.Entities
             _wasWalking       = false;
             _lastDamageDirection = Vector3.back;
             _isElite = false;
+            _chaseHero = !type.IsBoss && Random.value < 0.1f;
             if (_popInCoroutine != null) { StopCoroutine(_popInCoroutine); _popInCoroutine = null; }
 
             // Clean up any Rigidbodies/CapsuleColliders added by ragdoll on previous life
@@ -378,11 +382,11 @@ namespace CrowdDefense.Entities
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
             var pressure = BalanceConfig.Get().GetPressure(currentWorld);
             float diffMul = BalanceConfig.DifficultyHpDmgMul();
-            hp       = type.Hp * pressure.mobHpMul * diffMul;
+            hp       = type.Hp * pressure.mobHpMul * diffMul * endlessMul;
             maxHp    = hp;
             pressureSpeedMul = pressure.mobSpeedMul;
-            shieldHp = type.ShieldHP * diffMul;
-            _damageMul     = diffMul;
+            shieldHp = type.ShieldHP * diffMul * endlessMul;
+            _damageMul     = diffMul * endlessMul;
             _diffRewardMul = BalanceConfig.DifficultyRewardMul();
             pathIdx  = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
@@ -498,6 +502,17 @@ namespace CrowdDefense.Entities
                 return;
             }
             transform.position = pathManager.GetWaypointOnPath(pathIdx, 0) + Vector3.up * 0.5f;
+
+            // Chase-hero tint: slight red overlay so player can spot the threat
+            if (_chaseHero && _cachedRenderers != null)
+            {
+                _mpb ??= new MaterialPropertyBlock();
+                var red = new Color(1f, 0.35f, 0.35f);
+                _mpb.SetColor(_baseColorId, red);
+                _mpb.SetColor(_colorId,     red);
+                for (int i = 0; i < _cachedRenderers.Length; i++)
+                    _cachedRenderers[i].SetPropertyBlock(_mpb);
+            }
         }
 
         // ── Spawn pop-in animation ────────────────────────────────────────────
@@ -884,10 +899,14 @@ namespace CrowdDefense.Entities
             }
 
             float effSpeed = ComputeEffectiveSpeed();
-            Vector3 target = pathManager.GetWaypointOnPath(pathIdx, currentWaypoint) + Vector3.up * 0.5f;
+            var heroInst = LevelRunner.Instance?.Hero;
+            bool chasingHeroNow = _chaseHero && heroInst != null && heroInst.gameObject.activeInHierarchy;
+            Vector3 target = chasingHeroNow
+                ? heroInst!.transform.position
+                : pathManager.GetWaypointOnPath(pathIdx, currentWaypoint) + Vector3.up * 0.5f;
             transform.position = Vector3.MoveTowards(transform.position, target, effSpeed * Time.deltaTime);
 
-            if ((transform.position - target).sqrMagnitude < 0.01f)
+            if (!chasingHeroNow && (transform.position - target).sqrMagnitude < 0.01f)
                 currentWaypoint++;
 
             // Face movement direction
@@ -1641,6 +1660,8 @@ namespace CrowdDefense.Entities
             Achievements.Instance?.Unlock("first_blood");
             Achievements.Instance?.TrackEvent("enemy_killed", 1);
             LifetimeStats.Instance?.AddKill(1);
+            WaveHistoryLog.Instance?.Log("kill", $"Mort : {cfg?.DisplayName ?? cfg?.Id ?? "?"}");
+
             StopEnrageVFX();
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);

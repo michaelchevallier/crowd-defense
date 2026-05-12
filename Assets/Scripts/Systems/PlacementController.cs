@@ -209,6 +209,7 @@ namespace CrowdDefense.Systems
                 AudioController.Instance?.Play3D("tower_placed", cellWorld);
                 JuiceFX.Instance?.PunchScale(tower.transform, 1.15f, 0.3f);
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward("Tour placee !", cellWorld + Vector3.up * 1.5f, Color.green);
+                WaveHistoryLog.Instance?.Log("tower", $"Tour : {selectedTowerType.DisplayName} N1");
                 OnTowerPlaced?.Invoke(tower);
             }
         }
@@ -272,6 +273,7 @@ namespace CrowdDefense.Systems
                 AudioController.Instance?.Play3D("tower_placed", cellWorld);
                 JuiceFX.Instance?.PunchScale(tower.transform, 1.15f, 0.3f);
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward("Tour placee !", cellWorld + Vector3.up * 1.5f, Color.green);
+                WaveHistoryLog.Instance?.Log("tower", $"Tour : {selectedTowerType.DisplayName} N1");
                 OnTowerPlaced?.Invoke(tower);
             }
         }

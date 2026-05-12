@@ -359,6 +359,7 @@ namespace CrowdDefense.Systems
             if (State == GameState.Lobby || State == GameState.WaveBreak)
                 TransitionTo(GameState.WaveActive);
             OnWaveStarted?.Invoke(waveIdx + 1);
+            WaveHistoryLog.Instance?.Log("wave", $"Vague {waveIdx + 1} lancee");
 
             int total = WaveManager.Instance?.TotalWaves is > 0 ? WaveManager.Instance.TotalWaves : 10;
             int intensity = Mathf.Clamp(waveIdx * 3 / total, 0, 2);
