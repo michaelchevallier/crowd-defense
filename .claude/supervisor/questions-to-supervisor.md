@@ -36,6 +36,22 @@ Quand question `[resolved]`, déplacer la section dans `_archive.md` (ou laisser
 
 (les questions actives en attente d'ack ici, plus récente en bas)
 
+### 2026-05-12 17h05 — Q-PARITY-V4-P1-cap-enemy
+Type : tactical
+Category : A
+Blocking : false (P1 batch 8/8 shipped, fonctionnel, ship-able)
+Question : Post-merge R6-PARITY-005-IMPL + R6-PARITY-014 (commit 08d7229), 2 fichiers violent cap 500 LOC charter §1 règle #3 :
+- `Enemy.cs` 2051 LOC (legacy géant, hérité R6-02 partial, +1551 over cap)
+- `EnemyBossBehaviors.cs` 582 LOC (extract 014 + 005-IMPL, +82 over cap, +16%)
+Options envisagées :
+- (a) Accept Enemy.cs legacy (hors-scope refacto immédiat) + ticket R6-PARITY-005-IMPL-REFACTOR P2 pour split EnemyBossBehaviors.cs 582 → 2 fichiers
+- (b) Block + re-dispatch refacto immédiat pour les 2 fichiers
+- (c) Précédent A-vfx-bindings-cap : accept + ticket en tête P2 batch
+Reco interne : (a)+(c) hybrid — Accept legacy Enemy.cs (refacto-massif = sprint dédié hors batch P1), + ticket `R6-PARITY-005-IMPL-REFACTOR` en tête P2 pour split EnemyBossBehaviors.cs 582 → 2 fichiers cohésifs (ex : `EnemyBossBehaviors.Apocalypse.cs` 014-part + `EnemyBossBehaviors.Variants.cs` 005-IMPL part). Enemy.cs 2051 LOC est blocker stratégique massif — peut justifier sprint R6-04 dédié refacto god class.
+Context : agent 005-IMPL self-report mentionne extract done EnemyBossBehaviors.cs 582 LOC, +16% cap. Précédent VfxPoolBindings 555 LOC → Mike a tranché accept + refacto P1 (A-vfx-bindings-cap). Cohérence : appliquer même décision.
+
+---
+
 ### 2026-05-12 16h26 — Q-PARITY-V4-vfx-bindings-cap `[resolved]` 16h09 wakeup
 Type : tactical / Category : A / Blocking : false
 Question : VfxPoolBindings.cs 555 LOC > cap 500 LOC charter §1 règle #3 (+55 LOC, +11%). Que faire ?
