@@ -370,7 +370,7 @@ namespace CrowdDefense.Visual
             main.maxParticles = count;
 
             var emission = ps.emission;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, count, count, 1, 0.01f) });
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count, (short)count, 1, 0.01f) });
 
             var col = ps.colorOverLifetime;
             col.enabled = true;
