@@ -183,6 +183,9 @@ namespace CrowdDefense.Entities
         private int _targetedByCount = 0;
         private GameObject? _reticleGO;
 
+        // ── Hover target highlight (yellow ring shown while tower is hovered) ──
+        private GameObject? _targetHighlightGO;
+
         // ── Public API ────────────────────────────────────────────────────────
         public EnemyType? Config              => cfg;
         public int  CurrentWaypoint           => currentWaypoint;
@@ -248,6 +251,49 @@ namespace CrowdDefense.Entities
         private void HideReticle()
         {
             if (_reticleGO != null) _reticleGO.SetActive(false);
+        }
+
+        public void ShowTargetHighlight(bool visible)
+        {
+            if (!visible) { if (_targetHighlightGO != null) _targetHighlightGO.SetActive(false); return; }
+            if (_targetHighlightGO != null) { _targetHighlightGO.SetActive(true); return; }
+
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "TargetHighlight";
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            go.transform.localScale = new Vector3(2f, 2f, 1f);
+            if (go.TryGetComponent<Collider>(out var col)) Object.Destroy(col);
+
+            const int texSize = 64;
+            var tex = new Texture2D(texSize, texSize, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color32[texSize * texSize];
+            float half = texSize * 0.5f;
+            for (int y = 0; y < texSize; y++)
+            for (int x = 0; x < texSize; x++)
+            {
+                float dx = (x - half) / half;
+                float dy = (y - half) / half;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                float ring = Mathf.SmoothStep(0f, 1f, (dist - 0.72f) / 0.12f)
+                           * Mathf.SmoothStep(0f, 1f, (1f - dist) / 0.08f);
+                byte a = (byte)Mathf.RoundToInt(Mathf.Clamp01(ring) * 255f);
+                pixels[y * texSize + x] = new Color32(255, 220, 0, a);
+            }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+
+            var mr = go.GetComponent<MeshRenderer>();
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Transparent"));
+            mat.mainTexture = tex;
+            mat.SetInt("_ZWrite", 0);
+            mat.renderQueue = 3001;
+            mr.material = mat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+            _targetHighlightGO = go;
         }
 
         // Fired by HandleDeath — (enemy, isBoss). LootSpawner subscribes.

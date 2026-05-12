@@ -12,6 +12,7 @@ namespace CrowdDefense.Systems
 
         private Camera? cam;
         private Tower? hoveredTower;
+        private Enemy? _highlightedTarget;
         private readonly Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
 
         protected override void OnAwakeSingleton() => cam = Camera.main;
@@ -46,9 +47,14 @@ namespace CrowdDefense.Systems
                 if (sqrD < bestDist) { bestDist = sqrD; found = t; }
             }
 
-            if (found == hoveredTower) return;
+            if (found == hoveredTower)
+            {
+                RefreshTargetHighlight();
+                return;
+            }
 
             ClearClusterHighlights();
+            ClearTargetHighlight();
 
             if (hoveredTower != null)
             {
@@ -61,6 +67,7 @@ namespace CrowdDefense.Systems
                 hoveredTower.ShowRangeRing(true);
                 TowerTooltipController.Instance?.Show(hoveredTower);
                 ShowClusterHighlights(hoveredTower, towers);
+                RefreshTargetHighlight();
             }
         }
 
@@ -91,9 +98,25 @@ namespace CrowdDefense.Systems
         {
             if (hoveredTower == null) return;
             ClearClusterHighlights();
+            ClearTargetHighlight();
             hoveredTower.ShowRangeRing(false);
             hoveredTower = null;
             TowerTooltipController.Instance?.Hide();
+        }
+
+        private void RefreshTargetHighlight()
+        {
+            var newTarget = hoveredTower?.CurrentTarget;
+            if (newTarget == _highlightedTarget) return;
+            _highlightedTarget?.ShowTargetHighlight(false);
+            _highlightedTarget = newTarget;
+            _highlightedTarget?.ShowTargetHighlight(true);
+        }
+
+        private void ClearTargetHighlight()
+        {
+            _highlightedTarget?.ShowTargetHighlight(false);
+            _highlightedTarget = null;
         }
     }
 }

@@ -248,6 +248,7 @@ namespace CrowdDefense.Entities
 
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
+        public Enemy? CurrentTarget => target;
 
         [SerializeField] private GuardMode _guardMode = GuardMode.All;
         public GuardMode CurrentGuardMode => _guardMode;
