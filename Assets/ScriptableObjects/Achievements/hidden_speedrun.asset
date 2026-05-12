@@ -22,6 +22,6 @@ MonoBehaviour:
   predicateType: 0
   threshold: 1
   eventKey: speedrun_win
-  iconEmoji: "⚡"
+  iconEmoji: "\u26A1"
   category: 3
   rewardGold: 100
