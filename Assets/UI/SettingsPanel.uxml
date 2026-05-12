@@ -50,6 +50,10 @@
                         <ui:Label text="Camera shake" name="shake-label" class="setting-label" />
                         <ui:Toggle name="shake-toggle" class="setting-toggle" />
                     </ui:VisualElement>
+                    <ui:VisualElement class="setting-row">
+                        <ui:Label text="Music pulse" name="music-pulse-label" class="setting-label" />
+                        <ui:Toggle name="music-pulse-toggle" class="setting-toggle" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
 
                 <ui:VisualElement class="settings-section">

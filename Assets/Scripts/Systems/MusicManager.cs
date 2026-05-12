@@ -212,6 +212,9 @@ namespace CrowdDefense.Systems
 
         public string? GetCurrentTrack() => _currentTrack;
 
+        public AudioSource? ActiveAudioSource =>
+            _currentTrack != null && _sources.TryGetValue(_currentTrack, out var src) && src.isPlaying ? src : null;
+
         /// <summary>
         /// Adaptive layer intensity: 0 = calm (base), 1 = intense (drums), 2 = boss (full ensemble).
         /// Called each wave start with currentWave/10 clamped to [0,2].

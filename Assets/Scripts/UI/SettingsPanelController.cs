@@ -42,6 +42,8 @@ namespace CrowdDefense.UI
         private Toggle? _autoPauseToggle;
         private Label?  _autoPauseLabel;
 
+        private Toggle? _musicPulseToggle;
+        private Label?  _musicPulseLabel;
         private Toggle? _colorblindToggle;
         private Toggle? _reduceMotionToggle;
         private Toggle? _largeTextToggle;
@@ -122,6 +124,8 @@ namespace CrowdDefense.UI
             _autoPauseToggle = _root.Q<Toggle>("auto-pause-toggle");
             _autoPauseLabel  = _root.Q<Label>("auto-pause-label");
 
+            _musicPulseToggle = _root.Q<Toggle>("music-pulse-toggle");
+            _musicPulseLabel  = _root.Q<Label>("music-pulse-label");
             _colorblindToggle = _root.Q<Toggle>("colorblind-toggle");
             _reduceMotionToggle = _root.Q<Toggle>("reduce-motion-toggle");
             _largeTextToggle = _root.Q<Toggle>("large-text-toggle");
@@ -207,6 +211,10 @@ namespace CrowdDefense.UI
             if (_qualityLabel != null)        _qualityLabel.text        = L.Get("settings.quality");
             if (_vfxLabel != null)            _vfxLabel.text            = L.Get("settings.vfx");
             if (_shakeLabel != null)          _shakeLabel.text          = L.Get("settings.shake");
+            if (_musicPulseLabel != null)
+                _musicPulseLabel.text = L.CurrentLocale == "fr" ? "Pulse musical"
+                    : L.CurrentLocale == "es" ? "Pulso musical"
+                    : "Music pulse";
             if (_autoPauseLabel != null)      _autoPauseLabel.text      = L.Get("settings.auto_pause_blur");
             if (_a11ySectionLabel != null)    _a11ySectionLabel.text    = L.Get("settings.a11y_section");
             if (_colorblindLabel != null)     _colorblindLabel.text     = L.Get("settings.colorblind");
@@ -319,6 +327,12 @@ namespace CrowdDefense.UI
                 SettingsRegistry.Instance.ShakeEnabled = evt.newValue;
             });
 
+            _musicPulseToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.MusicPulseEnabled = evt.newValue;
+            });
+
             _autoPauseToggle?.RegisterValueChangedCallback(evt =>
             {
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
@@ -417,6 +431,7 @@ namespace CrowdDefense.UI
                 }
                 if (_vfxToggle != null) _vfxToggle.value = reg.VFXEnabled;
                 if (_shakeToggle != null) _shakeToggle.value = reg.ShakeEnabled;
+                if (_musicPulseToggle != null) _musicPulseToggle.value = reg.MusicPulseEnabled;
                 if (_autoPauseToggle != null) _autoPauseToggle.value = reg.AutoPauseOnBlur;
 
                 if (_colorblindToggle != null) _colorblindToggle.value = reg.ColorblindMode;
