@@ -57,6 +57,15 @@ namespace CrowdDefense.Entities
             if (_trail != null) _trail.emitting = false;
         }
 
+        public void SetElementTint(Color tint)
+        {
+            if (_trail == null) return;
+            _trail.time = 0.3f;
+            _trail.startWidth = 0.1f;
+            _trail.startColor = new Color(tint.r, tint.g, tint.b, 0.85f);
+            _trail.endColor   = new Color(tint.r, tint.g, tint.b, 0f);
+        }
+
         // Source tower — used to apply synergy on-hit effects (slow / freeze)
         private Tower? sourceTower;
         private Color _projectileColor = Color.white;
@@ -127,11 +136,8 @@ namespace CrowdDefense.Entities
         private void ApplyTrailSynergyTint(Tower? source)
         {
             if (_trail == null) return;
-            Color tint = (source != null && source._synergyActive && source.Config != null)
-                ? SynergyElementColor(source.Config.DamageType)
-                : new Color(1f, 0.7f, 0.3f, 1f);
-            _trail.startColor = new Color(tint.r, tint.g, tint.b, 0.8f);
-            _trail.endColor   = new Color(tint.r, tint.g, tint.b, 0f);
+            if (source != null && source._synergyActive && source.Config != null)
+                SetElementTint(SynergyElementColor(source.Config.DamageType));
         }
 
         private static Color SynergyElementColor(DamageType dt) => dt switch

@@ -278,6 +278,9 @@ namespace CrowdDefense.Entities
         private const float HitFlashPeak   = 0.08f;
         private const float HitFlashTotal  = 0.20f;
 
+        // Cached projectile trail tint — computed once in Init, applied each fire.
+        private Color _projectileTint = Color.white;
+
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
         public Enemy? CurrentTarget => target;
@@ -538,9 +541,27 @@ namespace CrowdDefense.Entities
             if (type.Behavior == TowerBehavior.CoinPull)
                 BuildMagnetAuraCircle(BalanceConfig.Get().MagnetSlowRadius);
 
+            _projectileTint = ProjectileTintForType(type);
+
             if (_shimmerRoutine != null) StopCoroutine(_shimmerRoutine);
             _shimmerRoutine = StartCoroutine(ShimmerRoutine());
         }
+
+        private static Color ProjectileTintForType(TowerType t) => t.Id switch
+        {
+            "cannon"   or "mortar"    => new Color(1f,    0.4f,  0.1f),  // fire/cannon → orange
+            "frost"    or "ice"       => new Color(0.4f,  0.85f, 1f),    // frost/ice → cyan
+            "mage"     or "arcane"    => new Color(0.85f, 0.3f,  1f),    // magic/arcane → purple
+            "mine"     or "acid"      => new Color(0.4f,  0.95f, 0.4f),  // poison → green
+            "ballista" or "lightning" => new Color(1f,    0.95f, 0.3f),  // lightning → yellow
+            _                        => t.DamageType switch
+            {
+                DamageType.Fire     => new Color(1f,    0.4f,  0.1f),
+                DamageType.Frost    => new Color(0.4f,  0.85f, 1f),
+                DamageType.Magic    => new Color(0.85f, 0.3f,  1f),
+                _                  => Color.white,
+            },
+        };
 
         /// <summary>
         /// Instancie le prefab GLTF depuis AssetRegistry si disponible.
@@ -1283,6 +1304,7 @@ namespace CrowdDefense.Entities
             proj.transform.rotation = Quaternion.identity;
             proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
                 effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
+            proj.SetElementTint(_projectileTint);
 
             // Extra projectiles : synergy _multiShotBonus + L3MultiShot (cumulatifs)
             // Archer Master Hunter (L3 DPS) uses 15 degree spread; others default 12 degrees (D1-03)
@@ -1302,6 +1324,7 @@ namespace CrowdDefense.Entities
                     proj2.transform.rotation = Quaternion.LookRotation(spread);
                     proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
                         effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
+                    proj2.SetElementTint(_projectileTint);
                 }
             }
 
@@ -2381,6 +2404,7 @@ namespace CrowdDefense.Entities
             proj.transform.rotation = Quaternion.LookRotation(angledDir);
             proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
                 effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
+            proj.SetElementTint(_projectileTint);
         }
 
         // ── UpgradeTo — hook pips after level change ──────────────────────────
