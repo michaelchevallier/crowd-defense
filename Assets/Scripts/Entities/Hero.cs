@@ -268,6 +268,10 @@ namespace CrowdDefense.Entities
         // ── Perk icons (world-space quads around head) ────────────────────────
         private readonly GameObject?[] _perkIcons = new GameObject?[6];
 
+        // ── Crown milestone visual (gold quad above head at level 10/20/30) ────
+        private GameObject? _crownGo;
+        private static readonly int[] CrownMilestones = { 10, 20, 30 };
+
         // ── Active projectile tracking (pool manages lifetime, this list for IsDone poll) ──
         private readonly List<HeroProjectile> _projectiles = new();
 
@@ -319,6 +323,7 @@ namespace CrowdDefense.Entities
 
             BuildAuraDecals();
             BuildPerkIcons();
+            BuildCrownQuad();
         }
 
         // ── Mesh spawn (mirrors Tower.SpawnMeshChild) ─────────────────────────
@@ -450,6 +455,7 @@ namespace CrowdDefense.Entities
                 var icon = _perkIcons[i];
                 if (icon != null && icon.activeSelf) icon.transform.rotation = rot;
             }
+            if (_crownGo != null && _crownGo.activeSelf) _crownGo.transform.rotation = rot;
         }
 
         private static Color PerkColor(string perkId) => perkId switch
@@ -595,6 +601,7 @@ namespace CrowdDefense.Entities
                 Level++;
                 if (cfg != null) XpToNext = cfg.XpToNext(Level);
                 OnLevelUp?.Invoke(Level, Xp, XpToNext);
+                CheckCrownMilestone(Level);
 
                 var levelUpPos = transform.position;
                 VfxPool.Instance?.SpawnLevelUp(levelUpPos + Vector3.up * 1.5f);
@@ -629,6 +636,35 @@ namespace CrowdDefense.Entities
                 yield return null;
             }
             Destroy(lightGo);
+        }
+
+        // ── Crown milestone ───────────────────────────────────────────────────
+        private void BuildCrownQuad()
+        {
+            var unlitShader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            _crownGo = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            _crownGo.name = "CrownMilestone";
+            _crownGo.transform.SetParent(transform);
+            _crownGo.transform.localPosition = new Vector3(0f, 2.2f, 0f);
+            _crownGo.transform.localScale    = Vector3.one * 0.45f;
+            Object.Destroy(_crownGo.GetComponent<Collider>());
+            var mat = new Material(unlitShader != null ? unlitShader : Shader.Find("Standard")!)
+                { color = new Color(1f, 0.84f, 0f) };   // gold
+            _crownGo.GetComponent<MeshRenderer>().material = mat;
+            _crownGo.SetActive(false);
+        }
+
+        private void CheckCrownMilestone(int level)
+        {
+            bool isMilestone = System.Array.IndexOf(CrownMilestones, level) >= 0;
+            if (!isMilestone) return;
+
+            if (_crownGo != null) _crownGo.SetActive(true);
+
+            FloatingPopupController.Instance?.SpawnReward(
+                "+CROWN",
+                transform.position + Vector3.up * 2.8f,
+                new Color(1f, 0.84f, 0f));
         }
 
         // ── Ultimate ──────────────────────────────────────────────────────────
