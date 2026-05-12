@@ -212,6 +212,9 @@ namespace CrowdDefense.Entities
         // Called once by EnemyPool after Instantiate to back-link the pool
         public void SetPool(EnemyPool p) => pool = p;
 
+        // D1-04 pressure mob — multiply movement speed after spawn (stacks with pressureSpeedMul)
+        public void ApplySpeedMultiplier(float mul) => pressureSpeedMul *= mul;
+
         // Called by EnemyPool after Init when the 5% elite roll succeeds.
         public void ApplyElite()
         {
