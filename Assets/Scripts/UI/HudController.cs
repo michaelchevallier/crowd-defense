@@ -427,7 +427,10 @@ namespace CrowdDefense.UI
         private void OnWaveStart(int idx)
         {
             if (waveValue == null || WaveManager.Instance == null) return;
-            waveValue.text = $"{idx + 1}/{WaveManager.Instance.TotalWaves}";
+            bool endless = LevelRunner.Instance?.IsEndlessRun == true;
+            waveValue.text = endless
+                ? $"Inf. {idx + 1}"
+                : $"{idx + 1}/{WaveManager.Instance.TotalWaves}";
             // Hide launch button while wave is in progress
             if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
             if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
@@ -452,7 +455,12 @@ namespace CrowdDefense.UI
                     waveLaunchLabel.text = inWindow ? L.Get("hud.wave_launch_bonus") : L.Get("hud.wave_launch");
 
                 if (waveLaunchSub != null)
-                    waveLaunchSub.text = L.Get("hud.wave_progress", wm.NextWaveDisplayNumber, wm.TotalWaves);
+                {
+                    bool endlessRun = LevelRunner.Instance?.IsEndlessRun == true;
+                    waveLaunchSub.text = endlessRun
+                        ? $"Inf. Vague {wm.NextWaveDisplayNumber}"
+                        : L.Get("hud.wave_progress", wm.NextWaveDisplayNumber, wm.TotalWaves);
+                }
 
                 // Skip window ring class
                 if (inWindow) waveLaunchBtn.AddToClassList("skip-window");

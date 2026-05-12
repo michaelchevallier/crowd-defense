@@ -21,6 +21,10 @@ namespace CrowdDefense.UI
 
             RefreshGreeting(root);
 
+            var btnSlots = root.Q<Button>("btn-open-slots");
+            if (btnSlots != null)
+                btnSlots.clicked += () => SaveSlotController.Instance?.Show();
+
             var btnBestiary = root.Q<Button>("btn-open-bestiary");
             if (btnBestiary != null)
                 btnBestiary.clicked += () => BestiaryPanel.Instance?.Show();

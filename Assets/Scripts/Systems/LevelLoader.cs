@@ -14,6 +14,9 @@ namespace CrowdDefense.Systems
         // Non-null when the daily challenge modifier applies (banned tower, gold mul, etc.).
         public static ChallengeSpec? NextDailyChallenge { get; set; }
 
+        // Non-null when the next run is an Endless procedural level.
+        public static Data.LevelData? NextEndlessSpec { get; set; }
+
         public static bool HasHeroChoice()
             => !string.IsNullOrEmpty(UnityEngine.PlayerPrefs.GetString(HeroPickScreen.PrefsKey, ""));
 
@@ -49,7 +52,7 @@ namespace CrowdDefense.Systems
             Fade("Menu");
         }
 
-        static void Fade(string sceneName)
+        public static void Fade(string sceneName)
         {
             SceneTransition.EnsureExists();
             SceneTransition.Instance?.LoadSceneFade(sceneName);

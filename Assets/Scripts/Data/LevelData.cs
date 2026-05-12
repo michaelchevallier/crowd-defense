@@ -58,5 +58,21 @@ namespace CrowdDefense.Data
         public int CastleHP => overrideCastleHP
             ? castleHPOverride
             : BalanceConfig.Get().CastleHPFor(world, level);
+
+        /// Runtime only: populate waves for endless/procedural runs (not serialized).
+        public void SetEndlessWaves(List<WaveDef> generatedWaves)
+        {
+            waves = generatedWaves;
+            id = "endless";
+            displayName = "Sans Fin";
+            overrideCastleHP = true;
+            castleHPOverride = 300;
+            world = 1;
+            level = 1;
+            startCoins = 120;
+        }
+
+        /// Runtime only: append extra waves (used by endless mode to extend on demand).
+        public void AppendWaves(List<WaveDef> extra) => waves.AddRange(extra);
     }
 }

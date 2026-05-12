@@ -19,6 +19,7 @@ namespace CrowdDefense.Systems
         private float spawnTimerMs = 0f;
         private bool waveActive = false;
         private int spawnCounter = 0;
+        private float _currentWaveScaleMul = 1f;  // endless mode: applied per-spawn
         private Queue<EnemyType> pendingSpawns = new();
         private List<Enemy> activeEnemies = new();
 
@@ -93,6 +94,7 @@ namespace CrowdDefense.Systems
             }
             pendingSpawns = new Queue<EnemyType>(list);
             spawnTimerMs = 0f;
+            _currentWaveScaleMul = wave.scaleMul > 0f ? wave.scaleMul : 1f;
             waveActive = true;
             // D1-01 §3.5: reset castle-damage flag at wave start so bank can accumulate if clean
             Economy.Instance?.ResetWaveDamageFlag();
@@ -198,6 +200,10 @@ namespace CrowdDefense.Systems
             waitingForPlayerStart = false;
             OnBreakStateChanged?.Invoke();
 
+            // Endless mode: extend wave list before the boundary check.
+            if (LevelRunner.Instance?.IsEndlessRun == true && nextWaveToStart >= levelData!.Waves.Count)
+                EndlessMode.Instance?.AppendNextWave(levelData, nextWaveToStart);
+
             if (nextWaveToStart < levelData!.Waves.Count)
             {
                 BeginWave(nextWaveToStart);
@@ -228,7 +234,7 @@ namespace CrowdDefense.Systems
 
             int resolvedPathIdx = ResolvePathIdx(wavePortalIdx);
             Vector3 spawnPos = pm.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
-            var enemy = EnemyPool.Instance.SpawnFromType(type, spawnPos, resolvedPathIdx);
+            var enemy = EnemyPool.Instance.SpawnFromType(type, spawnPos, resolvedPathIdx, _currentWaveScaleMul);
             activeEnemies.Add(enemy);
             spawnCounter++;
             EventManager.Instance?.Publish(new EnemySpawnedEvent(enemy));

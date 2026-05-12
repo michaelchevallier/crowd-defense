@@ -87,6 +87,7 @@ namespace CrowdDefense.Systems
         // ── Speed / pause state ────────────────────────────────────────────────
         private float _targetSpeed = 1f;
         private bool  _paused;
+        private bool  _autoPaused;
 
         private Vector3 _castleWorldPos;
 
@@ -234,6 +235,7 @@ namespace CrowdDefense.Systems
         {
             if (!_paused) return;
             _paused = false;
+            _autoPaused = false;
             ApplyTimeScale();
             OnPauseChanged?.Invoke();
         }
@@ -244,6 +246,24 @@ namespace CrowdDefense.Systems
         }
 
         public bool IsPaused => _paused;
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (IsTerminalState()) return;
+            bool autoPauseEnabled = UI.SettingsRegistry.Instance?.AutoPauseOnBlur ?? true;
+            if (!autoPauseEnabled) return;
+
+            if (!hasFocus && !_paused)
+            {
+                Pause();
+                _autoPaused = true;
+            }
+            else if (hasFocus && _autoPaused)
+            {
+                _autoPaused = false;
+                Resume();
+            }
+        }
 
         // Dev shortcut: restart from wave 1. Only in WaveActive / WaveBreak.
         public void RestartLevel()
