@@ -32,6 +32,8 @@ namespace CrowdDefense.UI
         private Button? btnUtility;
         private Button? btnUpgradeL3;
         private Label? btnUpgradeL3Cost;
+        private Button? btnRepair;
+        private Label?  btnRepairCost;
         private Button? btnSell;
         private Button? btnRange;
         private Button? btnTarget;
@@ -67,6 +69,8 @@ namespace CrowdDefense.UI
             btnUtility        = root.Q<Button>("btn-upgrade-utility");
             btnUpgradeL3      = root.Q<Button>("btn-upgrade-l3");
             btnUpgradeL3Cost  = root.Q<Label>("btn-upgrade-l3-cost");
+            btnRepair         = root.Q<Button>("btn-repair");
+            btnRepairCost     = root.Q<Label>("btn-repair-cost");
             btnSell           = root.Q<Button>("btn-sell");
             btnRange          = root.Q<Button>("btn-range");
             btnTarget         = root.Q<Button>("btn-target");
@@ -83,6 +87,7 @@ namespace CrowdDefense.UI
             btnDps?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.Dps));
             btnUtility?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.Utility));
             btnUpgradeL3?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.None));
+            btnRepair?.RegisterCallback<ClickEvent>(_ => OnRepairClicked());
             btnSell?.RegisterCallback<ClickEvent>(_ => OnSellClicked());
             btnRange?.RegisterCallback<ClickEvent>(_ => OnRangeClicked());
             btnTarget?.RegisterCallback<ClickEvent>(_ => OnTargetClicked());
@@ -191,6 +196,7 @@ namespace CrowdDefense.UI
             if (btnSellLabel != null)
                 btnSellLabel.text = L.Get("hud.radial_sell", refund);
 
+            RefreshRepairButton(tower);
             RefreshTargetButton(tower);
             RefreshGuardButton(tower);
 
@@ -296,6 +302,29 @@ namespace CrowdDefense.UI
             PlacementController.Instance?.NotifyTowerUpgraded(tower, 3);
 #if UNITY_EDITOR
             Debug.Log($"[RadialMenu] Upgrade L3 {branch} sur {tower.Config?.Id} ok");
+#endif
+            RefreshMenu(tower);
+        }
+
+        private void RefreshRepairButton(Tower tower)
+        {
+            bool needsRepair = tower.Hp < tower.HpMax;
+            SetVisible(btnRepair, needsRepair);
+            if (!needsRepair) return;
+            int cost = tower.RepairCost;
+            int gold = Economy.Instance?.Gold ?? 0;
+            if (btnRepairCost != null) btnRepairCost.text = $"{cost}g";
+            btnRepair?.SetEnabled(gold >= cost);
+        }
+
+        private void OnRepairClicked()
+        {
+            var tower = currentTower;
+            if (tower == null) return;
+            bool ok = tower.Repair();
+            if (!ok) return;
+#if UNITY_EDITOR
+            Debug.Log($"[RadialMenu] Repair tour {tower.Config?.Id} ok");
 #endif
             RefreshMenu(tower);
         }

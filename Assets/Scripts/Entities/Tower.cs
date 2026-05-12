@@ -175,7 +175,14 @@ namespace CrowdDefense.Entities
         // Statistiques cumulées (pour TowerInfoPanel)
         public float TotalDamageDealt { get; private set; }
         public int   TotalKills       { get; private set; }
-        public void  RegisterKill()   => TotalKills++;
+        public void  RegisterKill()   { TotalKills++; TakeDamage(1); }
+
+        // HP system : 30 max, -1 per kill, repair = 10¢ per 5 HP missing (rounded up)
+        private int _hp    = 30;
+        private int _maxHp = 30;
+        public int Hp    => _hp;
+        public int HpMax => _maxHp;
+        public int RepairCost => Mathf.CeilToInt((_maxHp - _hp) / 5f) * 10;
 
         // Scale dégâts appliqué à ce niveau (ratio vs L1 Phaser convention)
         private float _levelDmgScale = 1f;
@@ -605,6 +612,47 @@ namespace CrowdDefense.Entities
                     "\U0001F4B0", pos + offset, Color.yellow);
             }
             Destroy(gameObject);
+        }
+
+        private void TakeDamage(int amount)
+        {
+            _hp = Mathf.Max(0, _hp - amount);
+            UpdateHpAlpha();
+        }
+
+        /// <summary>
+        /// Repair : restore HP to max, spend gold (10¢ per 5 HP missing, rounded up).
+        /// No-op if full HP or insufficient gold.
+        /// </summary>
+        public bool Repair()
+        {
+            if (_hp >= _maxHp) return false;
+            int cost = RepairCost;
+            if (cost <= 0) return false;
+            if (Economy.Instance == null || !Economy.Instance.TrySpend(cost)) return false;
+            _hp = _maxHp;
+            UpdateHpAlpha();
+            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 1.2f, new Color(0.3f, 1f, 0.4f));
+            AudioController.Instance?.Play3D("powerup", transform.position);
+            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                "+HP", transform.position + Vector3.up * 2f, new Color(0.3f, 1f, 0.4f));
+            return true;
+        }
+
+        // Alpha range : 1.0 (full HP) → 0.5 (0 HP), linear.
+        private void UpdateHpAlpha()
+        {
+            float ratio = _maxHp > 0 ? (float)_hp / _maxHp : 1f;
+            float alpha = 0.5f + ratio * 0.5f;
+            var root = _meshChild != null ? _meshChild : gameObject;
+            foreach (var r in root.GetComponentsInChildren<Renderer>())
+                foreach (var m in r.materials)
+                    if (m != null && m.HasProperty("_BaseColor"))
+                    {
+                        Color c = m.GetColor("_BaseColor");
+                        c.a = alpha;
+                        m.SetColor("_BaseColor", c);
+                    }
         }
 
         private void Update()
