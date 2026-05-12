@@ -99,10 +99,6 @@ namespace CrowdDefense.UI
         private const float CoinPunchDuration     = 0.2f;
         private const float CoinPunchPeak         = 1.15f;
 
-        // Wave countdown overlay (3-2-1-GO)
-        private Label? _waveCountdownLabel;
-        private Coroutine? _countdownCoroutine;
-
         // Wave progress dots (top-center)
         private VisualElement? _waveDotsRow;
         private int _wavesCompleted = 0;
@@ -121,32 +117,6 @@ namespace CrowdDefense.UI
 
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
-
-        // Perfect wave streak banner (top-center, shown when >= 2 consecutive no-damage waves)
-        private VisualElement? _perfectStreakBanner;
-        private Label?         _perfectStreakLabel;
-        private Coroutine?     _perfectStreakCoroutine;
-        private int            _perfectWaveStreak = 0;
-
-        // Streak banner particle trail — pool of 8 VisualElements, emitted every 0.15 s
-        private VisualElement?   _streakParticleContainer;
-        private VisualElement[]? _streakParticlePool;
-        private Coroutine?       _streakEmitterCoroutine;
-        private const int        _kStreakPoolSize = 8;
-        private static readonly Color _kGoldParticleColor = new Color(1f, 0.85f, 0.2f, 0.8f);
-
-        // Wave clear summary popup (center-screen, shown at end of each wave)
-        private VisualElement? _waveSummaryPanel;
-        private Label?         _waveSummaryTitle;
-        private Label?         _waveSummaryGold;
-        private Label?         _waveSummaryKills;
-        private Label?         _waveSummaryTime;
-        private Coroutine?     _waveSummaryCoroutine;
-
-        // Wave intro banner (left side, slide-in "Wave N - {enemy}" at wave start)
-        private VisualElement? _waveIntroBanner;
-        private Label?         _waveIntroLabel;
-        private Coroutine?     _waveIntroCoroutine;
 
         // Boss intro banner (bottom-center, 4s then fade)
         private VisualElement? _bossIntroBanner;
@@ -190,14 +160,6 @@ namespace CrowdDefense.UI
             "La peur est votre dernière arme.",
             "Chaque château finit par tomber.",
         };
-
-        // Level start banner (full-width top, slide-down 0.4s / hold 1.0s / slide-up 0.4s = 1.8s total)
-        private VisualElement? _levelStartBanner;
-        private Label?         _levelStartWorldLabel;
-        private Label?         _levelStartNameLabel;
-        private Label?         _levelStartBriefingLabel;
-        private Coroutine?     _levelStartBannerCoroutine;
-        private bool           _levelStartBannerActive;
 
         // Boss healthbar (top-center, shown while a boss is alive)
         private VisualElement? _bossHpRoot;
@@ -253,17 +215,6 @@ namespace CrowdDefense.UI
 
         // Settings panel controller — sibling component on same GameObject
         private SettingsPanelController? _settingsCtrl;
-
-        // Tutorial popup (one-time per playthrough, shown 1 s after first wave start)
-        private VisualElement? _tutorialPopup;
-        private Button?        _tutorialOkBtn;
-        private Coroutine?     _tutorialCoroutine;
-
-        private static bool TutorialShown
-        {
-            get => PlayerPrefs.GetInt("cd.tutorial_shown", 0) == 1;
-            set { PlayerPrefs.SetInt("cd.tutorial_shown", value ? 1 : 0); PlayerPrefs.Save(); }
-        }
 
         private void Start()
         {
@@ -365,17 +316,11 @@ namespace CrowdDefense.UI
             _bankLabel = root.Q<Label>("bank-label");
             _bankTooltip = root.Q<VisualElement>("bank-tooltip");
 
-            BuildLevelStartBanner(root);
             BuildBossHpBar(root);
             BuildBossIntroBanner(root);
-            BuildPerfectStreakBanner(root);
-            BuildWaveCountdownLabel(root);
             BuildWaveProgressDots(root);
-            BuildWaveIntroBanner(root);
-            BuildWaveSummaryPanel(root);
             BindWavePreview(root);
             BuildEnemyIntelPopup(root);
-            BuildTutorialPopup(root);
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
             if (waveValue != null) waveValue.text = "—";
@@ -447,7 +392,6 @@ namespace CrowdDefense.UI
             EventManager.Instance?.Subscribe<ComboResetEvent>(HandleComboReset);
             EventManager.Instance?.Subscribe<EnemySpawnedEvent>(HandleEnemySpawned);
             Enemy.OnDeathStatic += HandleEnemyDeath;
-            Systems.LevelEvents.OnLevelStart += OnLevelStart;
 
             // Wire perk badges + sidebar once hero is known
             var hero = LevelRunner.Instance?.Hero;
@@ -484,7 +428,6 @@ namespace CrowdDefense.UI
             EventManager.Instance?.Unsubscribe<ComboResetEvent>(HandleComboReset);
             EventManager.Instance?.Unsubscribe<EnemySpawnedEvent>(HandleEnemySpawned);
             Enemy.OnDeathStatic  -= HandleEnemyDeath;
-            Systems.LevelEvents.OnLevelStart -= OnLevelStart;
         }
 
         private void HandleComboUpdated(ComboUpdatedEvent evt)
@@ -543,9 +486,6 @@ namespace CrowdDefense.UI
                 OnBreakStateChanged();
             }
 
-            // ESC — skip level start banner cinematic
-            if (Input.GetKeyDown(KeyCode.Escape) && _levelStartBannerActive)
-                DismissLevelStartBanner();
 
             // N hotkey — debounced, shared with click (Q7)
             if (Input.GetKeyDown(KeyCode.N))
@@ -757,55 +697,9 @@ namespace CrowdDefense.UI
             bool wasInWindow = wm.SkipWindowSecondsRemaining > 0f;
             int streakBefore = wm.StreakCount;
 
-            // Show 3-2-1-GO then start wave
-            if (_countdownCoroutine != null) StopCoroutine(_countdownCoroutine);
-            _countdownCoroutine = StartCoroutine(CountdownThenStart(wm, wasInWindow, streakBefore));
-        }
-
-        private System.Collections.IEnumerator CountdownThenStart(WaveManager wm, bool wasInWindow, int streakBefore)
-        {
-            // Hide launch controls immediately
+            // Hide launch controls and start wave
             if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
             if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
-
-            // (text, pitch, vol, color)
-            static Color HexColor(float r, float g, float b) => new Color(r, g, b, 1f);
-            var goGold = HexColor(1f, 0.84f, 0f);
-            var steps = new (string text, float pitch, float vol, Color color)[]
-            {
-                ("3",         0.70f, 1.0f, Color.white),
-                ("2",         0.85f, 1.0f, Color.white),
-                ("1",         1.00f, 1.0f, Color.white),
-                ("PARTEZ !", 1.30f, 1.2f, goGold),
-            };
-            foreach (var (text, pitch, vol, color) in steps)
-            {
-                ShowWaveCountdown(text, color);
-                var ac = AudioController.Instance;
-                if (ac != null)
-                {
-                    if (ac.GetClip("countdown_beep") != null)
-                        ac.PlayPitched("countdown_beep", vol, pitch);
-                    else
-                        ac.PlayPitched("ui_click", vol, pitch);
-                }
-                // On PARTEZ ! fire a particle burst at screen center (world pos via camera)
-                if (text == "PARTEZ !")
-                {
-                    var cam = Camera.main;
-                    var vfx = VfxPool.Instance;
-                    if (cam != null && vfx != null)
-                    {
-                        var screenCenter = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 10f);
-                        var worldCenter  = cam.ScreenToWorldPoint(screenCenter);
-                        vfx.SpawnUpgradeBurst(worldCenter, 3);
-                    }
-                }
-                yield return new WaitForSecondsRealtime(1f);
-            }
-            HideWaveCountdown();
-
-            if (wm == null || !wm.IsWaitingForPlayerStart) yield break;
             wm.StartNextWave();
 
             if (wasInWindow)
@@ -926,144 +820,6 @@ namespace CrowdDefense.UI
         {
             _wavesCompleted = idx + 1;
             RefreshWaveDots();
-
-            bool perfect = Castle.Instance != null && !Castle.Instance.WasHitThisWave;
-            if (perfect)
-                _perfectWaveStreak++;
-            else
-                _perfectWaveStreak = 0;
-
-            if (_perfectWaveStreak >= 2)
-                ShowPerfectStreakBanner(_perfectWaveStreak);
-
-            // Skip summary for lobby wave (idx 0 is real Wave 1 — show it) and terminal states
-            var state = LevelRunner.Instance?.State ?? GameState.Lobby;
-            bool isTerminal = state == GameState.Lost || state == GameState.LevelComplete || state == GameState.Summary;
-            if (!isTerminal)
-            {
-                var wm = WaveManager.Instance;
-                int gold  = wm?.LastWaveGoldEarned ?? 0;
-                int kills = wm?.LastWaveKillCount  ?? 0;
-                float elapsed = wm?.LastWaveElapsedSeconds ?? 0f;
-                ShowWaveSummaryPopup(idx + 1, gold, kills, elapsed);
-            }
-        }
-
-        private void BuildWaveCountdownLabel(VisualElement root)
-        {
-            _waveCountdownLabel = new Label { name = "wave-countdown-label", text = "" };
-            _waveCountdownLabel.style.position       = Position.Absolute;
-            _waveCountdownLabel.style.top            = new Length(50f, LengthUnit.Percent);
-            _waveCountdownLabel.style.left           = new Length(50f, LengthUnit.Percent);
-            _waveCountdownLabel.style.translate      = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
-            _waveCountdownLabel.style.fontSize       = new Length(120f, LengthUnit.Pixel);
-            _waveCountdownLabel.style.color          = new StyleColor(Color.white);
-            _waveCountdownLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
-            _waveCountdownLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-            // Thick stroke via layered shadows (black outline 6 px in all 4 diagonal directions)
-            _waveCountdownLabel.style.textShadow     = new TextShadow
-            {
-                color      = new Color(0f, 0f, 0f, 1f),
-                offset     = new Vector2(6f, 6f),
-                blurRadius = 0f
-            };
-            _waveCountdownLabel.style.display        = DisplayStyle.None;
-            _waveCountdownLabel.style.opacity        = 0f;
-            _waveCountdownLabel.style.scale          = new Scale(new Vector3(0.5f, 0.5f, 1f));
-            root.Add(_waveCountdownLabel);
-            _waveCountdownLabel.BringToFront();
-        }
-
-        private void ShowWaveCountdown(string text, Color color)
-        {
-            if (_waveCountdownLabel == null) return;
-
-            // Reset to start state — tiny, transparent, no active transition
-            _waveCountdownLabel.style.transitionProperty  = StyleKeyword.None;
-            _waveCountdownLabel.style.transitionDuration  = StyleKeyword.None;
-            _waveCountdownLabel.style.transitionTimingFunction = StyleKeyword.None;
-            _waveCountdownLabel.text                       = text;
-            _waveCountdownLabel.style.color                = new StyleColor(color);
-            _waveCountdownLabel.style.display              = DisplayStyle.Flex;
-            _waveCountdownLabel.style.opacity              = 0f;
-            _waveCountdownLabel.style.scale                = new Scale(new Vector3(0.5f, 0.5f, 1f));
-
-            var lbl = _waveCountdownLabel;
-
-            // Phase 1 — pop in : scale 0.5→1.3, alpha 0→1 over 100 ms
-            lbl.schedule.Execute(() =>
-            {
-                if (lbl == null) return;
-                lbl.style.transitionProperty = new StyleList<StylePropertyName>(
-                    new System.Collections.Generic.List<StylePropertyName>
-                    {
-                        new StylePropertyName("scale"),
-                        new StylePropertyName("opacity")
-                    });
-                lbl.style.transitionDuration = new StyleList<TimeValue>(
-                    new System.Collections.Generic.List<TimeValue>
-                    {
-                        new TimeValue(0.1f, TimeUnit.Second),
-                        new TimeValue(0.1f, TimeUnit.Second)
-                    });
-                lbl.style.transitionTimingFunction = new StyleList<EasingFunction>(
-                    new System.Collections.Generic.List<EasingFunction>
-                    {
-                        new EasingFunction(EasingMode.EaseOut),
-                        new EasingFunction(EasingMode.Linear)
-                    });
-                lbl.style.scale   = new Scale(new Vector3(1.3f, 1.3f, 1f));
-                lbl.style.opacity = 1f;
-            }).ExecuteLater(16); // 1 frame delay so the reset above is committed
-
-            // Phase 2 — settle : scale 1.3→1.0 over 200 ms (starts at 116 ms)
-            lbl.schedule.Execute(() =>
-            {
-                if (lbl == null) return;
-                lbl.style.transitionDuration = new StyleList<TimeValue>(
-                    new System.Collections.Generic.List<TimeValue>
-                    {
-                        new TimeValue(0.2f, TimeUnit.Second),
-                        new TimeValue(0.01f, TimeUnit.Second)
-                    });
-                lbl.style.transitionTimingFunction = new StyleList<EasingFunction>(
-                    new System.Collections.Generic.List<EasingFunction>
-                    {
-                        new EasingFunction(EasingMode.EaseInOut),
-                        new EasingFunction(EasingMode.Linear)
-                    });
-                lbl.style.scale = new Scale(new Vector3(1f, 1f, 1f));
-            }).ExecuteLater(116); // 16 + 100 ms
-
-            // Phase 3 — hold then fade out : alpha 1→0 over 300 ms (starts at 916 ms = 116+200+600 hold)
-            lbl.schedule.Execute(() =>
-            {
-                if (lbl == null) return;
-                lbl.style.transitionDuration = new StyleList<TimeValue>(
-                    new System.Collections.Generic.List<TimeValue>
-                    {
-                        new TimeValue(0.01f, TimeUnit.Second),
-                        new TimeValue(0.3f, TimeUnit.Second)
-                    });
-                lbl.style.transitionTimingFunction = new StyleList<EasingFunction>(
-                    new System.Collections.Generic.List<EasingFunction>
-                    {
-                        new EasingFunction(EasingMode.Linear),
-                        new EasingFunction(EasingMode.EaseIn)
-                    });
-                lbl.style.opacity = 0f;
-            }).ExecuteLater(916);
-        }
-
-        private void HideWaveCountdown()
-        {
-            if (_waveCountdownLabel == null) return;
-            _waveCountdownLabel.style.transitionProperty  = StyleKeyword.None;
-            _waveCountdownLabel.style.transitionDuration  = StyleKeyword.None;
-            _waveCountdownLabel.style.transitionTimingFunction = StyleKeyword.None;
-            _waveCountdownLabel.style.display = DisplayStyle.None;
-            _waveCountdownLabel.style.opacity = 0f;
-            _waveCountdownLabel.style.scale   = new Scale(new Vector3(0.5f, 0.5f, 1f));
         }
 
         private System.Collections.IEnumerator FlashButtonGreen(VisualElement? btn, float duration)
@@ -1237,33 +993,6 @@ namespace CrowdDefense.UI
         {
             RefreshWaveDots();
 
-            // Tutorial popup — first wave only, once per playthrough
-            if (idx == 0 && !TutorialShown)
-            {
-                if (_tutorialCoroutine != null) StopCoroutine(_tutorialCoroutine);
-                _tutorialCoroutine = StartCoroutine(ShowTutorialPopupCoroutine());
-            }
-
-            // Wave intro banner — pull primary enemy name from first non-null entry
-            string enemyName = string.Empty;
-            var wm0 = WaveManager.Instance;
-            if (wm0 != null)
-            {
-                var def = wm0.GetWaveDef(idx);
-                if (def.HasValue && def.Value.entries != null)
-                {
-                    foreach (var entry in def.Value.entries)
-                    {
-                        if (entry.type != null && !string.IsNullOrEmpty(entry.type.DisplayName))
-                        {
-                            enemyName = entry.type.DisplayName;
-                            break;
-                        }
-                    }
-                }
-            }
-            ShowWaveIntroBanner(idx + 1, enemyName);
-
             if (waveValue == null || WaveManager.Instance == null) return;
             bool endless = LevelRunner.Instance?.IsEndlessRun == true;
             waveValue.text = endless
@@ -1381,11 +1110,6 @@ namespace CrowdDefense.UI
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
                 if (_wavePreviewPanel != null) _wavePreviewPanel.AddToClassList("hidden");
                 if (_enemyIntelPopup != null)  _enemyIntelPopup.style.display = DisplayStyle.None;
-                _perfectWaveStreak = 0;
-                if (_perfectStreakCoroutine != null) { StopCoroutine(_perfectStreakCoroutine); _perfectStreakCoroutine = null; }
-                if (_streakEmitterCoroutine != null) { StopCoroutine(_streakEmitterCoroutine); _streakEmitterCoroutine = null; }
-                StopAllStreakParticles();
-                if (_perfectStreakBanner != null) _perfectStreakBanner.style.display = DisplayStyle.None;
             }
         }
 
@@ -1885,279 +1609,6 @@ namespace CrowdDefense.UI
             root.Add(_enemyCountLabel);
         }
 
-        // ── Wave intro banner (slide-in from left) ───────────────────────────
-
-        private void BuildWaveIntroBanner(VisualElement root)
-        {
-            _waveIntroBanner = new VisualElement { name = "wave-intro-banner" };
-            _waveIntroBanner.style.position       = Position.Absolute;
-            _waveIntroBanner.style.top            = new Length(50f, LengthUnit.Percent);
-            _waveIntroBanner.style.translate      = new Translate(Length.Auto(), new Length(-50f, LengthUnit.Percent));
-            _waveIntroBanner.style.paddingTop     = new Length(16f, LengthUnit.Pixel);
-            _waveIntroBanner.style.paddingBottom  = new Length(16f, LengthUnit.Pixel);
-            _waveIntroBanner.style.paddingLeft    = new Length(32f, LengthUnit.Pixel);
-            _waveIntroBanner.style.paddingRight   = new Length(32f, LengthUnit.Pixel);
-            _waveIntroBanner.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.7f));
-            _waveIntroBanner.style.borderTopLeftRadius    = new Length(0f,  LengthUnit.Pixel);
-            _waveIntroBanner.style.borderTopRightRadius   = new Length(8f,  LengthUnit.Pixel);
-            _waveIntroBanner.style.borderBottomLeftRadius = new Length(0f,  LengthUnit.Pixel);
-            _waveIntroBanner.style.borderBottomRightRadius = new Length(8f, LengthUnit.Pixel);
-            _waveIntroBanner.style.display        = DisplayStyle.None;
-            _waveIntroBanner.style.alignItems     = Align.Center;
-
-            _waveIntroLabel = new Label { name = "wave-intro-label", text = "" };
-            _waveIntroLabel.style.color                   = new StyleColor(Color.white);
-            _waveIntroLabel.style.fontSize                = new Length(56f, LengthUnit.Pixel);
-            _waveIntroLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
-            _waveIntroLabel.style.unityTextAlign          = TextAnchor.MiddleLeft;
-            _waveIntroLabel.style.textShadow              = new TextShadow
-            {
-                color      = new Color(0f, 0f, 0f, 1f),
-                offset     = new Vector2(3f, 3f),
-                blurRadius = 0f,
-            };
-            _waveIntroBanner.Add(_waveIntroLabel);
-            root.Add(_waveIntroBanner);
-        }
-
-        public void ShowWaveIntroBanner(int waveNum, string enemyName)
-        {
-            if (_waveIntroBanner == null || _waveIntroLabel == null) return;
-
-            _waveIntroLabel.text = string.IsNullOrEmpty(enemyName)
-                ? $"Vague {waveNum}"
-                : $"Vague {waveNum}  •  {enemyName}";
-
-            if (_waveIntroCoroutine != null) StopCoroutine(_waveIntroCoroutine);
-            _waveIntroCoroutine = StartCoroutine(WaveIntroBannerCoroutine());
-        }
-
-        private System.Collections.IEnumerator WaveIntroBannerCoroutine()
-        {
-            if (_waveIntroBanner == null) yield break;
-
-            // Play audio sting at slide-in start
-            var ac = AudioController.Instance;
-            if (ac != null)
-            {
-                try
-                {
-                    if (ac.GetClip("wave_intro_sting") != null)
-                        ac.Play("wave_intro_sting", 0.7f);
-                }
-                catch { /* clip absent — skip silently */ }
-            }
-
-            _waveIntroBanner.style.display = DisplayStyle.Flex;
-
-            // Slide-in: X from -400 → 100 over 0.4s ease-out
-            const float slideInS  = 0.4f;
-            const float holdS     = 1.6f;
-            const float slideOutS = 0.4f;
-            const float startX    = -400f;
-            const float holdX     =  100f;
-            const float endX      =  800f;
-
-            float t = 0f;
-            while (t < slideInS)
-            {
-                t += Time.unscaledDeltaTime;
-                float p = Mathf.Clamp01(t / slideInS);
-                float eased = 1f - (1f - p) * (1f - p); // ease-out quadratic
-                float x = Mathf.Lerp(startX, holdX, eased);
-                _waveIntroBanner.style.left = new Length(x, LengthUnit.Pixel);
-                yield return null;
-            }
-            _waveIntroBanner.style.left = new Length(holdX, LengthUnit.Pixel);
-
-            // Hold
-            yield return new WaitForSecondsRealtime(holdS);
-            if (_waveIntroBanner == null) yield break;
-
-            // Slide-out: X from 100 → 800 over 0.4s ease-in
-            t = 0f;
-            while (t < slideOutS)
-            {
-                t += Time.unscaledDeltaTime;
-                float p = Mathf.Clamp01(t / slideOutS);
-                float eased = p * p; // ease-in quadratic
-                float x = Mathf.Lerp(holdX, endX, eased);
-                _waveIntroBanner.style.left = new Length(x, LengthUnit.Pixel);
-                yield return null;
-            }
-
-            if (_waveIntroBanner != null) _waveIntroBanner.style.display = DisplayStyle.None;
-            _waveIntroCoroutine = null;
-        }
-
-        // ── Level start banner (slide-down cinematic 1.8s) ───────────────────
-
-        private void BuildLevelStartBanner(VisualElement root)
-        {
-            _levelStartBanner = new VisualElement { name = "level-start-banner" };
-            _levelStartBanner.style.position        = Position.Absolute;
-            _levelStartBanner.style.top             = new Length(0f,   LengthUnit.Pixel);
-            _levelStartBanner.style.left            = 0;
-            _levelStartBanner.style.right           = 0;
-            _levelStartBanner.style.height          = new Length(200f, LengthUnit.Pixel);
-            _levelStartBanner.style.flexDirection   = FlexDirection.Column;
-            _levelStartBanner.style.alignItems      = Align.Center;
-            _levelStartBanner.style.justifyContent  = Justify.Center;
-            _levelStartBanner.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.82f));
-            _levelStartBanner.style.borderBottomWidth = 3f;
-            _levelStartBanner.style.borderBottomColor = new StyleColor(new Color(1f, 0.84f, 0f, 0.7f));
-            _levelStartBanner.style.paddingTop      = new Length(16f, LengthUnit.Pixel);
-            _levelStartBanner.style.paddingBottom   = new Length(16f, LengthUnit.Pixel);
-            _levelStartBanner.pickingMode           = PickingMode.Ignore;
-            _levelStartBanner.style.display         = DisplayStyle.None;
-
-            _levelStartWorldLabel = new Label { name = "level-start-world", text = "" };
-            _levelStartWorldLabel.style.color                   = new StyleColor(Color.white);
-            _levelStartWorldLabel.style.fontSize                = new Length(28f, LengthUnit.Pixel);
-            _levelStartWorldLabel.style.unityFontStyleAndWeight = FontStyle.Normal;
-            _levelStartWorldLabel.style.unityTextAlign          = TextAnchor.MiddleCenter;
-            _levelStartWorldLabel.style.marginBottom            = new Length(4f, LengthUnit.Pixel);
-            _levelStartWorldLabel.style.textShadow              = new TextShadow
-            {
-                color      = new Color(0f, 0f, 0f, 0.9f),
-                offset     = new Vector2(2f, 2f),
-                blurRadius = 4f,
-            };
-            _levelStartBanner.Add(_levelStartWorldLabel);
-
-            _levelStartNameLabel = new Label { name = "level-start-name", text = "" };
-            _levelStartNameLabel.style.color                   = new StyleColor(new Color(1f, 0.84f, 0f));
-            _levelStartNameLabel.style.fontSize                = new Length(56f, LengthUnit.Pixel);
-            _levelStartNameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            _levelStartNameLabel.style.unityTextAlign          = TextAnchor.MiddleCenter;
-            _levelStartNameLabel.style.textShadow              = new TextShadow
-            {
-                color      = new Color(0.4f, 0.25f, 0f, 1f),
-                offset     = new Vector2(3f, 3f),
-                blurRadius = 6f,
-            };
-            _levelStartBanner.Add(_levelStartNameLabel);
-
-            _levelStartBriefingLabel = new Label { name = "level-start-briefing", text = "" };
-            _levelStartBriefingLabel.style.color                   = new StyleColor(new Color(0.78f, 0.78f, 0.78f));
-            _levelStartBriefingLabel.style.fontSize                = new Length(18f, LengthUnit.Pixel);
-            _levelStartBriefingLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
-            _levelStartBriefingLabel.style.unityTextAlign          = TextAnchor.MiddleCenter;
-            _levelStartBriefingLabel.style.marginTop               = new Length(8f, LengthUnit.Pixel);
-            _levelStartBriefingLabel.style.maxWidth                = new Length(80f, LengthUnit.Percent);
-            _levelStartBriefingLabel.style.whiteSpace              = WhiteSpace.Normal;
-            _levelStartBriefingLabel.style.textShadow              = new TextShadow
-            {
-                color      = new Color(0f, 0f, 0f, 0.75f),
-                offset     = new Vector2(1f, 1f),
-                blurRadius = 3f,
-            };
-            _levelStartBanner.Add(_levelStartBriefingLabel);
-
-            root.Add(_levelStartBanner);
-            _levelStartBanner.BringToFront();
-        }
-
-        private void OnLevelStart(Data.LevelData levelData, UnityEngine.Bounds _) =>
-            ShowLevelStartBanner(levelData);
-
-        public void ShowLevelStartBanner(Data.LevelData levelData)
-        {
-            if (_levelStartBanner == null) return;
-
-            string worldLine = $"MONDE {levelData.World} - NIVEAU {levelData.Level}";
-            string nameLine  = string.IsNullOrEmpty(levelData.DisplayName) ? levelData.Id : levelData.DisplayName;
-            string briefing  = levelData.Briefing ?? string.Empty;
-
-            if (_levelStartWorldLabel   != null) _levelStartWorldLabel.text   = worldLine;
-            if (_levelStartNameLabel    != null) _levelStartNameLabel.text    = nameLine;
-            if (_levelStartBriefingLabel != null)
-            {
-                _levelStartBriefingLabel.text = briefing;
-                _levelStartBriefingLabel.style.display = string.IsNullOrEmpty(briefing)
-                    ? DisplayStyle.None
-                    : DisplayStyle.Flex;
-            }
-
-            if (_levelStartBannerCoroutine != null) StopCoroutine(_levelStartBannerCoroutine);
-            _levelStartBannerCoroutine = StartCoroutine(LevelStartBannerCoroutine());
-        }
-
-        private void DismissLevelStartBanner()
-        {
-            if (!_levelStartBannerActive) return;
-            if (_levelStartBannerCoroutine != null) { StopCoroutine(_levelStartBannerCoroutine); _levelStartBannerCoroutine = null; }
-            _levelStartBannerActive = false;
-            if (_levelStartBanner != null) _levelStartBanner.style.display = DisplayStyle.None;
-        }
-
-        private System.Collections.IEnumerator LevelStartBannerCoroutine()
-        {
-            if (_levelStartBanner == null) yield break;
-
-            _levelStartBannerActive = true;
-
-            var ac = AudioController.Instance;
-            if (ac != null)
-            {
-                try
-                {
-                    if (ac.GetClip("level_start_horn") != null)
-                        ac.Play("level_start_horn", 0.8f);
-                }
-                catch { /* clip absent — skip silently */ }
-            }
-
-            // Banner starts above screen (Y = -200), animates to Y = 0 (top 30 % by height = 200px)
-            const float slideInDur  = 0.4f;
-            const float holdDur     = 1.0f;
-            const float slideOutDur = 0.4f;
-            const float offscreenY  = -200f;
-            const float onscreenY   =   0f;
-
-            _levelStartBanner.style.top     = new Length(offscreenY, LengthUnit.Pixel);
-            _levelStartBanner.style.opacity = 1f;
-            _levelStartBanner.style.display = DisplayStyle.Flex;
-
-            // Slide down: Y offscreenY → onscreenY, ease-out quadratic
-            float t = 0f;
-            while (t < slideInDur)
-            {
-                if (!_levelStartBannerActive) yield break;
-                t += Time.unscaledDeltaTime;
-                float p     = Mathf.Clamp01(t / slideInDur);
-                float eased = 1f - (1f - p) * (1f - p);
-                _levelStartBanner.style.top = new Length(Mathf.Lerp(offscreenY, onscreenY, eased), LengthUnit.Pixel);
-                yield return null;
-            }
-            _levelStartBanner.style.top = new Length(onscreenY, LengthUnit.Pixel);
-
-            // Hold
-            float hold = 0f;
-            while (hold < holdDur)
-            {
-                if (!_levelStartBannerActive) yield break;
-                hold += Time.unscaledDeltaTime;
-                yield return null;
-            }
-
-            // Slide up: Y onscreenY → offscreenY, ease-in quadratic
-            t = 0f;
-            while (t < slideOutDur)
-            {
-                if (!_levelStartBannerActive) yield break;
-                t += Time.unscaledDeltaTime;
-                float p     = Mathf.Clamp01(t / slideOutDur);
-                float eased = p * p;
-                _levelStartBanner.style.top = new Length(Mathf.Lerp(onscreenY, offscreenY, eased), LengthUnit.Pixel);
-                yield return null;
-            }
-
-            _levelStartBanner.style.display = DisplayStyle.None;
-            _levelStartBannerActive         = false;
-            _levelStartBannerCoroutine      = null;
-        }
-
         private void EnsureSibling<T>() where T : Component
         {
             if (gameObject.GetComponent<T>() == null)
@@ -2184,355 +1635,6 @@ namespace CrowdDefense.UI
         {
             Time.timeScale = 1f;
             Systems.LevelLoader.GoToMenu();
-        }
-
-        // ── Wave clear summary popup ──────────────────────────────────────────
-
-        private static readonly Color _summaryGoldColor = new Color(1f, 0.85f, 0.2f);
-        private static readonly Color _summaryCyanColor = new Color(0.3f, 0.9f, 1f);
-        private static readonly Color _summaryWhite     = Color.white;
-
-        private void BuildWaveSummaryPanel(VisualElement root)
-        {
-            _waveSummaryPanel = new VisualElement { name = "wave-summary-panel" };
-            _waveSummaryPanel.style.position       = Position.Absolute;
-            _waveSummaryPanel.style.top            = new Length(50f, LengthUnit.Percent);
-            _waveSummaryPanel.style.left           = new Length(50f, LengthUnit.Percent);
-            _waveSummaryPanel.style.translate      = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
-            _waveSummaryPanel.style.width          = new Length(400f, LengthUnit.Pixel);
-            _waveSummaryPanel.style.height         = new Length(200f, LengthUnit.Pixel);
-            _waveSummaryPanel.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.85f));
-            _waveSummaryPanel.style.borderTopWidth    = _waveSummaryPanel.style.borderBottomWidth =
-            _waveSummaryPanel.style.borderLeftWidth   = _waveSummaryPanel.style.borderRightWidth  = 3f;
-            var goldBorder = new StyleColor(_summaryGoldColor);
-            _waveSummaryPanel.style.borderTopColor    = _waveSummaryPanel.style.borderBottomColor =
-            _waveSummaryPanel.style.borderLeftColor   = _waveSummaryPanel.style.borderRightColor  = goldBorder;
-            _waveSummaryPanel.style.borderTopLeftRadius    = _waveSummaryPanel.style.borderTopRightRadius =
-            _waveSummaryPanel.style.borderBottomLeftRadius = _waveSummaryPanel.style.borderBottomRightRadius = new Length(12f, LengthUnit.Pixel);
-            _waveSummaryPanel.style.paddingTop    = new Length(16f, LengthUnit.Pixel);
-            _waveSummaryPanel.style.paddingBottom = new Length(16f, LengthUnit.Pixel);
-            _waveSummaryPanel.style.paddingLeft   = new Length(24f, LengthUnit.Pixel);
-            _waveSummaryPanel.style.paddingRight  = new Length(24f, LengthUnit.Pixel);
-            _waveSummaryPanel.style.alignItems    = Align.Center;
-            _waveSummaryPanel.style.justifyContent = Justify.SpaceAround;
-            _waveSummaryPanel.style.display        = DisplayStyle.None;
-            _waveSummaryPanel.style.opacity        = 0f;
-            _waveSummaryPanel.style.scale          = new Scale(new Vector3(0f, 0f, 1f));
-
-            _waveSummaryTitle = new Label { name = "wave-summary-title", text = "" };
-            _waveSummaryTitle.style.color                   = new StyleColor(_summaryGoldColor);
-            _waveSummaryTitle.style.fontSize                = new Length(32f, LengthUnit.Pixel);
-            _waveSummaryTitle.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
-            _waveSummaryTitle.style.unityTextAlign          = TextAnchor.MiddleCenter;
-            _waveSummaryTitle.style.textShadow              = new TextShadow
-            {
-                color      = new Color(0.4f, 0.25f, 0f, 0.9f),
-                offset     = new Vector2(2f, 2f),
-                blurRadius = 4f,
-            };
-            _waveSummaryPanel.Add(_waveSummaryTitle);
-
-            _waveSummaryGold = new Label { name = "wave-summary-gold", text = "" };
-            _waveSummaryGold.style.color     = new StyleColor(_summaryWhite);
-            _waveSummaryGold.style.fontSize  = new Length(18f, LengthUnit.Pixel);
-            _waveSummaryGold.style.unityTextAlign = TextAnchor.MiddleCenter;
-            _waveSummaryPanel.Add(_waveSummaryGold);
-
-            _waveSummaryKills = new Label { name = "wave-summary-kills", text = "" };
-            _waveSummaryKills.style.color    = new StyleColor(_summaryWhite);
-            _waveSummaryKills.style.fontSize = new Length(18f, LengthUnit.Pixel);
-            _waveSummaryKills.style.unityTextAlign = TextAnchor.MiddleCenter;
-            _waveSummaryPanel.Add(_waveSummaryKills);
-
-            _waveSummaryTime = new Label { name = "wave-summary-time", text = "" };
-            _waveSummaryTime.style.color     = new StyleColor(_summaryCyanColor);
-            _waveSummaryTime.style.fontSize  = new Length(18f, LengthUnit.Pixel);
-            _waveSummaryTime.style.unityTextAlign = TextAnchor.MiddleCenter;
-            _waveSummaryPanel.Add(_waveSummaryTime);
-
-            root.Add(_waveSummaryPanel);
-        }
-
-        private void ShowWaveSummaryPopup(int waveNum, int goldEarned, int killCount, float elapsedSeconds)
-        {
-            if (_waveSummaryPanel == null) return;
-
-            if (_waveSummaryCoroutine != null)
-            {
-                StopCoroutine(_waveSummaryCoroutine);
-                _waveSummaryCoroutine = null;
-            }
-
-            if (_waveSummaryTitle  != null) _waveSummaryTitle.text  = $"VAGUE {waveNum} TERMINÉE";
-            if (_waveSummaryGold   != null) _waveSummaryGold.text   = $"Or gagné : +{goldEarned}";
-            if (_waveSummaryKills  != null) _waveSummaryKills.text  = $"Ennemis : {killCount}";
-            if (_waveSummaryTime   != null) _waveSummaryTime.text   = $"Temps : {TimeFormatter.FormatMMSS(elapsedSeconds)}";
-
-            _waveSummaryPanel.style.display = DisplayStyle.Flex;
-            _waveSummaryPanel.style.opacity = 0f;
-            _waveSummaryPanel.style.scale   = new Scale(new Vector3(0f, 0f, 1f));
-
-            _waveSummaryCoroutine = StartCoroutine(WaveSummaryCoroutine());
-        }
-
-        private System.Collections.IEnumerator WaveSummaryCoroutine()
-        {
-            if (_waveSummaryPanel == null) yield break;
-
-            var ac = AudioController.Instance;
-            if (ac != null)
-            {
-                try
-                {
-                    if (ac.GetClip("wave_clear_fanfare") != null)
-                        ac.Play("wave_clear_fanfare", 0.8f);
-                }
-                catch { /* clip absent — skip silently */ }
-            }
-
-            // Phase 1 — scale 0 → 1.1 → 1.0 + fade-in over 0.4s ease-out
-            const float punchDur = 0.4f;
-            float t = 0f;
-            while (t < punchDur)
-            {
-                t += Time.unscaledDeltaTime;
-                float frac = Mathf.Clamp01(t / punchDur);
-                _waveSummaryPanel.style.opacity = Mathf.Clamp01(frac * 2.5f);
-                float s = frac < 0.7f
-                    ? Mathf.Lerp(0f, 1.1f, frac / 0.7f)
-                    : Mathf.Lerp(1.1f, 1.0f, (frac - 0.7f) / 0.3f);
-                _waveSummaryPanel.style.scale = new Scale(new Vector3(s, s, 1f));
-                yield return null;
-            }
-            _waveSummaryPanel.style.opacity = 1f;
-            _waveSummaryPanel.style.scale   = new Scale(new Vector3(1f, 1f, 1f));
-
-            // Phase 2 — hold 2.5s
-            yield return new WaitForSecondsRealtime(2.5f);
-            if (_waveSummaryPanel == null) yield break;
-
-            // Phase 3 — fade-out 0.4s
-            const float fadeOutDur = 0.4f;
-            t = 0f;
-            while (t < fadeOutDur)
-            {
-                t += Time.unscaledDeltaTime;
-                float frac = Mathf.Clamp01(t / fadeOutDur);
-                _waveSummaryPanel.style.opacity = 1f - frac;
-                yield return null;
-            }
-
-            if (_waveSummaryPanel != null) _waveSummaryPanel.style.display = DisplayStyle.None;
-            _waveSummaryCoroutine = null;
-        }
-
-        // ── Perfect wave streak banner ────────────────────────────────────────
-
-        private void BuildPerfectStreakBanner(VisualElement root)
-        {
-            _perfectStreakBanner = new VisualElement { name = "perfect-streak-banner" };
-            _perfectStreakBanner.style.position      = Position.Absolute;
-            _perfectStreakBanner.style.top           = new Length(8f,  LengthUnit.Pixel);
-            _perfectStreakBanner.style.left          = new Length(50f, LengthUnit.Percent);
-            _perfectStreakBanner.style.translate     = new Translate(new Length(-50f, LengthUnit.Percent), Length.Auto());
-            _perfectStreakBanner.style.paddingTop    = new Length(8f,  LengthUnit.Pixel);
-            _perfectStreakBanner.style.paddingBottom = new Length(8f,  LengthUnit.Pixel);
-            _perfectStreakBanner.style.paddingLeft   = new Length(24f, LengthUnit.Pixel);
-            _perfectStreakBanner.style.paddingRight  = new Length(24f, LengthUnit.Pixel);
-            _perfectStreakBanner.style.backgroundColor = new StyleColor(new Color(0.04f, 0.03f, 0f, 0.88f));
-            _perfectStreakBanner.style.borderTopWidth    = _perfectStreakBanner.style.borderBottomWidth =
-            _perfectStreakBanner.style.borderLeftWidth   = _perfectStreakBanner.style.borderRightWidth  = 2f;
-            var goldBorder = new StyleColor(new Color(1f, 0.85f, 0.2f));
-            _perfectStreakBanner.style.borderTopColor    = _perfectStreakBanner.style.borderBottomColor =
-            _perfectStreakBanner.style.borderLeftColor   = _perfectStreakBanner.style.borderRightColor  = goldBorder;
-            _perfectStreakBanner.style.borderTopLeftRadius    = _perfectStreakBanner.style.borderTopRightRadius =
-            _perfectStreakBanner.style.borderBottomLeftRadius = _perfectStreakBanner.style.borderBottomRightRadius = new Length(6f, LengthUnit.Pixel);
-            _perfectStreakBanner.style.display       = DisplayStyle.None;
-            _perfectStreakBanner.style.alignItems    = Align.Center;
-
-            _perfectStreakLabel = new Label { name = "perfect-streak-label", text = "" };
-            _perfectStreakLabel.style.color                   = new StyleColor(new Color(1f, 0.85f, 0.2f));
-            _perfectStreakLabel.style.fontSize                = new Length(20f, LengthUnit.Pixel);
-            _perfectStreakLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
-            _perfectStreakLabel.style.unityTextAlign          = TextAnchor.MiddleCenter;
-            _perfectStreakLabel.style.textShadow              = new TextShadow
-            {
-                color      = new Color(0.5f, 0.35f, 0f, 0.9f),
-                offset     = new Vector2(2f, 2f),
-                blurRadius = 5f,
-            };
-            _perfectStreakBanner.Add(_perfectStreakLabel);
-            root.Add(_perfectStreakBanner);
-
-            // Particle container — absolute, same origin as root, behind banner
-            _streakParticleContainer = new VisualElement { name = "streak-particle-container" };
-            _streakParticleContainer.style.position        = Position.Absolute;
-            _streakParticleContainer.style.left            = 0;
-            _streakParticleContainer.style.top             = 0;
-            _streakParticleContainer.style.right           = 0;
-            _streakParticleContainer.style.bottom          = 0;
-            _streakParticleContainer.style.overflow        = Overflow.Hidden;
-            _streakParticleContainer.pickingMode           = PickingMode.Ignore;
-            _streakParticleContainer.style.display         = DisplayStyle.Flex;
-            root.Insert(0, _streakParticleContainer);   // behind all other elements
-
-            // Pre-allocate pool
-            _streakParticlePool = new VisualElement[_kStreakPoolSize];
-            for (int i = 0; i < _kStreakPoolSize; i++)
-            {
-                var p = new VisualElement { name = $"streak-p-{i}" };
-                p.style.position         = Position.Absolute;
-                p.style.width            = new Length(10f, LengthUnit.Pixel);
-                p.style.height           = new Length(10f, LengthUnit.Pixel);
-                p.style.borderTopLeftRadius    = p.style.borderTopRightRadius    =
-                p.style.borderBottomLeftRadius = p.style.borderBottomRightRadius = new Length(5f, LengthUnit.Pixel);
-                p.style.backgroundColor  = new StyleColor(_kGoldParticleColor);
-                p.style.display          = DisplayStyle.None;
-                p.pickingMode            = PickingMode.Ignore;
-                _streakParticleContainer.Add(p);
-                _streakParticlePool[i] = p;
-            }
-        }
-
-        private void ShowPerfectStreakBanner(int streak)
-        {
-            if (_perfectStreakBanner == null || _perfectStreakLabel == null) return;
-
-            _perfectStreakLabel.text = $"ENCHAÎNEMENT PARFAIT x{streak}";
-            _perfectStreakBanner.style.display = DisplayStyle.Flex;
-            _perfectStreakBanner.style.opacity = 0f;
-            _perfectStreakBanner.style.scale   = new Scale(new Vector3(0.8f, 0.8f, 1f));
-
-            if (_perfectStreakCoroutine != null) StopCoroutine(_perfectStreakCoroutine);
-            _perfectStreakCoroutine = StartCoroutine(PerfectStreakBannerCoroutine(streak));
-
-            if (_streakEmitterCoroutine != null) StopCoroutine(_streakEmitterCoroutine);
-            _streakEmitterCoroutine = StartCoroutine(StreakBannerParticleEmitter());
-        }
-
-        private System.Collections.IEnumerator PerfectStreakBannerCoroutine(int streak)
-        {
-            if (_perfectStreakBanner == null || _perfectStreakLabel == null) yield break;
-
-            // Pitch: 1.0 base + 0.05 per streak level
-            float pitch = 1f + streak * 0.05f;
-            AudioController.Instance?.PlayPitched("perfect_wave_chime", 1f, pitch);
-
-            // Phase 1 — fade-in + scale punch: 0.8→1.1→1.0 over 0.4s
-            const float punchDur = 0.4f;
-            float t = 0f;
-            while (t < punchDur)
-            {
-                t += Time.unscaledDeltaTime;
-                float frac = Mathf.Clamp01(t / punchDur);
-                // Opacity: 0→1 in first half
-                _perfectStreakBanner.style.opacity = Mathf.Clamp01(frac * 2f);
-                // Scale: 0.8→1.1→1.0
-                float s = frac < 0.5f
-                    ? Mathf.Lerp(0.8f, 1.1f, frac * 2f)
-                    : Mathf.Lerp(1.1f, 1.0f, (frac - 0.5f) * 2f);
-                _perfectStreakBanner.style.scale = new Scale(new Vector3(s, s, 1f));
-                yield return null;
-            }
-            _perfectStreakBanner.style.opacity = 1f;
-            _perfectStreakBanner.style.scale   = new Scale(new Vector3(1f, 1f, 1f));
-
-            // Phase 2 — hold 2.5s
-            yield return new WaitForSecondsRealtime(2.5f);
-            if (_perfectStreakBanner == null) yield break;
-
-            // Phase 3 — fade-out 0.5s via transition
-            _perfectStreakBanner.style.transitionProperty = new StyleList<StylePropertyName>(
-                new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("opacity") });
-            _perfectStreakBanner.style.transitionDuration = new StyleList<TimeValue>(
-                new System.Collections.Generic.List<TimeValue> { new TimeValue(0.5f, TimeUnit.Second) });
-            _perfectStreakBanner.style.transitionTimingFunction = new StyleList<EasingFunction>(
-                new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseIn) });
-            _perfectStreakBanner.style.opacity = 0f;
-            yield return new WaitForSecondsRealtime(0.5f);
-            if (_streakEmitterCoroutine != null) { StopCoroutine(_streakEmitterCoroutine); _streakEmitterCoroutine = null; }
-            StopAllStreakParticles();
-            if (_perfectStreakBanner != null) _perfectStreakBanner.style.display = DisplayStyle.None;
-            _perfectStreakCoroutine = null;
-        }
-
-        // ── Streak banner particle trail ──────────────────────────────────────
-
-        private void StopAllStreakParticles()
-        {
-            if (_streakParticlePool == null) return;
-            foreach (var p in _streakParticlePool)
-            {
-                p.style.display = DisplayStyle.None;
-                p.style.opacity = 0f;
-            }
-        }
-
-        private void SpawnStreakBannerParticles()
-        {
-            if (_perfectStreakBanner == null || _streakParticlePool == null || _streakParticleContainer == null) return;
-            if (_perfectStreakBanner.style.display == DisplayStyle.None) return;
-
-            // Find an idle pooled particle
-            VisualElement? particle = null;
-            foreach (var p in _streakParticlePool)
-            {
-                if (p.style.display == DisplayStyle.None)
-                {
-                    particle = p;
-                    break;
-                }
-            }
-            if (particle == null) return;
-
-            // Banner is top-center: left ~50% screen, top 8px, assume ~200px wide, ~42px tall
-            // Particle position relative to _streakParticleContainer (full screen).
-            // We use resolvedStyle if available, otherwise fallback constants.
-            float containerW = _streakParticleContainer.resolvedStyle.width;
-            float containerH = _streakParticleContainer.resolvedStyle.height;
-            if (containerW <= 1f) containerW = Screen.width;
-            if (containerH <= 1f) containerH = Screen.height;
-
-            float bannerCenterX = containerW * 0.5f;
-            float bannerCenterY = 8f + 21f;   // top 8px + half banner height ~42px
-
-            float spawnX = bannerCenterX + Random.Range(-200f, 200f) - 5f;  // -5 to center 10px particle
-            float spawnY = bannerCenterY + Random.Range(-60f, 60f)  - 5f;
-
-            particle.style.left    = new Length(spawnX, LengthUnit.Pixel);
-            particle.style.top     = new Length(spawnY, LengthUnit.Pixel);
-            particle.style.opacity = 0.8f;
-            particle.style.display = DisplayStyle.Flex;
-
-            StartCoroutine(AnimateStreakParticle(particle, spawnY));
-        }
-
-        private System.Collections.IEnumerator AnimateStreakParticle(VisualElement particle, float startY)
-        {
-            const float duration = 1.0f;
-            const float floatDist = 60f;
-            float t = 0f;
-            while (t < duration)
-            {
-                t += Time.unscaledDeltaTime;
-                float frac = Mathf.Clamp01(t / duration);
-                particle.style.top     = new Length(startY - floatDist * frac, LengthUnit.Pixel);
-                particle.style.opacity = Mathf.Lerp(0.8f, 0f, frac);
-                yield return null;
-            }
-            particle.style.display = DisplayStyle.None;
-            particle.style.opacity = 0f;
-        }
-
-        private System.Collections.IEnumerator StreakBannerParticleEmitter()
-        {
-            while (_perfectStreakBanner != null &&
-                   _perfectStreakBanner.style.display != DisplayStyle.None)
-            {
-                SpawnStreakBannerParticles();
-                yield return new WaitForSecondsRealtime(0.15f);
-            }
-            _streakEmitterCoroutine = null;
         }
 
         // ── Wave preview (enemy roster during break) ────────────────────────
@@ -2745,98 +1847,6 @@ namespace CrowdDefense.UI
             _enemyIntelPopup.style.opacity = 0f;
             _enemyIntelPopup.style.display = DisplayStyle.None;
             _enemyIntelFadeCoroutine = null;
-        }
-
-        // ── Tutorial popup (first launch) ────────────────────────────────────
-
-        private static readonly Color _kTutorialGold  = new Color(1f, 0.84f, 0f);
-        private static readonly Color _kTutorialWhite = new Color(0.92f, 0.92f, 0.92f);
-
-        private void BuildTutorialPopup(VisualElement root)
-        {
-            _tutorialPopup = new VisualElement { name = "tutorial-popup" };
-            _tutorialPopup.style.position        = Position.Absolute;
-            _tutorialPopup.style.top             = new Length(50f, LengthUnit.Percent);
-            _tutorialPopup.style.left            = new Length(50f, LengthUnit.Percent);
-            _tutorialPopup.style.translate       = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
-            _tutorialPopup.style.width           = new Length(350f, LengthUnit.Pixel);
-            _tutorialPopup.style.paddingTop      = new Length(16f,  LengthUnit.Pixel);
-            _tutorialPopup.style.paddingBottom   = new Length(16f,  LengthUnit.Pixel);
-            _tutorialPopup.style.paddingLeft     = new Length(16f,  LengthUnit.Pixel);
-            _tutorialPopup.style.paddingRight    = new Length(16f,  LengthUnit.Pixel);
-            _tutorialPopup.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.92f));
-            _tutorialPopup.style.borderTopWidth    = _tutorialPopup.style.borderBottomWidth =
-            _tutorialPopup.style.borderLeftWidth   = _tutorialPopup.style.borderRightWidth  = 2f;
-            var goldBorderColor = new StyleColor(_kTutorialGold);
-            _tutorialPopup.style.borderTopColor    = _tutorialPopup.style.borderBottomColor =
-            _tutorialPopup.style.borderLeftColor   = _tutorialPopup.style.borderRightColor  = goldBorderColor;
-            _tutorialPopup.style.borderTopLeftRadius    = _tutorialPopup.style.borderTopRightRadius =
-            _tutorialPopup.style.borderBottomLeftRadius = _tutorialPopup.style.borderBottomRightRadius = new Length(8f, LengthUnit.Pixel);
-            _tutorialPopup.style.flexDirection   = FlexDirection.Column;
-            _tutorialPopup.style.alignItems      = Align.Center;
-            _tutorialPopup.style.display         = DisplayStyle.None;
-            // Block input below the popup
-            _tutorialPopup.pickingMode           = PickingMode.Position;
-
-            var title = new Label { name = "tutorial-title", text = "BIENVENUE !" };
-            title.style.color                   = new StyleColor(_kTutorialGold);
-            title.style.fontSize                = new Length(28f, LengthUnit.Pixel);
-            title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            title.style.unityTextAlign          = TextAnchor.MiddleCenter;
-            title.style.marginBottom            = new Length(12f, LengthUnit.Pixel);
-            title.style.textShadow              = new TextShadow
-            {
-                color      = new Color(0.4f, 0.25f, 0f, 1f),
-                offset     = new Vector2(2f, 2f),
-                blurRadius = 4f,
-            };
-            _tutorialPopup.Add(title);
-
-            var body = new Label
-            {
-                name = "tutorial-body",
-                text = "Clic gauche pour placer une tour\n" +
-                       "Recolte l'or des ennemis tues\n" +
-                       "Defends le chateau !\n\n" +
-                       "Clique 'Lancer la vague' pour commencer",
-            };
-            body.style.color                   = new StyleColor(_kTutorialWhite);
-            body.style.fontSize                = new Length(16f, LengthUnit.Pixel);
-            body.style.unityTextAlign          = TextAnchor.MiddleCenter;
-            body.style.whiteSpace              = WhiteSpace.Normal;
-            body.style.marginBottom            = new Length(16f, LengthUnit.Pixel);
-            _tutorialPopup.Add(body);
-
-            _tutorialOkBtn = new Button { name = "tutorial-ok-btn", text = "OK !" };
-            _tutorialOkBtn.style.backgroundColor = new StyleColor(_kTutorialGold);
-            _tutorialOkBtn.style.color           = new StyleColor(Color.black);
-            _tutorialOkBtn.style.fontSize        = new Length(18f, LengthUnit.Pixel);
-            _tutorialOkBtn.style.unityFontStyleAndWeight = FontStyle.Bold;
-            _tutorialOkBtn.style.paddingTop      = new Length(8f,  LengthUnit.Pixel);
-            _tutorialOkBtn.style.paddingBottom   = new Length(8f,  LengthUnit.Pixel);
-            _tutorialOkBtn.style.paddingLeft     = new Length(32f, LengthUnit.Pixel);
-            _tutorialOkBtn.style.paddingRight    = new Length(32f, LengthUnit.Pixel);
-            _tutorialOkBtn.style.borderTopLeftRadius    = _tutorialOkBtn.style.borderTopRightRadius =
-            _tutorialOkBtn.style.borderBottomLeftRadius = _tutorialOkBtn.style.borderBottomRightRadius = new Length(6f, LengthUnit.Pixel);
-            _tutorialOkBtn.RegisterCallback<ClickEvent>(_ =>
-            {
-                TutorialShown = true;
-                if (_tutorialPopup != null) _tutorialPopup.style.display = DisplayStyle.None;
-                if (_tutorialCoroutine != null) { StopCoroutine(_tutorialCoroutine); _tutorialCoroutine = null; }
-            });
-            _tutorialPopup.Add(_tutorialOkBtn);
-
-            root.Add(_tutorialPopup);
-            _tutorialPopup.BringToFront();
-        }
-
-        private System.Collections.IEnumerator ShowTutorialPopupCoroutine()
-        {
-            yield return new WaitForSecondsRealtime(1f);
-            if (_tutorialPopup == null || TutorialShown) yield break;
-            _tutorialPopup.style.display = DisplayStyle.Flex;
-            _tutorialPopup.BringToFront();
-            _tutorialCoroutine = null;
         }
 
     }
