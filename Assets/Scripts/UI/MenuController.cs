@@ -19,6 +19,7 @@ namespace CrowdDefense.UI
         private Button? _btnQuit;
         private Button? _btnTalents;
         private Button? _btnDaily;
+        private Button? _btnHardcore;
 
         private VisualElement? _root;
         private VisualElement? _menuButtons;
@@ -50,6 +51,7 @@ namespace CrowdDefense.UI
             _btnQuit     = _root.Q<Button>("btn-quit");
             _btnTalents  = _root.Q<Button>("btn-talents");
             _btnDaily    = _root.Q<Button>("btn-daily");
+            _btnHardcore = _root.Q<Button>("btn-hardcore");
 
             if (_btnContinue != null) _btnContinue.clicked += OnContinue;
             if (_btnNewRun   != null) _btnNewRun.clicked   += OnNewRun;
@@ -58,6 +60,9 @@ namespace CrowdDefense.UI
             if (_btnQuit     != null) _btnQuit.clicked     += OnQuit;
             if (_btnTalents  != null) _btnTalents.clicked  += OnTalents;
             if (_btnDaily    != null) _btnDaily.clicked    += OnDaily;
+            if (_btnHardcore != null) _btnHardcore.clicked += OnHardcore;
+
+            RefreshHardcoreButton();
 
             RefreshDailyButton();
             RefreshContinueButton();
@@ -350,6 +355,18 @@ namespace CrowdDefense.UI
         private static void OnDaily()
         {
             DailyChallengeModal.Instance?.Show();
+        }
+
+        private void RefreshHardcoreButton()
+        {
+            if (_btnHardcore == null) return;
+            bool unlocked = SaveSystem.IsHardcoreUnlocked();
+            _btnHardcore.style.display = unlocked ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private static void OnHardcore()
+        {
+            LevelLoader.LoadHardcoreRun();
         }
     }
 }

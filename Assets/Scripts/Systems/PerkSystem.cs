@@ -103,6 +103,7 @@ namespace CrowdDefense.Systems
         public List<PerkDef> RollChoices(Hero hero, int count, int levelUpsLeft, string schoolId)
         {
             if (_registry == null) return new List<PerkDef>();
+            if (SaveSystem.IsHardcoreRun) return new List<PerkDef>();
 
             var basePool = new List<PerkDef>();
             foreach (var p in _registry.Standard)

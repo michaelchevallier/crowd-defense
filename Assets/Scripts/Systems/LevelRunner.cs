@@ -534,7 +534,11 @@ namespace CrowdDefense.Systems
                 Daily.SetScore(score);
             }
             else if (currentLevel != null)
+            {
                 SaveSystem.MarkLevelCleared(currentLevel.Id);
+                if (currentLevel.World == 10 && currentLevel.Level == 10)
+                    SaveSystem.UnlockHardcore();
+            }
 
             LifetimeStats.Instance?.AddLevelWon();
 

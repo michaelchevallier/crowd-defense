@@ -79,6 +79,7 @@ namespace CrowdDefense.Systems
         // v3 fields
         public List<string> heroFavorites = new();
         public List<EndlessRunRecord> endlessLeaderboardV3 = new();
+        public bool hardcoreUnlocked = false;
     }
 
     [Serializable]
@@ -333,6 +334,27 @@ namespace CrowdDefense.Systems
             string json = JsonUtility.ToJson(data);
             PlayerPrefs.SetString(ProgressKey(s), json);
             PlayerPrefs.Save();
+        }
+
+        // ── Game Mode ─────────────────────────────────────────────────────────
+
+        private const string HARDCORE_MODE_KEY = "cd.gamemode.hardcore";
+
+        // Session flag — true when the current run is Hardcore.
+        public static bool IsHardcoreRun
+        {
+            get => PlayerPrefs.GetInt(HARDCORE_MODE_KEY, 0) == 1;
+            set { PlayerPrefs.SetInt(HARDCORE_MODE_KEY, value ? 1 : 0); PlayerPrefs.Save(); }
+        }
+
+        public static bool IsHardcoreUnlocked() => Load().hardcoreUnlocked;
+
+        public static void UnlockHardcore()
+        {
+            var data = Load();
+            if (data.hardcoreUnlocked) return;
+            data.hardcoreUnlocked = true;
+            Save();
         }
 
         // ── Tutorial ──

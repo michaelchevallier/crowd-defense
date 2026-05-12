@@ -132,7 +132,9 @@ namespace CrowdDefense.UI
 
             if (_titleText != null)
             {
-                _titleText.text  = isVictory ? "VICTOIRE !" : "DEFAITE";
+                _titleText.text  = isVictory
+                    ? (Systems.SaveSystem.IsHardcoreRun ? "Hardcore Survivor" : "VICTOIRE !")
+                    : "DEFAITE";
                 _titleText.color = isVictory ? VictoryTitleColor : DefeatTitleColor;
             }
 

@@ -38,6 +38,7 @@ namespace CrowdDefense.Systems
                 return;
             }
 
+            SaveSystem.IsHardcoreRun = false;
             NextLevelId = levelId;
             NextDailySpec = null;
             Fade("Main");
@@ -60,6 +61,12 @@ namespace CrowdDefense.Systems
         {
             NextLevelId = null;
             Fade("Menu");
+        }
+
+        public static void LoadHardcoreRun()
+        {
+            SaveSystem.IsHardcoreRun = true;
+            GoToWorldMap();
         }
 
         public static void Fade(string sceneName, Color fadeColor = default, float fadeDur = 0.5f)

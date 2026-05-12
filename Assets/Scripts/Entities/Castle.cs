@@ -66,7 +66,7 @@ namespace CrowdDefense.Entities
 
         public void Init(int hp, int world = 1)
         {
-            HP = HPMax = hp;
+            HP = HPMax = Systems.SaveSystem.IsHardcoreRun ? 1 : hp;
             _world = world;
             _meshFilter = GetComponentInChildren<MeshFilter>();
             _smokePs    = GetComponentInChildren<ParticleSystem>();
