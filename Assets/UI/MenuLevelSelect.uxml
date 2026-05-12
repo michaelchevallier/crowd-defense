@@ -7,6 +7,9 @@
         <ui:ScrollView name="level-scroll" class="level-scroll" vertical-scroller-visibility="AlwaysVisible">
             <ui:VisualElement name="level-grid" class="level-grid" />
         </ui:ScrollView>
-        <ui:Button text="Credits" name="btn-open-credits" class="menu-credits-btn" />
+        <ui:VisualElement name="menu-bottom-btns" class="menu-bottom-btns">
+            <ui:Button text="Achievements" name="btn-open-achievements" class="menu-credits-btn" />
+            <ui:Button text="Credits" name="btn-open-credits" class="menu-credits-btn" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -84,9 +84,16 @@
     border-color: rgba(80, 80, 80, 0.5);
 }
 
-.menu-credits-btn {
+.menu-bottom-btns {
+    flex-direction: row;
     margin-top: 14px;
-    width: 140px;
+    justify-content: center;
+}
+
+.menu-credits-btn {
+    margin-left: 6px;
+    margin-right: 6px;
+    width: 160px;
     height: 36px;
     border-radius: 8px;
     border-width: 1px;

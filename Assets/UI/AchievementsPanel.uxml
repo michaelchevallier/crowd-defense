@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="AchievementsPanel.uss" />
+    <ui:VisualElement name="achievements-root" class="ach-root hidden">
+        <ui:VisualElement name="achievements-panel" class="ach-panel">
+            <ui:Label text="Achievements" name="achievements-title" class="ach-panel-title" />
+            <ui:Label text="Score : 0 / 0" name="achievements-score" class="ach-score" />
+            <ui:ScrollView name="achievements-scroll" class="ach-scroll"
+                           vertical-scroller-visibility="AlwaysVisible"
+                           horizontal-scroller-visibility="Hidden">
+                <ui:VisualElement name="achievements-grid" class="ach-grid" />
+            </ui:ScrollView>
+            <ui:Button text="Retour" name="btn-achievements-back" class="ach-back-btn" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

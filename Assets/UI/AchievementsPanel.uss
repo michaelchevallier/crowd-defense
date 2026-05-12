@@ -1,0 +1,138 @@
+.ach-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    align-items: center;
+    justify-content: center;
+}
+
+.ach-root.hidden {
+    display: none;
+}
+
+.ach-panel {
+    width: 640px;
+    height: 80%;
+    background-color: rgb(15, 20, 35);
+    border-radius: 12px;
+    border-width: 2px;
+    border-color: rgba(255, 210, 63, 0.4);
+    padding: 28px 32px;
+    align-items: center;
+}
+
+.ach-panel-title {
+    color: rgb(255, 210, 63);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    margin-bottom: 8px;
+}
+
+.ach-score {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 16px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    margin-bottom: 16px;
+}
+
+.ach-scroll {
+    flex-grow: 1;
+    width: 100%;
+    overflow: hidden;
+}
+
+.ach-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 4px;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+/* === Card === */
+.ach-card {
+    width: 120px;
+    height: 120px;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.12);
+    margin: 6px;
+    padding: 10px 6px 8px 6px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.ach-card--unlocked {
+    background-color: rgba(255, 210, 63, 0.10);
+    border-color: rgba(255, 210, 63, 0.55);
+}
+
+.ach-icon {
+    font-size: 28px;
+    -unity-text-align: upper-center;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(180, 180, 200, 0.6);
+    margin-bottom: 6px;
+}
+
+.ach-card--unlocked .ach-icon {
+    color: rgb(255, 210, 63);
+}
+
+.ach-title {
+    color: rgb(220, 225, 240);
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    white-space: normal;
+    width: 100%;
+    margin-bottom: 2px;
+}
+
+.ach-desc {
+    color: rgba(180, 185, 200, 0.7);
+    font-size: 9px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    white-space: normal;
+    width: 100%;
+    flex-grow: 1;
+}
+
+.ach-pts {
+    color: rgba(255, 210, 63, 0.85);
+    font-size: 10px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    margin-top: 4px;
+}
+
+.ach-back-btn {
+    margin-top: 18px;
+    width: 140px;
+    height: 40px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgba(255, 210, 63, 0.5);
+    background-color: rgba(255, 255, 255, 0.10);
+    color: white;
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    cursor: link;
+}
+
+.ach-back-btn:hover {
+    background-color: rgba(255, 210, 63, 0.20);
+    border-color: rgb(255, 210, 63);
+}
