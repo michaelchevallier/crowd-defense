@@ -126,6 +126,67 @@ namespace CrowdDefense.Visual
 
         public void SpawnCoinPickup(Vector3 worldPos) => SpawnCoinBurst(worldPos);
 
+        // Trail de coins qui volent depuis fromWorld vers le gold counter HUD (top-left).
+        // Chaque coin : Sphere 0.15 yellow emissive, Lerp sur 0.5s, scale fade → 0.
+        public void SpawnCoinTrail(Vector3 fromWorld, int count = 5)
+        {
+            if (!IsVfxEnabled()) return;
+            count = Mathf.Clamp(count, 1, 12);
+            for (int i = 0; i < count; i++)
+                StartCoroutine(FlyCoin(fromWorld, i * 0.06f));
+        }
+
+        private IEnumerator FlyCoin(Vector3 origin, float delay)
+        {
+            if (delay > 0f) yield return new WaitForSeconds(delay);
+
+            var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            go.name = "CoinTrail_VFX";
+            Object.Destroy(go.GetComponent<Collider>());
+
+            // Yellow emissive material
+            var shader  = Shader.Find("Universal Render Pipeline/Lit")
+                       ?? Shader.Find("Standard")
+                       ?? Shader.Find("Hidden/InternalErrorShader")!;
+            var mat     = new Material(shader) { name = "CoinTrailMat" };
+            var yellow  = new Color(1f, 0.86f, 0.1f);
+            mat.color   = yellow;
+            mat.SetFloat("_Surface", 0f); // Opaque
+            mat.EnableKeyword("_EMISSION");
+            mat.SetColor("_EmissionColor", yellow * 1.8f);
+            go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+
+            // Slight random offset so coins don't all overlap at origin
+            var scatter  = new Vector3(Random.Range(-0.3f, 0.3f), Random.Range(0f, 0.4f), Random.Range(-0.3f, 0.3f));
+            var startPos = origin + scatter;
+            go.transform.position   = startPos;
+            go.transform.localScale = Vector3.one * 0.15f;
+
+            // Target = approximate world position of gold counter (top-left HUD)
+            var cam = Camera.main;
+            Vector3 target = cam != null
+                ? cam.ScreenToWorldPoint(new Vector3(100f, Screen.height - 50f, 10f))
+                : startPos + new Vector3(-5f, 3f, 0f);
+
+            const float Duration = 0.5f;
+            float elapsed = 0f;
+
+            while (elapsed < Duration)
+            {
+                elapsed += Time.deltaTime;
+                float t  = Mathf.Clamp01(elapsed / Duration);
+                // Ease-in quad so coins accelerate toward HUD
+                float te = t * t;
+                go.transform.position   = Vector3.LerpUnclamped(startPos, target, te);
+                // Scale fade from 0.15 → 0
+                float scale = Mathf.Lerp(0.15f, 0f, t);
+                go.transform.localScale = Vector3.one * scale;
+                yield return null;
+            }
+
+            Object.Destroy(go);
+        }
+
         public void SpawnHitFlash(Transform target)
         {
             if (!IsVfxEnabled() || _hitFlashPool == null) return;

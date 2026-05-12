@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
@@ -167,6 +168,7 @@ namespace CrowdDefense.Systems
                 total += gain;
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(
                     gain, tile.CellCenter + Vector3.up * 1.2f);
+                VfxPool.Instance?.SpawnCoinTrail(tile.CellCenter + Vector3.up * 0.5f, 5);
             }
 
             if (total > 0)
