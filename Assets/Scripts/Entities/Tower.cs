@@ -137,6 +137,12 @@ namespace CrowdDefense.Entities
         private Vector3 _basePos;
         private float _lastFireAt;
 
+        // Kill streak combo — consecutive kills < 0.5 s apart give +5% dmg per stack (max 10)
+        private int   _streakCount   = 0;
+        private float _lastKillTime  = -999f;
+        private const float StreakWindow  = 0.5f;
+        private const int   StreakMax     = 10;
+
         // DOT feedback popup throttle — skip if popup emitted within last 0.5s
         private float _lastDotPopupAt = -1f;
 
@@ -230,7 +236,19 @@ namespace CrowdDefense.Entities
         // Statistiques cumulées (pour TowerInfoPanel)
         public float TotalDamageDealt { get; private set; }
         public int   TotalKills       { get; private set; }
-        public void  RegisterKill()   { TotalKills++; TakeDamage(1); }
+        public void RegisterKill()
+        {
+            TotalKills++;
+            TakeDamage(1);
+            if (Time.time - _lastKillTime < StreakWindow)
+                _streakCount = Mathf.Min(_streakCount + 1, StreakMax);
+            else
+                _streakCount = 1;
+            _lastKillTime = Time.time;
+            if (_streakCount > 3)
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                    $"x{_streakCount}", transform.position + Vector3.up * 2f, new Color(1f, 0.85f, 0.1f));
+        }
 
         // HP system : 30 max, -1 per kill, repair = 10¢ per 5 HP missing (rounded up)
         private int _hp    = 30;
@@ -948,6 +966,9 @@ namespace CrowdDefense.Entities
             // L3DmgMul applique la divergence de branche (D1-03)
             // _heroBuffDmgMul: aura du Hero (ApplyHeroBuff / ClearHeroBuff)
             float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * ResearchDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+            // Kill streak combo : +5% per stack, max 10 stacks (50%) — decays if gap > 0.5 s
+            if (_streakCount > 0 && Time.time - _lastKillTime < StreakWindow * 4f)
+                dmg *= 1f + _streakCount * 0.05f;
 
             // L3 Berserker (tank DPS) : x2 dmg when castle HP ratio < threshold (D1-03)
             if (L3BerserkerActive && Castle.Instance != null && Castle.Instance.HPMax > 0)
@@ -1732,6 +1753,8 @@ namespace CrowdDefense.Entities
             if (ProjectilePool.Instance == null) return;
 
             float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * ResearchDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+            if (_streakCount > 0 && Time.time - _lastKillTime < StreakWindow * 4f)
+                dmg *= 1f + _streakCount * 0.05f;
 
             Vector3 baseDir = (t.transform.position - transform.position).normalized;
             Vector3 angledDir = Quaternion.Euler(0f, angleDeg, 0f) * baseDir;
