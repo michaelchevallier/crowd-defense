@@ -15,7 +15,7 @@ namespace CrowdDefense.Systems
         [SerializeField] private LevelData? levelData;
 
         private int _currentWaveIdx = 0;
-        private int __nextWaveToStart = 0;     // index of the wave that will begin on next StartNextWave()
+        private int _nextWaveToStart = 0;     // index of the wave that will begin on next StartNextWave()
         private float __spawnTimerMs = 0f;
         private bool __waveActive = false;
         private int __spawnCounter = 0;
