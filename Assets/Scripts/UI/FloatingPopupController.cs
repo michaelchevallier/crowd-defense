@@ -43,7 +43,26 @@ namespace CrowdDefense.UI
         protected override void OnAwakeSingleton()
         {
             var doc = GetComponent<UIDocument>();
-            _overlay = doc.rootVisualElement.Q<VisualElement>("popup-overlay");
+            if (doc == null)
+            {
+                Debug.LogError("[FloatingPopupController] UIDocument not found on this GameObject — trying HUD parent");
+                // Try to find HUD UIDocument in siblings or parent GameObject
+                var hudObj = FindFirstObjectByType<HudController>();
+                if (hudObj != null)
+                    doc = hudObj.GetComponent<UIDocument>();
+                if (doc == null)
+                {
+                    Debug.LogError("[FloatingPopupController] Could not find HUD UIDocument — popups disabled");
+                    return;
+                }
+            }
+            var root = doc.rootVisualElement;
+            if (root == null)
+            {
+                Debug.LogError("[FloatingPopupController] rootVisualElement is null — UXML failed to load");
+                return;
+            }
+            _overlay = root.Q<VisualElement>("popup-overlay");
 
             for (int i = 0; i < MaxWorld; i++)
                 _worldPool.Enqueue(CreateWorldPopup());
