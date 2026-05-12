@@ -250,6 +250,9 @@ namespace CrowdDefense.UI
         // Responsive breakpoints
         private int _lastWidth = -1;
 
+        // Difficulty badge (top-right corner, shows current difficulty during level)
+        private Label? _difficultyBadge;
+
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
 
@@ -385,6 +388,7 @@ namespace CrowdDefense.UI
             BindWavePreview(root);
             BuildEnemyIntelPopup(root);
             BuildTutorialPopup(root);
+            BuildDifficultyBadge(root);
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -2915,6 +2919,34 @@ namespace CrowdDefense.UI
             _tutorialPopup.style.display = DisplayStyle.Flex;
             _tutorialPopup.BringToFront();
             _tutorialCoroutine = null;
+        }
+
+        private void BuildDifficultyBadge(VisualElement root)
+        {
+            int savedIndex = PlayerPrefs.GetInt(DifficultySelector.PrefKey, (int)Data.Difficulty.Normal);
+            var diff = (Data.Difficulty)UnityEngine.Mathf.Clamp(savedIndex, 0, 3);
+            string name = DifficultySelector.DifficultyName(diff);
+            Color bg    = DifficultySelector.DifficultyColor(diff);
+
+            _difficultyBadge = new Label($"DIFFICULTE: {name}");
+            _difficultyBadge.style.position   = Position.Absolute;
+            _difficultyBadge.style.top        = 8;
+            _difficultyBadge.style.right      = 8;
+            _difficultyBadge.style.fontSize   = 11;
+            _difficultyBadge.style.color      = new StyleColor(Color.white);
+            _difficultyBadge.style.backgroundColor = new StyleColor(new Color(bg.r, bg.g, bg.b, 0.85f));
+            _difficultyBadge.style.paddingTop    = 3;
+            _difficultyBadge.style.paddingBottom = 3;
+            _difficultyBadge.style.paddingLeft   = 8;
+            _difficultyBadge.style.paddingRight  = 8;
+            _difficultyBadge.style.borderTopLeftRadius     = 4;
+            _difficultyBadge.style.borderTopRightRadius    = 4;
+            _difficultyBadge.style.borderBottomLeftRadius  = 4;
+            _difficultyBadge.style.borderBottomRightRadius = 4;
+            _difficultyBadge.pickingMode = PickingMode.Ignore;
+
+            root.Add(_difficultyBadge);
+            _difficultyBadge.BringToFront();
         }
     }
 }

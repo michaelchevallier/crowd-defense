@@ -6,5 +6,6 @@ namespace CrowdDefense.Data
         Easy   = 0,
         Normal = 1,
         Hard   = 2,
+        Brutal = 3,
     }
 }

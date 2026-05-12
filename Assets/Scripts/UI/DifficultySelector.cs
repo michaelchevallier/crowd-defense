@@ -13,13 +13,14 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class DifficultySelector : MonoSingleton<DifficultySelector>
     {
-        private const string PrefKey = "difficulty_v1";
+        public const string PrefKey = "difficulty_v1";
 
-        private static readonly (Difficulty diff, string label, string colorClass)[] Options =
+        internal static readonly (Difficulty diff, string label, Color bg)[] Options =
         {
-            (Difficulty.Easy,   "Faible (x0.7 HP/Dmg, x1.2 recompenses)",  "diff-easy"),
-            (Difficulty.Normal, "Normal (equilibre)",                         "diff-normal"),
-            (Difficulty.Hard,   "Difficile (x1.5 HP/Dmg, x0.8 recompenses)", "diff-hard"),
+            (Difficulty.Easy,   "Facile\nx0.7 HP/Dmg",   new Color(0.18f, 0.62f, 0.18f, 1f)),
+            (Difficulty.Normal, "Normal\nequilibre",      new Color(0.70f, 0.62f, 0.05f, 1f)),
+            (Difficulty.Hard,   "Difficile\nx1.3 HP/Dmg", new Color(0.75f, 0.38f, 0.05f, 1f)),
+            (Difficulty.Brutal, "Brutal\nx1.6 HP/Dmg",    new Color(0.72f, 0.10f, 0.10f, 1f)),
         };
 
         private VisualElement? _root;
@@ -69,16 +70,18 @@ namespace CrowdDefense.UI
             title.style.marginBottom    = 24;
             _root.Add(title);
 
+            int savedDiff = PlayerPrefs.GetInt(PrefKey, (int)Difficulty.Normal);
             var btnRow = new VisualElement();
             btnRow.style.flexDirection  = FlexDirection.Row;
             btnRow.style.justifyContent = Justify.Center;
 
-            foreach (var (diff, label, colorClass) in Options)
+            var buttons = new Button[Options.Length];
+            for (int i = 0; i < Options.Length; i++)
             {
+                var (diff, label, bg) = Options[i];
                 var btn = new Button();
                 btn.text = label;
                 btn.AddToClassList("diff-btn");
-                btn.AddToClassList(colorClass);
                 btn.style.marginLeft    = 10;
                 btn.style.marginRight   = 10;
                 btn.style.paddingTop    = 14;
@@ -87,11 +90,21 @@ namespace CrowdDefense.UI
                 btn.style.paddingRight  = 20;
                 btn.style.fontSize      = 15;
                 btn.style.whiteSpace    = WhiteSpace.Normal;
-                btn.style.maxWidth      = 200;
-                ApplyDiffColor(btn, diff);
+                btn.style.maxWidth      = 160;
+                btn.style.minWidth      = 100;
+                ApplyDiffStyle(btn, bg, (int)diff == savedDiff);
 
                 var captured = diff;
-                btn.RegisterCallback<ClickEvent>(_ => OnPicked(captured));
+                var capturedBg = bg;
+                var capturedBtns = buttons;
+                btn.RegisterCallback<ClickEvent>(_ =>
+                {
+                    for (int j = 0; j < capturedBtns.Length; j++)
+                        if (capturedBtns[j] != null)
+                            ApplyDiffStyle(capturedBtns[j], Options[j].bg, (int)Options[j].diff == (int)captured);
+                    OnPicked(captured);
+                });
+                buttons[i] = btn;
                 btnRow.Add(btn);
             }
 
@@ -99,21 +112,27 @@ namespace CrowdDefense.UI
             docRoot.Add(_root);
         }
 
-        private static void ApplyDiffColor(Button btn, Difficulty diff)
+        private static void ApplyDiffStyle(Button btn, Color bg, bool selected)
         {
-            var bg = diff switch
-            {
-                Difficulty.Easy   => new Color(0.18f, 0.62f, 0.18f, 1f),
-                Difficulty.Normal => new Color(0.80f, 0.70f, 0.05f, 1f),
-                Difficulty.Hard   => new Color(0.75f, 0.15f, 0.15f, 1f),
-                _                 => Color.gray,
-            };
             btn.style.backgroundColor = new StyleColor(bg);
             btn.style.color           = new StyleColor(Color.white);
             btn.style.borderTopLeftRadius     = 6;
             btn.style.borderTopRightRadius    = 6;
             btn.style.borderBottomLeftRadius  = 6;
             btn.style.borderBottomRightRadius = 6;
+            float borderW = selected ? 3f : 1f;
+            btn.style.borderTopWidth    = borderW;
+            btn.style.borderBottomWidth = borderW;
+            btn.style.borderLeftWidth   = borderW;
+            btn.style.borderRightWidth  = borderW;
+            var borderCol = selected ? Color.white : new Color(1f, 1f, 1f, 0.25f);
+            btn.style.borderTopColor    = new StyleColor(borderCol);
+            btn.style.borderBottomColor = new StyleColor(borderCol);
+            btn.style.borderLeftColor   = new StyleColor(borderCol);
+            btn.style.borderRightColor  = new StyleColor(borderCol);
+            btn.style.scale             = selected
+                ? new StyleScale(new Scale(new Vector2(1.05f, 1.05f)))
+                : new StyleScale(new Scale(Vector2.one));
         }
 
         private void OnPicked(Difficulty diff)
@@ -140,5 +159,25 @@ namespace CrowdDefense.UI
         {
             if (_root != null) _root.style.display = DisplayStyle.None;
         }
+
+        // Helper: returns the display name for a given Difficulty value.
+        public static string DifficultyName(Difficulty d) => d switch
+        {
+            Difficulty.Easy   => "FACILE",
+            Difficulty.Normal => "NORMAL",
+            Difficulty.Hard   => "DIFFICILE",
+            Difficulty.Brutal => "BRUTAL",
+            _                 => "NORMAL",
+        };
+
+        // Helper: returns color for a given Difficulty value.
+        public static Color DifficultyColor(Difficulty d) => d switch
+        {
+            Difficulty.Easy   => new Color(0.18f, 0.62f, 0.18f, 1f),
+            Difficulty.Normal => new Color(0.70f, 0.62f, 0.05f, 1f),
+            Difficulty.Hard   => new Color(0.75f, 0.38f, 0.05f, 1f),
+            Difficulty.Brutal => new Color(0.72f, 0.10f, 0.10f, 1f),
+            _                 => Color.gray,
+        };
     }
 }

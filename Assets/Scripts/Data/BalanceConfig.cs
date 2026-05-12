@@ -80,31 +80,32 @@ namespace CrowdDefense.Data
         // --- Difficulty presets ---
 
         // Named preset that mirrors the Difficulty enum; exposed as a typed field for inspector/SO use.
-        public enum DifficultyPreset { Easy = 0, Normal = 1, Hard = 2 }
+        public enum DifficultyPreset { Easy = 0, Normal = 1, Hard = 2, Brutal = 3 }
 
         [Header("Difficulty preset")]
-        [Tooltip("Active difficulty — Easy 0.8x HP/dmg 1.2x gold | Normal 1x | Hard 1.4x HP/dmg 0.85x gold")]
+        [Tooltip("Active difficulty — Easy 0.7x HP/dmg 1.3x gold | Normal 1x | Hard 1.3x HP/dmg 0.85x gold | Brutal 1.6x HP/dmg 0.7x gold")]
         public DifficultyPreset Preset = DifficultyPreset.Normal;
 
         // Returns HP/damage multiplier for the current preset (reads SettingsRegistry → PlayerPrefs).
         public static DifficultyPreset ActivePreset()
         {
             int raw = UnityEngine.PlayerPrefs.GetInt(DifficultyPrefKey, (int)DifficultyPreset.Normal);
-            return (DifficultyPreset)Mathf.Clamp(raw, 0, 2);
+            return (DifficultyPreset)Mathf.Clamp(raw, 0, 3);
         }
 
         // --- Helpers ---
 
         private const string DifficultyPrefKey = "difficulty_v1";
 
-        // General difficulty multiplier (0.8 Easy / 1.0 Normal / 1.4 Hard).
+        // General difficulty multiplier (0.7 Easy / 1.0 Normal / 1.3 Hard / 1.6 Brutal).
         public static float DifficultyMul()
         {
             return ActivePreset() switch
             {
-                DifficultyPreset.Easy   => 0.8f,
+                DifficultyPreset.Easy   => 0.7f,
                 DifficultyPreset.Normal => 1.0f,
-                DifficultyPreset.Hard   => 1.4f,
+                DifficultyPreset.Hard   => 1.3f,
+                DifficultyPreset.Brutal => 1.6f,
                 _                       => 1.0f,
             };
         }
@@ -112,14 +113,15 @@ namespace CrowdDefense.Data
         // HP / Damage multiplier — alias kept for backwards compat.
         public static float DifficultyHpDmgMul() => DifficultyMul();
 
-        // Inverse multiplier applied to gold rewards (Easy 1.2x, Normal 1.0x, Hard 0.85x).
+        // Inverse multiplier applied to gold rewards (Easy 1.3x, Normal 1.0x, Hard 0.85x, Brutal 0.7x).
         public static float DifficultyRewardMul()
         {
             return ActivePreset() switch
             {
-                DifficultyPreset.Easy   => 1.2f,
+                DifficultyPreset.Easy   => 1.3f,
                 DifficultyPreset.Normal => 1.0f,
                 DifficultyPreset.Hard   => 0.85f,
+                DifficultyPreset.Brutal => 0.7f,
                 _                       => 1.0f,
             };
         }
