@@ -48,6 +48,14 @@ namespace CrowdDefense.Entities
         private Vector2 _smoothedMoveDir;
         private const float MoveAccel = 8f;
 
+        // ── Idle dance ────────────────────────────────────────────────────────
+        private float _idleSeconds;
+        private const float IdleDanceDelay  = 5f;
+        private const float DanceRotAmp     = 10f;   // ±10° Y
+        private const float DanceRotHz      = 0.8f;
+        private const float DanceBobAmp     = 0.1f;  // ±0.1 Y
+        private const float DanceBobHz      = 0.6f;
+
         // ── XP / Level ────────────────────────────────────────────────────────
         public int   Level     { get; private set; } = 1;
         public int   Xp        { get; private set; }
@@ -890,6 +898,8 @@ namespace CrowdDefense.Entities
 
             if (moving)
             {
+                _idleSeconds = 0f;
+
                 float speed = cfg.MoveSpeed * MoveSpeedMul * (_running ? 1.8f : 1f);
                 var oldPos = transform.position;
                 var pos = oldPos;
@@ -909,8 +919,24 @@ namespace CrowdDefense.Entities
             }
             else
             {
+                _idleSeconds += dt;
+
                 if (_attackAnimTimer <= 0f && _animator != null)
                     AnimationController.SetWalking(_animator, false);
+
+                if (_idleSeconds >= IdleDanceDelay)
+                {
+                    float t = Time.time;
+                    float rotY  = DanceRotAmp * Mathf.Sin(t * DanceRotHz * 2f * Mathf.PI);
+                    float bobY  = DanceBobAmp * Mathf.Sin(t * DanceBobHz * 2f * Mathf.PI);
+                    var basePos = transform.position;
+                    basePos.y   = Mathf.Round(basePos.y * 100f) / 100f; // snap to avoid drift
+                    basePos.y  += bobY;
+                    transform.position = basePos;
+                    var euler = transform.eulerAngles;
+                    euler.y   += rotY;
+                    transform.eulerAngles = euler;
+                }
             }
 
             // Rotate toward smoothed direction (for idle orientation + attack aiming)
