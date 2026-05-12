@@ -251,7 +251,8 @@ namespace CrowdDefense.Entities
         // Idle shimmer — subtle white tint pulse every 3 s over 0.4 s
         private Coroutine? _shimmerRoutine;
         private MaterialPropertyBlock? _shimmerMpb;
-        private static readonly int _shimmerColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int _shimmerColorId   = Shader.PropertyToID("_BaseColor");
+        private static readonly int _emissionColorId  = Shader.PropertyToID("_EmissionColor");
 
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
@@ -443,6 +444,9 @@ namespace CrowdDefense.Entities
             // Outline silhouette — applied after toon so outline mat is not overwritten
             Outline.ApplyToHierarchy(toonRoot.transform);
 
+            // Elemental emission tint — set once, no Update overhead
+            ApplyElementalTint(toonRoot);
+
             // AssetVariants palette swap post-toon
             if (activeSkin != null && activeSkin.ThemeIndex >= 0)
                 AssetVariants.ApplyThemeIndex(toonRoot, activeSkin.ThemeIndex);
@@ -605,6 +609,34 @@ namespace CrowdDefense.Entities
 #endif
             Synergies.Instance?.MarkDirty();
             return true;
+        }
+
+        private void ApplyElementalTint(GameObject root)
+        {
+            if (cfg == null) return;
+            var renderer = root.GetComponentInChildren<Renderer>();
+            if (renderer == null) return;
+
+            Color tint = cfg.Id switch
+            {
+                "frost"    => new Color(0.4f, 0.7f, 1f),
+                "fire"     => new Color(1f, 0.4f, 0.1f),
+                "lava"     => new Color(1f, 0.4f, 0.1f),
+                "lightning"=> new Color(1f, 0.95f, 0.3f),
+                "skyguard" => new Color(1f, 0.95f, 0.3f),
+                "poison"   => new Color(0.4f, 1f, 0.4f),
+                "acid"     => new Color(0.4f, 1f, 0.4f),
+                "mage"     => new Color(0.9f, 0.4f, 1f),
+                "portal"   => new Color(0.9f, 0.4f, 1f),
+                _          => Color.black,
+            };
+
+            if (tint == Color.black) return;
+
+            var mpb = new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(mpb);
+            mpb.SetColor(_emissionColorId, tint * 0.4f);
+            renderer.SetPropertyBlock(mpb);
         }
 
         /// <summary>
