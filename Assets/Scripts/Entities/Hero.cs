@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using CrowdDefense.UI;
@@ -968,6 +969,32 @@ namespace CrowdDefense.Entities
                 float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
                 SpawnProjectileAt(angle, 0, DamageMul, 2.0f);
             }
+        }
+
+        // ── Death cinematic (triggered by LevelRunner on castle death) ──────────
+        public void TriggerDeathCinematic()
+        {
+            JuiceFX.Instance?.SlowMo(0.3f, 2000);
+            JuiceFX.Instance?.Flash(new Color(1f, 0f, 0f, 0.45f), 800);
+            AudioController.Instance?.Play("hero_death", 1.2f);
+            StartCoroutine(CameraDeathZoom());
+        }
+
+        private System.Collections.IEnumerator CameraDeathZoom()
+        {
+            var cam = MainCameraCache.Main;
+            if (cam == null) yield break;
+            float origFOV = cam.fieldOfView;
+            float target = origFOV * 0.6f;
+            float t = 0f;
+            while (t < 1.5f)
+            {
+                t += Time.unscaledDeltaTime;
+                cam.fieldOfView = Mathf.Lerp(origFOV, target, t / 1.5f);
+                yield return null;
+            }
+            yield return new WaitForSecondsRealtime(0.5f);
+            cam.fieldOfView = origFOV;
         }
 
         // ── Wave regen hook (called by WaveManager at wave end) ───────────────
