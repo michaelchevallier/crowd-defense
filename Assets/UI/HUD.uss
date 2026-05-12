@@ -118,6 +118,123 @@
     display: none;
 }
 
+/* === L3 Branch Choice modal (UpgradeMenuController) === */
+.l3-choice-panel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.72);
+    align-items: center;
+    justify-content: center;
+}
+
+.l3-choice-box {
+    background-color: rgba(20, 20, 30, 0.97);
+    border-radius: 16px;
+    padding: 32px 40px;
+    align-items: center;
+    min-width: 480px;
+    max-width: 640px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.l3-choice-title {
+    color: white;
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 6px;
+}
+
+.l3-choice-sub {
+    color: rgba(200, 200, 200, 0.75);
+    font-size: 14px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 24px;
+}
+
+.l3-cards-row {
+    flex-direction: row;
+    margin-bottom: 20px;
+}
+
+.l3-card {
+    width: 190px;
+    min-height: 140px;
+    margin: 0 10px;
+    border-radius: 12px;
+    padding: 18px 16px;
+    align-items: center;
+    justify-content: center;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(40, 40, 55, 0.9);
+    transition-property: background-color, border-color;
+    transition-duration: 0.15s;
+}
+
+.l3-card:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(60, 60, 80, 0.95);
+}
+
+.l3-card-dps {
+    border-color: rgba(220, 60, 40, 0.6);
+}
+
+.l3-card-dps:hover {
+    border-color: rgba(255, 80, 60, 1.0);
+    background-color: rgba(80, 20, 15, 0.95);
+}
+
+.l3-card-utility {
+    border-color: rgba(40, 180, 200, 0.6);
+}
+
+.l3-card-utility:hover {
+    border-color: rgba(50, 210, 230, 1.0);
+    background-color: rgba(10, 50, 60, 0.95);
+}
+
+.l3-card-name {
+    color: white;
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 8px;
+}
+
+.l3-card-stats {
+    color: rgba(210, 210, 210, 0.85);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    margin-bottom: 10px;
+    white-space: normal;
+}
+
+.l3-card-cost {
+    color: rgb(255, 210, 63);
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.l3-cancel-btn {
+    padding: 10px 36px;
+    background-color: rgba(80, 80, 80, 0.5);
+    color: rgba(200, 200, 200, 0.85);
+    border-radius: 8px;
+    font-size: 16px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    border-width: 0;
+}
+
+.l3-cancel-btn:hover {
+    background-color: rgba(100, 100, 100, 0.7);
+}
+
 /* === Wave launch button (D1-02) === */
 .wave-launch-btn {
     position: absolute;
@@ -897,6 +1014,70 @@
 .toast-type-purple .generic-toast-title { color: rgb(200, 140, 255); }
 
 .toast-type-default { border-color: rgba(160, 160, 180, 0.45); }
+
+/* === Achievement toast (AchievementToastController — bottom-right, slide-in) === */
+.achievement-toast {
+    flex-direction: row;
+    align-items: center;
+    background-color: rgba(20, 14, 6, 0.96);
+    border-width: 2px;
+    border-color: rgb(255, 210, 63);
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin-top: 6px;
+}
+
+.toast-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: rgba(255, 210, 63, 0.18);
+    border-width: 1px;
+    border-color: rgba(255, 210, 63, 0.45);
+    margin-right: 10px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-text-block {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.toast-header {
+    color: rgb(255, 210, 63);
+    font-size: 10px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+}
+
+.toast-title {
+    color: rgb(255, 235, 180);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+}
+
+.toast-desc {
+    color: rgba(220, 200, 160, 0.75);
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+    margin-top: 2px;
+}
+
+.toast-points {
+    color: rgb(255, 210, 63);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-left: 8px;
+    flex-shrink: 0;
+}
 
 /* === Tower info panel (bottom-right, sticky, shown on tower select) === */
 #tower-info-panel {

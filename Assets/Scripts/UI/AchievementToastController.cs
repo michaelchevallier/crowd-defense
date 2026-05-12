@@ -12,10 +12,8 @@ namespace CrowdDefense.UI
     /// Affiche les toasts d'achievement (bottom-right) via UI Toolkit.
     /// Chaque unlock empile dans une queue ; les toasts apparaissent avec 0.5s de stagger.
     /// Auto-dismiss après 3s. Slide-in depuis la droite.
-    /// Requiert un UIDocument avec AchievementToast.uxml sur ce GameObject.
-    /// Attacher sur un GameObject séparé du HUD (sort order supérieur).
+    /// Attacher sur le même GameObject que le HudController (partage le UIDocument HUD).
     /// </summary>
-    [RequireComponent(typeof(UIDocument))]
     public class AchievementToastController : MonoBehaviour
     {
         private const float DisplayDuration = 3f;
@@ -31,8 +29,10 @@ namespace CrowdDefense.UI
 
         private void Awake()
         {
-            var doc = GetComponent<UIDocument>();
-            _stack = doc.rootVisualElement.Q<VisualElement>("toast-stack");
+            var doc = GetComponent<UIDocument>()
+                   ?? FindFirstObjectByType<UIDocument>();
+            if (doc != null)
+                _stack = doc.rootVisualElement.Q<VisualElement>("toast-stack");
 
             if (registry == null)
                 registry = Resources.Load<AchievementRegistry>("AchievementRegistry");
