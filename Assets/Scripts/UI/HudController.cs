@@ -68,9 +68,11 @@ namespace CrowdDefense.UI
         private int    _lastKnownCastleHP = -1;
         private Coroutine? _regenIconCoroutine;
 
-        // Heartbeat — audio loop + red vignette when castle HP < 25 %
+        // Heartbeat — audio loop + red vignette + icon pulse when castle HP < 25 %
         private Coroutine? _heartbeatCoroutine;
         private bool       _heartbeatActive;
+        private static readonly Color _hpIconDefaultColor = new Color(0.86f, 0.20f, 0.13f);
+        private static readonly Color _hpIconPulseColor   = Color.red;
 
         // Bank pill (D1-01 §3.5)
         private Label? _bankLabel;
@@ -468,6 +470,7 @@ namespace CrowdDefense.UI
             UpdateHeroPanel();
             TickBossHpBar();
             TickGoldRoll();
+            TickCastleHpPulse();
         }
 
         // Per-frame smooth countdown on the pill badge and main label during the skip bonus window
@@ -1141,6 +1144,17 @@ namespace CrowdDefense.UI
             _heartbeatCoroutine = StartCoroutine(HeartbeatLoop());
         }
 
+        private void TickCastleHpPulse()
+        {
+            if (hpBarFill == null || !_heartbeatActive) return;
+            float sin  = Mathf.Sin(Time.time * 4f);
+            float s    = 1.0f + sin * 0.15f;
+            float t    = sin * 0.5f + 0.5f;
+            var color  = Color.Lerp(_hpIconDefaultColor, _hpIconPulseColor, t);
+            hpBarFill.style.scale           = new StyleScale(new Vector3(s, s, 1f));
+            hpBarFill.style.backgroundColor = new StyleColor(color);
+        }
+
         private void StopHeartbeat()
         {
             _heartbeatActive = false;
@@ -1151,6 +1165,9 @@ namespace CrowdDefense.UI
                 StopCoroutine(_heartbeatCoroutine);
                 _heartbeatCoroutine = null;
             }
+            // Reset hpBarFill visual state — OnHPChanged will restore correct color/width
+            if (hpBarFill != null)
+                hpBarFill.style.scale = new StyleScale(new Vector3(1f, 1f, 1f));
         }
 
         private System.Collections.IEnumerator HeartbeatLoop()
@@ -1163,7 +1180,12 @@ namespace CrowdDefense.UI
                 // Pitch rises as HP drops: 1.0 at 25 % → 1.5 at 0 %
                 float intensity = Mathf.Clamp01(1f - ratio / 0.25f);
                 float pitch = 1f + intensity * 0.5f;
-                AudioController.Instance?.Play("castle_hit", 0.35f * (0.7f + intensity * 0.3f));
+                var ac = AudioController.Instance;
+                if (ac != null)
+                {
+                    string clip = ac.GetClip("heartbeat") != null ? "heartbeat" : "castle_hit";
+                    ac.PlayPitched(clip, 0.6f * (0.7f + intensity * 0.3f), pitch);
+                }
                 // Faster beat interval as HP drops: 1.2s at 25 % → 0.55s near 0 %
                 float interval = Mathf.Lerp(1.2f, 0.55f, intensity);
                 yield return new WaitForSecondsRealtime(interval);
