@@ -1,29 +1,30 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 04:29
+## 2026-05-12 04:45
 
 ### Snapshot
 
-- Actifs (<8 min) : 3 (current scan + 2 Monitor watchers)
-- Stalled (8-30 min) : 1 (bhj34q0ql, vieux Monitor r6 dead — pas critique)
+- Actifs (<8 min) : 4 (Monitor r12 nouveau + Monitor r11 dead + Sonnet polish + current)
+- Stalled (8-30 min) : 4 (b* anciens Monitors dead r6/r7/r8/r9)
 - Worktrees : 16
-- Unity batch : **DONE** (no PID, no lockfile)
-- Deploy r9 LIVE : `be61665` sur gh-pages
+- Unity batch : **YES** PID 4205 (r12 newly launched)
 
-### Killed
+### 🚨 r11 FAILED → r12 fix applied
 
-0. Aucun. Build r9 done, deploy live.
+- r11 error CS0718 : EnsureSingleton<LevelEvents/SchoolRegistry> sur static class.
+- Fix `7444d94` : commented out, kept TODO marker.
+- r12 PID 4205 lancé avec fix.
 
-### Sonnet en flight
+### Recent activity
 
-- adae43b430f1782a2 (Custom shaders Portal+Hologram+Kelp)
-- addd22b76ddc5e179 (AssetVariants BOSS+CASTLE tints)
-- aff03ebce20bae9c1 (L3 DPS/Utility labels i18n)
-
-### Notes
-
-État très clean. 3 commits récents (a0c8e4d, 890c48f, 11783de) sont DÉJÀ shipped dans r9 deploy be61665. Les 3 Sonnet en flight produiront ~3-5 commits supplémentaires pour batch r10 prochain. Smoke test r9 PASS ✅ (5/5 fixes verified).
+- `1fdb4aa` LoadingScreen anti-flicker 500ms
+- `6c52502` StatsLifetimePanel score+stars table by world
+- `1353c51` AudioMixerController helper + SettingsRegistry wire
+- `7444d94` BuildMainSceneTool fix static classes
+- `1d96388` Endless mode scaling
+- `cec99ad` RunContext mid-level save expansion
+- `f12541b` MapValidator runtime smoke
 
 ### Stdout
 
-`Actifs:3 Stalled:1 Killed:0 Worktrees:16 UnityBatch:DONE DeployLIVE:be61665 Sonnet:3InFlight`
+`Actifs:4 Stalled:4 Killed:0 Worktrees:16 UnityBatch:YES(PID4205,r12) PolishLanded:7 Sonnet:0InFlight`

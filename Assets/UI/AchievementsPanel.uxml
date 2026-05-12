@@ -6,6 +6,11 @@
         <ui:VisualElement name="achievements-panel" class="ach-panel">
             <ui:Label text="Achievements" name="achievements-title" class="ach-panel-title" />
             <ui:Label text="Score : 0 / 0" name="achievements-score" class="ach-score" />
+            <ui:VisualElement name="achievements-filter-bar" class="ach-filter-bar">
+                <ui:Button text="Tous" name="btn-filter-all" class="ach-filter-btn ach-filter-btn--active" />
+                <ui:Button text="Obtenus" name="btn-filter-unlocked" class="ach-filter-btn" />
+                <ui:Button text="Verrouilles" name="btn-filter-locked" class="ach-filter-btn" />
+            </ui:VisualElement>
             <ui:ScrollView name="achievements-scroll" class="ach-scroll"
                            vertical-scroller-visibility="AlwaysVisible"
                            horizontal-scroller-visibility="Hidden">

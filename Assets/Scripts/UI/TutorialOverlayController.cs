@@ -29,6 +29,7 @@ namespace CrowdDefense.UI
         // Hint state
         private Coroutine? _hintAutoDismiss;
         private bool       _hintVisible;
+        private Coroutine? _arrowFadeCoroutine;
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
 
@@ -225,42 +226,107 @@ namespace CrowdDefense.UI
         {
             if (_arrow == null) return;
 
+            // Fade out previous arrow, then position and fade in new one
+            if (_arrowFadeCoroutine != null) StopCoroutine(_arrowFadeCoroutine);
+
             switch (step)
             {
                 case TutorialStep.Step1_PlaceTower:
-                    _arrow.style.display = DisplayStyle.Flex;
-                    _arrow.style.left    = new Length(50f, LengthUnit.Percent);
-                    _arrow.style.top     = new Length(60f, LengthUnit.Percent);
+                    _arrowFadeCoroutine = StartCoroutine(FadeOutArrowThenSetAndFadeIn(
+                        new Length(50f, LengthUnit.Percent),
+                        new Length(60f, LengthUnit.Percent)));
                     break;
                 case TutorialStep.Step2_StartWave:
-                    _arrow.style.display = DisplayStyle.Flex;
-                    _arrow.style.left    = new Length(50f, LengthUnit.Percent);
-                    _arrow.style.top     = new Length(75f, LengthUnit.Percent);
+                    _arrowFadeCoroutine = StartCoroutine(FadeOutArrowThenSetAndFadeIn(
+                        new Length(50f, LengthUnit.Percent),
+                        new Length(75f, LengthUnit.Percent)));
                     break;
                 case TutorialStep.Step3_KillEnemy:
-                    _arrow.style.display = DisplayStyle.Flex;
-                    _arrow.style.left    = new Length(55f, LengthUnit.Percent);
-                    _arrow.style.top     = new Length(50f, LengthUnit.Percent);
+                    _arrowFadeCoroutine = StartCoroutine(FadeOutArrowThenSetAndFadeIn(
+                        new Length(55f, LengthUnit.Percent),
+                        new Length(50f, LengthUnit.Percent)));
                     break;
                 case TutorialStep.Step4_PlaceHero:
-                    _arrow.style.display = DisplayStyle.Flex;
-                    _arrow.style.left    = new Length(40f, LengthUnit.Percent);
-                    _arrow.style.top     = new Length(55f, LengthUnit.Percent);
+                    _arrowFadeCoroutine = StartCoroutine(FadeOutArrowThenSetAndFadeIn(
+                        new Length(40f, LengthUnit.Percent),
+                        new Length(55f, LengthUnit.Percent)));
                     break;
                 case TutorialStep.Step5_CollectCoins:
-                    _arrow.style.display = DisplayStyle.Flex;
-                    _arrow.style.left    = new Length(5f,  LengthUnit.Percent);
-                    _arrow.style.top     = new Length(10f, LengthUnit.Percent);
+                    _arrowFadeCoroutine = StartCoroutine(FadeOutArrowThenSetAndFadeIn(
+                        new Length(5f,  LengthUnit.Percent),
+                        new Length(10f, LengthUnit.Percent)));
                     break;
                 case TutorialStep.Step6_ChoosePerk:
-                    _arrow.style.display = DisplayStyle.Flex;
-                    _arrow.style.left    = new Length(50f, LengthUnit.Percent);
-                    _arrow.style.top     = new Length(40f, LengthUnit.Percent);
+                    _arrowFadeCoroutine = StartCoroutine(FadeOutArrowThenSetAndFadeIn(
+                        new Length(50f, LengthUnit.Percent),
+                        new Length(40f, LengthUnit.Percent)));
                     break;
                 default:
-                    _arrow.style.display = DisplayStyle.None;
+                    _arrowFadeCoroutine = StartCoroutine(FadeOutArrow());
                     break;
             }
+        }
+
+        private IEnumerator FadeOutArrow()
+        {
+            if (_arrow == null) yield break;
+            var cg = _arrow.GetComponent<CanvasGroup>();
+            if (cg == null)
+            {
+                _arrow.style.display = DisplayStyle.None;
+                yield break;
+            }
+
+            float t = 0f;
+            while (t < 0.2f)
+            {
+                t += Time.unscaledDeltaTime;
+                float k = 1f - Mathf.Clamp01(t / 0.2f);
+                cg.alpha = k;
+                _arrow.transform.scale = new Vector3(0.5f + 0.5f * k, 0.5f + 0.5f * k, 1f);
+                yield return null;
+            }
+            cg.alpha = 0f;
+            _arrow.style.display = DisplayStyle.None;
+        }
+
+        private IEnumerator FadeOutArrowThenSetAndFadeIn(Length left, Length top)
+        {
+            if (_arrow == null) yield break;
+
+            // Fade out existing
+            yield return StartCoroutine(FadeOutArrow());
+
+            // Position
+            _arrow.style.left = left;
+            _arrow.style.top = top;
+
+            // Fade in
+            yield return StartCoroutine(FadeInArrow());
+        }
+
+        private IEnumerator FadeInArrow()
+        {
+            if (_arrow == null) yield break;
+            _arrow.style.display = DisplayStyle.Flex;
+
+            var cg = _arrow.GetComponent<CanvasGroup>();
+            if (cg == null) cg = _arrow.AddComponent<CanvasGroup>();
+
+            cg.alpha = 0f;
+            _arrow.transform.scale = Vector3.one * 0.5f;
+
+            float t = 0f;
+            while (t < 0.3f)
+            {
+                t += Time.unscaledDeltaTime;
+                float k = Mathf.Clamp01(t / 0.3f);
+                cg.alpha = k;
+                _arrow.transform.scale = Vector3.one * (0.5f + 0.5f * k);
+                yield return null;
+            }
+            cg.alpha = 1f;
+            _arrow.transform.scale = Vector3.one;
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
