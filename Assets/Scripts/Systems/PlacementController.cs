@@ -197,6 +197,10 @@ namespace CrowdDefense.Systems
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
                 AudioController.Instance?.Play("tower_built", 0.7f);
+                VfxPool.Instance?.SpawnImpact(cellWorld + Vector3.up * 0.3f, new Color(1f, 0.84f, 0f));
+                AudioController.Instance?.Play3D("tower_placed", cellWorld);
+                JuiceFX.Instance?.PunchScale(tower.transform, 1.15f, 0.3f);
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward("Tour placee !", cellWorld + Vector3.up * 1.5f, Color.green);
                 OnTowerPlaced?.Invoke(tower);
             }
         }
@@ -256,6 +260,10 @@ namespace CrowdDefense.Systems
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
                 AudioController.Instance?.Play("tower_built", 0.7f);
+                VfxPool.Instance?.SpawnImpact(cellWorld + Vector3.up * 0.3f, new Color(1f, 0.84f, 0f));
+                AudioController.Instance?.Play3D("tower_placed", cellWorld);
+                JuiceFX.Instance?.PunchScale(tower.transform, 1.15f, 0.3f);
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward("Tour placee !", cellWorld + Vector3.up * 1.5f, Color.green);
                 OnTowerPlaced?.Invoke(tower);
             }
         }
