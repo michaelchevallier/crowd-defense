@@ -2013,9 +2013,24 @@ namespace CrowdDefense.Entities
 
         // ── Castle reached ────────────────────────────────────────────────────
 
+        private const float AttackTelegraphDuration = 0.5f;
+        private const int   TelegraphSegments       = 32;
+
         private void OnReachedCastle()
         {
             if (IsDead || _dying) return;
+            StartCoroutine(CastleAttackWithTelegraph());
+        }
+
+        private IEnumerator CastleAttackWithTelegraph()
+        {
+            float attackRange = 1.2f;
+            var circle = BuildTelegraphCircle(attackRange);
+
+            yield return new WaitForSeconds(AttackTelegraphDuration);
+
+            if (circle != null) Object.Destroy(circle);
+
             int dmg = Mathf.RoundToInt((cfg?.Damage ?? 0) * _damageMul);
 #if UNITY_EDITOR
             Debug.Log($"[Enemy] reached castle type={cfg?.Id} dmg={dmg} pathIdx={pathIdx}");
@@ -2026,6 +2041,31 @@ namespace CrowdDefense.Entities
                 EventManager.Instance?.Publish(new HeroDamagedEvent(dmg));
             WaveManager.Instance?.NotifyEnemyDied(this);
             ReleaseToPool();
+        }
+
+        private GameObject BuildTelegraphCircle(float radius)
+        {
+            var go = new GameObject("AttackTelegraph");
+            go.transform.position = transform.position;
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;
+            lr.loop          = true;
+            lr.positionCount = TelegraphSegments;
+            lr.startWidth    = 0.08f;
+            lr.endWidth      = 0.08f;
+
+            var mat = new Material(Shader.Find("Sprites/Default"));
+            mat.color = new Color(1f, 0f, 0f, 0.75f);
+            lr.material = mat;
+
+            for (int i = 0; i < TelegraphSegments; i++)
+            {
+                float a = i / (float)TelegraphSegments * Mathf.PI * 2f;
+                lr.SetPosition(i, new Vector3(Mathf.Cos(a) * radius, 0.05f, Mathf.Sin(a) * radius));
+            }
+
+            return go;
         }
 
         private void SpawnMinion()
