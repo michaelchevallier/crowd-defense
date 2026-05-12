@@ -3,6 +3,7 @@
     "com.unity.render-pipelines.universal": "17.3.0",
     "com.coplaydev.unity-mcp": "https://github.com/CoplayDev/unity-mcp.git?path=/MCPForUnity#main",
     "org.khronos.unitygltf": "https://github.com/KhronosGroup/UnityGLTF.git#release/2.19.2",
+    "com.unity.cloud.gltfast": "6.14.1",
     "com.unity.multiplayer.center": "1.0.1",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
