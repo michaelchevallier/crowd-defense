@@ -517,6 +517,17 @@ namespace CrowdDefense.Entities
 #if UNITY_EDITOR
             Debug.Log($"[Tower] Sell cumul={CumulativeCost} refund={refund} ratio={bal.SellRefundRatio:F2}");
 #endif
+            Vector3 pos = transform.position;
+            JuiceFX.Instance?.PunchScale(transform, 0.7f, 0.3f);
+            VfxPool.Instance?.SpawnImpact(pos + Vector3.up * 0.5f, new Color(0.55f, 0.55f, 0.55f));
+            AudioController.Instance?.Play3D("tower_sold", pos);
+            AudioController.Instance?.Play3D("powerup", pos);
+            for (int i = 0; i < 5; i++)
+            {
+                Vector3 offset = Random.insideUnitSphere * 0.5f;
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                    "\U0001F4B0", pos + offset, Color.yellow);
+            }
             Destroy(gameObject);
         }
 

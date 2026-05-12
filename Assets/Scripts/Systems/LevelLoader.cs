@@ -11,8 +11,17 @@ namespace CrowdDefense.Systems
         // Non-null when the next run is a Daily challenge (no LevelData asset needed).
         public static DailyLevelSpec? NextDailySpec { get; set; }
 
+        public static bool HasHeroChoice()
+            => !string.IsNullOrEmpty(UnityEngine.PlayerPrefs.GetString(HeroPickScreen.PrefsKey, ""));
+
         public static void LoadLevel(string levelId)
         {
+            if (!HasHeroChoice())
+            {
+                HeroPickScreen.Instance?.Show(levelId, () => LoadLevel(levelId));
+                return;
+            }
+
             NextLevelId = levelId;
             NextDailySpec = null;
             Fade("Main");

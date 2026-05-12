@@ -10,6 +10,7 @@ namespace CrowdDefense.Data
         [SerializeField] private string id = "knight";
         [SerializeField] private string displayName = "Knight";
         [SerializeField] private string assetKey = "knight";
+        [SerializeField][TextArea(2, 4)] private string description = "";
 
         [Header("Base Stats")]
         [SerializeField] private float damage = 0.45f;
@@ -41,6 +42,7 @@ namespace CrowdDefense.Data
         public string Id             => id;
         public string DisplayName    => displayName;
         public string AssetKey       => assetKey;
+        public string Description    => description;
         public float  Damage         => damage;
         public float  Range          => range;
         public int    FireRateMs     => fireRateMs;

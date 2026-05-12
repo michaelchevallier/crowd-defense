@@ -2,6 +2,7 @@
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Entities;
+using CrowdDefense.UI;
 
 namespace CrowdDefense.Systems
 {
@@ -45,9 +46,17 @@ namespace CrowdDefense.Systems
 
             if (found == hoveredTower) return;
 
-            if (hoveredTower != null) hoveredTower.ShowRangeRing(false);
+            if (hoveredTower != null)
+            {
+                hoveredTower.ShowRangeRing(false);
+                TowerTooltipController.Instance?.Hide();
+            }
             hoveredTower = found;
-            if (hoveredTower != null) hoveredTower.ShowRangeRing(true);
+            if (hoveredTower != null)
+            {
+                hoveredTower.ShowRangeRing(true);
+                TowerTooltipController.Instance?.Show(hoveredTower);
+            }
         }
 
         private void ClearHover()
@@ -55,6 +64,7 @@ namespace CrowdDefense.Systems
             if (hoveredTower == null) return;
             hoveredTower.ShowRangeRing(false);
             hoveredTower = null;
+            TowerTooltipController.Instance?.Hide();
         }
     }
 }

@@ -8,91 +8,74 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    /// <summary>
-    /// Affiche un tooltip UI Toolkit au hover sur une Tower placée.
-    /// Parcourt PlacedTowers chaque frame, détecte la plus proche du cursor en screen space.
-    /// Populate : nom + level + cost cumulatif, stats effectives avec buffs synergy, synergies actives.
-    /// Peut être placé sur le meme GameObject que HudController (partage le UIDocument).
-    /// </summary>
+    // Affiche un tooltip compact (hover tower) dans le panneau tower-tooltip du HUD.
+    // Piloté par TowerHoverController via Show/Hide — pas de detection hover interne.
+    // Partage le UIDocument de HudController (sibling component, même GameObject).
     public class TowerTooltipController : MonoBehaviour
     {
-        // Distance screen pixels en dessous de laquelle une tower est considérée "hovered"
-        private const float HoverRadiusPx = 60f;
-        // Décalage du tooltip par rapport au cursor
+        public static TowerTooltipController? Instance { get; private set; }
+
         private const float OffsetX = 14f;
         private const float OffsetY = 14f;
 
-        private VisualElement? tooltipRoot;
-        private Label? tooltipHeader;
-        private Label? tooltipStats;
-        private Label? tooltipSynergies;
+        private VisualElement? _tooltipRoot;
+        private Label? _tooltipHeader;
+        private Label? _tooltipStats;
+        private Label? _tooltipSynergies;
 
-        private Camera? cam;
-        private Tower? currentHovered;
-        private readonly StringBuilder sb = new();
+        private bool _visible;
+        private readonly StringBuilder _sb = new();
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this) { Destroy(this); return; }
+            Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
 
         private void Start()
         {
             var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
             if (doc == null) return;
             var root = doc.rootVisualElement;
-            tooltipRoot = root.Q<VisualElement>("tower-tooltip");
-            tooltipHeader = root.Q<Label>("tooltip-header");
-            tooltipStats = root.Q<Label>("tooltip-stats");
-            tooltipSynergies = root.Q<Label>("tooltip-synergies");
-
-            cam = Camera.main;
+            _tooltipRoot     = root.Q<VisualElement>("tower-tooltip");
+            _tooltipHeader   = root.Q<Label>("tooltip-header");
+            _tooltipStats    = root.Q<Label>("tooltip-stats");
+            _tooltipSynergies = root.Q<Label>("tooltip-synergies");
             Hide();
         }
 
         private void Update()
         {
-            if (PlacementController.Instance == null || cam == null)
-            {
-                Hide();
-                return;
-            }
+            if (!_visible || _tooltipRoot == null) return;
 
-            Vector2 mousePos = Input.mousePosition;
-            // Y est inversé : Unity screen = bas-gauche, UI Toolkit = haut-gauche
-            float uiMouseY = Screen.height - mousePos.y;
+            var mp = Input.mousePosition;
+            float uiX = mp.x + OffsetX;
+            float uiY = Screen.height - mp.y + OffsetY;
 
-            Tower? hovered = FindHoveredTower(mousePos);
+            // Clamp pour rester visible (largeur max tooltip = 280 px)
+            if (uiX + 280f > Screen.width) uiX = mp.x - 280f - OffsetX;
 
-            if (hovered == null)
-            {
-                if (currentHovered != null) Hide();
-                currentHovered = null;
-                return;
-            }
-
-            currentHovered = hovered;
-            PopulateTooltip(hovered);
-            PositionTooltip(mousePos.x, uiMouseY);
-            Show();
+            _tooltipRoot.style.left = new Length(uiX, LengthUnit.Pixel);
+            _tooltipRoot.style.top  = new Length(uiY, LengthUnit.Pixel);
         }
 
-        private Tower? FindHoveredTower(Vector2 mousePos)
+        public void Show(Tower tower)
         {
-            var towers = PlacementController.Instance!.PlacedTowers;
-            Tower? best = null;
-            float bestDist = HoverRadiusPx;
+            if (_tooltipRoot == null) return;
+            PopulateTooltip(tower);
+            _tooltipRoot.RemoveFromClassList("hidden");
+            _visible = true;
+        }
 
-            for (int i = 0; i < towers.Count; i++)
-            {
-                var t = towers[i];
-                if (t == null) continue;
-                Vector3 screenPos = cam!.WorldToScreenPoint(t.transform.position);
-                if (screenPos.z < 0f) continue; // derrière camera
-                float dist = Vector2.Distance(mousePos, new Vector2(screenPos.x, screenPos.y));
-                if (dist < bestDist)
-                {
-                    bestDist = dist;
-                    best = t;
-                }
-            }
-
-            return best;
+        public void Hide()
+        {
+            _tooltipRoot?.AddToClassList("hidden");
+            _visible = false;
         }
 
         private void PopulateTooltip(Tower tower)
@@ -100,180 +83,88 @@ namespace CrowdDefense.UI
             var cfg = tower.Config;
             if (cfg == null) return;
 
-            // ── Header : Nom · L{level} · coût cumulatif ──────────────────────
-            sb.Clear();
-            string towerNameKey = $"tower.{cfg.Id}.name";
-            string localizedName = L.Get(towerNameKey, "Towers");
-            string displayName2 = localizedName != towerNameKey
-                ? localizedName
-                : (string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Id : cfg.DisplayName);
-            sb.Append(displayName2);
-            sb.Append("  L");
-            sb.Append(tower.UpgradeLevel);
+            // ── Header ───────────────────────────────────────────────────────────
+            _sb.Clear();
+            string name = string.IsNullOrEmpty(cfg.DisplayName) ? cfg.Id : cfg.DisplayName;
+            _sb.Append(name);
+            _sb.Append("  L");
+            _sb.Append(tower.UpgradeLevel);
             if (tower.UpgradeBranch != TowerBranch.None)
             {
-                sb.Append(" (");
-                sb.Append(tower.UpgradeBranch == TowerBranch.Dps
-                    ? L.Get("tooltip.branch_dps")
-                    : L.Get("tooltip.branch_utility"));
-                sb.Append(')');
+                _sb.Append(" (");
+                _sb.Append(tower.UpgradeBranch == TowerBranch.Dps ? "DPS" : "Utility");
+                _sb.Append(')');
             }
-            sb.Append("  |  ");
-            sb.Append(L.Get("tooltip.invested", tower.CumulativeCost));
-            if (tooltipHeader != null) tooltipHeader.text = sb.ToString();
+            _sb.Append("   ");
+            _sb.Append(tower.CumulativeCost);
+            _sb.Append("c investi");
+            if (_tooltipHeader != null) _tooltipHeader.text = _sb.ToString();
 
-            // ── Stats effectives ──────────────────────────────────────────────
-            sb.Clear();
+            // ── Stats ────────────────────────────────────────────────────────────
+            _sb.Clear();
 
-            float baseDmg = cfg.Damage;
-            float effectiveDmg = baseDmg * tower._buffMul;
-            sb.Append(L.Get("tooltip.stat_dmg"));
-            sb.Append(' ');
-            sb.Append(effectiveDmg.ToString("F1"));
+            float effectiveDmg = cfg.Damage * tower._buffMul;
+            _sb.Append("Degats: ");
+            _sb.Append(effectiveDmg.ToString("F1"));
             if (tower._buffMul > 1.01f)
-                sb.Append(L.Get("tooltip.stat_dmg_buff", tower._buffMul.ToString("F2")));
-            sb.Append('\n');
+            {
+                _sb.Append(" (x");
+                _sb.Append(tower._buffMul.ToString("F2"));
+                _sb.Append(')');
+            }
+            _sb.Append('\n');
 
-            sb.Append(L.Get("tooltip.stat_range"));
-            sb.Append(' ');
-            sb.Append(cfg.Range.ToString("F1"));
-            sb.Append('\n');
+            _sb.Append("Portee: ");
+            _sb.Append(cfg.Range.ToString("F1"));
+            _sb.Append("m\n");
 
-            float fireRateSec = cfg.FireRateMs / 1000f;
-            sb.Append(L.Get("tooltip.stat_rate"));
-            sb.Append(' ');
-            sb.Append(fireRateSec.ToString("F2"));
-            sb.Append("s");
-            sb.Append('\n');
+            float ratePerSec = cfg.FireRateMs > 0 ? 1000f / cfg.FireRateMs : 0f;
+            _sb.Append("Cadence: ");
+            _sb.Append(ratePerSec.ToString("F2"));
+            _sb.Append("/s\n");
 
-            int effectivePierce = cfg.Pierce + tower._pierceBonus;
-            sb.Append(L.Get("tooltip.stat_pierce"));
-            sb.Append(' ');
-            sb.Append(effectivePierce);
-            if (tower._pierceBonus > 0)
-            {
-                sb.Append(" (+");
-                sb.Append(tower._pierceBonus);
-                sb.Append(')');
-            }
-            sb.Append('\n');
+            _sb.Append("Cible: ");
+            _sb.Append(tower.CurrentTargetPriority.ToString());
 
-            if (tower._multiShotBonus > 0)
-            {
-                sb.Append(L.Get("tooltip.stat_multishot", tower._multiShotBonus));
-                sb.Append('\n');
-            }
+            if (_tooltipStats != null) _tooltipStats.text = _sb.ToString();
 
-            if (tooltipStats != null) tooltipStats.text = sb.ToString().TrimEnd('\n');
+            // ── Synergies ────────────────────────────────────────────────────────
+            _sb.Clear();
+            int n = 0;
 
-            // ── Synergies actives ─────────────────────────────────────────────
-            sb.Clear();
-            int synCount = 0;
-
-            if (tower._buffMul > 1.01f && synCount < 5)
+            if (tower._buffMul > 1.01f && n++ < 5)
             {
-                sb.Append(L.Get("tooltip.syn_aura_dmg", tower._buffMul.ToString("F2")));
-                sb.Append('\n');
-                synCount++;
+                _sb.Append("Aura DMG x");
+                _sb.Append(tower._buffMul.ToString("F2"));
+                _sb.Append('\n');
             }
-            if (tower._pierceBonus > 0 && synCount < 5)
+            if (tower._pierceBonus > 0 && n++ < 5)
             {
-                string pierceVal = tower._pierceBonus == 99
-                    ? L.Get("tooltip.pierce_inf")
-                    : tower._pierceBonus.ToString();
-                sb.Append(L.Get("tooltip.syn_pierce", pierceVal));
-                sb.Append('\n');
-                synCount++;
+                _sb.Append("Pierce +");
+                _sb.Append(tower._pierceBonus == 99 ? "INF" : tower._pierceBonus.ToString());
+                _sb.Append('\n');
             }
-            if (tower._multiShotBonus > 0 && synCount < 5)
+            if (tower._multiShotBonus > 0 && n++ < 5)
             {
-                sb.Append(L.Get("tooltip.syn_multishot", tower._multiShotBonus));
-                sb.Append('\n');
-                synCount++;
+                _sb.Append("MultiShot +");
+                _sb.Append(tower._multiShotBonus);
+                _sb.Append('\n');
             }
-            if (tower._flyerDmgBonus > 1.01f && synCount < 5)
+            if (tower._slowOnHitActive && n++ < 5)
             {
-                sb.Append(L.Get("tooltip.syn_flyer_dmg", tower._flyerDmgBonus.ToString("F2")));
-                sb.Append('\n');
-                synCount++;
+                _sb.Append("Ralentit on-hit\n");
             }
-            if (tower._slowOnHitActive && synCount < 5)
+            if (tower._freezeOnHitActive && n++ < 5)
             {
-                sb.Append(L.Get("tooltip.syn_slow_on_hit",
-                    tower._slowOnHitMul.ToString("F2"),
-                    (tower._slowOnHitDurMs / 1000f).ToString("F1")));
-                sb.Append('\n');
-                synCount++;
+                _sb.Append("Gele on-hit\n");
             }
-            if (tower._appliesSlowActive && synCount < 5)
+            if (tower._pullActive && n++ < 5)
             {
-                sb.Append(L.Get("tooltip.syn_applies_slow", tower._appliesSlowMul.ToString("F2")));
-                sb.Append('\n');
-                synCount++;
-            }
-            if (tower._propagateAoEActive && synCount < 5)
-            {
-                sb.Append(L.Get("tooltip.syn_prop_aoe",
-                    tower._propagateAoERadius.ToString("F1"),
-                    tower._propagateAoEDmg.ToString("F1")));
-                sb.Append('\n');
-                synCount++;
-            }
-            if (tower._cascadeRadius > 0f && synCount < 5)
-            {
-                sb.Append(L.Get("tooltip.syn_cascade", tower._cascadeRadius.ToString("F1")));
-                sb.Append('\n');
-                synCount++;
-            }
-            if (tower._knockbackOnHit > 0f && synCount < 5)
-            {
-                sb.Append(L.Get("tooltip.syn_knockback", tower._knockbackOnHit.ToString("F1")));
-                sb.Append('\n');
-                synCount++;
-            }
-            if (tower._freezeOnHitActive && synCount < 5)
-            {
-                sb.Append(L.Get("tooltip.syn_freeze", (tower._freezeDurMs / 1000f).ToString("F1")));
-                sb.Append('\n');
-                synCount++;
-            }
-            if (tower._propagateDebuff && synCount < 5)
-            {
-                sb.Append(L.Get("tooltip.syn_propagate_debuff"));
-                sb.Append('\n');
-                synCount++;
-            }
-            if (tower._pullActive && synCount < 5)
-            {
-                sb.Append(L.Get("tooltip.syn_pull"));
-                sb.Append('\n');
-                synCount++;
+                _sb.Append("Attraction\n");
             }
 
-            string synText = sb.ToString().TrimEnd('\n');
-            if (tooltipSynergies != null)
-                tooltipSynergies.text = synText;
-        }
-
-        private void PositionTooltip(float screenX, float uiY)
-        {
-            if (tooltipRoot == null) return;
-            float x = screenX + OffsetX;
-            float y = uiY + OffsetY;
-            // Clamp pour rester dans l'écran (largeur max 280 px)
-            if (x + 280f > Screen.width) x = screenX - 280f - OffsetX;
-            tooltipRoot.style.left = new Length(x, LengthUnit.Pixel);
-            tooltipRoot.style.top = new Length(y, LengthUnit.Pixel);
-        }
-
-        private void Show()
-        {
-            tooltipRoot?.RemoveFromClassList("hidden");
-        }
-
-        private void Hide()
-        {
-            tooltipRoot?.AddToClassList("hidden");
+            if (_tooltipSynergies != null)
+                _tooltipSynergies.text = _sb.ToString().TrimEnd('\n');
         }
     }
 }
