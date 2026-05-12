@@ -1802,7 +1802,14 @@ namespace CrowdDefense.Entities
             string deathClip = isBoss ? "enemy_die_boss" : (isMedium ? "enemy_die_medium" : "enemy_die_basic");
             AudioController.Instance?.Play(deathClip, isBoss ? 1f : 0.5f);
 
-            float vfxIntensity = isBoss ? JuiceConfig.Get().BossDeathFlashScale : (isMedium ? 2f : 1f);
+            float vfxIntensity = maxHp switch
+            {
+                <= 30f  => 0.6f,
+                <= 100f => 1.0f,
+                <= 300f => 1.5f,
+                _       => 2.5f
+            };
+            if (isBoss) vfxIntensity = JuiceConfig.Get().BossDeathFlashScale;
             VfxPool.Instance?.SpawnDeath(transform.position, baseColor, vfxIntensity);
 
             if (isBoss)
