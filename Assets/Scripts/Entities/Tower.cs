@@ -1403,10 +1403,10 @@ namespace CrowdDefense.Entities
             _synergyHaloRenderer.GetPropertyBlock(_haloMpb);
             float prevAlpha = _haloMpb.GetColor(_haloColorId).a;
             float targetAlpha = _synergyActive
-                ? 0.30f + 0.20f * Mathf.Sin(Time.time * 5f)
+                ? 0.5f + 0.3f * Mathf.Sin(Time.time * 2f * Mathf.PI)
                 : 0f;
             float nextAlpha = Mathf.Lerp(prevAlpha, targetAlpha, 0.15f);
-            var baseColor = new Color(1f, 0.82f, 0.15f, nextAlpha);
+            var baseColor = new Color(0.4f, 0.8f, 1f, nextAlpha); // cyan 1Hz pulse
             _haloMpb.SetColor(_haloColorId, baseColor);
             _synergyHaloRenderer.SetPropertyBlock(_haloMpb);
         }
