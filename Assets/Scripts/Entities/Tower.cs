@@ -253,6 +253,7 @@ namespace CrowdDefense.Entities
         // HP system : 30 max, -1 per kill, repair = 10¢ per 5 HP missing (rounded up)
         private int _hp    = 30;
         private int _maxHp = 30;
+        private bool _destroyStarted;
         public int Hp    => _hp;
         public int HpMax => _maxHp;
         public int RepairCost => Mathf.CeilToInt((_maxHp - _hp) / 5f) * 10;
@@ -669,6 +670,32 @@ namespace CrowdDefense.Entities
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
                     "\U0001F4B0", pos + offset, Color.yellow);
             }
+            StartCoroutine(PlayDestroyAnim());
+        }
+
+        private IEnumerator PlayDestroyAnim()
+        {
+            _destroyStarted = true;
+            Vector3 startScale = transform.localScale;
+            float targetRotZ = Random.Range(-45f, 45f);
+            float startRotZ = transform.localEulerAngles.z;
+            Vector3 pos = transform.position;
+            VfxPool.Instance?.SpawnDeathPuff(pos + Vector3.up * 0.5f, tier: 1);
+            VfxPool.Instance?.SpawnImpact(pos + Vector3.up * 0.3f, new Color(0.65f, 0.55f, 0.4f));
+            float elapsed = 0f;
+            const float duration = 0.3f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = 1f - t * t;
+                transform.localScale = startScale * eased;
+                float rot = Mathf.LerpAngle(startRotZ, targetRotZ, t);
+                var e = transform.localEulerAngles;
+                e.z = rot;
+                transform.localEulerAngles = e;
+                yield return null;
+            }
             Destroy(gameObject);
         }
 
@@ -676,6 +703,12 @@ namespace CrowdDefense.Entities
         {
             _hp = Mathf.Max(0, _hp - amount);
             UpdateHpAlpha();
+            if (_hp <= 0 && !_destroyStarted)
+            {
+                PlacementController.Instance?.UnregisterTower(this);
+                Synergies.Instance?.MarkDirty();
+                StartCoroutine(PlayDestroyAnim());
+            }
         }
 
         public void ReceiveEnemySplash(int amount)
