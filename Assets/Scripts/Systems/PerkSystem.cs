@@ -17,6 +17,9 @@ namespace CrowdDefense.Systems
 
         private PerkRegistry? _registry;
 
+        // Schools picked by the player at run start (ids). Empty = no filter (all perks available).
+        private readonly List<string> _pickedSchools = new();
+
         public event Action<Hero, PerkDef>?         OnPerkApplied;
         public event Action<Hero, PerkSetBonusDef>? OnSetBonusActivated;
 
@@ -86,13 +89,29 @@ namespace CrowdDefense.Systems
             return true;
         }
 
+        // ── School filter (set once at run start) ────────────────────────────
+
+        public void SetPickedSchools(IEnumerable<string> schoolIds)
+        {
+            _pickedSchools.Clear();
+            _pickedSchools.AddRange(schoolIds);
+        }
+
         // ── Roll (V5 rollPerkChoices port) ────────────────────────────────────
 
         public List<PerkDef> RollChoices(Hero hero, int count, int levelUpsLeft, string schoolId)
         {
             if (_registry == null) return new List<PerkDef>();
 
-            var basePool = new List<PerkDef>(_registry.Standard);
+            var basePool = new List<PerkDef>();
+            foreach (var p in _registry.Standard)
+            {
+                // If player picked schools, only include perks that belong to a picked school
+                // (perks with empty school string are always included — generic pool)
+                if (_pickedSchools.Count > 0 && !string.IsNullOrEmpty(p.school) && !_pickedSchools.Contains(p.school))
+                    continue;
+                basePool.Add(p);
+            }
             foreach (var sp in _registry.GetSchoolPerks(schoolId)) basePool.Add(sp);
 
             var available = new List<PerkDef>();
@@ -285,18 +304,22 @@ namespace CrowdDefense.Systems
 
         private static School ParseSchool(string schoolId) => schoolId switch
         {
-            "feu"        => School.Feu,
-            "givre"      => School.Givre,
-            "maconnerie" => School.Maconnerie,
-            _            => School.None,
+            "elementaire" => School.Elementaire,
+            "mecanique"   => School.Mecanique,
+            "mystique"    => School.Mystique,
+            "bestiaire"   => School.Bestiaire,
+            "strategie"   => School.Strategie,
+            _             => School.None,
         };
 
         private static PerkTag SchoolToTag(School school) => school switch
         {
-            School.Feu        => PerkTag.Feu,
-            School.Givre      => PerkTag.Vide,
-            School.Maconnerie => PerkTag.Pierre,
-            _                 => PerkTag.None,
+            School.Elementaire => PerkTag.Feu,
+            School.Mecanique   => PerkTag.Pierre,
+            School.Mystique    => PerkTag.Vide,
+            School.Bestiaire   => PerkTag.Sang,
+            School.Strategie   => PerkTag.Or,
+            _                  => PerkTag.None,
         };
 
         private static void FisherYates<T>(List<T> list)
