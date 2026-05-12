@@ -30,7 +30,7 @@ MonoBehaviour:
   overrideCastleHP: 1
   castleHPOverride: 150
   briefing: ""
-  cutsceneIdAtStart:
+  cutsceneIdAtStart: world1
   isEndless: 0
   allowMultiMagnet: 0
   gridVariants: []

@@ -29,6 +29,9 @@ MonoBehaviour:
   startCoins: 109
   overrideCastleHP: 1
   castleHPOverride: 150
+  briefing: ""
+  cutsceneIdAtStart: world3
+  isEndless: 0
   allowMultiMagnet: 0
   waves:
   - entries:

@@ -29,7 +29,11 @@ MonoBehaviour:
   startCoins: 94
   overrideCastleHP: 1
   castleHPOverride: 130
+  briefing: ""
+  cutsceneIdAtStart: world2
+  isEndless: 0
   allowMultiMagnet: 0
+  gridVariants: []
   waves:
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
