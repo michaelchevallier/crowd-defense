@@ -36,6 +36,9 @@ namespace CrowdDefense.Data
         [Header("Cutscene")]
         [SerializeField] private string cutsceneIdAtStart = "";
 
+        [Header("Endless Mode")]
+        [SerializeField] private bool isEndless = false;
+
         [Header("Magnet (Q3)")]
         [SerializeField] private bool allowMultiMagnet = false;
 
@@ -56,6 +59,7 @@ namespace CrowdDefense.Data
         public int CastleHPOverride => castleHPOverride;
         public string Briefing => briefing;
         public string CutsceneIdAtStart => cutsceneIdAtStart;
+        public bool IsEndless => isEndless;
         public bool AllowMultiMagnet => allowMultiMagnet;
         public IReadOnlyList<WaveDef> Waves => waves;
 
@@ -74,6 +78,7 @@ namespace CrowdDefense.Data
             world = 1;
             level = 1;
             startCoins = 120;
+            isEndless = true;
         }
 
         /// Runtime only: append extra waves (used by endless mode to extend on demand).

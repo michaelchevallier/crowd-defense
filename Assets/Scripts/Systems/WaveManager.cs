@@ -19,7 +19,9 @@ namespace CrowdDefense.Systems
         private float spawnTimerMs = 0f;
         private bool waveActive = false;
         private int spawnCounter = 0;
-        private float _currentWaveScaleMul = 1f;  // endless mode: applied per-spawn
+        private float _currentWaveScaleMul = 1f;  // endless mode: applied per-spawn (HP-based)
+        private float _specialSpawnRateMul = 1f;   // endless special wave: spawn rate modifier
+        private float _specialCountMul = 1f;        // endless special wave: enemy count modifier
         private Queue<EnemyType> pendingSpawns = new();
         private List<Enemy> activeEnemies = new();
 
@@ -41,6 +43,11 @@ namespace CrowdDefense.Systems
 
         // Multiplier applied to kill rewards for the current wave (1 + streak * 0.05, cap 1.25)
         public float StreakRewardMul { get; private set; } = 1f;
+
+        // Endless gold reward multiplier: 1.05^(waveIdx - 10) for waveIdx >= 10, else 1.
+        public float EndlessGoldMul => (levelData?.IsEndless == true || LevelRunner.Instance?.IsEndlessRun == true)
+            ? (currentWaveIdx >= 10 ? Mathf.Pow(1.05f, currentWaveIdx - 10) : 1f)
+            : 1f;
 
         public event Action<int>? OnWaveStart;
         public event Action<int>? OnWaveCleared;
@@ -75,23 +82,79 @@ namespace CrowdDefense.Systems
             OnBreakStateChanged?.Invoke();
         }
 
+        // Returns HP multiplier for endless wave idx.
+        // Exponential first 10 waves, linear after.
+        private float ComputeEndlessHpMul(int waveIdx)
+        {
+            if (waveIdx < 10) return Mathf.Pow(1.15f, waveIdx);
+            return Mathf.Pow(1.15f, 10) * (1f + (waveIdx - 10) * 0.05f);
+        }
+
+        // Overwrites _currentWaveScaleMul based on endless formulas.
+        private void ApplyEndlessScaling(int waveIdx)
+        {
+            _currentWaveScaleMul = ComputeEndlessHpMul(waveIdx);
+        }
+
+        // Special modifiers every 5 waves after wave 10.
+        private void ApplySpecialWaveModifier(int waveIdx)
+        {
+            int special = ((waveIdx - 10) / 5) % 3; // cycles: 0=elite swarm, 1=boss rush, 2=chaos
+            switch (special)
+            {
+                case 0: // elite swarm — spawn rate 40% faster, count ×1.5
+                    _specialSpawnRateMul = 0.6f;
+                    _specialCountMul = 1.5f;
+#if UNITY_EDITOR
+                    Debug.Log($"[WaveManager] Endless special wave {waveIdx + 1}: ELITE SWARM");
+#endif
+                    break;
+                case 1: // boss rush — scale ×1.5 on top of endless mul
+                    _currentWaveScaleMul *= 1.5f;
+                    _specialSpawnRateMul = 1.5f;
+                    _specialCountMul = 0.5f; // fewer but stronger
+#if UNITY_EDITOR
+                    Debug.Log($"[WaveManager] Endless special wave {waveIdx + 1}: BOSS RUSH");
+#endif
+                    break;
+                case 2: // chaos — random rate ±30%, count ×1.25
+                    _specialSpawnRateMul = UnityEngine.Random.Range(0.7f, 1.3f);
+                    _specialCountMul = 1.25f;
+#if UNITY_EDITOR
+                    Debug.Log($"[WaveManager] Endless special wave {waveIdx + 1}: CHAOS");
+#endif
+                    break;
+            }
+        }
+
         private void BeginWave(int idx)
         {
             currentWaveIdx = idx;
             spawnCounter = 0;
             _waveKillCount = 0;
             _waveTotalSpawned = 0;
+            _specialSpawnRateMul = 1f;
+            _specialCountMul = 1f;
             var wave = levelData!.Waves[idx];
             var cfg = BalanceConfig.Get();
             float swarmMul = cfg.SwarmMul;
             // D1-04 mob pressure : mobCountMul par world
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
             float countMul = cfg.GetPressure(currentWorld).mobCountMul;
+            // Endless scaling: override scaleMul with spec formula, then check special waves.
+            bool isEndless = levelData!.IsEndless || LevelRunner.Instance?.IsEndlessRun == true;
+            if (isEndless)
+            {
+                ApplyEndlessScaling(idx);
+                if (idx > 10 && idx % 5 == 0)
+                    ApplySpecialWaveModifier(idx);
+            }
+
             var list = new List<EnemyType>();
             foreach (var entry in wave.entries)
             {
                 if (entry.type == null) continue;
-                int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul * countMul));
+                int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul * countMul * _specialCountMul));
                 for (int i = 0; i < count; i++) list.Add(entry.type);
             }
             // Fisher-Yates shuffle
@@ -103,7 +166,9 @@ namespace CrowdDefense.Systems
             }
             pendingSpawns = new Queue<EnemyType>(list);
             spawnTimerMs = 0f;
-            _currentWaveScaleMul = wave.scaleMul > 0f ? wave.scaleMul : 1f;
+            // Endless scaling already set by ApplyEndlessScaling(); only use WaveDef value for normal levels.
+            if (!isEndless)
+                _currentWaveScaleMul = wave.scaleMul > 0f ? wave.scaleMul : 1f;
             waveActive = true;
             // D1-01 §3.5: reset castle-damage flag at wave start so bank can accumulate if clean
             Economy.Instance?.ResetWaveDamageFlag();
@@ -128,7 +193,7 @@ namespace CrowdDefense.Systems
             {
                 spawnTimerMs += dtMs;
                 var wave = levelData.Waves[currentWaveIdx];
-                if (spawnTimerMs >= wave.spawnRateMs && pendingSpawns.Count > 0)
+                if (spawnTimerMs >= wave.spawnRateMs * _specialSpawnRateMul && pendingSpawns.Count > 0)
                 {
                     spawnTimerMs = 0f;
                     SpawnEnemy(pendingSpawns.Dequeue(), wave.portalIdx);

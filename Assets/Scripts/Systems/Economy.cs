@@ -48,18 +48,20 @@ namespace CrowdDefense.Systems
         // has already updated its ActiveMultiplier for this kill).
         public void AddGoldFromKill(int baseReward)
         {
-            float comboMul    = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
-            float metaCoinMul = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
-            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul));
+            float comboMul      = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
+            float metaCoinMul   = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
+            float endlessGoldMul = WaveManager.Instance?.EndlessGoldMul ?? 1f;
+            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul));
             AddGold(finalReward);
         }
 
         // Overload with world position — spawns coin popup above kill site.
         public void AddGoldFromKill(int baseReward, Vector3 worldPos)
         {
-            float comboMul    = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
-            float metaCoinMul = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
-            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul));
+            float comboMul      = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
+            float metaCoinMul   = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
+            float endlessGoldMul = WaveManager.Instance?.EndlessGoldMul ?? 1f;
+            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul));
             AddGold(finalReward);
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(finalReward, worldPos);
         }
