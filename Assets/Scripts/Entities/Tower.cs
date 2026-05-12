@@ -272,6 +272,12 @@ namespace CrowdDefense.Entities
         private static readonly int _shimmerColorId   = Shader.PropertyToID("_BaseColor");
         private static readonly int _emissionColorId  = Shader.PropertyToID("_EmissionColor");
 
+        // Hit-confirmation flash — white emission burst 0.08 s peak, 0.12 s decay (total 0.2 s)
+        private MaterialPropertyBlock? _hitFlashMpb;
+        private float _hitFlashElapsed = 1f; // >= 0.2 means inactive
+        private const float HitFlashPeak   = 0.08f;
+        private const float HitFlashTotal  = 0.20f;
+
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
         public Enemy? CurrentTarget => target;
@@ -1969,6 +1975,7 @@ namespace CrowdDefense.Entities
             TickSynergyHalo();
             TickAffordableHighlight();
             TickUpgradeArrow();
+            TickHitFlash();
 
             bool isSelected = PlacementController.Instance?.SelectedTower == this;
             bool recentFire = (Time.time - _lastFireAt) < 0.2f;
@@ -2003,6 +2010,43 @@ namespace CrowdDefense.Entities
             float amp = isFiring ? 0.025f : 0.015f;
             float s = 1f + Mathf.Sin(Time.time * 1.5f + _breathOffset) * amp;
             _meshChild.transform.localScale = new Vector3(s, s, s);
+        }
+
+        // Called each frame from TickIdleAnim; drives hit-confirmation emission flash.
+        public void FlashHitConfirmation() => _hitFlashElapsed = 0f; // reset / retrigger
+
+        private void TickHitFlash()
+        {
+            if (_hitFlashElapsed >= HitFlashTotal) return;
+            _hitFlashElapsed += Time.deltaTime;
+
+            float intensity;
+            if (_hitFlashElapsed < HitFlashPeak)
+                intensity = Mathf.Lerp(0.5f, 0.5f, _hitFlashElapsed / HitFlashPeak); // hold at peak
+            else
+                intensity = Mathf.Lerp(0.5f, 0f, (_hitFlashElapsed - HitFlashPeak) / (HitFlashTotal - HitFlashPeak));
+
+            var root = _meshChild != null ? _meshChild : gameObject;
+            var renderers = root.GetComponentsInChildren<Renderer>();
+            _hitFlashMpb ??= new MaterialPropertyBlock();
+            var emission = Color.white * intensity;
+            foreach (var r in renderers)
+            {
+                r.GetPropertyBlock(_hitFlashMpb);
+                _hitFlashMpb.SetColor(_emissionColorId, emission);
+                r.SetPropertyBlock(_hitFlashMpb);
+            }
+
+            // Clear emission once animation completes
+            if (_hitFlashElapsed >= HitFlashTotal)
+            {
+                foreach (var r in renderers)
+                {
+                    r.GetPropertyBlock(_hitFlashMpb);
+                    _hitFlashMpb.SetColor(_emissionColorId, Color.black);
+                    r.SetPropertyBlock(_hitFlashMpb);
+                }
+            }
         }
 
         private IEnumerator ShimmerRoutine()

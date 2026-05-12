@@ -192,6 +192,7 @@ namespace CrowdDefense.Entities
                 target.TakeDamage(damage, sourceTower);
 
             Visual.VfxPool.Instance?.SpawnSpark(transform.position, _projectileColor);
+            sourceTower?.FlashHitConfirmation();
 
             ApplyOnHitEffects(target);
 

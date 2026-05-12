@@ -75,6 +75,14 @@ namespace CrowdDefense.UI
         private static readonly Color _hpIconDefaultColor = new Color(0.86f, 0.20f, 0.13f);
         private static readonly Color _hpIconPulseColor   = Color.red;
 
+        // Hero damage red edge vignette flash
+        private VisualElement? _damageVignette;
+        private float _vignetteAlpha     = 0f;
+        private float _vignetteTarget    = 0f;
+        private float _vignetteFadeTimer = 0f; // elapsed since last hit trigger
+        private const float VignetteFadeInDur  = 0.05f;
+        private const float VignetteFadeOutDur = 0.4f;
+
         // Bank pill (D1-01 §3.5)
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
@@ -103,6 +111,13 @@ namespace CrowdDefense.UI
         private Label?         _perfectStreakLabel;
         private Coroutine?     _perfectStreakCoroutine;
         private int            _perfectWaveStreak = 0;
+
+        // Streak banner particle trail — pool of 8 VisualElements, emitted every 0.15 s
+        private VisualElement?   _streakParticleContainer;
+        private VisualElement[]? _streakParticlePool;
+        private Coroutine?       _streakEmitterCoroutine;
+        private const int        _kStreakPoolSize = 8;
+        private static readonly Color _kGoldParticleColor = new Color(1f, 0.85f, 0.2f, 0.8f);
 
         // Wave clear summary popup (center-screen, shown at end of each wave)
         private VisualElement? _waveSummaryPanel;
@@ -307,6 +322,7 @@ namespace CrowdDefense.UI
             BuildWaveProgressDots(root);
             BuildWaveIntroBanner(root);
             BuildWaveSummaryPanel(root);
+            BuildDamageVignette(root);
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -379,6 +395,8 @@ namespace CrowdDefense.UI
             EventManager.Instance?.Subscribe<ComboResetEvent>(HandleComboReset);
             EventManager.Instance?.Subscribe<EnemySpawnedEvent>(HandleEnemySpawned);
             Enemy.OnDeathStatic += HandleEnemyDeath;
+            Hero.OnHeroDamaged  += OnHeroDamaged;
+            Hero.OnHeroRespawned += OnHeroRespawnedHandler;
 
             // Wire perk badges + sidebar once hero is known
             var hero = LevelRunner.Instance?.Hero;
@@ -414,7 +432,9 @@ namespace CrowdDefense.UI
             EventManager.Instance?.Unsubscribe<ComboUpdatedEvent>(HandleComboUpdated);
             EventManager.Instance?.Unsubscribe<ComboResetEvent>(HandleComboReset);
             EventManager.Instance?.Unsubscribe<EnemySpawnedEvent>(HandleEnemySpawned);
-            Enemy.OnDeathStatic -= HandleEnemyDeath;
+            Enemy.OnDeathStatic  -= HandleEnemyDeath;
+            Hero.OnHeroDamaged   -= OnHeroDamaged;
+            Hero.OnHeroRespawned -= OnHeroRespawnedHandler;
         }
 
         private void HandleComboUpdated(ComboUpdatedEvent evt)
@@ -1251,6 +1271,8 @@ namespace CrowdDefense.UI
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
                 _perfectWaveStreak = 0;
                 if (_perfectStreakCoroutine != null) { StopCoroutine(_perfectStreakCoroutine); _perfectStreakCoroutine = null; }
+                if (_streakEmitterCoroutine != null) { StopCoroutine(_streakEmitterCoroutine); _streakEmitterCoroutine = null; }
+                StopAllStreakParticles();
                 if (_perfectStreakBanner != null) _perfectStreakBanner.style.display = DisplayStyle.None;
             }
         }
@@ -1877,6 +1899,35 @@ namespace CrowdDefense.UI
             };
             _perfectStreakBanner.Add(_perfectStreakLabel);
             root.Add(_perfectStreakBanner);
+
+            // Particle container — absolute, same origin as root, behind banner
+            _streakParticleContainer = new VisualElement { name = "streak-particle-container" };
+            _streakParticleContainer.style.position        = Position.Absolute;
+            _streakParticleContainer.style.left            = 0;
+            _streakParticleContainer.style.top             = 0;
+            _streakParticleContainer.style.right           = 0;
+            _streakParticleContainer.style.bottom          = 0;
+            _streakParticleContainer.style.overflow        = Overflow.Hidden;
+            _streakParticleContainer.pickingMode           = PickingMode.Ignore;
+            _streakParticleContainer.style.display         = DisplayStyle.Flex;
+            root.Insert(0, _streakParticleContainer);   // behind all other elements
+
+            // Pre-allocate pool
+            _streakParticlePool = new VisualElement[_kStreakPoolSize];
+            for (int i = 0; i < _kStreakPoolSize; i++)
+            {
+                var p = new VisualElement { name = $"streak-p-{i}" };
+                p.style.position         = Position.Absolute;
+                p.style.width            = new Length(10f, LengthUnit.Pixel);
+                p.style.height           = new Length(10f, LengthUnit.Pixel);
+                p.style.borderTopLeftRadius    = p.style.borderTopRightRadius    =
+                p.style.borderBottomLeftRadius = p.style.borderBottomRightRadius = new Length(5f, LengthUnit.Pixel);
+                p.style.backgroundColor  = new StyleColor(_kGoldParticleColor);
+                p.style.display          = DisplayStyle.None;
+                p.pickingMode            = PickingMode.Ignore;
+                _streakParticleContainer.Add(p);
+                _streakParticlePool[i] = p;
+            }
         }
 
         private void ShowPerfectStreakBanner(int streak)
@@ -1890,6 +1941,9 @@ namespace CrowdDefense.UI
 
             if (_perfectStreakCoroutine != null) StopCoroutine(_perfectStreakCoroutine);
             _perfectStreakCoroutine = StartCoroutine(PerfectStreakBannerCoroutine(streak));
+
+            if (_streakEmitterCoroutine != null) StopCoroutine(_streakEmitterCoroutine);
+            _streakEmitterCoroutine = StartCoroutine(StreakBannerParticleEmitter());
         }
 
         private System.Collections.IEnumerator PerfectStreakBannerCoroutine(int streak)
@@ -1932,8 +1986,89 @@ namespace CrowdDefense.UI
                 new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseIn) });
             _perfectStreakBanner.style.opacity = 0f;
             yield return new WaitForSecondsRealtime(0.5f);
+            if (_streakEmitterCoroutine != null) { StopCoroutine(_streakEmitterCoroutine); _streakEmitterCoroutine = null; }
+            StopAllStreakParticles();
             if (_perfectStreakBanner != null) _perfectStreakBanner.style.display = DisplayStyle.None;
             _perfectStreakCoroutine = null;
+        }
+
+        // ── Streak banner particle trail ──────────────────────────────────────
+
+        private void StopAllStreakParticles()
+        {
+            if (_streakParticlePool == null) return;
+            foreach (var p in _streakParticlePool)
+            {
+                p.style.display = DisplayStyle.None;
+                p.style.opacity = 0f;
+            }
+        }
+
+        private void SpawnStreakBannerParticles()
+        {
+            if (_perfectStreakBanner == null || _streakParticlePool == null || _streakParticleContainer == null) return;
+            if (_perfectStreakBanner.style.display == DisplayStyle.None) return;
+
+            // Find an idle pooled particle
+            VisualElement? particle = null;
+            foreach (var p in _streakParticlePool)
+            {
+                if (p.style.display == DisplayStyle.None)
+                {
+                    particle = p;
+                    break;
+                }
+            }
+            if (particle == null) return;
+
+            // Banner is top-center: left ~50% screen, top 8px, assume ~200px wide, ~42px tall
+            // Particle position relative to _streakParticleContainer (full screen).
+            // We use resolvedStyle if available, otherwise fallback constants.
+            float containerW = _streakParticleContainer.resolvedStyle.width;
+            float containerH = _streakParticleContainer.resolvedStyle.height;
+            if (containerW <= 1f) containerW = Screen.width;
+            if (containerH <= 1f) containerH = Screen.height;
+
+            float bannerCenterX = containerW * 0.5f;
+            float bannerCenterY = 8f + 21f;   // top 8px + half banner height ~42px
+
+            float spawnX = bannerCenterX + Random.Range(-200f, 200f) - 5f;  // -5 to center 10px particle
+            float spawnY = bannerCenterY + Random.Range(-60f, 60f)  - 5f;
+
+            particle.style.left    = new Length(spawnX, LengthUnit.Pixel);
+            particle.style.top     = new Length(spawnY, LengthUnit.Pixel);
+            particle.style.opacity = 0.8f;
+            particle.style.display = DisplayStyle.Flex;
+
+            StartCoroutine(AnimateStreakParticle(particle, spawnY));
+        }
+
+        private System.Collections.IEnumerator AnimateStreakParticle(VisualElement particle, float startY)
+        {
+            const float duration = 1.0f;
+            const float floatDist = 60f;
+            float t = 0f;
+            while (t < duration)
+            {
+                t += Time.unscaledDeltaTime;
+                float frac = Mathf.Clamp01(t / duration);
+                particle.style.top     = new Length(startY - floatDist * frac, LengthUnit.Pixel);
+                particle.style.opacity = Mathf.Lerp(0.8f, 0f, frac);
+                yield return null;
+            }
+            particle.style.display = DisplayStyle.None;
+            particle.style.opacity = 0f;
+        }
+
+        private System.Collections.IEnumerator StreakBannerParticleEmitter()
+        {
+            while (_perfectStreakBanner != null &&
+                   _perfectStreakBanner.style.display != DisplayStyle.None)
+            {
+                SpawnStreakBannerParticles();
+                yield return new WaitForSecondsRealtime(0.15f);
+            }
+            _streakEmitterCoroutine = null;
         }
     }
 }
