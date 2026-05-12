@@ -40,6 +40,7 @@ namespace CrowdDefense.Systems
         private Vector3 _proximityTarget;
 
         public static bool IsCompleted() => SaveSystem.IsTutorialCompleted();
+        public static bool HasCompletedBefore => PlayerPrefs.GetInt("tutorial_done_v1", 0) > 0;
 
         protected override void OnAwakeSingleton()
         {
@@ -56,6 +57,12 @@ namespace CrowdDefense.Systems
 
             var levelId = LevelRunner.Instance?.CurrentLevel?.Id;
             if (levelId != TutorialLevelId) return;
+
+            if (HasCompletedBefore)
+            {
+                SetStep(TutorialStep.Done);
+                return;
+            }
 
             _registry = TutorialRegistry.Get();
             IsActive = true;
@@ -83,12 +90,23 @@ namespace CrowdDefense.Systems
         // Legacy compat: TutorialOverlayController calls AdvancePhase()
         public void AdvancePhase() => AdvanceStep();
 
+        public void SetStep(TutorialStep step)
+        {
+            IsActive = false;
+            CurrentStep = step;
+            SaveSystem.SetTutorialCompleted();
+            PlayerPrefs.SetInt("tutorial_done_v1", 1);
+            PlayerPrefs.Save();
+        }
+
         public void SkipTutorial()
         {
             if (!IsActive) return;
             IsActive = false;
             CurrentStep = TutorialStep.Done;
             SaveSystem.SetTutorialCompleted();
+            PlayerPrefs.SetInt("tutorial_done_v1", 1);
+            PlayerPrefs.Save();
             UnsubscribeFromGameEvents();
             OnTutorialSkipped?.Invoke();
         }

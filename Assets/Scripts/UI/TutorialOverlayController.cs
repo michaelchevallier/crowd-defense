@@ -104,8 +104,62 @@ namespace CrowdDefense.UI
             Hide();
         }
 
-        private void OnNextClicked()  => TutorialState.Instance?.AdvanceStep();
-        private void OnSkipClicked()  => TutorialState.Instance?.SkipTutorial();
+        private void OnNextClicked() => TutorialState.Instance?.AdvanceStep();
+
+        private void OnSkipClicked()
+        {
+            if (_confirmActive) return;
+            StartCoroutine(ConfirmSkip());
+        }
+
+        private bool _confirmActive;
+
+        private IEnumerator ConfirmSkip()
+        {
+            _confirmActive = true;
+
+            // Reuse the text label as confirm prompt, hide nav buttons
+            string savedText = _textLabel != null ? _textLabel.text : "";
+            if (_textLabel != null)
+                _textLabel.text = L.Get("tutorial.skip_confirm");
+            if (_btnNext != null)
+                _btnNext.style.display = DisplayStyle.None;
+            if (_btnSkip != null)
+                _btnSkip.style.display = DisplayStyle.None;
+
+            // Inject temporary Yes / No buttons
+            var confirmRoot = _root?.Q<VisualElement>("tutorial-bubble");
+            var btnYes = new Button { text = L.Get("tutorial.skip_yes"), name = "tutorial-confirm-yes" };
+            var btnNo  = new Button { text = L.Get("tutorial.skip_no"),  name = "tutorial-confirm-no"  };
+            btnYes.AddToClassList("tutorial-btn");
+            btnNo.AddToClassList("tutorial-btn");
+
+            bool? answer = null;
+            btnYes.RegisterCallback<ClickEvent>(_ => answer = true);
+            btnNo.RegisterCallback<ClickEvent>(_ => answer = false);
+
+            confirmRoot?.Add(btnYes);
+            confirmRoot?.Add(btnNo);
+
+            while (answer == null)
+                yield return null;
+
+            confirmRoot?.Remove(btnYes);
+            confirmRoot?.Remove(btnNo);
+
+            if (answer == true)
+            {
+                TutorialState.Instance?.SkipTutorial();
+            }
+            else
+            {
+                if (_textLabel != null)
+                    _textLabel.text = savedText;
+                SyncToCurrentStep();
+            }
+
+            _confirmActive = false;
+        }
 
         // ── Hint triggers (wired regardless of tutorial active state) ──────────
 

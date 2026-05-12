@@ -254,6 +254,9 @@ namespace CrowdDefense.UI
                     // ── Tutorial ───────────────────────────────────────────────────
                     ["tutorial.btn_next"] = "Continue",
                     ["tutorial.btn_skip"] = "Skip Tutorial",
+                    ["tutorial.skip_confirm"] = "Really skip the tutorial?",
+                    ["tutorial.skip_yes"] = "Yes, skip",
+                    ["tutorial.skip_no"] = "No, continue",
                     ["tutorial.step1.text"] = "Place a tower on a build point to defend the castle.",
                     ["tutorial.step2.text"] = "Launch the first wave with the button at the bottom.",
                     ["tutorial.step3.text"] = "Defeat an enemy to earn coins.",
@@ -570,6 +573,9 @@ namespace CrowdDefense.UI
                     // ── Tutorial ───────────────────────────────────────────────────
                     ["tutorial.btn_next"] = "Continuer",
                     ["tutorial.btn_skip"] = "Passer le tutoriel",
+                    ["tutorial.skip_confirm"] = "Vraiment passer le tutoriel ?",
+                    ["tutorial.skip_yes"] = "Oui, passer",
+                    ["tutorial.skip_no"] = "Non, continuer",
                     ["tutorial.step1.text"] = "Place une tour sur un point de construction pour defendre le chateau.",
                     ["tutorial.step2.text"] = "Lance la premiere vague avec le bouton en bas.",
                     ["tutorial.step3.text"] = "Elimine un ennemi pour gagner des pieces.",
@@ -888,6 +894,9 @@ namespace CrowdDefense.UI
                     // ── Tutorial ───────────────────────────────────────────────────
                     ["tutorial.btn_next"] = "Continuar",
                     ["tutorial.btn_skip"] = "Saltar tutorial",
+                    ["tutorial.skip_confirm"] = "Realmente saltar el tutorial?",
+                    ["tutorial.skip_yes"] = "Si, saltar",
+                    ["tutorial.skip_no"] = "No, continuar",
                     ["tutorial.step1.text"] = "Coloca una torre en un punto de construccion para defender el castillo.",
                     ["tutorial.step2.text"] = "Lanza la primera oleada con el boton de abajo.",
                     ["tutorial.step3.text"] = "Elimina un enemigo para ganar monedas.",
