@@ -395,6 +395,15 @@ namespace CrowdDefense.UI
             }
         }
 
+        private void SyncFollowHero()
+        {
+            if (_followHeroToggle == null) return;
+            var cam = CameraController.Instance;
+            _suppressEvents = true;
+            _followHeroToggle.value = cam != null && cam.FollowHero;
+            _suppressEvents = false;
+        }
+
         private static void ResetCamera()
         {
             var cam = Camera.main;
