@@ -17,6 +17,7 @@ namespace CrowdDefense.UI
         Slider _progressBar = null!;
         Text _tipLabel = null!;
         CanvasGroup _loadingGroup = null!;
+        Image _spinner = null!;
         bool _busy;
         int _lastTipIdx = -1;
         AsyncOperation? _loadingOp;
@@ -130,6 +131,28 @@ namespace CrowdDefense.UI
             fillRect.offsetMax = Vector2.zero;
 
             _progressBar.fillRect = fillRect;
+
+            // Spinner: 32x32 arc circle, centered above progress bar
+            var spinnerGo = new GameObject("Spinner");
+            spinnerGo.transform.SetParent(loadingGo.transform, false);
+            _spinner = spinnerGo.AddComponent<Image>();
+            _spinner.color = new Color(1f, 1f, 1f, 0.9f);
+            // Build a thin ring via filled radial image (270° arc)
+            _spinner.type = Image.Type.Filled;
+            _spinner.fillMethod = Image.FillMethod.Radial360;
+            _spinner.fillAmount = 0.75f;
+            var spinRect = spinnerGo.GetComponent<RectTransform>();
+            spinRect.anchorMin = new Vector2(0.5f, 1f);
+            spinRect.anchorMax = new Vector2(0.5f, 1f);
+            spinRect.pivot = new Vector2(0.5f, 0f);
+            spinRect.sizeDelta = new Vector2(32f, 32f);
+            spinRect.anchoredPosition = new Vector2(0f, 8f);
+        }
+
+        void Update()
+        {
+            if (_busy)
+                _spinner.rectTransform.Rotate(0f, 0f, -360f * Time.unscaledDeltaTime);
         }
 
         void SetAlpha(float a)
