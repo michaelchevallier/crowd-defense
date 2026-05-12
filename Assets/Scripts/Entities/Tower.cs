@@ -2331,6 +2331,71 @@ namespace CrowdDefense.Entities
             }
             ApplyTierSkin(level);
             if (level >= 3) TryApplyEliteL4();
+            SpawnUpgradeRing(level);
+        }
+
+        private void SpawnUpgradeRing(int newLevel)
+        {
+            const int Count = 16;
+            const float Radius = 0.5f;
+            const float Duration = 0.6f;
+            const float Speed = 3f;
+
+            var origin = transform.position + Vector3.up * 0.05f;
+
+            for (int i = 0; i < Count; i++)
+            {
+                float angle = i / (float)Count * 2f * Mathf.PI;
+                var startPos = origin + new Vector3(Mathf.Cos(angle) * Radius, 0f, Mathf.Sin(angle) * Radius);
+                var velocity = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)) * Speed;
+
+                Color color = newLevel switch
+                {
+                    3 => Color.HSVToRGB(i / (float)Count, 0.7f, 1f),
+                    2 => new Color(1f, 0.85f, 0.2f),
+                    _ => new Color(0.8f, 0.8f, 0.85f)
+                };
+
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = "UpgradeRing_Particle";
+                go.transform.position = startPos;
+                go.transform.localScale = Vector3.one * 0.3f;
+                Object.Destroy(go.GetComponent<Collider>());
+
+                var rend = go.GetComponent<Renderer>();
+                if (rend != null)
+                {
+                    var baseMat = rend.sharedMaterial != null ? rend.sharedMaterial : new Material(Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit")!);
+                    var mat = new Material(baseMat);
+                    mat.color = color;
+                    rend.material = mat;
+                }
+
+                StartCoroutine(AnimateRingParticle(go, velocity, Duration));
+            }
+
+            var ac = AudioController.Instance;
+            if (ac != null)
+            {
+                float pitch = newLevel switch { 2 => 1.1f, 3 => 1.35f, _ => 1f };
+                ac.Play3DPitched("upgrade_ring_chime", transform.position, 1f, pitch);
+            }
+        }
+
+        private static IEnumerator AnimateRingParticle(GameObject go, Vector3 velocity, float duration)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                if (go == null) yield break;
+                elapsed += Time.deltaTime;
+                float t = elapsed / duration;
+                go.transform.position += velocity * Time.deltaTime;
+                float scale = Mathf.Lerp(0.3f, 0f, t);
+                go.transform.localScale = Vector3.one * scale;
+                yield return null;
+            }
+            if (go != null) Object.Destroy(go);
         }
 
         /// <summary>
