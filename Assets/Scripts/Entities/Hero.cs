@@ -248,6 +248,12 @@ namespace CrowdDefense.Entities
         // ── Nth-projectile AoE counter ────────────────────────────────────────
         private int _projFiredCount;
 
+        // ── Swing arc VFX (cached material, allocated once) ───────────────────
+        private Material? _swingArcMat;
+
+        // ── Ultimate cast window (skip swing arc while ult animation plays) ───
+        private float _ultCastWindow;
+
         // ── Ultimate (slot 2 / E — existing) ─────────────────────────────────
         private float _ultCooldown;
 
@@ -706,7 +712,8 @@ namespace CrowdDefense.Entities
             if (_ultCooldown > 0f) return false;
             if (cfg == null) return false;
 
-            _ultCooldown = cfg.UltCooldownMs / 1000f;
+            _ultCooldown    = cfg.UltCooldownMs / 1000f;
+            _ultCastWindow  = 0.5f;
             FireUltFan();
             FireUltAoe();
             TriggerUltVfx();
@@ -921,6 +928,7 @@ namespace CrowdDefense.Entities
             if (WaveManager.Instance == null) return false;
 
             _ultimateCooldown = UltimateCooldown;
+            _ultCastWindow    = 0.5f;
 
             float baseDmg = cfg != null ? cfg.UltAoeDamage : 15f;
             float dmg = baseDmg * UltimateDmgMul * DamageMul;
@@ -976,6 +984,7 @@ namespace CrowdDefense.Entities
 
             _ultCooldown      = Mathf.Max(0f, _ultCooldown - dt);
             _ultimateCooldown = Mathf.Max(0f, _ultimateCooldown - dt);
+            _ultCastWindow    = Mathf.Max(0f, _ultCastWindow - dt);
             _cooldown         = Mathf.Max(0f, _cooldown - dt);
             if (_invulTimer > 0f) _invulTimer = Mathf.Max(0f, _invulTimer - dt);
 
@@ -1181,6 +1190,10 @@ namespace CrowdDefense.Entities
             // Muzzle VFX
             VfxPool.Instance?.SpawnImpact(start + baseDir * 0.4f, new Color(1f, 0.957f, 0.835f));
 
+            // Swing arc trail (skip during ult cast window)
+            if (_ultCastWindow <= 0f)
+                SpawnSwingArc(transform.position + Vector3.up * 0.9f, baseDir);
+
             // Audio canonical key from Audio.js: "hero_shoot"
             AudioController.Instance?.Play("hero_shoot", 0.7f);
         }
@@ -1217,6 +1230,99 @@ namespace CrowdDefense.Entities
                     t.transform.position + Vector3.up * 1.2f,
                     new Color(0.659f, 0.878f, 1f));
             }
+        }
+
+        // ── Swing arc trail VFX ───────────────────────────────────────────────
+        private void SpawnSwingArc(Vector3 swingCenter, Vector3 dir)
+        {
+            // Lazy-init material once (no per-call allocation)
+            if (_swingArcMat == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                          ?? Shader.Find("Sprites/Default")
+                          ?? Shader.Find("Standard");
+                _swingArcMat = new Material(shader!)
+                {
+                    color = Color.white
+                };
+                _swingArcMat.SetFloat("_Surface", 1f);
+                _swingArcMat.SetInt("_ZWrite", 0);
+                _swingArcMat.renderQueue = 3000;
+            }
+
+            StartCoroutine(SwingArcRoutine(swingCenter, dir));
+        }
+
+        private System.Collections.IEnumerator SwingArcRoutine(Vector3 swingCenter, Vector3 dir)
+        {
+            const int   ArcPoints    = 8;
+            const float Radius       = 1.5f;
+            const float ScaleInTime  = 0.08f;
+            const float TotalTime    = 0.3f;
+            const float FadeStart    = 0.05f; // alpha starts fading after this
+
+            var go = new GameObject("SwingArc_VFX");
+            go.transform.SetParent(null);
+            go.transform.position = swingCenter;
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.positionCount    = ArcPoints;
+            lr.useWorldSpace    = true;
+            lr.loop             = false;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows   = false;
+            lr.material         = _swingArcMat;
+
+            // Build gradient: white (start) → cyan (end)
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.cyan, 1f) },
+                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) });
+            lr.colorGradient = gradient;
+
+            // Compute arc center angle from dir (horizontal plane)
+            float centerAngle = Mathf.Atan2(dir.x, dir.z); // angle in XZ plane
+            float halfArc     = Mathf.PI * 0.5f;            // 90° half-arc = 180° total
+
+            float elapsed = 0f;
+            while (elapsed < TotalTime)
+            {
+                elapsed += Time.deltaTime;
+
+                float scaleT  = Mathf.Clamp01(elapsed / ScaleInTime);
+                float scaledR = Radius * scaleT;
+
+                float fadeT = Mathf.InverseLerp(FadeStart, TotalTime, elapsed);
+                float alpha = Mathf.Lerp(1f, 0f, fadeT);
+
+                float width = Mathf.Lerp(0.12f, 0.04f, fadeT);
+                lr.startWidth = width;
+                lr.endWidth   = width;
+
+                // Update gradient alpha only (color stays white→cyan)
+                gradient.SetKeys(
+                    new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.cyan, 1f) },
+                    new[] { new GradientAlphaKey(alpha, 0f), new GradientAlphaKey(alpha * 0.4f, 1f) });
+                lr.colorGradient = gradient;
+
+                // Place 8 arc points in semi-circle on horizontal plane
+                for (int i = 0; i < ArcPoints; i++)
+                {
+                    float t     = (float)i / (ArcPoints - 1);
+                    float angle = centerAngle - halfArc + t * halfArc * 2f;
+                    lr.SetPosition(i, new Vector3(
+                        swingCenter.x + Mathf.Sin(angle) * scaledR,
+                        swingCenter.y,
+                        swingCenter.z + Mathf.Cos(angle) * scaledR));
+                }
+
+                yield return null;
+            }
+
+            Destroy(go);
+
+            // Swing audio (best-effort: skip if clip absent)
+            AudioController.Instance?.PlayPitched("hero_swing", 0.6f, Random.Range(0.95f, 1.1f));
         }
 
         // ── Projectile helpers ────────────────────────────────────────────────
