@@ -1547,10 +1547,11 @@ namespace CrowdDefense.Entities
             if (Time.unscaledTime - _lastCamShakeAt < 0.05f) return;
             _lastCamShakeAt = Time.unscaledTime;
 
+            var jc = JuiceConfig.Get();
             if (isHeavy || isBallistaL3Multishot)
-                JuiceFX.Instance?.Shake(0.30f, 150);
+                JuiceFX.Instance?.Shake(jc?.TowerFireShakeAmp ?? 0.30f, jc?.TowerFireShakeMs ?? 150);
             else
-                JuiceFX.Instance?.Shake(0.15f, 100);
+                JuiceFX.Instance?.Shake((jc?.TowerFireShakeAmp ?? 0.30f) * 0.5f, jc?.TowerFireShakeMs ?? 100);
         }
 
         // ── Fire Angled ───────────────────────────────────────────────────────

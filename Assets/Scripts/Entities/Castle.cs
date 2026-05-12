@@ -217,6 +217,7 @@ namespace CrowdDefense.Entities
             {
                 _lastShakeTime = Time.unscaledTime;
                 float hpRatio = HPMax > 0 ? (float)HP / HPMax : 0f;
+                var jc = JuiceConfig.Get();
 
                 float shakeAmp;
                 int shakeMs;
@@ -225,8 +226,8 @@ namespace CrowdDefense.Entities
 
                 if (hpRatio < 0.25f)
                 {
-                    // Heavy: 0.8 amp / 400 ms + critical audio + red vignette
-                    shakeAmp = 0.8f;
+                    // Heavy: critical tier
+                    shakeAmp = jc?.CastleHitShakeAmp * 1.2f ?? 0.8f;
                     shakeMs = 400;
                     flashAlpha = 0.65f;
                     flashMs = 300;
@@ -234,20 +235,20 @@ namespace CrowdDefense.Entities
                 }
                 else if (hpRatio < 0.5f)
                 {
-                    // Medium: 0.5 amp / 250 ms + warning audio
-                    shakeAmp = 0.5f;
+                    // Medium: warning tier
+                    shakeAmp = jc?.CastleHitShakeAmp ?? 0.5f;
                     shakeMs = 250;
-                    flashAlpha = 0.4f;
-                    flashMs = 200;
+                    flashAlpha = jc?.CastleHitFlashWarnAlpha ?? 0.4f;
+                    flashMs = jc?.CastleHitFlashWarnMs ?? 200;
                     AudioController.Instance?.Play("castle_damaged", 0.85f);
                 }
                 else
                 {
-                    // Light: 0.3 amp / 150 ms
-                    shakeAmp = 0.3f;
+                    // Light: normal hit
+                    shakeAmp = jc?.CastleHitShakeAmp * 0.5f ?? 0.3f;
                     shakeMs = 150;
-                    flashAlpha = 0.1f;
-                    flashMs = 100;
+                    flashAlpha = jc?.CastleHitFlashAlpha ?? 0.1f;
+                    flashMs = jc?.CastleHitFlashMs ?? 100;
                 }
 
                 CameraController.Instance?.Shake(shakeAmp, shakeMs / 1000f);
