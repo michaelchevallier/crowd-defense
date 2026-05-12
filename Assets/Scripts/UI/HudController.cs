@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 using CrowdDefense.Systems;
