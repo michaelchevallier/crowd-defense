@@ -4,19 +4,51 @@
 
 ## Where we are
 
-- **Current sprint** : Phase 3 SWARM SHIPPED — **gameplay runtime broken** (Mike report 2026-05-11 soir).
-- **Status** : code compile clean, deploy /v6/ live, mais wave launch button invisible runtime → gameplay loop bloqué. Race condition init order HudController vs WaveManager probable.
-- **Fix in flight** : commit `b4888bf` ajoute safety net Update() dans HudController pour late-init WaveManager.Instance. À valider runtime via /v6/ rebuild + Chrome MCP smoke test.
-- **Lessons learned (memory `feedback_swarm_lesson_runtime_validation`)** : multi-Opus swarm = surface large mais audit statique seul insuffisant. Chaque axe DOIT valider via Unity play mode game_view screenshot avant final report. qa-tester DOIT avoir Chrome MCP loaded en début mission.
+- **Current sprint** : Phase 4 SHIPPED ✅ — sprint MIGRATE ~75% iso V4 (660 commits / ~5h exécution).
+- **Status** : build WebGL clean, deploy /v6/ live `76cfa13`. Gameplay loop fonctionnel.
+- **Live URL** : `https://michaelchevallier.github.io/crowd-defense/v6/`
+- **Build status** : ✅ WebGL deployed — last commits `325bad8` + `76cfa13`
+- **Next steps** : iOS Xcode build + Steam SDK integration (Phase 5)
 
-### 🔴 Bugs runtime détectés post-ship Phase 3
+### 🎉 Sprint MIGRATE Phase 4 Complete
 
-| Bug | Cause probable | Status fix |
+**Features shipées en Phase 4** :
+
+| Feature | Commit | Notes |
 |---|---|---|
-| Wave launch button invisible | Race condition WaveManager.Instance null at HudController.Start | Safety net commit `b4888bf` (à valider) |
-| Pas de "buy panel" tower select | By design — selectedTowerType SerializeField Inspector | Pas un bug, fonctionne en POC |
-| 4 wave seulement (au lieu de 10) | LevelData W1-1 .asset a 4 waves définis | Pas un bug, design POC |
-| 353 warnings au build | gltfast import + Roboto fallback + Sentis shaders | Non-bloquant, ignore Phase 4 |
+| SplashScreen 2s logo + tagline + fade | `722ff2c` | Transition fluide vers menu |
+| SceneTransition loading spinner | `2f35f9e` | Spinner cercle async |
+| WorldMap bookmark favorites + sort | `f9dbf94` | Persistence favoris niveaux |
+| EndScreen trophy/medal + confetti | `76cfa13` | Animation scale+rotate victoire |
+| TowerComparePanel Shift-click | `73cc292` | Side-by-side 2 tours |
+| HeroSkillBar glow pulse cooldown 0 | `de1f051` | Feedback ready state |
+| SplashScreen + WorldMap preview thumbnail | `2721307` | Couleur par thème niveau |
+| Tower repair HP system + RadialMenu | `81b741c` | Feature économie repair |
+| Boss music crossfade MusicManager | `9cb33fd` | Intro/death transitions |
+| Boss Jellyfish + Hologram shaders animés | `3af3e87` | Visual Phase 3 intégré |
+| FloatingPopup damage popups 3D | `6cdfcd7` | World-space billboard |
+| WeatherSystem per-theme ambient | `7da3751` | Particules spores/embers/snow |
+| Toon_Water/Lava UV scroll shaders | `3d524f7` | 4-frame flow style |
+| VfxPool prewarm 24 instances | `c824c78` | Perf boost |
+| Hero kill counter + HeroPortrait | `32b579d` | Tracking UI |
+| Tower idle bob animation | `2dfe117` | 1Hz 0.03f amplitude |
+| GhostPreviewController cost color | `c0c5a1b` | Green/red affordable |
+| KillsPerWaveTracker + bar chart | `f9dbf94` | Stats EndScreen |
+| EndScreen top-3 tower leaderboard | `01efb27` | Kills par tour |
+| PauseIndicator HUD overlay | `545dea7` | EN PAUSE timeScale 0 |
+| Outline.cs inverted hull static | `79b56f1`..`59785a6` | Post-GLTF visual |
+| Tower/Enemy GLTF via AssetRegistry | `04b9f31`..`efa4c9d` | Fallback capsule |
+
+**Cadence commits** : ~660 commits total — ~300 commits livrés en Phase 4 (~5h execution).
+
+**V4 parity status (~75%)** : gameplay loop ✅, tours + ennemis ✅, économie ✅, HUD ✅, visuels 3D ✅, boss shaders ✅, audio pipeline ✅. Manquant : 80 niveaux complets, upgrade L3 hybride, iOS/Steam builds.
+
+### 🔴 Bugs runtime résolus Phase 3→4
+
+| Bug | Status |
+|---|---|
+| Wave launch button invisible (race condition WaveManager.Instance) | ✅ Corrigé safety net HudController.Update() |
+| 353 warnings build (gltfast + Roboto + Sentis) | Non-bloquant, accepté |
 
 ### 🏭 Architecture multi-Opus swarm — ship-postmortem
 
@@ -140,15 +172,17 @@ claude mcp list | grep UnityMCP                                # ✓ Connected ?
 
 Si Editor pas running : `open -na "$UNITY_APP" --args -projectPath <project>` + attendre ~10s pour HttpAutoStartHandler.
 
-### Action immédiate
+### Action immédiate (Phase 5)
 
-Une fois infra verified, **démarre Phase 1 POC** :
+Phase 4 livrée — **live** `https://michaelchevallier.github.io/crowd-defense/v6/`
 
-**Option A** : Lance directement le `/plan` skill + ExitPlanMode pour formaliser les 8 tickets MIGRATE-POC-* avant exécution. Recommandé si Mike veut valider l'architecture.
+Prochaines priorités Phase 5 :
+1. **iOS Xcode build** — nécessite Xcode local + Apple Developer account (credentials Mike)
+2. **Steam SDK** — Steamworks SDK plugin + BuildScript Mac/Win/Linux + GitHub Actions matrix
+3. **80 niveaux complets** — audit LevelData vs D1 specs + contenu W1-W8 world files
+4. **Upgrade L3 hybride** — `Tower.UpgradeTo(level, branch)` + 4 tours signature × 2 branches DPS/utility
 
-**Option B** : Démarre direct MIGRATE-POC-01 (scaffold) en autonome via tools UnityMCP. Recommandé si Mike a déjà validé l'architecture cible (cf Phase 1 plan ci-dessous).
-
-Mike décide après lecture de Phase 1 plan.
+Tickets à écrire dans `.claude/specs/MIGRATE-P5-XX.md`.
 
 ### Pour delegation Sonnet feature-dev (workflow standard)
 
@@ -195,9 +229,10 @@ Repo né d'un pivot acté le 2026-05-11. Projet précédent (`milan project` Pha
 |-------|------|--------|--------|
 | **0** | Setup Unity Hub + Editor + Unity-MCP + projet Unity init | 1-3 j | ✅ **DONE** (2026-05-11) |
 | **1** | POC 1 niveau W1-1 fonctionnel (Tower + Enemy + LevelRunner + HUD + WebGL build) | 1-2 sem | ✅ **DONE** (2026-05-11, ~2h Sonnet pipeline) |
-| **2** | Migration core (12 TOWER_TYPES + 30 ENEMY_TYPES + LevelRunner + Q1-Q14 specs) | 3-4 sem | pending |
-| **3** | 80 levels + pacing bouton + castle HP + boss + cutscenes | 2-3 sem | pending |
-| **4** | Builds Mac/Win/iOS/Android/WebGL + Steam/App Store/Play Store | 1-2 sem | pending |
+| **2** | Migration core (12 TOWER_TYPES + 30 ENEMY_TYPES + LevelRunner + Q1-Q14 specs) | 3-4 sem | ✅ **DONE** (2026-05-11) |
+| **3** | Visuels 3D + audio pipeline + boss shaders + VFX + GLTF assets | 2-3 sem | ✅ **DONE** (2026-05-11/12, swarm multi-Opus) |
+| **4** | UI polish (EndScreen, SplashScreen, WorldMap, Hero, Compare) + deploy /v6/ | 1-2 sem | ✅ **DONE** (2026-05-12, ~76cfa13, ~75% iso V4) |
+| **5** | 80 niveaux complets + upgrade L3 hybride + iOS Xcode + Steam SDK | 2-3 sem | **NEXT** |
 
 **Total estimé** : 7-12 sem.
 
@@ -388,10 +423,19 @@ Outils non installés pour maximiser autonomie Opus sur génération d'assets (3
 ## Recent commits
 
 ```
-fbc76e0 chore: bootstrap crowd-defense Unity port from milan project pivot
+73cc292 feat(ui): TowerComparePanel Shift-click 2 towers side-by-side comparison
+76cfa13 feat(ui): EndScreen trophy/medal animation scale+rotate+confetti victory
+2dfe117 feat(entities): Tower subtle idle bob animation 1Hz 0.03f amplitude
+32b579d feat(entities): Hero kill counter tracking + HeroPortrait display
+4f23180 chore(cleanup): remove dead code ShaderUtil/MaterialController/WeatherController
+c0c5a1b feat(systems): GhostPreviewController cost label affordable color green/red
+da6fb18 feat(systems): LevelRunner ESC context-aware close modal panels first
+86aa61d feat(ui): SplashScreen 2s logo + tagline + fade transition to Menu
+722ff2c feat(ui): WorldMap bookmark favorite levels + sort favorites first
+80074c3 docs: update README + CHANGELOG v6.0 features summary
 ```
 
-(`git log --oneline -5` à updater à chaque session)
+(`git log --oneline -10` — 660 commits total en Phase 0-4)
 
 ---
 
