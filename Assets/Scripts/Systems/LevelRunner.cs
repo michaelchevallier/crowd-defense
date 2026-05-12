@@ -430,6 +430,7 @@ namespace CrowdDefense.Systems
             Hero?.OnWaveEnd();
             TransitionTo(GameState.WaveBreak);
             OnWaveEnded?.Invoke(waveIdx + 1);
+            TalentSystem.EarnTalentPoint(1);
 
             int waveNumber = waveIdx + 1;
             if (IsEndlessRun)

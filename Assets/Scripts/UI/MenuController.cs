@@ -15,6 +15,7 @@ namespace CrowdDefense.UI
         private Button? _btnSettings;
         private Button? _btnCredits;
         private Button? _btnQuit;
+        private Button? _btnTalents;
 
         private void Awake()
         {
@@ -31,12 +32,14 @@ namespace CrowdDefense.UI
             _btnSettings = root.Q<Button>("btn-settings");
             _btnCredits  = root.Q<Button>("btn-credits");
             _btnQuit     = root.Q<Button>("btn-quit");
+            _btnTalents  = root.Q<Button>("btn-talents");
 
             if (_btnContinue != null) _btnContinue.clicked += OnContinue;
             if (_btnNewRun   != null) _btnNewRun.clicked   += OnNewRun;
             if (_btnSettings != null) _btnSettings.clicked += OnSettings;
             if (_btnCredits  != null) _btnCredits.clicked  += OnCredits;
             if (_btnQuit     != null) _btnQuit.clicked     += OnQuit;
+            if (_btnTalents  != null) _btnTalents.clicked  += OnTalents;
 
             RefreshContinueButton();
         }
@@ -84,6 +87,11 @@ namespace CrowdDefense.UI
 #else
             Application.Quit();
 #endif
+        }
+
+        private static void OnTalents()
+        {
+            TalentPanelController.Instance?.Show();
         }
     }
 }

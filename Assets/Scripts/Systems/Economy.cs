@@ -51,7 +51,7 @@ namespace CrowdDefense.Systems
             float comboMul      = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
             float metaCoinMul   = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
             float endlessGoldMul = WaveManager.Instance?.EndlessGoldMul ?? 1f;
-            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul));
+            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul * TalentSystem.GoldIncomeMul));
             AddGold(finalReward);
         }
 
@@ -61,7 +61,7 @@ namespace CrowdDefense.Systems
             float comboMul      = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
             float metaCoinMul   = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
             float endlessGoldMul = WaveManager.Instance?.EndlessGoldMul ?? 1f;
-            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul));
+            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul * TalentSystem.GoldIncomeMul));
             AddGold(finalReward);
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(finalReward, worldPos);
         }

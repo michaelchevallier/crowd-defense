@@ -565,7 +565,7 @@ namespace CrowdDefense.Entities
             if (stats.FinalExplosionAoe != 0) L3FinalExplosionAoe = stats.FinalExplosionAoe;
             if (stats.FinalExplosion && cfg != null)
             {
-                L3FinalExplosionDmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * 2.5f;
+                L3FinalExplosionDmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * 2.5f;
             }
             if (stats.Pierce != 0 && cfg != null) L3Pierce = cfg.Pierce + stats.Pierce;
             if (stats.CritChance != 0) L3CritChance = stats.CritChance;
@@ -904,7 +904,7 @@ namespace CrowdDefense.Entities
             // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
             // L3DmgMul applique la divergence de branche (D1-03)
             // _heroBuffDmgMul: aura du Hero (ApplyHeroBuff / ClearHeroBuff)
-            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
 
             // L3 Berserker (tank DPS) : x2 dmg when castle HP ratio < threshold (D1-03)
             if (L3BerserkerActive && Castle.Instance != null && Castle.Instance.HPMax > 0)
@@ -1624,7 +1624,7 @@ namespace CrowdDefense.Entities
             if (cfg == null) return;
             if (ProjectilePool.Instance == null) return;
 
-            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
 
             Vector3 baseDir = (t.transform.position - transform.position).normalized;
             Vector3 angledDir = Quaternion.Euler(0f, angleDeg, 0f) * baseDir;

@@ -430,7 +430,7 @@ namespace CrowdDefense.Entities
         public void ApplyMetaBonuses(float heroDamageMul = 1f, float heroRangeMul = 1f,
             float heroFireRateMul = 1f, float coinGainMul = 1f, float xpMul = 1f)
         {
-            DamageMul   *= heroDamageMul;
+            DamageMul   *= heroDamageMul * CrowdDefense.Systems.TalentSystem.HeroPowerMul;
             RangeMul    *= heroRangeMul;
             FireRateMul *= 1f / Mathf.Max(heroFireRateMul, 0.01f);
             CoinGainMul *= coinGainMul;
