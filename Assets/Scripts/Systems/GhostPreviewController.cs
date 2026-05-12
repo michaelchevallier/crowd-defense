@@ -26,9 +26,15 @@ namespace CrowdDefense.Systems
 
         private static readonly Color AimLineColor = new Color(1f, 0.25f, 0.25f, 0.90f);
 
+        private const int RingSegments = 32;
+        private static readonly Color RingColorValid   = new Color(0.20f, 0.90f, 1.00f, 0.85f);
+        private static readonly Color RingColorInvalid = new Color(1.00f, 0.22f, 0.22f, 0.85f);
+
         private Camera?      cam;
         private GameObject?  ghost;
         private GameObject?  rangeRing;
+        private LineRenderer? rangeRingLine;
+        private Material?    rangeRingLineMat;
         private float        lastBuiltRange  = -1f;
         private TowerType?   lastTowerType;
         private TextMeshPro? costLabel;
@@ -123,6 +129,7 @@ namespace CrowdDefense.Systems
                 costLabel.color = canAfford ? LabelAfford : LabelTooExp;
             }
 
+            UpdateRangeRingLinePositions();
             UpdateAimLine();
         }
 
@@ -138,9 +145,10 @@ namespace CrowdDefense.Systems
             if (ghost != null)
             {
                 Object.Destroy(ghost);
-                ghost      = null;
-                rangeRing  = null;
-                costLabel  = null;
+                ghost          = null;
+                rangeRing      = null;
+                rangeRingLine  = null;
+                costLabel      = null;
                 lastBuiltRange = -1f;
             }
 
@@ -213,10 +221,11 @@ namespace CrowdDefense.Systems
             var pc = PlacementController.Instance;
             if (pc == null || pc.SelectedTowerType == null) { HideGhost(); return; }
 
-            if (cell.HasValue)
+            bool isValid = cell.HasValue;
+            if (isValid)
             {
                 var grid = PathManager.Instance!.Grid!;
-                Vector3 pos = GridCoords.CellToWorld(cell.Value.x, cell.Value.y, grid.Width, grid.Height, grid.CellSize);
+                Vector3 pos = GridCoords.CellToWorld(cell!.Value.x, cell.Value.y, grid.Width, grid.Height, grid.CellSize);
                 pos.y = 0.3f;
                 ghost.transform.position = pos;
                 ApplyTintToGhost(ColorValid);
@@ -229,16 +238,27 @@ namespace CrowdDefense.Systems
                 ApplyTintToGhost(ColorInvalid);
             }
 
+            SetRingLineColor(isValid ? RingColorValid : RingColorInvalid);
+
             ghost.SetActive(true);
-            if (rangeRing != null) rangeRing.SetActive(true);
+            if (rangeRing     != null) rangeRing.SetActive(true);
+            if (rangeRingLine != null) rangeRingLine.enabled = true;
             ShowPathDots();
+        }
+
+        private void SetRingLineColor(Color c)
+        {
+            if (rangeRingLineMat == null) return;
+            if (rangeRingLineMat.HasProperty("_BaseColor")) rangeRingLineMat.SetColor("_BaseColor", c);
+            else if (rangeRingLineMat.HasProperty("_Color")) rangeRingLineMat.SetColor("_Color", c);
         }
 
         private void HideGhost()
         {
-            if (ghost     != null) ghost.SetActive(false);
-            if (rangeRing != null) rangeRing.SetActive(false);
-            if (aimLine   != null) aimLine.enabled = false;
+            if (ghost          != null) ghost.SetActive(false);
+            if (rangeRing      != null) rangeRing.SetActive(false);
+            if (rangeRingLine  != null) rangeRingLine.enabled = false;
+            if (aimLine        != null) aimLine.enabled = false;
             HidePathDots();
         }
 
@@ -346,7 +366,9 @@ namespace CrowdDefense.Systems
 
         private void BuildRangeRing(float range)
         {
-            if (rangeRing != null) Object.Destroy(rangeRing);
+            if (rangeRing     != null) Object.Destroy(rangeRing);
+            if (rangeRingLine != null) Object.Destroy(rangeRingLine.gameObject);
+            rangeRingLine = null;
             lastBuiltRange = range;
             if (range <= 0f || ghost == null) return;
 
@@ -392,6 +414,49 @@ namespace CrowdDefense.Systems
 
             go.SetActive(false);
             rangeRing = go;
+
+            BuildRangeRingLine(range);
+        }
+
+        private void BuildRangeRingLine(float range)
+        {
+            if (range <= 0f) return;
+
+            var lineGo = new GameObject("GhostRangeRingLine");
+            lineGo.transform.SetParent(transform, false); // child of controller, not ghost
+
+            rangeRingLine = lineGo.AddComponent<LineRenderer>();
+            rangeRingLine.positionCount   = RingSegments + 1; // +1 to close the loop
+            rangeRingLine.loop            = false;
+            rangeRingLine.useWorldSpace   = true;
+            rangeRingLine.widthMultiplier = 0.07f;
+            rangeRingLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            rangeRingLine.receiveShadows  = false;
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            rangeRingLineMat = new Material(shader);
+            if (rangeRingLineMat.HasProperty("_Surface"))
+            {
+                rangeRingLineMat.SetFloat("_Surface", 1f);
+                rangeRingLineMat.SetFloat("_ZWrite", 0f);
+                rangeRingLineMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                rangeRingLineMat.renderQueue = 3001;
+            }
+            rangeRingLine.sharedMaterial = rangeRingLineMat;
+            SetRingLineColor(RingColorValid);
+            rangeRingLine.enabled = false;
+        }
+
+        private void UpdateRangeRingLinePositions()
+        {
+            if (rangeRingLine == null || ghost == null) return;
+            float range  = PlacementController.Instance?.SelectedTowerType?.Range ?? 0f;
+            Vector3 center = new Vector3(ghost.transform.position.x, 0.06f, ghost.transform.position.z);
+            for (int i = 0; i <= RingSegments; i++)
+            {
+                float angle = (i / (float)RingSegments) * Mathf.PI * 2f;
+                rangeRingLine.SetPosition(i, center + new Vector3(Mathf.Cos(angle) * range, 0f, Mathf.Sin(angle) * range));
+            }
         }
     }
 }
