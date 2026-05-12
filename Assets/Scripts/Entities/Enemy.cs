@@ -761,6 +761,114 @@ namespace CrowdDefense.Entities
                 for (int i = 0; i < _cachedRenderers.Length; i++)
                     _cachedRenderers[i].SetPropertyBlock(_mpb);
             }
+
+            if (type.IsBoss)
+                StartCoroutine(BossSpawnCinematic());
+        }
+
+        // ── Boss spawn cinematic (1.2 s spotlight rays + bass drone) ─────────
+        private System.Collections.IEnumerator BossSpawnCinematic()
+        {
+            const float Duration     = 1.2f;
+            const int   RayCount     = 5;
+            const float RayHeight    = 8f;
+            const float RotSpeed     = 90f;   // deg/s
+
+            var bossPos = transform.position;
+
+            // ── 5 spotlight rays ─────────────────────────────────────────────
+            var rays = new GameObject[RayCount];
+            for (int i = 0; i < RayCount; i++)
+            {
+                float angle  = i * (360f / RayCount) * Mathf.Deg2Rad;
+                float radius = 0.8f;
+                var   offset = new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius);
+
+                var go = new GameObject($"BossSpawnRay_{i}");
+                go.transform.position = bossPos + offset;
+                rays[i] = go;
+
+                var lr = go.AddComponent<LineRenderer>();
+                lr.positionCount  = 2;
+                lr.SetPosition(0, bossPos + offset);
+                lr.SetPosition(1, bossPos + offset + Vector3.up * RayHeight);
+                lr.startWidth     = 0.18f;
+                lr.endWidth       = 0.04f;
+                lr.useWorldSpace  = true;
+                lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                lr.receiveShadows = false;
+                var mat = new Material(Shader.Find("Sprites/Default"));
+                mat.color = Color.yellow * 2.5f;
+                lr.material       = mat;
+            }
+
+            // ── Bass drone AudioSource ────────────────────────────────────────
+            AudioSource? droneSource = null;
+            var droneGO = new GameObject("BossSpawnDrone");
+            droneSource = droneGO.AddComponent<AudioSource>();
+            droneSource.loop        = false;
+            droneSource.spatialBlend = 0f;
+            droneSource.volume      = 1.0f;
+            droneSource.pitch       = 0.6f;
+
+            // Lowpass filter for deep rumble feel
+            var lowpass = droneGO.AddComponent<AudioLowPassFilter>();
+            lowpass.cutoffFrequency = 800f;
+            lowpass.lowpassResonanceQ = 1.5f;
+
+            // Try to play a boss spawn stinger; skip silently if clip absent
+            AudioController.Instance?.PlayPitched("boss_spawn_drone", 1.5f, 0.6f);
+
+            // ── Rotate rays + lerp drone pitch over duration ──────────────────
+            float elapsed = 0f;
+            while (elapsed < Duration)
+            {
+                float dt = Time.deltaTime;
+                elapsed += dt;
+
+                float rot = RotSpeed * dt;
+                for (int i = 0; i < RayCount; i++)
+                {
+                    if (rays[i] == null) continue;
+                    rays[i].transform.RotateAround(bossPos, Vector3.up, rot);
+                    // Update LineRenderer endpoints to match rotated position
+                    var lr = rays[i].GetComponent<LineRenderer>();
+                    if (lr != null)
+                    {
+                        var p0 = rays[i].transform.position;
+                        lr.SetPosition(0, p0);
+                        lr.SetPosition(1, p0 + Vector3.up * RayHeight);
+                    }
+                }
+
+                // Lerp drone pitch 0.6 → 0.8
+                if (droneSource != null)
+                    droneSource.pitch = Mathf.Lerp(0.6f, 0.8f, elapsed / Duration);
+
+                // Fade out rays in last 0.2 s
+                if (elapsed > Duration - 0.2f)
+                {
+                    float alpha = (Duration - elapsed) / 0.2f;
+                    for (int i = 0; i < RayCount; i++)
+                    {
+                        if (rays[i] == null) continue;
+                        var lr = rays[i].GetComponent<LineRenderer>();
+                        if (lr?.material != null)
+                        {
+                            var c = lr.material.color;
+                            c.a = alpha;
+                            lr.material.color = c;
+                        }
+                    }
+                }
+
+                yield return null;
+            }
+
+            // ── Cleanup ────────────────────────────────────────────────────────
+            for (int i = 0; i < RayCount; i++)
+                if (rays[i] != null) Object.Destroy(rays[i]);
+            if (droneGO != null) Object.Destroy(droneGO);
         }
 
         // ── Spawn pop-in animation ────────────────────────────────────────────
