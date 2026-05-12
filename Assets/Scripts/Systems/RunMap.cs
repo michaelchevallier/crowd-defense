@@ -82,6 +82,9 @@ namespace CrowdDefense.Systems
 
         public RunMapState? State => _state;
 
+        // Variant index (0-2) for the current combat node — driven by node seed for determinism.
+        public int CurrentVariant { get; private set; }
+
         protected override void OnAwakeSingleton()
         {
             if (transform.parent != null) transform.SetParent(null);

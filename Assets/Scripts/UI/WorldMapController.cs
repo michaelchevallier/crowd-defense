@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Data;
@@ -9,6 +10,26 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class WorldMapController : MonoBehaviour
     {
+        // ── RunMap node-graph icons (ASCII, no special chars) ──────────────
+        private static readonly Dictionary<RunMapNodeType, string> NodeIcons = new()
+        {
+            { RunMapNodeType.Combat,  "[C]" },
+            { RunMapNodeType.Elite,   "[E]" },
+            { RunMapNodeType.Mystery, "[?]" },
+            { RunMapNodeType.Shop,    "[$]" },
+            { RunMapNodeType.Rest,    "[R]" },
+            { RunMapNodeType.Boss,    "[B]" },
+        };
+        private static readonly Dictionary<RunMapNodeType, string> NodeTypeNames = new()
+        {
+            { RunMapNodeType.Combat,  "Combat" },
+            { RunMapNodeType.Elite,   "Elite" },
+            { RunMapNodeType.Mystery, "Mystere" },
+            { RunMapNodeType.Shop,    "Boutique" },
+            { RunMapNodeType.Rest,    "Repos" },
+            { RunMapNodeType.Boss,    "BOSS" },
+        };
+
         private const int WorldCount     = 8;
         private const int LevelsPerWorld = 10;
 
@@ -49,10 +70,16 @@ namespace CrowdDefense.UI
         private int            _activeWorld = 1;
         private LevelRegistry? _registry;
 
+        // RunMap node-graph state
+        private RunMap?         _runMap;
+        private HashSet<string> _availableIds = new();
+        private Label?          _runmapHintLabel;
+
         private void Start()
         {
             _root     = GetComponent<UIDocument>().rootVisualElement;
             _registry = LevelRegistry.Get();
+            _runMap   = RunMap.Instance;
             BuildUI();
         }
 
@@ -65,6 +92,13 @@ namespace CrowdDefense.UI
 
             _starsLabel      = _root.Q<Label>("worldmap-stars-label");
             _completionLabel = _root.Q<Label>("worldmap-completion-label");
+
+            // When a roguelike run is active, show the node-graph instead of linear select.
+            if (_runMap != null && _runMap.HasActiveMap())
+            {
+                BuildRunMapView();
+                return;
+            }
 
             BuildWorldTabs();
 
@@ -79,6 +113,155 @@ namespace CrowdDefense.UI
 
             RefreshHeader();
             ShowWorld(_activeWorld);
+        }
+
+        // ── RunMap node-graph view ────────────────────────────────────────
+
+        private void BuildRunMapView()
+        {
+            if (_root == null || _runMap == null) return;
+
+            // Hide the linear grid + world tabs if present.
+            var levelGrid = _root.Q<VisualElement>("worldmap-level-grid");
+            if (levelGrid != null) levelGrid.style.display = DisplayStyle.None;
+            var tabBar = _root.Q<VisualElement>("worldmap-tabs");
+            if (tabBar != null) tabBar.style.display = DisplayStyle.None;
+
+            // Act label.
+            var actLabel = _root.Q<Label>("runmap-act-label");
+            if (actLabel == null)
+            {
+                actLabel = new Label();
+                actLabel.name = "runmap-act-label";
+                actLabel.AddToClassList("runmap-act-label");
+                _root.Add(actLabel);
+            }
+            if (_runMap.State != null)
+                actLabel.text = $"Acte {_runMap.State.worldId}";
+
+            // Hint label.
+            _runmapHintLabel = _root.Q<Label>("runmap-node-hint");
+            if (_runmapHintLabel == null)
+            {
+                _runmapHintLabel = new Label();
+                _runmapHintLabel.name = "runmap-node-hint";
+                _runmapHintLabel.AddToClassList("runmap-node-hint");
+                _root.Add(_runmapHintLabel);
+            }
+
+            // Graph container — reuse existing or create.
+            var graphContainer = _root.Q<VisualElement>("runmap-graph");
+            if (graphContainer == null)
+            {
+                graphContainer = new VisualElement();
+                graphContainer.name = "runmap-graph";
+                graphContainer.AddToClassList("runmap-graph");
+                _root.Add(graphContainer);
+            }
+
+            RebuildRunMapGraph(graphContainer);
+        }
+
+        private void RebuildRunMapGraph(VisualElement graphContainer)
+        {
+            if (_runMap == null) return;
+            graphContainer.Clear();
+
+            _availableIds = new HashSet<string>();
+            foreach (var n in _runMap.GetAvailableNextNodes())
+                _availableIds.Add(n.id);
+
+            bool atStart = _runMap.GetCurrentNode() == null;
+            if (atStart)
+                foreach (var n in _runMap.GetStartNodes())
+                    _availableIds.Add(n.id);
+
+            var byRow = _runMap.GetNodesByRow();
+            for (int r = 0; r <= 6; r++)
+            {
+                if (!byRow.TryGetValue(r, out var rowNodes)) continue;
+                var rowEl = new VisualElement();
+                rowEl.AddToClassList("runmap-row");
+                foreach (var node in rowNodes)
+                    rowEl.Add(BuildRunMapNodeEl(node, graphContainer));
+                graphContainer.Add(rowEl);
+            }
+        }
+
+        private VisualElement BuildRunMapNodeEl(RunMapNode node, VisualElement graphContainer)
+        {
+            var el = new VisualElement();
+            el.AddToClassList("runmap-node");
+            el.AddToClassList(node.type.ToString().ToLower());
+
+            bool isCurrent   = _runMap?.IsNodeCurrent(node.id) ?? false;
+            bool isVisited   = _runMap?.IsNodeVisited(node.id) ?? false;
+            bool isAvailable = _availableIds.Contains(node.id);
+
+            if (isCurrent)        el.AddToClassList("current");
+            else if (isVisited)   el.AddToClassList("visited");
+            else if (isAvailable)
+            {
+                el.AddToClassList("available");
+                string nodeId = node.id;
+                var capturedNode = node;
+                el.RegisterCallback<ClickEvent>(_ => OnRunMapNodeClicked(nodeId, graphContainer));
+                el.RegisterCallback<MouseEnterEvent>(_ => ShowRunMapHint(capturedNode));
+                el.RegisterCallback<MouseLeaveEvent>(_ => ClearRunMapHint());
+            }
+            else el.AddToClassList("hidden");
+
+            var icon = new Label(NodeIcons.TryGetValue(node.type, out var ico) ? ico : "?");
+            icon.AddToClassList("runmap-node-icon");
+            el.Add(icon);
+
+            var label = new Label(NodeTypeNames.TryGetValue(node.type, out var nm) ? nm : "");
+            label.AddToClassList("runmap-node-label");
+            el.Add(label);
+
+            return el;
+        }
+
+        private void OnRunMapNodeClicked(string nodeId, VisualElement graphContainer)
+        {
+            if (_runMap == null) return;
+            RunMapNode? node = null;
+            if (_runMap.State != null)
+                for (int i = 0; i < _runMap.State.nodes.Count; i++)
+                    if (_runMap.State.nodes[i].id == nodeId) { node = _runMap.State.nodes[i]; break; }
+            if (node == null) return;
+
+            _runMap.MoveTo(nodeId);
+
+            if (node.type == RunMapNodeType.Boss)
+            {
+                if (!string.IsNullOrEmpty(node.bossId)) LevelLoader.LoadLevel(node.bossId);
+                else LevelLoader.GoToWorldMap();
+            }
+            else if ((node.type == RunMapNodeType.Combat || node.type == RunMapNodeType.Elite)
+                     && !string.IsNullOrEmpty(node.combatLevelId))
+            {
+                LevelLoader.LoadLevel(node.combatLevelId);
+            }
+            else
+            {
+                RebuildRunMapGraph(graphContainer);
+            }
+        }
+
+        private void ShowRunMapHint(RunMapNode node)
+        {
+            if (_runmapHintLabel == null) return;
+            string type = NodeTypeNames.TryGetValue(node.type, out var t) ? t : "";
+            string extra = node.type == RunMapNodeType.Elite
+                ? $" (x{node.swarmMul:F1} vagues, x{node.rewardMul:F1} recompense)"
+                : "";
+            _runmapHintLabel.text = $"{type}{extra}";
+        }
+
+        private void ClearRunMapHint()
+        {
+            if (_runmapHintLabel != null) _runmapHintLabel.text = "";
         }
 
         private void BuildWorldTabs()
