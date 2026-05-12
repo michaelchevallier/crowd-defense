@@ -47,6 +47,14 @@ namespace CrowdDefense.UI
         private Text?          _trophyText;
         private RectTransform? _trophyRect;
 
+        // Share buttons (victory only)
+        private GameObject? _shareRow;
+        private Button?     _btnDiscord;
+        private Button?     _btnTwitter;
+        private Text?       _toastText;
+        private Coroutine?  _toastCoroutine;
+        private string      _shareLevelName = "";
+
         private bool _isVictory;
 
         // ── Colours ─────────────────────────────────────────────────────────────
@@ -58,6 +66,9 @@ namespace CrowdDefense.UI
         private static readonly Color ButtonTextColor    = new(1.00f, 1.00f, 1.00f, 1.00f);
         private static readonly Color LbHeaderColor      = new(1.00f, 0.84f, 0.00f, 1.00f);
         private static readonly Color LbRowColor         = new(0.90f, 0.90f, 0.90f, 1.00f);
+        private static readonly Color ShareDiscordColor  = new(0.27f, 0.31f, 0.70f, 1.00f);
+        private static readonly Color ShareTwitterColor  = new(0.11f, 0.63f, 0.95f, 1.00f);
+        private static readonly Color ToastColor         = new(0.10f, 0.70f, 0.30f, 1.00f);
 
         protected override void OnAwakeSingleton()
         {
@@ -152,9 +163,20 @@ namespace CrowdDefense.UI
             else
                 ClearStats();
 
+            // Cache level name for share messages
+            _shareLevelName = LevelRunner.Instance?.CurrentLevel?.DisplayName
+                           ?? LevelRunner.Instance?.CurrentLevel?.Id
+                           ?? "ce niveau";
+
             if (_btnPrimaryLabel  != null) _btnPrimaryLabel.text  = "Rejouer";
             if (_btnSecondaryLabel != null)
                 _btnSecondaryLabel.text = isVictory ? "Continuer" : "Menu";
+
+            // Show share row only on victory
+            if (_shareRow != null)
+                _shareRow.SetActive(isVictory);
+            if (_toastText != null)
+                _toastText.gameObject.SetActive(false);
         }
 
         private void Activate()
@@ -301,6 +323,51 @@ namespace CrowdDefense.UI
                 _trophyText.color = Color.Lerp(baseColor, dimColor, phase);
                 yield return null;
             }
+        }
+
+        // ── Share handlers ──────────────────────────────────────────────────────
+
+        private void OnDiscordShareClicked()
+        {
+            string msg = $"J'ai conquis {_shareLevelName} avec 3 etoiles ! crowd-defense.io";
+            GUIUtility.systemCopyBuffer = msg;
+            ShowToast("Lien copie !");
+        }
+
+        private void OnTwitterShareClicked()
+        {
+            string text      = $"J'ai conquis {_shareLevelName} avec 3 etoiles sur Crowd Defense !";
+            string url       = "https://crowd-defense.io";
+            string encoded    = System.Uri.EscapeDataString(text);
+            string urlEncoded = System.Uri.EscapeDataString(url);
+            Application.OpenURL($"https://twitter.com/intent/tweet?text={encoded}&url={urlEncoded}");
+        }
+
+        private void ShowToast(string message)
+        {
+            if (_toastText == null) return;
+            if (_toastCoroutine != null) StopCoroutine(_toastCoroutine);
+            _toastCoroutine = StartCoroutine(ToastRoutine(message));
+        }
+
+        private IEnumerator ToastRoutine(string message)
+        {
+            if (_toastText == null) yield break;
+            _toastText.text  = message;
+            _toastText.color = new Color(ToastColor.r, ToastColor.g, ToastColor.b, 0f);
+            _toastText.gameObject.SetActive(true);
+
+            float t = 0f;
+            while (t < 0.25f) { _toastText.color = new Color(ToastColor.r, ToastColor.g, ToastColor.b, t / 0.25f); t += Time.unscaledDeltaTime; yield return null; }
+            _toastText.color = new Color(ToastColor.r, ToastColor.g, ToastColor.b, 1f);
+
+            float held = 0f;
+            while (held < 1.5f) { held += Time.unscaledDeltaTime; yield return null; }
+
+            t = 0f;
+            while (t < 0.4f) { _toastText.color = new Color(ToastColor.r, ToastColor.g, ToastColor.b, 1f - t / 0.4f); t += Time.unscaledDeltaTime; yield return null; }
+            _toastText.gameObject.SetActive(false);
+            _toastCoroutine = null;
         }
 
         private void OnPrimaryClicked()
@@ -606,6 +673,38 @@ namespace CrowdDefense.UI
                 fontSize: 15, color: LbRowColor);
             _lbRow3.alignment = TextAnchor.MiddleLeft;
 
+            // Share row: Discord + Twitter — visible on victory only, above action buttons
+            _shareRow = new GameObject("ShareRow");
+            _shareRow.transform.SetParent(panelGo.transform, false);
+            var shareRowRect = _shareRow.AddComponent<RectTransform>();
+            shareRowRect.anchorMin = new Vector2(0.05f, 0.12f);
+            shareRowRect.anchorMax = new Vector2(0.95f, 0.20f);
+            shareRowRect.offsetMin = Vector2.zero;
+            shareRowRect.offsetMax = Vector2.zero;
+
+            (_btnDiscord, _) = CreateColoredButton(_shareRow.transform, "BtnDiscord",
+                anchorMin: new Vector2(0f, 0f),
+                anchorMax: new Vector2(0.47f, 1f),
+                bgColor: ShareDiscordColor,
+                labelText: "Discord");
+            _btnDiscord.onClick.AddListener(OnDiscordShareClicked);
+
+            (_btnTwitter, _) = CreateColoredButton(_shareRow.transform, "BtnTwitter",
+                anchorMin: new Vector2(0.53f, 0f),
+                anchorMax: new Vector2(1f, 1f),
+                bgColor: ShareTwitterColor,
+                labelText: "Twitter");
+            _btnTwitter.onClick.AddListener(OnTwitterShareClicked);
+
+            _shareRow.SetActive(false);
+
+            // Toast — centred just above share row, hidden by default
+            _toastText = CreateLabel(panelGo.transform, "ToastLabel",
+                anchorMin: new Vector2(0.10f, 0.20f),
+                anchorMax: new Vector2(0.90f, 0.27f),
+                fontSize: 16, color: ToastColor);
+            _toastText.gameObject.SetActive(false);
+
             // Primary button (Rejouer) — left
             (_btnPrimary, _btnPrimaryLabel) = CreateButton(panelGo.transform, "BtnPrimary",
                 anchorMin: new Vector2(0.05f, 0.02f),
@@ -619,6 +718,41 @@ namespace CrowdDefense.UI
             _btnSecondary.onClick.AddListener(OnSecondaryClicked);
 
             _panel.SetActive(false);
+        }
+
+        private static (Button btn, Text label) CreateColoredButton(Transform parent, string name,
+            Vector2 anchorMin, Vector2 anchorMax, Color bgColor, string labelText)
+        {
+            var go   = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            var rect = go.AddComponent<RectTransform>();
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+
+            var img = go.AddComponent<Image>();
+            img.color = bgColor;
+
+            var btn = go.AddComponent<Button>();
+            var colors = btn.colors;
+            colors.normalColor      = bgColor;
+            colors.highlightedColor = new Color(Mathf.Min(bgColor.r + 0.13f, 1f), Mathf.Min(bgColor.g + 0.13f, 1f), Mathf.Min(bgColor.b + 0.13f, 1f), 1f);
+            colors.pressedColor     = new Color(Mathf.Max(bgColor.r - 0.07f, 0f), Mathf.Max(bgColor.g - 0.07f, 0f), Mathf.Max(bgColor.b - 0.07f, 0f), 1f);
+            btn.colors = colors;
+
+            var labelGo   = new GameObject("Label");
+            labelGo.transform.SetParent(go.transform, false);
+            var labelRect = labelGo.AddComponent<RectTransform>();
+            Stretch(labelRect);
+            var txt = labelGo.AddComponent<Text>();
+            txt.text      = labelText;
+            txt.fontSize  = 18;
+            txt.color     = ButtonTextColor;
+            txt.alignment = TextAnchor.MiddleCenter;
+            txt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            return (btn, txt);
         }
 
         private static Text CreateLabel(Transform parent, string name,
