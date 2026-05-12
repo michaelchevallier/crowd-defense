@@ -64,8 +64,8 @@ namespace CrowdDefense.Systems
 
         private void Start()
         {
-            SceneManager.activeSceneChanged += OnActiveSceneChanged;
-            OnActiveSceneChanged(default, SceneManager.GetActiveScene());
+            SceneManager.activeSceneChanged += HandleSceneChange;
+            HandleSceneChange(default, SceneManager.GetActiveScene());
 
             var em = EventManager.Instance;
             if (em == null) return;
@@ -75,7 +75,7 @@ namespace CrowdDefense.Systems
 
         protected override void OnDestroySingleton()
         {
-            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+            SceneManager.activeSceneChanged -= HandleSceneChange;
 
             var em = EventManager.Instance;
             if (em == null) return;
@@ -349,9 +349,9 @@ namespace CrowdDefense.Systems
 
         // ── Scene routing ────────────────────────────────────────────────────
 
-        private void OnActiveSceneChanged(Scene _, Scene next)
+        private void HandleSceneChange(Scene oldScene, Scene newScene)
         {
-            string name = next.name;
+            string name = newScene.name;
             if (name == "Menu" || name == "WorldMap")
             {
                 musicVolume = 0.4f;
