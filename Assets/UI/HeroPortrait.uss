@@ -54,6 +54,17 @@
     background-color: rgb(210, 50, 50);
 }
 
+.xp-bar-fill {
+    background-color: rgb(60, 140, 240);
+}
+
+.xp-level-label {
+    color: rgba(180, 210, 255, 0.95);
+    font-size: 10px;
+    -unity-font-style: bold;
+    margin-bottom: 2px;
+}
+
 .hp-label {
     color: rgba(220, 220, 220, 0.9);
     font-size: 10px;

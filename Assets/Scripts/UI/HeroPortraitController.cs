@@ -21,6 +21,7 @@ namespace CrowdDefense.UI
         private VisualElement? _portrait;
         private VisualElement? _hpBarFill;
         private Label?         _hpLabel;
+        private Label?         _levelLabel;
         private Label?         _killLabel;
         private VisualElement[]? _perkSlots;
         private Label[]?         _perkLabels;
@@ -138,20 +139,17 @@ namespace CrowdDefense.UI
                 _portrait.style.backgroundColor = new StyleColor(portraitColor);
             }
 
-            // XP bar (treated as "HP" — ratio 0..1); clamp int.MaxValue at max level.
+            // XP bar — blue fill, ratio 0..1.
             bool atMaxLevel = hero!.Level >= hero.MaxLevel;
             float ratio = atMaxLevel ? 1f
                 : hero.XpToNext > 0 ? Mathf.Clamp01((float)hero.Xp / hero.XpToNext) : 0f;
             if (_hpBarFill != null)
             {
                 _hpBarFill.style.width = new StyleLength(new Length(ratio * 100f, LengthUnit.Percent));
-                _hpBarFill.RemoveFromClassList("hp-bar-fill-high");
-                _hpBarFill.RemoveFromClassList("hp-bar-fill-mid");
-                _hpBarFill.RemoveFromClassList("hp-bar-fill-low");
-                _hpBarFill.AddToClassList(ratio >= 0.5f ? "hp-bar-fill-high"
-                    : ratio >= 0.25f                    ? "hp-bar-fill-mid"
-                    :                                     "hp-bar-fill-low");
             }
+
+            if (_levelLabel != null)
+                _levelLabel.text = atMaxLevel ? $"Niv MAX" : $"Niv {hero.Level}";
 
             if (_hpLabel != null)
                 _hpLabel.text = atMaxLevel ? $"XP MAX" : $"XP {hero.Xp}/{hero.XpToNext}";
@@ -255,7 +253,7 @@ namespace CrowdDefense.UI
 
             _hpBarFill = new VisualElement();
             _hpBarFill.AddToClassList("hp-bar-fill");
-            _hpBarFill.AddToClassList("hp-bar-fill-low");
+            _hpBarFill.AddToClassList("xp-bar-fill");
             _hpBarFill.style.width = new StyleLength(new Length(0f, LengthUnit.Percent));
             barBg.Add(_hpBarFill);
 
@@ -266,6 +264,10 @@ namespace CrowdDefense.UI
             _xpFlashOverlay.style.backgroundColor = new StyleColor(new Color(1f, 0.84f, 0f, 0f));
             _xpFlashOverlay.pickingMode = PickingMode.Ignore;
             barBg.Add(_xpFlashOverlay);
+
+            _levelLabel = new Label("Niv 1");
+            _levelLabel.AddToClassList("xp-level-label");
+            info.Add(_levelLabel);
 
             _hpLabel = new Label("XP 0/20");
             _hpLabel.AddToClassList("hp-label");
