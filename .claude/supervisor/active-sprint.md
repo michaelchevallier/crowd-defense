@@ -15,11 +15,11 @@ Mike's clarifications (chat 14h47-14h49) :
 
 ## Current
 
-- **Sprint** : R6-02 (DELETE pass) → **PAUSED 14h48** (pivot V4 parity)
-- **Sprint suivant prep** : **R6-PARITY-V4** (priorité absolue)
-- **Mode** : pivot stratégie Mike 14h47 (cf instructions-to-exec.md PIVOT-V4-PARITY)
-- **Status** : R6-02 partial (10 deletes gardés) ; audit V4 parity en préparation
-- **Next action** : audit V4 parity gap + textures + finition (agents dispatched)
+- **Sprint** : **R6-PARITY-V4 ACTIVE 15h30** (Mike GO autonome 4h cap fin ~19h30)
+- **Mode** : autonome dispatch P0 1-5 (5 tickets) + addendum Unity capabilities
+- **Status** : 5 décisions Mike validées + addendum scope ajouté ; instruction PARITY-V4-GO publiée
+- **Next action** : exec ack + dispatch batch P0-A (4 worktrees parallèles)
+- **Audit source** : `.claude/audit/2026-05-12-v4-parity-gap.md` (V6 = 55-65% gameplay / 40-45% look&feel V4)
 
 ## R6-02 paused — historique partiel
 

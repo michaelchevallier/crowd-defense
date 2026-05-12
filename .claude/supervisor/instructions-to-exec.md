@@ -6,7 +6,7 @@
 
 ## Last ack expected from exec
 
-`acks/2026-05-12-HHhMM-pivot-v4-parity-ack.md` après l'instruction PIVOT-V4-PARITY ci-dessous (priorité absolue).
+`acks/2026-05-12-HHhMM-parity-v4-go-ack.md` après l'instruction PARITY-V4-GO ci-dessous (Mike valide 5 recos + addendum Unity capabilities).
 
 ---
 
@@ -197,4 +197,90 @@ contenant :
 
 ---
 
-(les futures instructions ajoutées par superviseur ici, plus récente en bas)
+### 2026-05-12 15h30 — 🟢 PARITY-V4-GO (Mike valide 5 recos + addendum scope Unity)
+
+**Type** : GO-SPRINT (dispatch autorisé R6-PARITY-V4 P0)
+**From** : Mike chat direct (via superviseur)
+**Audit source** : `.claude/audit/2026-05-12-v4-parity-gap.md`
+
+## Mike's 5 décisions validées en bloc
+
+| # | Décision | Verdict |
+|---|---|---|
+| 1 | Pipeline textures Flux | **Copy direct PNG** depuis `/Users/mike/Work/milan project/src-v3/public/textures/` (75 PNG confirmés présents : anim×8 + sky×10 + ground×N + vfx×22 + tiles×N + pilote×5) → `crowd-defense/Assets/Textures/{Anim,Sky,Ground,VFX,Tiles,Pilote}/`. Si qualité Unity sub-optimale (résolution, normal maps), regen Flux Schnell autorisée (cf addendum) |
+| 2 | PathTiles 600 LOC port | **OUI P0** — visuel #1 du jeu, worth 6-8h |
+| 3 | Castle/VFX skins (12 manquants) | **Tous P1, après P0** |
+| 4 | Schools mapping | **Keep V6 5 schools** (extension propre, Mike OK avec features en +) |
+| 5 | Mode dispatch | **Autonome 4h sur P0 1-5** (cap fin ~19h30 local) |
+
+## Addendum CRITIQUE Mike (scope extends V4 strict)
+
+> "Unity offre des capacités nouvelles si ça permet de rendre le jeu plus beau
+> et plus sympa il faut les exploiter c'est 50% de l'intéret initial de la
+> migration donc il faut prendre ça en compte dans le scope. Si il faut reviser
+> le download de texture et autres c'est possible aussi. Souviens toi qu'on a
+> acces au blender mcp. Tout ce qui est generation d'asset si c'est long ne
+> doit pas etre bloquant (ie. placeholder en attendant l'asset)"
+
+**Implications scope R6-PARITY-V4** :
+
+1. **Exploit Unity capabilities** — URP shaders modernes, PBR materials, post-processing per-volume, lighting baked/dynamic, ParticleSystem Unity-native, Animator state machines, NavMesh, Cinemachine, Volumetric fog : utilise partout où ça **améliore vs V4 sans bloquer parité**. C'est 50% intérêt migration → scope inclut Unity-native quality, pas seulement port 1-1.
+
+2. **Textures révision OK** — copy direct est la base, MAIS si PNGs V4 sub-optimaux Unity (résolution 1024 vs 2048, PNG sans alpha proper, manque normal/roughness maps PBR), regen Flux Schnell autorisée avec prompts adaptés Unity. Pipeline `/Users/mike/Work/milan project/tools/gen_textures.py` ComfyUI:8188 local (cf memory reference_flux_local).
+
+3. **Blender MCP disponible** (état actuel : `claude mcp list` → `blender: uvx blender-mcp - ✗ Failed to connect` — serveur MCP installé mais offline). Si tu as besoin de mesh custom (castle skins per thème, decor props enrichis), ack et propose plan court : (a) start Blender MCP server (`uvx blender-mcp` background), (b) generate mesh via MCP API, (c) import .blend → .gltf → Unity.
+
+4. **Asset gen non-bloquant** — placeholder-first architecture obligatoire sur tickets >1h gen :
+   - Implémente système (PathTiles, weather, skybox material, VFX wiring) avec **placeholder simple** : couleur unie + label texte + bounding box visible
+   - Commit ticket avec placeholders → unblock dispatch suivant
+   - Asset swap en parallèle (worktree séparé ou batch ultérieur)
+   - Mike doit pouvoir tester gameplay/scope dès commit, look final swap ensuite
+
+## Action exec dispatch immediate
+
+### Batch P0-A (4 agents feature-dev parallèles worktree, charter §1 max 4 OK)
+
+1. **R6-PARITY-001 textures port** : copy 75 PNG V4 → `Assets/Textures/{Anim,Sky,Ground,VFX,Tiles,Pilote}/` + audit qualité résolution Unity + dossier `.meta` Unity import settings (sRGB, mipmaps, compression). Wire dans MaterialRegistry / SkyboxRegistry / VfxPool. Si qualité OK pas de regen. Si gap : flag + propose regen Flux dans self-report.
+
+2. **R6-PARITY-002 PathTiles fidèle V4** : port `src-v3/systems/PathTiles.js` 600 LOC → Unity. Segments droits + courbes (radius cell) + T-junctions + cross + bridges wood (sur water) + bridges lava-crossing. **Exploit Unity** : URP shader animé sur water bridges + emissive lava bridges. **Placeholder OK** sur bridges visuels complexes : couleur unie d'abord, swap shader après.
+
+3. **R6-PARITY-003 Skybox per-theme** : import 10 skybox PNG equirectangular Flux V4 → `Assets/Textures/Sky/` + 10 Unity Skybox materials (shader `Skybox/Panoramic`) + `SkyboxController` auto-switch on level theme change. **Exploit Unity** : Skybox cubemap convolution pour reflections + ambient indirect lighting. **Placeholder OK** : couleur uniforme par thème en attendant cubemap conv.
+
+4. **R6-PARITY-004 VFX sprites import** : import 22 PNG VFX V4 → `Assets/Textures/VFX/` + Unity ParticleSystem texture sheet animation (sparkle_gold/explosion_big/blood_splat/glyph/...). Wire dans VfxPool / SpawnX. **Exploit Unity** : Particle System sub-emitters + collision modules + noise modules pour qualité supérieure V4.
+
+### Batch P0-B (1 agent après P0-A start, ou en parallèle si capacité)
+
+5. **R6-PARITY-005 Enemy types audit complet** : vérifier les 28 enemy types V4 + leur behaviors specifiques :
+   - assassin, warlord_boss (charge sprint), corsair_boss, imp, dragon_boss (fire breath cone)
+   - apocalypse_boss (4 phases : P1 normal → P2 invul + summons → P3 speed×2 → P4 AoE pulse 360°)
+   - cosmic_boss, kraken_boss (tentacle slam), wizard_king (teleport + projectile rain), ai_hub (drone summons)
+   Pour chaque type manquant ou behavior incomplet : ticket fix dans batch P0-B implementation.
+
+## Time cap
+
+- Sprint R6-PARITY-V4 batch P0 : **4h depuis ack** (cap ~19h30 local si ack 15h30)
+- Self-report obligatoire chaque commit (charter §1 règle #8, 100 mots max)
+- Compile gate post-commit (`mcp__UnityMCP__read_console` errors only)
+- Push ack après dispatch B5 (5 tickets en route)
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-parity-v4-go-ack.md` contenant :
+- Tickets specs créés : 5 paths `.claude/specs/R6-PARITY-V4/R6-PARITY-001..005.md`
+- Batch P0-A 4 worktrees créées + dispatched (paths + branch names + ETA)
+- Batch P0-B status (dispatched parallèle ou queued post-P0-A first commits)
+- Confirmation placeholder-first architecture documentée dans chaque ticket
+- Blender MCP : décision (start server now si besoin mesh / not needed pour P0-A 1-5)
+- Backlog R6-PARITY-V4 P1/P2/P3 esquisse (10 tickets restants pour batches suivants)
+
+## Constraints rappel
+
+- **Hard cap 500 LOC par fichier C#** (charter §1 règle #3)
+- **No-feature-creep clause** (§1 règle #4) : opportunités → `.claude/backlog/R6-found-during-exec.md`
+- **No Sub-Opus spawn** (§1 règle #10) : Sonnet feature-dev uniquement
+- **Self-report 100 mots max** (§1 règle #8)
+
+## Status
+
+⏳ pending exec ack + dispatch batch P0-A
+
