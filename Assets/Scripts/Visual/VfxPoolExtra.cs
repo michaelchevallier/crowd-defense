@@ -28,14 +28,15 @@ namespace CrowdDefense.Visual
 
         private void InitExtra()
         {
-            electricCloudPrefab  ??= MakeProcPrefab("ElectricCloud",  ps => VfxPoolBindings.BuildElectricCloudModule(ps, _additiveMat));
-            explosionSmallPrefab ??= MakeProcPrefab("ExplosionSmall", ps => VfxPoolBindings.BuildExplosionSmallModule(ps, _additiveMat));
-            glyphDarkPrefab      ??= MakeProcPrefab("GlyphDark",      ps => VfxPoolBindings.BuildGlyphDarkModule(ps, _additiveMat));
-            healAuraPrefab       ??= MakeProcPrefab("HealAura",       ps => VfxPoolBindings.BuildHealAuraModule(ps, _additiveMat));
-            lightningBoltPrefab  ??= MakeProcPrefab("LightningBolt",  ps => VfxPoolBindings.BuildLightningBoltModule(ps, _additiveMat));
-            poisonCloudPrefab    ??= MakeProcPrefab("PoisonCloud",    ps => VfxPoolBindings.BuildPoisonCloudModule(ps, _additiveMat));
-            shieldAuraPrefab     ??= MakeProcPrefab("ShieldAura",     ps => VfxPoolBindings.BuildShieldAuraModule(ps, _additiveMat));
-            slowAuraPrefab       ??= MakeProcPrefab("SlowAura",       ps => VfxPoolBindings.BuildSlowAuraModule(ps, _additiveMat));
+            // Unity-aware null check (== operator handles fake-null missing refs unlike CLR `??=`).
+            if (electricCloudPrefab  == null) electricCloudPrefab  = MakeProcPrefab("ElectricCloud",  ps => VfxPoolBindings.BuildElectricCloudModule(ps, _additiveMat));
+            if (explosionSmallPrefab == null) explosionSmallPrefab = MakeProcPrefab("ExplosionSmall", ps => VfxPoolBindings.BuildExplosionSmallModule(ps, _additiveMat));
+            if (glyphDarkPrefab      == null) glyphDarkPrefab      = MakeProcPrefab("GlyphDark",      ps => VfxPoolBindings.BuildGlyphDarkModule(ps, _additiveMat));
+            if (healAuraPrefab       == null) healAuraPrefab       = MakeProcPrefab("HealAura",       ps => VfxPoolBindings.BuildHealAuraModule(ps, _additiveMat));
+            if (lightningBoltPrefab  == null) lightningBoltPrefab  = MakeProcPrefab("LightningBolt",  ps => VfxPoolBindings.BuildLightningBoltModule(ps, _additiveMat));
+            if (poisonCloudPrefab    == null) poisonCloudPrefab    = MakeProcPrefab("PoisonCloud",    ps => VfxPoolBindings.BuildPoisonCloudModule(ps, _additiveMat));
+            if (shieldAuraPrefab     == null) shieldAuraPrefab     = MakeProcPrefab("ShieldAura",     ps => VfxPoolBindings.BuildShieldAuraModule(ps, _additiveMat));
+            if (slowAuraPrefab       == null) slowAuraPrefab       = MakeProcPrefab("SlowAura",       ps => VfxPoolBindings.BuildSlowAuraModule(ps, _additiveMat));
 
             // smoke_gray wired as additional sub-emitter on explosion (gray puff variant)
             var smokeGrayPrefab = MakeProcPrefab("SmokeGray", ps => VfxPoolBindings.BuildSmokeGrayModule(ps, _additiveMat));
