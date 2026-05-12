@@ -147,5 +147,31 @@ namespace CrowdDefense.Systems
             PlayerPrefs.SetInt(KeyRuns, TotalRuns + 1);
             PlayerPrefs.Save();
         }
+
+        // ── Per-tower lifetime stats ─────────────────────────────────────────
+        private static string TowerPlacedKey(string towerType) => $"cd.tower_stats.{towerType}.placed";
+        private static string TowerKillsKey(string towerType)  => $"cd.tower_stats.{towerType}.kills";
+
+        public static void AddTowerPlaced(string towerType)
+        {
+            if (string.IsNullOrEmpty(towerType)) return;
+            var key = TowerPlacedKey(towerType);
+            PlayerPrefs.SetInt(key, PlayerPrefs.GetInt(key, 0) + 1);
+            PlayerPrefs.Save();
+        }
+
+        public static void AddTowerKills(string towerType, int n)
+        {
+            if (string.IsNullOrEmpty(towerType) || n <= 0) return;
+            var key = TowerKillsKey(towerType);
+            PlayerPrefs.SetInt(key, PlayerPrefs.GetInt(key, 0) + n);
+            PlayerPrefs.Save();
+        }
+
+        public static int GetTowerPlaced(string towerType) =>
+            PlayerPrefs.GetInt(TowerPlacedKey(towerType), 0);
+
+        public static int GetTowerKills(string towerType) =>
+            PlayerPrefs.GetInt(TowerKillsKey(towerType), 0);
     }
 }

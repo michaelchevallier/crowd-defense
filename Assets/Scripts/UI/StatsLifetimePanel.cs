@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
 using CrowdDefense.Systems;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -28,6 +30,16 @@ namespace CrowdDefense.UI
         private Label? _careerGoldValue;
         private Label? _careerTimeValue;
 
+        // Tower stats section
+        private VisualElement? _towerStatsContainer;
+
+        private static readonly string[] AllTowerTypes =
+        {
+            "archer", "tank", "mage", "ballista", "cannon",
+            "frost", "crossbow", "skyguard", "mine", "acid",
+            "fan", "portal", "magnet"
+        };
+
         // Today section
         private Label? _todayRunsValue;
         private Label? _todayKillsValue;
@@ -56,6 +68,7 @@ namespace CrowdDefense.UI
 
             BuildTodaySection(ve);
             BuildCareerTotalsSection(ve);
+            BuildTowerStatsSection(ve);
             BuildLeaderboardSection(ve);
         }
 
@@ -89,6 +102,7 @@ namespace CrowdDefense.UI
             RefreshToday();
             RefreshCareerTotals(ls);
             PopulateRows();
+            PopulateTowerStats();
             PopulateLeaderboard();
         }
 
@@ -179,6 +193,68 @@ namespace CrowdDefense.UI
                 var lbl = new Label($"{i + 1}. {e.score:N0} pts — W{e.world} — {e.date}");
                 lbl.AddToClassList("lt-lb-entry");
                 _leaderboardContainer.Add(lbl);
+            }
+        }
+
+        private void BuildTowerStatsSection(VisualElement root)
+        {
+            var anchor = root.Q<VisualElement>("lt-tower-stats") ?? _root ?? root;
+
+            var section = new VisualElement();
+            section.name = "tower-stats-section";
+            section.AddToClassList("lt-section");
+
+            var header = new Label("Tours utilisees (top 5)");
+            header.AddToClassList("lt-section-header");
+            section.Add(header);
+
+            _towerStatsContainer = new VisualElement();
+            _towerStatsContainer.name = "lt-tower-rows";
+            section.Add(_towerStatsContainer);
+
+            anchor.Add(section);
+        }
+
+        private void PopulateTowerStats()
+        {
+            if (_towerStatsContainer == null) return;
+            _towerStatsContainer.Clear();
+
+            var entries = new List<(string type, int placed, int kills)>();
+            foreach (var t in AllTowerTypes)
+            {
+                int placed = LifetimeStats.GetTowerPlaced(t);
+                if (placed == 0) continue;
+                int kills = LifetimeStats.GetTowerKills(t);
+                entries.Add((t, placed, kills));
+            }
+
+            if (entries.Count == 0)
+            {
+                var empty = new Label("Aucune tour placee");
+                empty.AddToClassList("lt-lb-empty");
+                _towerStatsContainer.Add(empty);
+                return;
+            }
+
+            entries.Sort((a, b) => b.placed.CompareTo(a.placed));
+            int count = Math.Min(5, entries.Count);
+            for (int i = 0; i < count; i++)
+            {
+                var (type, placed, kills) = entries[i];
+                float avgKills = placed > 0 ? (float)kills / placed : 0f;
+                var row = new VisualElement();
+                row.AddToClassList("lt-stat-row");
+
+                var nameLabel = new Label($"{i + 1}. {type}");
+                nameLabel.AddToClassList("lt-stat-label");
+
+                var valLabel = new Label($"{placed} poses  |  {kills} kills  |  moy {avgKills:F1}");
+                valLabel.AddToClassList("lt-stat-value");
+
+                row.Add(nameLabel);
+                row.Add(valLabel);
+                _towerStatsContainer.Add(row);
             }
         }
 
