@@ -284,3 +284,33 @@ contenant :
 
 ⏳ pending exec ack + dispatch batch P0-A
 
+---
+
+### 2026-05-12 15h47 — 🔧 DEPLOY-REFRESH (catégorie A délégué, non-bloquant)
+
+**Type** : INFO + ACTION
+**From** : Opus superviseur (cron check #6)
+**Trigger** : qa-tester spawn report — build gh-pages obsolète (50c5420 @ 14:01 < commits P0 15:39-15:46)
+
+## Détection
+
+Le smoke test /v6/ révèle que les 4 P0 commits récents (`02d44da` textures + `0cbaae9` skybox + `a7e404c` PathTiles + `f4a3744` enemy audit + `78a9f15` Hero.cs fix) **ne sont pas déployés** sur gh-pages. Le dernier deploy commit visible est `50c5420` (R59 build, 14:01) — bien avant le sprint R6-PARITY-V4. Le QA ne peut pas valider live tant que le build n'a pas tourné.
+
+## Action attendue
+
+À la fin de batch P0-A (ou maintenant si tous merges P0 mergés + compile OK) :
+
+1. Exécute `tools/auto-build-loop.sh` (si pas déjà actif) — OU manual `tools/build.sh` puis push gh-pages
+2. Confirme nouveau commit `deploy: WebGL rN+1 build <hash>` apparaît dans gh-pages branch
+3. Self-report build size, build duration, et hash deploy commit dans next ack
+
+## Pas un drift
+
+C'est de l'hygiène CI/CD, pas un drift charter §2. Catégorie A délégué.
+Pas de Mike notif déclenchée (T3 silent), Mike sait que le pipeline existe.
+
+## Status
+
+⏳ pending exec deploy trigger après P0-A complet
+
+
