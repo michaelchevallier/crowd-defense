@@ -1088,7 +1088,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 172ce699d401411da586eeb370180e99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.Achievements
-  registry: {fileID: 0}
+  registry: {fileID: 11400000, guid: 333c3ff6495d4863879383b47f90bbec, type: 2}
 --- !u!1 &750000001
 GameObject:
   m_ObjectHideFlags: 0
@@ -1134,7 +1134,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.PlacementController
   selectedTowerType: {fileID: 11400000, guid: 110e01dec9bd64e3da3d98b312b1c6de, type: 2}
-  towerRegistry: {fileID: 0}
+  towerRegistry: {fileID: 11400000, guid: 3809652591d6e4875bf7676c91363b20, type: 2}
   towerPrefab: {fileID: 1000000000000001, guid: c1d2e3f4a5b6789012345678cdef0101, type: 3}
   projectilePrefab: {fileID: 2000000000000001, guid: d1e2f3a4b5c6789012345678def00202, type: 3}
 --- !u!1 &750000010
@@ -2088,7 +2088,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91f70863544064f2a9dc810dff8d58fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.UI.AchievementToastController
-  registry: {fileID: 0}
+  registry: {fileID: 11400000, guid: 333c3ff6495d4863879383b47f90bbec, type: 2}
 --- !u!114 &1881706286
 MonoBehaviour:
   m_ObjectHideFlags: 0

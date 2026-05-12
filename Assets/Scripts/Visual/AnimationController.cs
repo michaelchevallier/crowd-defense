@@ -31,6 +31,9 @@ namespace CrowdDefense.Visual
                 if (animator == null) return null;
             }
 
+            // Disable root motion to avoid sliding animations
+            animator.applyRootMotion = false;
+
             // meshRoot.name may be "Mesh_knight" — strip "Mesh_" prefix, try exact then lowercase
             string rawName = meshRoot.name;
             if (rawName.StartsWith("Mesh_", System.StringComparison.OrdinalIgnoreCase))
@@ -46,11 +49,9 @@ namespace CrowdDefense.Visual
             }
             else
             {
-#if UNITY_EDITOR
-                Debug.LogWarning(
+                Debug.LogError(
                     $"[AnimationController] Pas de controller pour '{rawName}' " +
                     $"à Resources/{k_ControllerBasePath} — run 'Tools/CrowdDefense/Build Animator Controllers'.");
-#endif
             }
 
             return animator;
