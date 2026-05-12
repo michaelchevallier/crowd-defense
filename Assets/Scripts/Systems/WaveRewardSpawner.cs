@@ -43,6 +43,16 @@ namespace CrowdDefense.Systems
         private void OnWaveCleared(int _waveIdx)
         {
             DespawnChest();
+
+            Vector3 castlePos = Castle.Instance != null
+                ? Castle.Instance.transform.position
+                : Vector3.zero;
+            Vector3 burstPos = castlePos + Vector3.up * 1.5f;
+
+            VfxPool.Instance?.SpawnConfetti(burstPos, 2.0f);
+            FloatingPopupController.Instance?.SpawnReward($"+{ChestGold}g coffre", burstPos, new Color(1f, 0.88f, 0.15f));
+            AudioController.Instance?.Play("chest_open", 0.9f);
+
             SpawnChest();
         }
 
