@@ -1,5 +1,6 @@
 #nullable enable
 using CrowdDefense.UI;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace CrowdDefense.Systems
@@ -52,10 +53,16 @@ namespace CrowdDefense.Systems
             Fade("Menu");
         }
 
-        public static void Fade(string sceneName)
+        public static void Fade(string sceneName, Color fadeColor = default, float fadeDur = 0.5f)
         {
             SceneTransition.EnsureExists();
-            SceneTransition.Instance?.LoadSceneFade(sceneName);
+            SceneTransition.Instance?.LoadSceneFade(sceneName, fadeColor, fadeDur);
         }
+
+        public static void FadeVictory(string sceneName)
+            => Fade(sceneName, new Color(1f, 0.84f, 0f), 0.8f);
+
+        public static void FadeDefeat(string sceneName)
+            => Fade(sceneName, Color.red, 1.2f);
     }
 }

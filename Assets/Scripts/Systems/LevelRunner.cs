@@ -391,11 +391,16 @@ namespace CrowdDefense.Systems
             ApplyTimeScale();
             OnSummaryReady?.Invoke(result);
 
-            // Fallback overlay: shown when LevelSummaryController is absent from scene.
             if (isVictory)
+            {
                 UI.EndScreenController.Instance?.ShowVictory(result);
+                LevelLoader.FadeVictory("Loader");
+            }
             else
+            {
                 UI.EndScreenController.Instance?.ShowDefeat(result);
+                LevelLoader.FadeDefeat("Loader");
+            }
         }
 
         // ── Wave event handlers ─────────────────────────────────────────────────

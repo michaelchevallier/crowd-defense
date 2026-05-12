@@ -172,16 +172,18 @@ namespace CrowdDefense.UI
             return L.Get($"tip.{idx}");
         }
 
-        public void LoadSceneFade(string sceneName)
+        public void LoadSceneFade(string sceneName, Color fadeColor = default, float fadeDur = 0.5f)
         {
+            if (fadeColor == default) fadeColor = Color.black;
             if (_isLoading) return;
             _isLoading = true;
-            StartCoroutine(FadeAndLoad(sceneName));
+            StartCoroutine(FadeAndLoad(sceneName, fadeColor, fadeDur));
         }
 
-        IEnumerator FadeAndLoad(string sceneName)
+        IEnumerator FadeAndLoad(string sceneName, Color fadeColor, float fadeDur)
         {
             _busy = true;
+            _overlay.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 0f);
 
             // Start async load immediately, hold activation
             _loadingOp = SceneManager.LoadSceneAsync(sceneName);
@@ -198,8 +200,8 @@ namespace CrowdDefense.UI
 
             bool showLoadingUi = _loadingOp.progress < 0.9f;
 
-            // Fade to black
-            yield return StartCoroutine(Fade(0f, 1f, FadeDuration));
+            // Fade to color
+            yield return StartCoroutine(Fade(0f, 1f, fadeDur));
 
             if (showLoadingUi)
             {
@@ -233,8 +235,9 @@ namespace CrowdDefense.UI
             _loadingOp.allowSceneActivation = true;
             _loadingOp = null;
 
-            // Fade out black overlay
+            // Fade out overlay, then restore to black for next default transition
             yield return StartCoroutine(Fade(1f, 0f, FadeDuration));
+            _overlay.color = Color.black;
             _busy = false;
             _isLoading = false;
         }
