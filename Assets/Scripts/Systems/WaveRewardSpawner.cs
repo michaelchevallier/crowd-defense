@@ -14,7 +14,8 @@ namespace CrowdDefense.Systems
     [DefaultExecutionOrder(-40)]
     public class WaveRewardSpawner : MonoSingleton<WaveRewardSpawner>
     {
-        private const int   ChestGold          = 100;
+        private const int   BaseChestGold      = 50;
+        private const int   WaveBonusGold      = 10;
         private const float AutoPickupRadius   = 1.5f;
         private const float SpawnScatter       = 2f;
         private const int   PerkOfferCount     = 3;
@@ -22,6 +23,7 @@ namespace CrowdDefense.Systems
         private GameObject? _activeChest;
         private Coroutine?  _sparkleLoop;
         private Canvas?     _pickerCanvas;
+        private int         _currentWaveIdx;
 
         protected override void OnAwakeSingleton()
         {
@@ -40,8 +42,9 @@ namespace CrowdDefense.Systems
                 WaveManager.Instance.OnWaveCleared -= OnWaveCleared;
         }
 
-        private void OnWaveCleared(int _waveIdx)
+        private void OnWaveCleared(int waveIdx)
         {
+            _currentWaveIdx = waveIdx;
             DespawnChest();
 
             Vector3 castlePos = Castle.Instance != null
@@ -49,12 +52,15 @@ namespace CrowdDefense.Systems
                 : Vector3.zero;
             Vector3 burstPos = castlePos + Vector3.up * 1.5f;
 
+            int gold = ChestGoldForWave(waveIdx);
             VfxPool.Instance?.SpawnConfetti(burstPos, 2.0f);
-            FloatingPopupController.Instance?.SpawnReward($"+{ChestGold}g coffre", burstPos, new Color(1f, 0.88f, 0.15f));
+            FloatingPopupController.Instance?.SpawnReward($"+{gold}g coffre (wave bonus)", burstPos, new Color(1f, 0.88f, 0.15f));
             AudioController.Instance?.Play("chest_open", 0.9f);
 
             SpawnChest();
         }
+
+        private static int ChestGoldForWave(int waveIdx) => BaseChestGold + WaveBonusGold * waveIdx;
 
         // ── Chest spawn / despawn ─────────────────────────────────────────────
 
@@ -144,10 +150,11 @@ namespace CrowdDefense.Systems
 
         // ── Gold grant ────────────────────────────────────────────────────────
 
-        private static void GrantGold(Vector3 worldPos)
+        private void GrantGold(Vector3 worldPos)
         {
-            Economy.Instance?.AddGold(ChestGold);
-            FloatingPopupController.Instance?.SpawnCoin(ChestGold, worldPos + Vector3.up);
+            int gold = ChestGoldForWave(_currentWaveIdx);
+            Economy.Instance?.AddGold(gold);
+            FloatingPopupController.Instance?.SpawnCoin(gold, worldPos + Vector3.up);
             VfxPool.Instance?.SpawnCoinBurst(worldPos + Vector3.up * 0.5f);
             AudioController.Instance?.Play("coin_pickup", 0.8f);
         }
