@@ -3,6 +3,7 @@
          editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
     <Style src="PauseMenu.uss" />
     <ui:VisualElement name="pause-root" class="pause-root hidden">
+        <ui:VisualElement name="pause-overlay" class="pause-overlay" />
         <ui:VisualElement class="pause-panel">
             <ui:Label text="Crowd Defense" name="logo-title" class="logo-title" />
             <ui:Label text="PAUSE" name="pause-title" class="pause-title" />
