@@ -28,6 +28,11 @@ namespace CrowdDefense.UI
         private Label? _careerGoldValue;
         private Label? _careerTimeValue;
 
+        // Today section
+        private Label? _todayRunsValue;
+        private Label? _todayKillsValue;
+        private Label? _todayTimeValue;
+
         private void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -49,6 +54,7 @@ namespace CrowdDefense.UI
             var closeBtn = ve.Q<Button>("lt-close-btn");
             if (closeBtn != null) closeBtn.clicked += Hide;
 
+            BuildTodaySection(ve);
             BuildCareerTotalsSection(ve);
             BuildLeaderboardSection(ve);
         }
@@ -80,9 +86,17 @@ namespace CrowdDefense.UI
             if (_winsValue  != null) _winsValue.text  = ls.LevelsWon.ToString("N0");
             if (_achValue   != null) _achValue.text   = ls.AchievementsUnlocked.ToString("N0");
 
+            RefreshToday();
             RefreshCareerTotals(ls);
             PopulateRows();
             PopulateLeaderboard();
+        }
+
+        private void RefreshToday()
+        {
+            if (_todayRunsValue  != null) _todayRunsValue.text  = LifetimeStats.TodayRuns.ToString("N0");
+            if (_todayKillsValue != null) _todayKillsValue.text = LifetimeStats.TodayKills.ToString("N0");
+            if (_todayTimeValue  != null) _todayTimeValue.text  = FormatTime(LifetimeStats.TodayTime);
         }
 
         private void RefreshCareerTotals(LifetimeStats ls)
@@ -202,6 +216,25 @@ namespace CrowdDefense.UI
             int m     = (total % 3600) / 60;
             int s     = total % 60;
             return $"{h:D2}:{m:D2}:{s:D2}";
+        }
+
+        private void BuildTodaySection(VisualElement root)
+        {
+            var anchor = root.Q<VisualElement>("lt-today") ?? _root ?? root;
+
+            var section = new VisualElement();
+            section.name = "today-section";
+            section.AddToClassList("lt-section");
+
+            var header = new Label("Aujourd'hui");
+            header.AddToClassList("lt-section-header");
+            section.Add(header);
+
+            _todayRunsValue  = AddStatRow(section, "Parties jouees", "lt-today-runs");
+            _todayKillsValue = AddStatRow(section, "Kills",          "lt-today-kills");
+            _todayTimeValue  = AddStatRow(section, "Temps de jeu",   "lt-today-time");
+
+            anchor.Add(section);
         }
 
         private void BuildCareerTotalsSection(VisualElement root)

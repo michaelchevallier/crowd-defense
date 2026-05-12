@@ -9,13 +9,59 @@ namespace CrowdDefense.Systems
     [DefaultExecutionOrder(-90)]
     public class LifetimeStats : MonoSingleton<LifetimeStats>
     {
-        private const string KeyKills      = "total_kills_lifetime_v1";
-        private const string KeyGold       = "total_gold_lifetime_v1";
-        private const string KeyTime       = "total_time_played_seconds_v1";
-        private const string KeyWins       = "levels_won_lifetime_v1";
-        private const string KeyRuns       = "total_runs_lifetime_v1";
+        private const string KeyKills       = "total_kills_lifetime_v1";
+        private const string KeyGold        = "total_gold_lifetime_v1";
+        private const string KeyTime        = "total_time_played_seconds_v1";
+        private const string KeyWins        = "levels_won_lifetime_v1";
+        private const string KeyRuns        = "total_runs_lifetime_v1";
         private const string KeyLeaderboard = "cd.leaderboard.scores";
         private const int    MaxLeaderboard = 5;
+
+        // Daily tracking — reset when date changes
+        private const string KeyTodayDate  = "cd.today.date";
+        private const string KeyTodayRuns  = "cd.today.runs";
+        private const string KeyTodayKills = "cd.today.kills";
+        private const string KeyTodayTime  = "cd.today.time";
+
+        private static string TodayString() => DateTime.Today.ToString("yyyy-MM-dd");
+
+        private static void EnsureTodayReset()
+        {
+            var stored = PlayerPrefs.GetString(KeyTodayDate, "");
+            if (stored == TodayString()) return;
+            PlayerPrefs.SetString(KeyTodayDate,  TodayString());
+            PlayerPrefs.SetInt(KeyTodayRuns,  0);
+            PlayerPrefs.SetInt(KeyTodayKills, 0);
+            PlayerPrefs.SetFloat(KeyTodayTime, 0f);
+            PlayerPrefs.Save();
+        }
+
+        public static int   TodayRuns  { get { EnsureTodayReset(); return PlayerPrefs.GetInt(KeyTodayRuns, 0); } }
+        public static int   TodayKills { get { EnsureTodayReset(); return PlayerPrefs.GetInt(KeyTodayKills, 0); } }
+        public static float TodayTime  { get { EnsureTodayReset(); return PlayerPrefs.GetFloat(KeyTodayTime, 0f); } }
+
+        public static void AddTodayRun()
+        {
+            EnsureTodayReset();
+            PlayerPrefs.SetInt(KeyTodayRuns, TodayRuns + 1);
+            PlayerPrefs.Save();
+        }
+
+        public static void AddTodayKills(int n)
+        {
+            if (n <= 0) return;
+            EnsureTodayReset();
+            PlayerPrefs.SetInt(KeyTodayKills, TodayKills + n);
+            PlayerPrefs.Save();
+        }
+
+        public static void AddTodayTime(float s)
+        {
+            if (s <= 0f) return;
+            EnsureTodayReset();
+            PlayerPrefs.SetFloat(KeyTodayTime, TodayTime + s);
+            PlayerPrefs.Save();
+        }
 
         [Serializable]
         public class ScoreEntry
