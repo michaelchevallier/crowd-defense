@@ -68,6 +68,7 @@ MonoBehaviour:
       mul: 0
       durMs: 0
     filterPierceOrAoe: 0
+  damageType: 1
   assetKey: tower_mage
   bodyColor: {r: 0.41568628, g: 0.22745098, b: 0.627451, a: 1}
   projectileColor: {r: 0.627451, g: 0.3137255, b: 1, a: 1}

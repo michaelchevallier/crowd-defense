@@ -68,6 +68,7 @@ MonoBehaviour:
       mul: 0
       durMs: 0
     filterPierceOrAoe: 0
+  damageType: 2
   assetKey: tower_frost
   bodyColor: {r: 0.5333334, g: 0.8, b: 0.9333334, a: 1}
   projectileColor: {r: 0.7529412, g: 0.9098039, b: 1, a: 1}

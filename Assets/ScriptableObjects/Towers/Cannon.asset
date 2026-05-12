@@ -68,6 +68,7 @@ MonoBehaviour:
       mul: 0
       durMs: 0
     filterPierceOrAoe: 0
+  damageType: 3
   assetKey: tower_cannon
   bodyColor: {r: 0.2901961, g: 0.2275, b: 0.1647059, a: 1}
   projectileColor: {r: 1, g: 0.45882353, b: 0.1882353, a: 1}

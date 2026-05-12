@@ -23,6 +23,8 @@ namespace CrowdDefense.UI
         private const string KLocale = "cd.locale";
         private const string KGameSpeed = "cd.gameplay.speed";
         private const string KAutoPauseOnBlur = "cd.gameplay.auto_pause_blur";
+        private const string KShowDamageIcons = "cd.gfx.damage_icons";
+        private const string KMusicPulse = "cd.gfx.music_pulse_v1";
 
         public event Action? OnSettingsChanged;
 
@@ -42,6 +44,8 @@ namespace CrowdDefense.UI
         private string _locale = "en";
         private int _gameSpeed = 1;
         private bool _autoPauseOnBlur = true;
+        private bool _showDamageIcons;
+        private bool _musicPulseEnabled;
 
         public float MasterVolume
         {
@@ -139,6 +143,18 @@ namespace CrowdDefense.UI
             set { if (_autoPauseOnBlur == value) return; _autoPauseOnBlur = value; Save(); Notify(); }
         }
 
+        public bool ShowDamageIcons
+        {
+            get => _showDamageIcons;
+            set { if (_showDamageIcons == value) return; _showDamageIcons = value; Save(); Notify(); }
+        }
+
+        public bool MusicPulseEnabled
+        {
+            get => _musicPulseEnabled;
+            set { if (_musicPulseEnabled == value) return; _musicPulseEnabled = value; Save(); Notify(); }
+        }
+
         protected override void OnAwakeSingleton()
         {
             Load();
@@ -164,6 +180,8 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetString(KLocale, _locale);
             PlayerPrefs.SetInt(KGameSpeed, _gameSpeed);
             PlayerPrefs.SetInt(KAutoPauseOnBlur, _autoPauseOnBlur ? 1 : 0);
+            PlayerPrefs.SetInt(KShowDamageIcons, _showDamageIcons ? 1 : 0);
+            PlayerPrefs.SetInt(KMusicPulse, _musicPulseEnabled ? 1 : 0);
             PlayerPrefs.Save();
         }
 
@@ -185,6 +203,8 @@ namespace CrowdDefense.UI
             _locale = PlayerPrefs.GetString(KLocale, "en");
             _gameSpeed = PlayerPrefs.GetInt(KGameSpeed, 1);
             _autoPauseOnBlur = PlayerPrefs.GetInt(KAutoPauseOnBlur, 1) == 1;
+            _showDamageIcons = PlayerPrefs.GetInt(KShowDamageIcons, 0) == 1;
+            _musicPulseEnabled = PlayerPrefs.GetInt(KMusicPulse, 0) == 1;
         }
 
         private void ApplyAudio()

@@ -257,6 +257,9 @@ namespace CrowdDefense.Entities
         // AimLine : thin red laser tower → target (togglable via PlayerPrefs "show_aim_lines_v1")
         private LineRenderer? _aimLine;
 
+        // Damage type icon — small coloured quad above tower base.
+        private GameObject? _damageIconQuad;
+
         public void Init(TowerType type, GameObject? projPrefab)
         {
             cfg = type;
@@ -333,6 +336,7 @@ namespace CrowdDefense.Entities
             BuildAimLine();
             BuildAffordableHighlight(type.Range);
             BuildClusterHighlight();
+            BuildDamageIcon(type.DamageType);
         }
 
         /// <summary>
@@ -976,6 +980,45 @@ namespace CrowdDefense.Entities
             go.SetActive(false);
         }
 
+        private static Color DamageTypeColor(DamageType dt) => dt switch
+        {
+            DamageType.Physical => new Color(0.75f, 0.75f, 0.75f), // silver
+            DamageType.Magic    => new Color(0.60f, 0.20f, 0.90f), // violet
+            DamageType.Frost    => new Color(0.20f, 0.85f, 1.00f), // cyan
+            DamageType.Fire     => new Color(1.00f, 0.35f, 0.05f), // red-orange
+            _                   => Color.white,
+        };
+
+        private void BuildDamageIcon(DamageType dt)
+        {
+            if (_damageIconQuad != null) Destroy(_damageIconQuad);
+            _damageIconQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            _damageIconQuad.name = "DamageIcon";
+            // Remove collider — decorative only.
+            Destroy(_damageIconQuad.GetComponent<Collider>());
+            var t = _damageIconQuad.transform;
+            t.SetParent(transform, worldPositionStays: false);
+            t.localPosition = new Vector3(0f, 0.55f, 0f);
+            t.localRotation = Quaternion.Euler(90f, 0f, 0f); // face camera (top-down)
+            t.localScale    = new Vector3(0.15f, 0.15f, 0.15f);
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.color = DamageTypeColor(dt);
+            _damageIconQuad.GetComponent<MeshRenderer>().material = mat;
+            var settings = CrowdDefense.UI.SettingsRegistry.Instance;
+            bool show = settings != null && settings.ShowDamageIcons;
+            _damageIconQuad.SetActive(show);
+            if (settings != null)
+                settings.OnSettingsChanged += RefreshDamageIconVisibility;
+        }
+
+        private void RefreshDamageIconVisibility()
+        {
+            if (_damageIconQuad == null) return;
+            var settings = CrowdDefense.UI.SettingsRegistry.Instance;
+            bool show = settings != null && settings.ShowDamageIcons;
+            _damageIconQuad.SetActive(show);
+        }
+
         private void TickAimLine()
         {
             if (_aimLine == null) return;
@@ -1557,6 +1600,12 @@ namespace CrowdDefense.Entities
             _barrelTip = _meshHead != null
                 ? FindChildNamed(_meshHead.transform, "BarrelTip")?.transform
                 : FindChildNamed(_meshChild.transform, "BarrelTip")?.transform;
+        }
+
+        private void OnDestroy()
+        {
+            var settings = CrowdDefense.UI.SettingsRegistry.Instance;
+            if (settings != null) settings.OnSettingsChanged -= RefreshDamageIconVisibility;
         }
 
 #if UNITY_EDITOR

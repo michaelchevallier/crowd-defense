@@ -7,6 +7,8 @@ namespace CrowdDefense.Data
 {
     public enum TowerBehavior { Attack, Cluster, Slow, BuffAura, CoinPull }
 
+    public enum DamageType { Physical, Magic, Frost, Fire }
+
     public enum SynergyType { Aura, CrossEffect, ApplyToEnemy, Passive }
 
     public enum TowerId
@@ -167,6 +169,9 @@ namespace CrowdDefense.Data
         [Header("Synergies")]
         [SerializeField] private List<SynergyDef> synergies = new();
 
+        [Header("Damage Type")]
+        [SerializeField] private DamageType damageType = DamageType.Physical;
+
         [Header("Visual")]
         [SerializeField] private string assetKey = "";
         [SerializeField] private Color bodyColor = Color.blue;
@@ -199,6 +204,7 @@ namespace CrowdDefense.Data
         public bool HasArmorBreak => hasArmorBreak;
         public ArmorBreakDef ArmorBreak => armorBreak;
         public IReadOnlyList<SynergyDef> Synergies => synergies;
+        public DamageType DamageType => damageType;
         public string AssetKey => assetKey;
         public Color BodyColor => bodyColor;
         public Color ProjectileColor => projectileColor;
