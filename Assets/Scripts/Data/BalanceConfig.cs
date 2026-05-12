@@ -94,6 +94,7 @@ namespace CrowdDefense.Data
             6 => 1.15f,
             7 => 1.20f,
             8 => 1.50f,
+            9 => 1.30f,
             _ => 1.00f,
         };
 
