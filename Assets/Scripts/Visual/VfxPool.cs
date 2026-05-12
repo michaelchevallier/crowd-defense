@@ -36,6 +36,7 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? fireBreathPrefab;
         [SerializeField] private GameObject? muzzleFlashPrefab;
         [SerializeField] private GameObject? upgradeBurstPrefab;
+        [SerializeField] private GameObject? sparkPrefab;
 
         private ObjectPool<ParticleSystem>? _impactPool;
         private ObjectPool<ParticleSystem>? _deathPool;
@@ -49,6 +50,7 @@ namespace CrowdDefense.Visual
         private ObjectPool<ParticleSystem>? _fireBreathPool;
         private ObjectPool<ParticleSystem>? _muzzleFlashPool;
         private ObjectPool<ParticleSystem>? _upgradeBurstPool;
+        private ObjectPool<ParticleSystem>? _sparkPool;
 
         private Transform? _root;
         private Material? _additiveMat;
@@ -71,6 +73,7 @@ namespace CrowdDefense.Visual
             fireBreathPrefab ??= BuildProceduralPrefab("FireBreath", BuildFireBreathModule);
             muzzleFlashPrefab    ??= BuildProceduralPrefab("MuzzleFlash",    BuildMuzzleFlashModule);
             upgradeBurstPrefab   ??= BuildProceduralPrefab("UpgradeBurst",   BuildUpgradeBurstModule);
+            sparkPrefab          ??= BuildProceduralPrefab("Spark",          BuildSparkModule);
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
@@ -84,6 +87,7 @@ namespace CrowdDefense.Visual
             _fireBreathPool  = BuildPool(fireBreathPrefab,  "FireBreath",  DefaultCapacity);
             _muzzleFlashPool  = BuildPool(muzzleFlashPrefab,  "MuzzleFlash",  DefaultCapacity);
             _upgradeBurstPool = BuildPool(upgradeBurstPrefab, "UpgradeBurst", DefaultCapacity);
+            _sparkPool        = BuildPool(sparkPrefab,        "Spark",        DefaultCapacity);
 
             PreWarm();
         }
@@ -256,6 +260,16 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _muzzleFlashPool);
         }
 
+        // Impact spark burst — 8 particles, cone outward 0.5 unit, lifetime 0.2s, tinted by element.
+        public void SpawnSpark(Vector3 worldPos, Color tint)
+        {
+            if (!IsVfxEnabled() || _sparkPool == null) return;
+            var ps = _sparkPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+            ApplyTint(ps, tint);
+            PlayAndAutoRelease(ps, _sparkPool);
+        }
+
         // Radial burst on tower upgrade. level: 2=cyan, 3=rainbow gradient.
         public void SpawnUpgradeBurst(Vector3 pos, int level)
         {
@@ -419,6 +433,7 @@ namespace CrowdDefense.Visual
             PreWarmPool(_fireBreathPool,  DefaultCapacity);
             PreWarmPool(_muzzleFlashPool,  DefaultCapacity);
             PreWarmPool(_upgradeBurstPool, DefaultCapacity);
+            PreWarmPool(_sparkPool,        DefaultCapacity);
         }
 
         private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
@@ -815,6 +830,34 @@ namespace CrowdDefense.Visual
             shape.enabled   = true;
             shape.shapeType = ParticleSystemShapeType.Sphere;
             shape.radius    = 0.25f;
+
+            SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
+        }
+
+        // Spark burst — 8 particles, cone outward, speed 0.5 unit/s, lifetime 0.2s.
+        // Tint applied by SpawnSpark caller (element color).
+        private static void BuildSparkModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.15f, 0.22f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(0.3f, 0.7f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
+            main.startColor     = Color.white;
+            main.maxParticles   = 64;
+            main.duration       = 0.05f;
+            main.gravityModifier = 0.4f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 8, 8, 1, 0.01f) });
+
+            var shape = ps.shape;
+            shape.enabled         = true;
+            shape.shapeType       = ParticleSystemShapeType.Cone;
+            shape.angle           = 45f;
+            shape.radius          = 0.05f;
+            shape.radiusThickness = 1f;
 
             SetSizeOverLifetimeFade(ps);
             SetColorAlphaFade(ps);

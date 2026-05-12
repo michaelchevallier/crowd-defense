@@ -58,6 +58,7 @@ namespace CrowdDefense.Entities
 
         // Source tower — used to apply synergy on-hit effects (slow / freeze)
         private Tower? sourceTower;
+        private Color _projectileColor = Color.white;
 
         // Parabolic arc (Cannon)
         private bool parabolic;
@@ -92,6 +93,7 @@ namespace CrowdDefense.Entities
             this.damage = damage;
             this.speed = speed;
             this.sourceTower = source;
+            _projectileColor = color;
             lifetimeSec = 5f;
 
             piercesRemaining = pierce;
@@ -166,6 +168,8 @@ namespace CrowdDefense.Entities
                 ApplyAoeDamage();
             else if (!alreadyHit.Contains(target))
                 target.TakeDamage(damage, sourceTower);
+
+            Visual.VfxPool.Instance?.SpawnSpark(transform.position, _projectileColor);
 
             ApplyOnHitEffects(target);
 
