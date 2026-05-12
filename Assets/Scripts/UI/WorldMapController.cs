@@ -117,7 +117,7 @@ namespace CrowdDefense.UI
             if (_levelGrid == null)
             {
 #if UNITY_EDITOR
-                Debug.LogError("[WorldMapController] worldmap-level-grid not found in UXML.");
+                Debug.LogWarning("[WorldMapController] worldmap-level-grid not found in UXML (controller probably needs separate UIDocument with WorldMap.uxml — architectural fix TODO)");
 #endif
                 return;
             }

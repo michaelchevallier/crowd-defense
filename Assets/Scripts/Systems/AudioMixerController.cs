@@ -17,6 +17,7 @@ namespace CrowdDefense.Systems
         private const float MaxDb = 0f;
 
         [SerializeField] private AudioMixer? mixer;
+        private bool _warnedNoMixer;
 
         [Header("Group references (assign Inspector)")]
         [SerializeField] private AudioMixerGroup? masterGroup;
@@ -24,6 +25,22 @@ namespace CrowdDefense.Systems
         [SerializeField] private AudioMixerGroup? musicGroup;
         [SerializeField] private AudioMixerGroup? ambientGroup;
         [SerializeField] private AudioMixerGroup? uiGroup;
+
+        protected override void OnAwakeSingleton()
+        {
+            if (mixer == null)
+            {
+                // Try Resources.Load fallback paths
+                mixer = Resources.Load<AudioMixer>("Audio/MainAudioMixer")
+                     ?? Resources.Load<AudioMixer>("MainAudioMixer")
+                     ?? Resources.Load<AudioMixer>("Audio/AudioMixer");
+            }
+            if (mixer == null && !_warnedNoMixer)
+            {
+                Debug.LogWarning("[AudioMixerController] No AudioMixer found in Inspector or Resources/ — volume controls disabled.");
+                _warnedNoMixer = true;
+            }
+        }
 
         /// <summary>
         /// Sets the exposed parameter "<paramref name="groupName"/>_Volume" on the mixer

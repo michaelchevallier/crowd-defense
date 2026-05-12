@@ -17,6 +17,13 @@ namespace CrowdDefense.Common
             get
             {
                 if (_instance != null) return _instance;
+
+                // Don't auto-create during scene unload — avoid OnDestroy cascade
+#if UNITY_EDITOR
+                if (!UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode) return null;
+#endif
+                if (!Application.isPlaying) return null;
+
                 _instance = Object.FindFirstObjectByType<T>();
                 if (_instance != null) return _instance;
 

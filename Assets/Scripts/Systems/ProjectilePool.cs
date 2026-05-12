@@ -13,6 +13,7 @@ namespace CrowdDefense.Systems
         [SerializeField] private GameObject? projectilePrefab;
 
         private ObjectPool<Projectile>? pool;
+        private bool _warnedNullPrefab;
 
         protected override void OnAwakeSingleton()
         {
@@ -45,7 +46,11 @@ namespace CrowdDefense.Systems
             else
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning("[ProjectilePool] projectilePrefab is null — creating primitive sphere fallback");
+                if (!_warnedNullPrefab)
+                {
+                    Debug.LogWarning("[ProjectilePool] projectilePrefab is null — creating primitive sphere fallback (suppressing future occurrences)");
+                    _warnedNullPrefab = true;
+                }
 #endif
                 go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 go.transform.localScale = Vector3.one * 0.18f;
