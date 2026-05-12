@@ -26,6 +26,7 @@ namespace CrowdDefense.Entities
         private TowerType? cfg;
         private float cooldown;
         private Enemy? target;
+        private Enemy? _prevAimTarget; // snap detection : target switch
 
         // Animator configuré par AnimationController.SetupAnimator au Init.
         private Animator? _animator;
@@ -1437,6 +1438,8 @@ namespace CrowdDefense.Entities
         // ── Head Aim ──────────────────────────────────────────────────────────
 
         // Smoothly rotates _meshHead toward the current target each frame (Y-axis only).
+        // On target switch : snaps instantly for quick reaction.
+        // Boss towers (L3) rotate at 12 deg/sec ; others at 8 deg/sec.
         private void TickHeadAim()
         {
             if (_meshHead == null || target == null || target.IsDead) return;
@@ -1444,8 +1447,19 @@ namespace CrowdDefense.Entities
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.001f) return;
             Quaternion desired = Quaternion.LookRotation(dir);
-            _meshHead.transform.rotation = Quaternion.Slerp(
-                _meshHead.transform.rotation, desired, Time.deltaTime * 10f);
+
+            bool switched = !ReferenceEquals(target, _prevAimTarget);
+            _prevAimTarget = target;
+
+            if (switched)
+            {
+                _meshHead.transform.rotation = desired;
+                return;
+            }
+
+            float degsPerSec = UpgradeLevel >= 3 ? 12f : 8f;
+            _meshHead.transform.rotation = Quaternion.RotateTowards(
+                _meshHead.transform.rotation, desired, degsPerSec * Time.deltaTime);
         }
 
         // Lerp head -0.5 local-Z then back to 0 for a snap recoil feel.
