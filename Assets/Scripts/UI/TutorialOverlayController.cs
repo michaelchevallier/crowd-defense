@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 using CrowdDefense.Systems;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.UI
 {
@@ -82,7 +83,16 @@ namespace CrowdDefense.UI
 
         // ── Tutorial step events ───────────────────────────────────────────────
 
-        private void OnStepChanged(TutorialStep _) => SyncToCurrentStep();
+        private void OnStepChanged(TutorialStep step)
+        {
+            SyncToCurrentStep();
+
+            if ((int)step > 0 && step != TutorialStep.Done)
+            {
+                VfxPool.Instance?.SpawnConfetti(ScreenCentreWorldPos(), 0.5f);
+                AudioController.Instance?.Play("tutorial_progress", 0.7f);
+            }
+        }
 
         private void OnTutorialCompleted()
         {
@@ -100,6 +110,10 @@ namespace CrowdDefense.UI
             if (_arrow != null)
                 _arrow.style.display = DisplayStyle.None;
             Show();
+
+            VfxPool.Instance?.SpawnConfetti(ScreenCentreWorldPos(), 2f);
+            AudioController.Instance?.Play("tutorial_complete", 1f);
+
             yield return new WaitForSeconds(3f);
             Hide();
         }
@@ -375,6 +389,13 @@ namespace CrowdDefense.UI
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
+
+        private static Vector3 ScreenCentreWorldPos()
+        {
+            var cam = Camera.main;
+            if (cam == null) return Vector3.zero;
+            return cam.ViewportToWorldPoint(new Vector3(0.5f, 0.7f, cam.nearClipPlane + 5f));
+        }
 
         private static string HintLocKey(string key) => key switch
         {
