@@ -51,7 +51,8 @@ namespace CrowdDefense.Entities
         // ── Footstep dust VFX ─────────────────────────────────────────────────
         private float   _lastFootstepTime;
         private Vector3 _lastPos;
-        private static readonly Color FootstepDustTint = new(0.7f, 0.65f, 0.55f, 0.6f);
+        private Color   _footstepDustTint  = new(0.7f, 0.65f, 0.55f, 0.6f);
+        private string  _footstepAudioKey  = "footstep_dirt";
 
         // ── Idle dance ────────────────────────────────────────────────────────
         private float _idleSeconds;
@@ -1191,12 +1192,31 @@ namespace CrowdDefense.Entities
                 {
                     int bursts = running ? 2 : 1;
                     for (int i = 0; i < bursts; i++)
-                        vfx.SpawnSpark(spawnPos, FootstepDustTint);
+                        vfx.SpawnSpark(spawnPos, _footstepDustTint);
                 }
 
-                AudioController.Instance?.PlayPitched("footstep_dirt", 0.2f,
+                AudioController.Instance?.PlayPitched(_footstepAudioKey, 0.2f,
                     UnityEngine.Random.Range(0.9f, 1.1f));
             }
+        }
+
+        private void OnLevelStarted(LevelData data, Bounds _) =>
+            UpdateFootstepDustTheme(data.LevelTheme);
+
+        // No allocations — called once per level load, not per frame.
+        private void UpdateFootstepDustTheme(LevelTheme theme)
+        {
+            (_footstepDustTint, _footstepAudioKey) = theme switch
+            {
+                LevelTheme.Foret      => (new Color(0.5f, 0.6f,  0.3f,  0.6f), "footstep_grass"),
+                LevelTheme.Desert     => (new Color(0.95f, 0.85f, 0.6f,  0.7f), "footstep_sand"),
+                LevelTheme.Volcan     => (new Color(0.4f,  0.3f,  0.25f, 0.7f), "footstep_lava"),
+                LevelTheme.Submarin   => (new Color(0.3f,  0.5f,  0.6f,  0.6f), "footstep_water"),
+                LevelTheme.Medieval   => (new Color(0.55f, 0.5f,  0.4f,  0.6f), "footstep_stone"),
+                LevelTheme.Apocalypse => (new Color(0.4f,  0.38f, 0.35f, 0.7f), "footstep_dirt"),
+                LevelTheme.Cyberpunk  => (new Color(0.2f,  0.25f, 0.35f, 0.6f), "footstep_stone"),
+                _                     => (new Color(0.7f,  0.65f, 0.55f, 0.6f), "footstep_dirt"),
+            };
         }
 
         // Returns false if the world position falls on a non-walkable blocking cell (W or L)
@@ -1640,7 +1660,8 @@ namespace CrowdDefense.Entities
         private void Awake()
         {
             Current = this;
-            Enemy.OnDeathStatic += OnEnemyKilled;
+            Enemy.OnDeathStatic      += OnEnemyKilled;
+            LevelEvents.OnLevelStart += OnLevelStarted;
         }
 
         private void OnEnemyKilled(Enemy enemy, bool isBoss)
@@ -1706,7 +1727,8 @@ namespace CrowdDefense.Entities
         // ── OnDestroy — return dangling projectiles to pool ──────────────────
         private void OnDestroy()
         {
-            Enemy.OnDeathStatic -= OnEnemyKilled;
+            Enemy.OnDeathStatic      -= OnEnemyKilled;
+            LevelEvents.OnLevelStart -= OnLevelStarted;
             if (_respawnRoutine != null) StopCoroutine(_respawnRoutine);
             if (Current == this) Current = null;
             for (int i = _projectiles.Count - 1; i >= 0; i--)
