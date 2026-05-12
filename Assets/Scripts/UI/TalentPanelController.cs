@@ -70,15 +70,15 @@ namespace CrowdDefense.UI
 
         public void Show()
         {
-            if (_root == null) return;
-            _root.style.display = DisplayStyle.Flex;
+            if (Root == null) return;
+            Root.style.display = DisplayStyle.Flex;
             Refresh();
         }
 
         public void Hide()
         {
-            if (_root == null) return;
-            _root.style.display = DisplayStyle.None;
+            if (Root == null) return;
+            Root.style.display = DisplayStyle.None;
         }
 
         private void OnUpgrade(string key)

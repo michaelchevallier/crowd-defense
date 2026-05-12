@@ -95,16 +95,16 @@ namespace CrowdDefense.UI
         private void Sync()
         {
             bool paused = LevelRunner.Instance?.IsPaused ?? false;
-            if (_root == null) return;
+            if (Root == null) return;
             if (paused)
             {
-                _root.RemoveFromClassList("hidden");
+                Root.RemoveFromClassList("hidden");
                 AudioController.Instance?.PlayPitched("menu_open_woosh", volMul: 0.4f, pitch: 1.0f);
                 FadeOverlay(OverlayTargetAlpha, FadeInDuration);
             }
             else
             {
-                FadeOverlay(0f, FadeOutDuration, onComplete: () => _root.AddToClassList("hidden"));
+                FadeOverlay(0f, FadeOutDuration, onComplete: () => Root.AddToClassList("hidden"));
             }
             IsMenuOpen = paused;
         }

@@ -43,26 +43,26 @@ namespace CrowdDefense.UI
             if (btnBestiary != null)
                 btnBestiary.clicked += () => BestiaryPanel.Instance?.Show();
 
-            var btnAchievements = root.Q<Button>("btn-open-achievements");
+            var btnAchievements = Root.Q<Button>("btn-open-achievements");
             if (btnAchievements != null)
                 btnAchievements.clicked += () => AchievementsPanel.Instance?.Show();
 
-            var btnCredits = root.Q<Button>("btn-open-credits");
+            var btnCredits = Root.Q<Button>("btn-open-credits");
             if (btnCredits != null)
                 btnCredits.clicked += () => CreditsScreen.Instance?.Show();
 
-            var btnStats = root.Q<Button>("btn-open-stats");
+            var btnStats = Root.Q<Button>("btn-open-stats");
             if (btnStats != null)
                 btnStats.clicked += () => StatsLifetimePanel.Instance?.Show();
 
-            var versionFooter = root.Q<Label>("menu-version-footer");
+            var versionFooter = Root.Q<Label>("menu-version-footer");
             if (versionFooter != null)
             {
                 string buildHash = string.IsNullOrEmpty(Application.version) ? "dev" : Application.version;
                 versionFooter.text = $"Crowd Defense v6.0 — Unity {Application.unityVersion} — {buildHash}";
             }
 
-            var grid = root.Q<VisualElement>("level-grid");
+            var grid = Root.Q<VisualElement>("level-grid");
             if (grid == null)
             {
 #if UNITY_EDITOR
@@ -105,7 +105,7 @@ namespace CrowdDefense.UI
                         LevelData? levelData = registry?.FindById(id);
                         if (levelData != null)
                         {
-                            btn.RegisterCallback<ClickEvent>(_ => ShowPreviewModal(root, id, levelData));
+                            btn.RegisterCallback<ClickEvent>(_ => ShowPreviewModal(Root, id, levelData));
                             AttachMiniMapPreview(btn, levelData);
                         }
                         else
