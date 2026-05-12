@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using CrowdDefense.Common;
+using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using UnityEngine;
 
@@ -119,7 +120,28 @@ namespace CrowdDefense.Entities
                 EnableTrail();
             else
                 DisableTrail();
+
+            ApplyTrailSynergyTint(source);
         }
+
+        private void ApplyTrailSynergyTint(Tower? source)
+        {
+            if (_trail == null) return;
+            Color tint = (source != null && source._synergyActive && source.Config != null)
+                ? SynergyElementColor(source.Config.DamageType)
+                : new Color(1f, 0.7f, 0.3f, 1f);
+            _trail.startColor = new Color(tint.r, tint.g, tint.b, 0.8f);
+            _trail.endColor   = new Color(tint.r, tint.g, tint.b, 0f);
+        }
+
+        private static Color SynergyElementColor(DamageType dt) => dt switch
+        {
+            DamageType.Fire     => new Color(1.00f, 0.35f, 0.05f),
+            DamageType.Frost    => new Color(0.20f, 0.85f, 1.00f),
+            DamageType.Magic    => new Color(0.60f, 0.20f, 0.90f),
+            DamageType.Physical => new Color(0.90f, 0.85f, 0.60f),
+            _                   => new Color(1f,    0.7f,  0.3f),
+        };
 
         private void Update()
         {
