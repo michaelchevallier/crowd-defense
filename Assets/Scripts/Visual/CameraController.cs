@@ -320,8 +320,13 @@ namespace CrowdDefense.Visual
         }
 
         // ── Screen shake ─────────────────────────────────────────────────────
-        public void Shake(float intensity, float duration) =>
-            StartCoroutine(ShakeRoutine(intensity, duration));
+        private Coroutine? _shakeCoroutine;
+
+        public void Shake(float intensity, float duration)
+        {
+            if (_shakeCoroutine != null) StopCoroutine(_shakeCoroutine);
+            _shakeCoroutine = StartCoroutine(ShakeRoutine(intensity, duration));
+        }
 
         private IEnumerator ShakeRoutine(float intensity, float duration)
         {
@@ -333,6 +338,7 @@ namespace CrowdDefense.Visual
                 yield return null;
             }
             transform.position = origin;
+            _shakeCoroutine = null;
         }
 
         // ── Reset to default (R key) ──────────────────────────────────────────
