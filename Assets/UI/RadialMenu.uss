@@ -1,5 +1,19 @@
 /* === Radial menu upgrade/sell/range (D1-03) === */
 
+.upgrade-preview {
+    width: 100%;
+    background-color: rgba(10, 25, 40, 0.95);
+    border-color: rgba(100, 200, 255, 0.5);
+    border-width: 1px;
+    border-radius: 6px;
+    padding: 5px 8px;
+    color: rgb(200, 230, 255);
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-left;
+    margin-bottom: 4px;
+}
+
 .radial-menu {
     position: absolute;
     bottom: 110px;

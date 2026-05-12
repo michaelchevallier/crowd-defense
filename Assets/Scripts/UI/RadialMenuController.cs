@@ -46,6 +46,7 @@ namespace CrowdDefense.UI
         private Label? btnUtilityCost;
         private Label? btnUtilityHint;
         private Label? btnSellLabel;
+        private Label? upgradePreview;
 
         private Tower? currentTower;
         private bool _rangeVisible;
@@ -84,11 +85,17 @@ namespace CrowdDefense.UI
             btnUtilityCost    = root.Q<Label>("btn-utility-cost");
             btnUtilityHint    = root.Q<Label>("btn-utility-hint");
             btnSellLabel      = root.Q<Label>("btn-sell-label");
+            upgradePreview    = root.Q<Label>("upgrade-preview");
 
             btnUpgradeL2?.RegisterCallback<ClickEvent>(_ => OnUpgradeL2Clicked());
             btnDps?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.Dps));
             btnUtility?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.Utility));
             btnUpgradeL3?.RegisterCallback<ClickEvent>(_ => OnUpgradeL3Clicked(TowerBranch.None));
+
+            btnUpgradeL2?.RegisterCallback<MouseEnterEvent>(_ => ShowUpgradePreview(2));
+            btnUpgradeL2?.RegisterCallback<MouseLeaveEvent>(_ => HideUpgradePreview());
+            btnUpgradeL3?.RegisterCallback<MouseEnterEvent>(_ => ShowUpgradePreview(3));
+            btnUpgradeL3?.RegisterCallback<MouseLeaveEvent>(_ => HideUpgradePreview());
             btnRepair?.RegisterCallback<ClickEvent>(_ => OnRepairClicked());
             btnSell?.RegisterCallback<ClickEvent>(_ => OnSellClicked());
             btnRange?.RegisterCallback<ClickEvent>(_ => OnRangeClicked());
@@ -474,6 +481,54 @@ namespace CrowdDefense.UI
             const string cls = "radial-cost--unaffordable";
             if (canAfford) label.RemoveFromClassList(cls);
             else           label.AddToClassList(cls);
+        }
+
+        private void ShowUpgradePreview(int nextLevel)
+        {
+            if (upgradePreview == null || currentTower == null) return;
+            var cfg = currentTower.Config;
+            if (cfg == null) return;
+            upgradePreview.text = BuildUpgradePreviewText(cfg, nextLevel);
+            upgradePreview.RemoveFromClassList("hidden");
+        }
+
+        private void HideUpgradePreview()
+        {
+            upgradePreview?.AddToClassList("hidden");
+        }
+
+        private static string BuildUpgradePreviewText(TowerType cfg, int nextLevel)
+        {
+            var bal = BalanceConfig.Get();
+            float[] scales = bal.LevelScale;
+            int curIdx  = nextLevel - 2; // current level index (nextLevel-1 - 1)
+            int nextIdx = nextLevel - 1;
+            float curScale  = curIdx  >= 0 && curIdx  < scales.Length ? scales[curIdx]  : 1f;
+            float nextScale = nextIdx >= 0 && nextIdx < scales.Length ? scales[nextIdx] : 1f;
+
+            float baseDmg  = cfg.Damage * bal.TowerDamageMul;
+            float curDmg   = baseDmg * curScale;
+            float nextDmg  = baseDmg * nextScale;
+            float dmgDelta = nextDmg - curDmg;
+            string dmgSign = dmgDelta >= 0 ? "+" : "";
+
+            float curRange  = cfg.Range;
+            float nextRange = cfg.Range;
+            float rangeDelta = nextRange - curRange;
+
+            int curFr   = cfg.FireRateMs;
+            int nextFr  = cfg.FireRateMs;
+            float curDps  = curFr  > 0 ? curDmg  / (curFr  / 1000f) : 0f;
+            float nextDps = nextFr > 0 ? nextDmg / (nextFr / 1000f) : 0f;
+            float dpsDelta = nextDps - curDps;
+            string dpsSign = dpsDelta >= 0 ? "+" : "";
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append($"L{nextLevel - 1}->L{nextLevel}  DMG {curDmg:F1}->{nextDmg:F1} ({dmgSign}{dmgDelta:F1})");
+            if (rangeDelta != 0f)
+                sb.Append($"  RANGE {curRange:F1}->{nextRange:F1}");
+            sb.Append($"  DPS {curDps:F1}->{nextDps:F1} ({dpsSign}{dpsDelta:F1})");
+            return sb.ToString();
         }
 
         private void Show() => radialMenu?.RemoveFromClassList("hidden");

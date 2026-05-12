@@ -34,6 +34,9 @@
             </ui:Button>
         </ui:VisualElement>
 
+        <!-- Tooltip preview upgrade stats (visible au survol des boutons upgrade) -->
+        <ui:Label text="" name="upgrade-preview" class="upgrade-preview hidden" />
+
         <!-- Ligne secondaire : Range ring toggle + Sell -->
         <ui:VisualElement class="radial-action-row">
             <ui:Button name="btn-range" class="radial-btn-range">
