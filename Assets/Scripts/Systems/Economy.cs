@@ -26,6 +26,15 @@ namespace CrowdDefense.Systems
             int baseCoins = LevelRunner.Instance?.CurrentLevel?.StartCoins ?? 120;
             int startCoins = baseCoins + (bonuses?.startCoinsBonus ?? 0);
             SetGold(startCoins);
+
+            int pendingAchGold = PlayerPrefs.GetInt("cd.gold.pending", 0);
+            if (pendingAchGold > 0)
+            {
+                PlayerPrefs.SetInt("cd.gold.pending", 0);
+                PlayerPrefs.Save();
+                AddGold(pendingAchGold);
+                CrowdDefense.UI.Toast.Show("Achievement", $"+{pendingAchGold} or (succes)", 4000, "trophy", CrowdDefense.UI.ToastType.Achievement);
+            }
         }
 
         public bool TrySpend(int amount)

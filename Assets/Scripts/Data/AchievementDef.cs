@@ -23,6 +23,7 @@ namespace CrowdDefense.Data
         [SerializeField] public string eventKey = "";
         [SerializeField] public string iconEmoji = "";
         [SerializeField] public AchievementCategory category = AchievementCategory.Misc;
+        [SerializeField] public int rewardGold = 50;
 
         public string IconEmoji => string.IsNullOrEmpty(iconEmoji) ? "\U0001F3C6" : iconEmoji;
     }

@@ -62,6 +62,14 @@ namespace CrowdDefense.Systems
             _unlocked.Add(id);
             SaveToPrefs();
 
+            var def = registry?.Get(id);
+            if (def != null && def.rewardGold > 0)
+            {
+                int pending = PlayerPrefs.GetInt("cd.gold.pending", 0) + def.rewardGold;
+                PlayerPrefs.SetInt("cd.gold.pending", pending);
+                PlayerPrefs.Save();
+            }
+
             AudioController.Instance?.Play("achievement");
 
             // AchievementToastController subscribes to OnUnlocked and renders the toast.
