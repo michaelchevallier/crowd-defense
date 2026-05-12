@@ -52,7 +52,11 @@ Question : P3.1 R6-REFACTO-ENEMY core reste 850 LOC > cap 500. Que faire ?
 
 ---
 
-### 2026-05-12 17h05 — Q-PARITY-V4-P1-cap-enemy
+### 2026-05-12 17h05 — Q-PARITY-V4-P1-cap-enemy `[resolved]` 18h53 (supervisor auto-detect)
+**Auto-resolved par supervisor BACKLOG-WAVE-3 commit `6dac3cd`** : `EnemyBossBehaviors.cs` re-mesuré 582 → 446 LOC (sous cap 500). `Enemy.cs` resolved via P3.1 + R6-REFACTO-ENEMY-CORE-V2 → 491 LOC (sous cap).
+Original Q below for traceability.
+
+### 2026-05-12 17h05 — Q-PARITY-V4-P1-cap-enemy (original)
 Type : tactical
 Category : A
 Blocking : false (P1 batch 8/8 shipped, fonctionnel, ship-able)
