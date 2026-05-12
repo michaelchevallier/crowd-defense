@@ -16,20 +16,20 @@ namespace CrowdDefense.Systems
 
         private int _currentWaveIdx = 0;
         private int _nextWaveToStart = 0;     // index of the wave that will begin on next StartNextWave()
-        private float __spawnTimerMs = 0f;
-        private bool __waveActive = false;
-        private int __spawnCounter = 0;
+        private float _spawnTimerMs = 0f;
+        private bool _waveActive = false;
+        private int _spawnCounter = 0;
         private float _currentWaveScaleMul = 1f;  // endless mode: applied per-spawn (HP-based)
         private float _specialSpawnRateMul = 1f;   // endless special wave: spawn rate modifier
         private float _specialCountMul = 1f;        // endless special wave: enemy count modifier
         private float _varSpawnRateMul = 1f;        // BalanceConfig variance: per-wave spawn jitter
-        private Queue<(EnemyType type, EnemyVariant variant)> __pendingSpawns = new();
-        private List<Enemy> __activeEnemies = new();
+        private Queue<(EnemyType type, EnemyVariant variant)> _pendingSpawns = new();
+        private List<Enemy> _activeEnemies = new();
 
         // D1-02 pacing state
-        private bool __waitingForPlayerStart = false;
-        private float __skipWindowTimer = 0f;  // seconds remaining in the 5s skip bonus window
-        private int __streakCount = 0;          // consecutive skip-bonus claims
+        private bool _waitingForPlayerStart = false;
+        private float _skipWindowTimer = 0f;  // seconds remaining in the 5s skip bonus window
+        private int _streakCount = 0;          // consecutive skip-bonus claims
         private int _lastBreakSecond = -1;     // throttle: last whole-second value fired to OnBreakStateChanged
 
         public IReadOnlyList<Enemy> ActiveEnemies => _activeEnemies;
