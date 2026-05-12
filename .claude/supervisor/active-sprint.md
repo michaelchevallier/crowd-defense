@@ -15,11 +15,12 @@ Mike's clarifications (chat 14h47-14h49) :
 
 ## Current
 
-- **Sprint** : **R6-PARITY-V4 ACTIVE 15h30** (Mike GO autonome 4h cap fin ~19h30)
-- **Mode** : autonome dispatch P0 1-5 (5 tickets) + addendum Unity capabilities
-- **Status** : 5 décisions Mike validées + addendum scope ajouté ; instruction PARITY-V4-GO publiée
-- **Next action** : exec ack + dispatch batch P0-A (4 worktrees parallèles)
-- **Audit source** : `.claude/audit/2026-05-12-v4-parity-gap.md` (V6 = 55-65% gameplay / 40-45% look&feel V4)
+- **Sprint** : **R6-PARITY-V4 P1 ACTIVE 16h01** (Mike GO autonome 4h cap fin ~20h00)
+- **Mode** : autonome dispatch P1 8 tickets (REFACTOR + 005-IMPL + 004-IMPL + 010 + 012 + 013 + 014 + 011) + addendum Unity capabilities
+- **Status P0-A** : ✅ COMPLETE 5/5 en 22 min (textures + PathTiles + Skybox + VFX + enemy audit) — instruction PARITY-V4-P1-GO publiée
+- **Next action** : exec ack + dispatch batch P1-A 4 worktrees parallèles (REFACTOR priority + 005-IMPL + 004-IMPL + 014 boss)
+- **Audit sources** : `.claude/audit/2026-05-12-v4-parity-gap.md` (V6 = 55-65% gameplay / 40-45% look&feel V4) + `.claude/audit/2026-05-12-batch-p0-audit.md` (1 violation auto-handled VfxPoolBindings 555 LOC split P1)
+- **Deploy status** : auto-build-loop.sh lancé bg 15:56:20 pour HEAD efd23e5 (P0-A complete + Hero.cs fix)
 
 ## R6-02 paused — historique partiel
 

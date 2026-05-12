@@ -6,7 +6,7 @@
 
 ## Last ack expected from exec
 
-`acks/2026-05-12-HHhMM-parity-v4-go-ack.md` après l'instruction PARITY-V4-GO ci-dessous (Mike valide 5 recos + addendum Unity capabilities).
+`acks/2026-05-12-HHhMM-parity-v4-p1-go-ack.md` après l'instruction PARITY-V4-P1-GO ci-dessous (Mike GO autonome batch P1).
 
 ---
 
@@ -311,6 +311,86 @@ Pas de Mike notif déclenchée (T3 silent), Mike sait que le pipeline existe.
 
 ## Status
 
-⏳ pending exec deploy trigger après P0-A complet
+⏳ pending exec deploy trigger après P0-A complet (en cours, auto-build-loop bg lancé 15:56:20)
+
+---
+
+### 2026-05-12 16h01 — 🟢 PARITY-V4-P1-GO (Mike GO autonome batch P1)
+
+**Type** : GO-SPRINT (dispatch batch P1 autorisé)
+**From** : Mike chat direct ("enchaine ces trucs la en autonomie")
+**Mode** : Autonome 4h (time cap depuis ack)
+**Source** : audit batch P0 + audit V4 parity gap + Q-vfx-bindings-cap (réponse A-PARITY-V4-vfx-bindings-cap)
+
+## 8 tickets P1 à dispatcher
+
+| Ordre | Ticket | Quoi | LOC estimé | Time | Notes |
+|---|---|---|---|---|---|
+| **1** | **R6-PARITY-004-REFACTOR** | **Split VfxPoolBindings 555 → 2 fichiers <500 LOC** (partial class OU extraction VfxPoolTextures.cs textures-only + VfxPoolBuilders.cs Build*Module) | ~30-50 (refacto) | 30 min | **PRIORITY ABSOLUE** — résout violation charter §1 règle #3, doit être en TÊTE du batch (cf A-PARITY-V4-vfx-bindings-cap). Bug-fixer Sonnet OK |
+| 2 | R6-PARITY-005-IMPL | 5 enemies PARTIAL : wizard_king teleport+rain (~120) + warlord charge (~15) + dragon fire breath (~10) + ai_hub drone burst (~40) + kraken tentacle slam (~80) | ~265 | 4-6h | Cf audit `f4a3744` table 5 PARTIAL. Sources V4 : `src-v3/entities/Enemy.js` + behaviors specifiques |
+| 3 | R6-PARITY-004-IMPL | Wire 9 VFX textures unmapped (electric_cloud, explosion_small, glyph_dark, heal_aura, lightning_bolt, poison_cloud, shield_aura, slow_aura, smoke_gray) via spawn methods + ParticleSystem texture sheets | ~80-120 | 2-3h | Suite logique de R6-PARITY-004, exploit Unity ParticleSystem.Module |
+| 4 | R6-PARITY-010 | Weather effects port (clouds plaine/desert, spores foret, sable desert/storm, sky gradient billboard, transition thème) | ~150 | 4-6h | Source V4 : `src-v3/systems/Weather.js` 143 LOC. Exploit Unity ParticleSystem world-space + VFXGraph si pertinent |
+| 5 | R6-PARITY-012 | V4 dynamic EventManager mid-wave : sand_storm (range -25%, speed +15%) + lava_surge (1-3 tours inondées + castle dmg) + carousel_spin (ennemis changent path 30%) | ~80 | 3h | Source V4 : `src-v3/systems/EventManager.js`. V6 EventSystem 12 events narratifs déjà présent, ajouter ces 3 dynamiques mid-wave |
+| 6 | R6-PARITY-013 | SceneDecor port (`placeNatureProp` arbres/rochers/buissons selon thème + THEME_PALETTE + placement seeded sur cells D/T) | ~150 | 4h | Source V4 : `src-v3/systems/SceneDecor.js` 333 LOC. V6 utilise probablement Quaternius GLTF directs, à wire dans LevelLoader |
+| 7 | R6-PARITY-014 | Boss phases complete : Apocalypse 4 phases (P1 normal → P2 invul+summons → P3 speed×2 → P4 AoE pulse 360°) + charge sprint warlord/brigand_boss + fire breath cone dragon_boss | ~80 | 5h | Cf audit enemy R6-PARITY-005 (PARTIAL) — overlap possible avec ticket 2, à coordiner. Sources V4 : Enemy.js boss behaviors |
+| 8 | R6-PARITY-011 | Castle/VFX skins (12 manquants : 8 castle + 4 vfx). Mesh GLTF par thème OU Blender MCP si custom modeling | ~100-200 + assets | 5-8h | Blender MCP : `claude mcp list` → `blender: uvx blender-mcp ✗` actuellement offline. Si custom mesh requis : exec décide (a) start `uvx blender-mcp` background → use MCP API → import GLTF, OU (b) report blocker dans question superviseur. **Placeholder-first OK** : couleur unie par thème en attendant assets. |
+
+## Stratégie batch (charter §1 règle #9 max 4 worktrees simultanés)
+
+**Batch P1-A** (4 worktrees parallèles, dispatch immédiat post-ack) :
+- Worktree 1 : R6-PARITY-004-REFACTOR (priorité absolue, bug-fixer Sonnet OK, ~30 min)
+- Worktree 2 : R6-PARITY-005-IMPL (5 enemies, ~4-6h)
+- Worktree 3 : R6-PARITY-004-IMPL (9 VFX wire, ~2-3h)
+- Worktree 4 : R6-PARITY-014 boss phases (~5h, overlap coord avec WT2)
+
+**Batch P1-B** (4 worktrees, dispatch après 1er slot libéré par WT1 finish ~30 min) :
+- Worktree 1' : R6-PARITY-010 Weather (~4-6h)
+- Worktree 2' : R6-PARITY-012 Dynamic events (~3h)
+- Worktree 3' : R6-PARITY-013 SceneDecor (~4h)
+- Worktree 4' : R6-PARITY-011 Castle skins (~5-8h, Blender MCP décision)
+
+## Time cap
+
+- Sprint R6-PARITY-V4 batch P1 : **4h depuis ack** (cap ~20h00 local si ack 16h00)
+- Si non-terminé à 20h00 : auto-stop, batch remaining → P2 ou next session
+- Charter §4 hard terminate respect : Mike STOP message → STOP immédiat
+
+## Addendum scope Unity (rappel — same as PARITY-V4-GO)
+
+Exploit Unity capabilities partout où ça améliore vs V4 sans bloquer parité :
+- URP shaders modernes, PBR materials, post-processing per-volume
+- Lighting baked/dynamic, ParticleSystem Unity-native, sub-emitters, Collision3D
+- Animator state machines, NavMesh agents (boss phases), Cinemachine (boss cinematic)
+- VFXGraph si compute-heavy weather
+- Volumetric fog, ReflectionProbe (skybox)
+- **Placeholder-first** sur tickets >1h gen asset (couleur unie + label texte, swap après)
+- **Blender MCP** : autorisé à start server (`uvx blender-mcp`) pour ticket 8 castle skins si custom mesh requis
+
+## Cleanup hygiène à intégrer (optionnel, ticket "found-during-exec")
+
+- 18+ worktrees stale `git worktree list` → cleanup post-merge tickets (`git worktree remove --force` après chaque merge)
+- Active-sprint.md à update pour refléter P0-A complete + P1 ACTIVE
+
+## Constraints rappel charter §1
+
+- **Hard cap 500 LOC par fichier C#** (règle #3) — TOLERANCE ZERO pour cette violation (R6-PARITY-004-REFACTOR résout précédent cas)
+- **No Sub-Opus spawn** (règle #10) : Sonnet feature-dev ou bug-fixer
+- **No feature creep** (règle #4) : opportunités → `.claude/backlog/R6-found-during-exec.md`
+- **Compile gate post-commit** (règle #5) : `mcp__UnityMCP__read_console` errors only
+- **Self-report 100 mots max** (règle #8) chaque ticket
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-parity-v4-p1-go-ack.md` contenant :
+- Tickets specs créés : 8 paths `.claude/specs/R6-PARITY-V4/R6-PARITY-004-REFACTOR.md`, `005-IMPL.md`, `004-IMPL.md`, `010.md`, `012.md`, `013.md`, `014.md`, `011.md`
+- Batch P1-A 4 worktrees dispatched (paths + branch names + ETA)
+- Batch P1-B status (queued vs dispatched if capacité)
+- Blender MCP décision (start now / queue / Mike escalation)
+- Time cap noté
+- Pull main + lit `answers-from-supervisor.md` A-PARITY-V4-vfx-bindings-cap (réponse réelle depuis commit `fde107b`, applique reco split partial class OU extraction)
+
+## Status
+
+⏳ pending exec ack + dispatch batch P1-A
 
 
