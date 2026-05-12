@@ -19,7 +19,7 @@ namespace CrowdDefense.Entities
     /// L3 stats pour une branche donnée d'une tour signature.
     /// Rend le switch 77-lignes de ApplyL3Branch data-driven.
     /// </summary>
-    private struct L3Stats
+    internal struct L3Stats
     {
         public int Pierce;
         public int MultiShot;
