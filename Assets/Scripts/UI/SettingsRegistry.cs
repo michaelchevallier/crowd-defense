@@ -151,19 +151,19 @@ namespace CrowdDefense.UI
         public bool ShowDamageIcons
         {
             get => _showDamageIcons;
-            set { if (_showDamageIcons == value) return; _showDamageIcons = value; Save(); Notify(); }
+            set { if (_showDamageIcons == value) return; _showDamageIcons = value; QueueSave(); Notify(); }
         }
 
         public bool MusicPulseEnabled
         {
             get => _musicPulseEnabled;
-            set { if (_musicPulseEnabled == value) return; _musicPulseEnabled = value; Save(); Notify(); }
+            set { if (_musicPulseEnabled == value) return; _musicPulseEnabled = value; QueueSave(); Notify(); }
         }
 
         public bool WeatherEnabled
         {
             get => _weatherEnabled;
-            set { if (_weatherEnabled == value) return; _weatherEnabled = value; ApplyWeather(); Save(); Notify(); }
+            set { if (_weatherEnabled == value) return; _weatherEnabled = value; ApplyWeather(); QueueSave(); Notify(); }
         }
 
         protected override void OnAwakeSingleton()
@@ -254,5 +254,29 @@ namespace CrowdDefense.UI
         }
 
         private void Notify() => OnSettingsChanged?.Invoke();
+
+        private void QueueSave()
+        {
+            if (_saveQueued) return;
+            _saveQueued = true;
+            _saveCoroutine = StartCoroutine(DebouncedSave());
+        }
+
+        private IEnumerator DebouncedSave()
+        {
+            yield return new WaitForSeconds(0.5f);
+            Save();
+            _saveQueued = false;
+        }
+
+        private void OnDisable()
+        {
+            if (_saveQueued) PlayerPrefs.Save();
+        }
+
+        private void OnApplicationPause(bool paused)
+        {
+            if (paused && _saveQueued) PlayerPrefs.Save();
+        }
     }
 }
