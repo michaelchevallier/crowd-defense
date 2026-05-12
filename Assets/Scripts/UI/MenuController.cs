@@ -26,6 +26,13 @@ namespace CrowdDefense.UI
         private VisualElement? _showcaseRow;
         private bool _splashDone;
 
+        // ── Demo mode ────────────────────────────────────────────────────────
+        private const float IdleTimeoutSeconds = 60f;
+        private const string DemoLevelId = "L1-1";
+        private float _idleTimer;
+        private bool _demoActive;
+        private VisualElement? _demoOverlay;
+
         private void Awake()
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
@@ -154,6 +161,82 @@ namespace CrowdDefense.UI
             }
             if (_menuButtons != null && _menuButtons != _root)
                 _menuButtons.style.display = DisplayStyle.Flex;
+        }
+
+        private void Update()
+        {
+            if (_demoActive || !_splashDone) return;
+
+            bool anyInput = Input.anyKeyDown
+                         || Input.GetMouseButtonDown(0)
+                         || Input.GetMouseButtonDown(1)
+                         || Input.touchCount > 0;
+
+            if (anyInput)
+            {
+                _idleTimer = 0f;
+                return;
+            }
+
+            _idleTimer += Time.unscaledDeltaTime;
+            if (_idleTimer >= IdleTimeoutSeconds)
+                StartDemoMode();
+        }
+
+        private void StartDemoMode()
+        {
+            _demoActive = true;
+
+            // Build fullscreen overlay "DEMO MODE — click to exit"
+            _demoOverlay = new VisualElement
+            {
+                name  = "demo-mode-overlay",
+                style =
+                {
+                    position        = Position.Absolute,
+                    left            = 0, right = 0, top = 0, bottom = 0,
+                    justifyContent  = Justify.FlexEnd,
+                    alignItems      = Align.Center,
+                    backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.45f))
+                }
+            };
+
+            var label = new Label("DEMO MODE — cliquer pour quitter")
+            {
+                style =
+                {
+                    fontSize        = 20,
+                    color           = new StyleColor(Color.white),
+                    unityFontStyleAndWeight = FontStyle.Bold,
+                    marginBottom    = 32,
+                    unityTextAlign  = TextAnchor.MiddleCenter
+                }
+            };
+
+            _demoOverlay.Add(label);
+            _root?.Add(_demoOverlay);
+
+            _demoOverlay.RegisterCallback<ClickEvent>(_ => CancelDemoMode());
+
+            // Bypass hero/avatar gates: set NextLevelId directly then fade to Main
+            LevelLoader.NextLevelId    = DemoLevelId;
+            LevelLoader.NextDailySpec  = null;
+            LevelLoader.Fade("Main");
+        }
+
+        private void CancelDemoMode()
+        {
+            if (!_demoActive) return;
+            _demoActive = false;
+            _idleTimer  = 0f;
+
+            if (_demoOverlay != null)
+            {
+                _demoOverlay.RemoveFromHierarchy();
+                _demoOverlay = null;
+            }
+
+            LevelLoader.GoToMenu();
         }
 
         private void OnDestroy()
