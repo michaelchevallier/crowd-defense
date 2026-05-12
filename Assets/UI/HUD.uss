@@ -1925,3 +1925,23 @@
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
 }
+
+/* === Castle danger vignette — red pulsing border when HP < 25 % === */
+@keyframes castle-danger-pulse {
+    0%   { border-color: rgba(200, 20, 20, 0.0); }
+    50%  { border-color: rgba(200, 20, 20, 0.6); }
+    100% { border-color: rgba(200, 20, 20, 0.0); }
+}
+
+.castle-danger-vignette {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-width: 48px;
+    border-radius: 0;
+    border-color: rgba(200, 20, 20, 0.0);
+    animation-name: castle-danger-pulse;
+    animation-duration: 1.2s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}

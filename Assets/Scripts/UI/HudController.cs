@@ -68,6 +68,10 @@ namespace CrowdDefense.UI
         private int    _lastKnownCastleHP = -1;
         private Coroutine? _regenIconCoroutine;
 
+        // Heartbeat — audio loop + red vignette when castle HP < 25 %
+        private Coroutine? _heartbeatCoroutine;
+        private bool       _heartbeatActive;
+
         // Bank pill (D1-01 §3.5)
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
@@ -361,6 +365,7 @@ namespace CrowdDefense.UI
             }
             if (Castle.Instance != null)
                 Castle.Instance.OnHPChanged -= OnCastleHPChanged;
+            if (_heartbeatActive) StopHeartbeat();
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.OnWaveStart -= OnWaveStart;
@@ -923,6 +928,50 @@ namespace CrowdDefense.UI
                 _regenIconCoroutine = StartCoroutine(FlashRegenIcon());
             }
             _lastKnownCastleHP = hp;
+
+            bool danger = hpMax > 0 && (float)hp / hpMax < 0.25f && hp > 0;
+            if (danger && !_heartbeatActive)
+                StartHeartbeat();
+            else if (!danger && _heartbeatActive)
+                StopHeartbeat();
+        }
+
+        private void StartHeartbeat()
+        {
+            _heartbeatActive = true;
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            root.AddToClassList("castle-danger-vignette");
+            if (_heartbeatCoroutine != null) StopCoroutine(_heartbeatCoroutine);
+            _heartbeatCoroutine = StartCoroutine(HeartbeatLoop());
+        }
+
+        private void StopHeartbeat()
+        {
+            _heartbeatActive = false;
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            root.RemoveFromClassList("castle-danger-vignette");
+            if (_heartbeatCoroutine != null)
+            {
+                StopCoroutine(_heartbeatCoroutine);
+                _heartbeatCoroutine = null;
+            }
+        }
+
+        private System.Collections.IEnumerator HeartbeatLoop()
+        {
+            while (_heartbeatActive)
+            {
+                float ratio = Castle.Instance != null && Castle.Instance.HPMax > 0
+                    ? (float)Castle.Instance.HP / Castle.Instance.HPMax
+                    : 0.25f;
+                // Pitch rises as HP drops: 1.0 at 25 % → 1.5 at 0 %
+                float intensity = Mathf.Clamp01(1f - ratio / 0.25f);
+                float pitch = 1f + intensity * 0.5f;
+                AudioController.Instance?.Play("castle_hit", 0.35f * (0.7f + intensity * 0.3f));
+                // Faster beat interval as HP drops: 1.2s at 25 % → 0.55s near 0 %
+                float interval = Mathf.Lerp(1.2f, 0.55f, intensity);
+                yield return new WaitForSecondsRealtime(interval);
+            }
         }
 
         private System.Collections.IEnumerator FlashRegenIcon()
