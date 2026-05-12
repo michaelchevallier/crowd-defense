@@ -75,7 +75,37 @@ namespace CrowdDefense.Entities
             }
 
             BuildHpBar();
+            ApplyWorldDecoration(world);
             OnHPChanged?.Invoke(HP, HPMax);
+        }
+
+        private void ApplyWorldDecoration(int worldId)
+        {
+            if (worldId >= 1 && worldId <= 2)
+            {
+                // W1-2 forêt/jardin — petite sphère verte (feuillage)
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = "CastleDecor_Foliage";
+                Destroy(go.GetComponent<SphereCollider>());
+                go.transform.SetParent(transform, false);
+                go.transform.localPosition = new Vector3(0f, 1.8f, 0f);
+                go.transform.localScale    = new Vector3(0.45f, 0.45f, 0.45f);
+                var rend = go.GetComponent<MeshRenderer>();
+                rend.material = BuildUnlitMaterial(new Color(0.18f, 0.62f, 0.18f), transparent: false);
+            }
+            else if (worldId >= 3 && worldId <= 4)
+            {
+                // W3-4 rocky/desert — petit cube brun (pierre)
+                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                go.name = "CastleDecor_Stone";
+                Destroy(go.GetComponent<BoxCollider>());
+                go.transform.SetParent(transform, false);
+                go.transform.localPosition = new Vector3(0f, 1.7f, 0f);
+                go.transform.localScale    = new Vector3(0.35f, 0.35f, 0.35f);
+                var rend = go.GetComponent<MeshRenderer>();
+                rend.material = BuildUnlitMaterial(new Color(0.55f, 0.38f, 0.22f), transparent: false);
+            }
+            // W5+ : pas de décoration supplémentaire
         }
 
         // ── HP bar ──────────────────────────────────────────────────────────────
