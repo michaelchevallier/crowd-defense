@@ -929,24 +929,104 @@ namespace CrowdDefense.Entities
         {
             if (_gateDoor == null) return;
             if (_gateCoroutine != null) StopCoroutine(_gateCoroutine);
-            _gateCoroutine = StartCoroutine(RotateGate(open ? 90f : 0f, 0.5f));
+            _gateCoroutine = StartCoroutine(open ? OpenGateCoroutine() : CloseGateCoroutine());
         }
 
-        private IEnumerator RotateGate(float targetYDeg, float dur)
+        // Open: 0° → 90°, linear over 0.5 s
+        private IEnumerator OpenGateCoroutine()
         {
-            float startY  = _gateDoor!.localEulerAngles.y;
-            // Normalize to avoid 270 vs -90 wrap issues
-            if (startY > 180f) startY -= 360f;
+            const float dur = 0.5f;
+            float startY = NormalizeAngle(_gateDoor!.localEulerAngles.y);
             float t = 0f;
             while (t < dur)
             {
                 t += Time.deltaTime;
-                float y = Mathf.LerpAngle(startY, targetYDeg, Mathf.Clamp01(t / dur));
+                float y = Mathf.LerpAngle(startY, 90f, Mathf.Clamp01(t / dur));
                 _gateDoor.localEulerAngles = new Vector3(0f, y, 0f);
                 yield return null;
             }
-            _gateDoor.localEulerAngles = new Vector3(0f, targetYDeg, 0f);
+            _gateDoor.localEulerAngles = new Vector3(0f, 90f, 0f);
             _gateCoroutine = null;
+        }
+
+        // Close: 90° → 0° over 1.2 s, ease-out-bounce (overshoot −5° at 80 % then settle),
+        // wood creak at 0.6 s, gate thud at 1.1 s, dust burst at end.
+        private IEnumerator CloseGateCoroutine()
+        {
+            const float dur          = 1.2f;
+            const float creakTime    = 0.6f;
+            const float thudTime     = 1.1f;
+            const float overshootDeg = -5f;    // bounce past closed position
+            const float overshootAt  = 0.80f;  // normalised time of peak overshoot
+
+            float startY = NormalizeAngle(_gateDoor!.localEulerAngles.y);
+            bool  creakPlayed = false;
+            bool  thudPlayed  = false;
+            float t = 0f;
+
+            while (t < dur)
+            {
+                t += Time.deltaTime;
+                float elapsed = Mathf.Min(t, dur);
+
+                // Audio cues — fire once at their respective timestamps
+                if (!creakPlayed && elapsed >= creakTime)
+                {
+                    creakPlayed = true;
+                    AudioController.Instance?.PlayPitched("wood_creak", 0.7f, 0.85f);
+                }
+                if (!thudPlayed && elapsed >= thudTime)
+                {
+                    thudPlayed = true;
+                    AudioController.Instance?.PlayPitched("gate_thud", 1.0f, 0.7f);
+                }
+
+                // Ease-out-bounce curve: linear drop with an overshoot then settle
+                float n = Mathf.Clamp01(elapsed / dur);
+                float target;
+                if (n < overshootAt)
+                {
+                    // Ease-in approaching overshoot angle — smooth deceleration via quadratic ease-out
+                    float p = n / overshootAt;
+                    float eased = 1f - (1f - p) * (1f - p);   // ease-out quad
+                    target = Mathf.LerpAngle(startY, overshootDeg, eased);
+                }
+                else
+                {
+                    // Bounce back from overshoot to 0°
+                    float p = (n - overshootAt) / (1f - overshootAt);
+                    float eased = 1f - (1f - p) * (1f - p);   // ease-out quad
+                    target = Mathf.LerpAngle(overshootDeg, 0f, eased);
+                }
+
+                _gateDoor.localEulerAngles = new Vector3(0f, target, 0f);
+                yield return null;
+            }
+
+            _gateDoor.localEulerAngles = new Vector3(0f, 0f, 0f);
+
+            // 5 dust particles at gate base
+            if (VfxPool.Instance != null)
+            {
+                var dustColor = new Color(0.72f, 0.60f, 0.42f, 0.85f);
+                var basePos   = transform.position + new Vector3(0f, 0.1f, 0.55f);
+                for (int i = 0; i < 5; i++)
+                {
+                    var offset = new Vector3(
+                        UnityEngine.Random.Range(-0.35f, 0.35f),
+                        0f,
+                        UnityEngine.Random.Range(-0.15f, 0.15f));
+                    VfxPool.Instance.SpawnSpark(basePos + offset, dustColor);
+                }
+            }
+
+            _gateCoroutine = null;
+        }
+
+        private static float NormalizeAngle(float deg)
+        {
+            if (deg > 180f) deg -= 360f;
+            return deg;
         }
 
         // ── MonoBehaviour ───────────────────────────────────────────────────────
