@@ -56,14 +56,20 @@
     font-size: 18px;
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     -unity-text-align: middle-center;
-    border-width: 0;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0);
     cursor: link;
-    transition-property: background-color;
-    transition-duration: 0.15s;
+    scale: 1 1;
+    transform-origin: center;
+    transition-property: background-color, scale, border-color;
+    transition-duration: 0.15s, 0.15s, 0.15s;
+    transition-timing-function: ease-out, ease-out, ease-out;
 }
 
 .menu-btn:hover {
     background-color: rgba(255, 255, 255, 0.28);
+    scale: 1.05 1.05;
+    border-color: rgba(255, 210, 63, 0.75);
 }
 
 .menu-btn-primary {
