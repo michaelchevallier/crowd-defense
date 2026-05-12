@@ -25,6 +25,11 @@ namespace CrowdDefense.UI
             ApplyMute(_muted);
         }
 
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.M)) Toggle();
+        }
+
         private void Toggle()
         {
             _muted = !_muted;
