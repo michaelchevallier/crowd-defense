@@ -649,7 +649,278 @@ Sauf relay si bug-fixer ou autre agent pose une question via `questions-to-super
 
 ⏳ pending Mike retest live `/v6/` après next gh-pages deploy R>1718
 
+---
 
+### 2026-05-12 17h45 — 🟢 BACKLOG-FOURNI-AUTONOMOUS (13 tickets queue, exec dispatch ses parallèles)
 
+**Type** : GO-SPRINT + BACKLOG-CONTINU
+**From** : Opus superviseur (correction process Mike chat : "son backlog doit jamais être vide, juste tu réajuste ses prios")
+**Mode** : Autonome — exec gère ses slots worktrees (charter §1 max 4 parallèles), pioche dans le backlog priorisé ci-dessous au fur et à mesure
+**Préemption** : si Mike retest /v6/ outcome B/C → re-prioriser P0 fix scene OR revert partial avant continuer backlog
+
+## Principe
+
+Backlog priorisé P1 → P3. Exec dispatch immédiatement 4 worktrees parallèles sur les 4 premiers tickets P1 (R6-PARITY-UI-HARDENING + R6-PARITY-012-V4-FIDELITY + R6-PARITY-011-COMPLETE + R6-PARITY-015-BOSS-UI). Au fur et à mesure qu'un slot libère, l'exec pioche dans la queue. Si Mike override / décision arrive, j'écris nouvelle instruction et exec re-prioritise.
+
+**Pas d'idle wait.** Slot vide = ticket suivant dispatched.
+
+---
+
+## P1 — Backlog actif (dispatcher en parallèle dès maintenant)
+
+### P1.1 — R6-PARITY-UI-HARDENING-FINAL (bug-fixer Sonnet, 30 min)
+
+Finir le bulk null-check pattern sur les ~15-20 UI controllers restants non patchés par bug-fixer 2.
+
+**Action** :
+1. `grep -rln "\.Q<\|UQueryExtensions" Assets/Scripts/UI/ | sort -u` pour lister tous les fichiers qui utilisent UIDocument queries
+2. Cross-référence avec les fichiers déjà patched (cf commits `443c816 + e82d6e7 + ef28060`) — soit ~40 fichiers
+3. Pour les ~15-20 restants : applique pattern défensif identique :
+   ```csharp
+   var uiDoc = GetComponent<UIDocument>();
+   if (uiDoc == null) { Debug.LogError("[XxxController] UIDocument null"); return; }
+   var root = uiDoc.rootVisualElement;
+   if (root == null) { Debug.LogError("[XxxController] rootVisualElement null"); return; }
+   ```
+4. Commit `fix(runtime-crash-3): final UI hardening sweep — N controllers (defend-in-depth complete)`
+5. Push autonome
+
+**Files candidats probables** (à vérifier) : HelpOverlayController, MinimapController, TowerInfoPanel, ChallengeListController, CalibrationOverlay, TutorialController, RunIntroController, NewsPanel, FloatingTooltipController, ContextMenuController, etc.
+
+**Cap** : 500 LOC strict (mais pattern défensif = +5 LOC par fichier, sans risque)
+
+### P1.2 — R6-PARITY-012-V4-FIDELITY (feature-dev Sonnet, 4-5h)
+
+Port 5 V4 events dynamiques manquants + trigger model V4 data-driven.
+
+**Source V4** : `/Users/mike/Work/milan project/src-v3/systems/EventManager.js`
+**V6 target** : `Assets/Scripts/Systems/DynamicEventManager.cs` (218 LOC actuels → ~350 LOC, watch cap 500)
+
+**5 events à porter** :
+1. **void_pulse** : pulse circulaire centrée castle, vide [tile inside radius].coin pickups (V4 visuel : dark spiral expanding)
+2. **zero_g** : enemies floating mode 8s, speed×0.5 + ignore path collisions (V4 visuel : enemies levitating sprite)
+3. **undertow** : sur water tiles, slow pull current 30%, enemies traversant water = path reversed 1 tile
+4. **battle_cry** : enemies in radius 5 around boss = +50% atk speed + +25% movement 6s (V4 visuel : red shockwave)
+5. **hack** : 1 tower disabled random 5s + tower target enemy = friendly fire 1 hit (V4 visuel : glitch overlay)
+
+**Trigger model** : remplacer `% 5` random par `level.events[]` data-driven (V4 fidelity). Chaque LevelData a une liste `WaveEvent[]` avec `waveIndex` + `eventType` + `duration` + params.
+
+**Refacto léger Tower.cs** : 2-3 nouvelles propriétés (TempDisabledUntilTime, FriendlyFireMode) wiré dans Update/AcquireTarget. Pas de cap 500 risk car Tower.cs déjà 2254 LOC (legacy hors-scope cap).
+
+**Coordination** : ne touche pas EnemyBossBehaviors (déjà fragile post-split).
+
+### P1.3 — R6-PARITY-011-COMPLETE (feature-dev Sonnet, 1-2h)
+
+Foire + Medieval castle skins (2/10 themes missing dans `CastleSkinController.cs` `ThemeSkins[]`).
+
+**Action** : Placeholder-first
+1. Ouvrir `Assets/Scripts/Visual/CastleSkinController.cs` (77 LOC)
+2. Ajouter 2 entrées dans `ThemeSkins[]` :
+   - `Theme.Foire` → `Color.HotPink` tint + emissive yellow (carnival vibes) + scale 1.1
+   - `Theme.Medieval` → `Color.SaddleBrown` tint + emissive none + scale 1.0 + add stone material variation if available
+3. Si textures `castle_foire.png` / `castle_medieval.png` présentes dans `Assets/Textures/Castles/` : use them, sinon placeholder couleur unie acceptable
+4. Commit `feat(parity-v4-011-complete): Foire + Medieval castle skins (placeholder-first)`
+
+**Cap** : 500 LOC strict (CastleSkinController.cs 77 → ~120 LOC, safe)
+
+### P1.4 — R6-PARITY-015-BOSS-UI-CUTSCENE (feature-dev Sonnet, 2-3h)
+
+Port BossUI cutscene de V4 : intro 4-line text overlay quand boss spawn, dim BG, skip button, fade out après 5s ou tap.
+
+**Source V4** : `/Users/mike/Work/milan project/src-v3/systems/BossIntro.js` OU `src-v3/entities/Visitor.js` (look for boss spawn cinematic logic) OU `src-v3/ui/CutsceneScene.js`
+
+**V6 target** : `Assets/Scripts/UI/BossUI.cs` (à étendre) + `Assets/UI/BossCutsceneOverlay.uxml` (nouveau)
+
+**Implementation** :
+1. Subscribe `Enemy.OnBossSpawn` event dans BossUI
+2. Show overlay UXML (existant `boss-cutscene` element ? sinon ajouter)
+3. Animate text intro (4 lines from EnemyType.cutsceneText[] field — à ajouter dans EnemyType SO)
+4. Auto-fade après 5s ou skip button
+5. Use Unity Animator OR Tween (`DOTween` if installed) pour smooth in/out
+
+**Exploit Unity** : URP volume bloom + tonemapping per boss spawn (impacte mood). Si Volume not setup, skip.
+
+**Cap** : 500 LOC strict (BossUI.cs current LOC = check first)
+
+### P1.5 — R6-PARITY-016-LIGHTING-AMBIENT (feature-dev Sonnet, 1-2h)
+
+Hemisphere ambient lighting per-theme (sky color + ground color + intensity).
+
+**Action** :
+1. Créer `Assets/Scripts/Visual/ThemeAmbientConfig.cs` (ScriptableObject, ~80 LOC) avec champs `skyColor`, `equatorColor`, `groundColor`, `intensity`, `Theme theme`
+2. Pour chaque thème (10 themes) : créer une asset SO `ThemeAmbient_<Theme>.asset` dans `Assets/Resources/Lighting/`
+3. Modifier `LevelLoader.cs` (ou équivalent) : à `OnLevelStart`, load `ThemeAmbient_<currentTheme>` et apply :
+   ```csharp
+   RenderSettings.ambientMode = AmbientMode.Trilight;
+   RenderSettings.ambientSkyColor = config.skyColor;
+   RenderSettings.ambientEquatorColor = config.equatorColor;
+   RenderSettings.ambientGroundColor = config.groundColor;
+   RenderSettings.ambientIntensity = config.intensity;
+   ```
+4. Commit `feat(parity-v4-016): hemisphere ambient lighting per-theme (10 themes)`
+
+**Cap** : safe (1 nouveau fichier SO + 1 modif LevelLoader).
+
+### P1.6 — R6-PARITY-017-WATER-LAVA-ANIM (feature-dev Sonnet, 2h)
+
+Water + lava tile frame animation (8-frame loop @ 8fps comme V4).
+
+**Action** :
+1. Vérifier `Assets/Textures/Tiles/` contient water_01..water_08 + lava_01..lava_08 frame textures (déjà importés via P0 textures port ?). Si non : flag dans self-report.
+2. Créer 2 `AnimatorController` : `WaterTileAnim.controller` + `LavaTileAnim.controller` avec state Loop 8 frames
+3. Modifier `PathTilesController.cs` : pour chaque cellule water/lava, instantiate prefab avec Animator attaché
+4. Alternative simpler : use `Material.SetTexture` swap par tick (8fps timer) si Animator overkill
+
+**Exploit Unity** : `ParticleSystem` water ripples on top (sub-emitter), `Light` emissive pulse pour lava
+
+**Cap** : safe.
+
+### P1.7 — R6-PARITY-018-CASTLE-POINTLIGHT (feature-dev Sonnet, 1h)
+
+PointLight enfant du Castle prefab, intensité scalée par HP%, color shift red quand <30% HP.
+
+**Action** :
+1. Modifier prefab `Castle.prefab` : ajouter child GameObject `CastleAura` avec component `Light` type Point, range 5, intensity 2
+2. Modifier `Castle.cs` : ajouter `OnHPChange` callback (ou subscribe existing event) → update light :
+   ```csharp
+   var pct = (float)CurrentHP / MaxHP;
+   _light.intensity = Mathf.Lerp(0.5f, 2f, pct);
+   _light.color = pct < 0.3f ? Color.red : Color.Lerp(Color.red, Color.white, pct);
+   ```
+3. Commit `feat(parity-v4-018): castle PointLight HP-aware (intensity + color shift)`
+
+**Cap** : safe (Castle.cs +20 LOC).
+
+### P1.8 — R6-PARITY-019-SCHOOLS-MAPPING-AUDIT (general-purpose Sonnet audit, 1h)
+
+Audit confirmation Mike "Keep V6 5 schools" : vérifier mapping vs V4 6 schools.
+
+**Action** :
+1. Read V4 schools : `/Users/mike/Work/milan project/src-v3/data/Schools.js` ou équivalent
+2. Read V6 schools : `Assets/Scripts/Data/School.cs` ou `Towers/SchoolType.cs`
+3. Produire `.claude/audit/2026-05-12-schools-mapping.md` avec table :
+   | V4 school | V6 school | Mapping | Notes |
+4. Recommander : keep 5 V6 (Mike décision validée) OU propose 6e school si gap critique
+5. Pas de commit code, juste audit MD
+
+---
+
+## P2 — Backlog secondaire (dispatcher après slots P1 libérés, faible urgence)
+
+### P2.1 — R6-CLEANUP-WORKTREES (exec direct bash, 15 min)
+
+`git worktree list` → identifier worktrees stale (>1h inactives) → `git worktree remove --force <path>` chacun.
+
+Limit cleanup à 5 par batch (éviter mass churn). Pas d'agent nécessaire, exec exécute directement.
+
+Commit unique : `chore(hygiene): cleanup N stale worktrees (1h+ inactive)`
+
+### P2.2 — R6-PARITY-FLOATING-POPUP-SCENE-FIX (catégorie B escalation Mike OR auto YAML)
+
+Vrai fix pour le ghost UIDocument dans `Main.unity`.
+
+**Option A — manual Unity Editor (Mike)** :
+- Mike open project + scène Main.unity + remove component UIDocument `&228555130` from FloatingPopupController + save + commit
+
+**Option B — auto YAML edit (exec, risque modéré)** :
+- Backup `Main.unity` → `Main.unity.bak`
+- Edit YAML : supprimer le block `&228555130` UIDocument + remove ref de la liste `m_Components` du GameObject #228555127
+- Verify scene parse OK (compile test)
+- Commit `fix(scene): remove ghost UIDocument FloatingPopupController (resolves runtime crash root cause)`
+- Si parse fail : restore .bak + escalation Mike
+
+**Decision** : exec choose Option B si confident YAML edit, sinon ack escalation Mike pour Option A.
+
+---
+
+## P3 — Dette technique (background, sans urgence — dispatch seulement si slots free + P1/P2 empty)
+
+### P3.1 — R6-REFACTO-ENEMY (bug-fixer Sonnet, 6-8h)
+
+`Assets/Scripts/Entities/Enemy.cs` 2051 LOC → split partial files par responsabilité.
+
+**Plan split** :
+- `Enemy.cs` core (300 LOC) : fields, Awake, Update dispatch, public API
+- `Enemy.Movement.cs` (400 LOC) : path follow, waypoint logic, currentSpeedMul
+- `Enemy.Combat.cs` (400 LOC) : TakeDamage, OnHit, OnKilled, drop loot
+- `Enemy.Behaviors.cs` (400 LOC) : per-type AI (assassin, dragon, kraken, wizard_king...)
+- `Enemy.Stats.cs` (200 LOC) : HP, atk, def, school resists
+- `Enemy.Anim.cs` (300 LOC) : Animator state, sprite swap, VFX hooks
+
+**Cap** : 500 LOC strict chaque fichier.
+
+### P3.2 — R6-REFACTO-TOWER (bug-fixer Sonnet, 6-8h)
+
+`Assets/Scripts/Entities/Tower.cs` 2254 LOC → split partial.
+
+**Plan split** : `Tower.cs` core + `Tower.Combat.cs` + `Tower.Placement.cs` + `Tower.Upgrade.cs` + `Tower.Effects.cs` + `Tower.Anim.cs`
+
+**Cap** : 500 LOC strict.
+
+### P3.3 — R6-REFACTO-CASTLE (bug-fixer Sonnet, 2h)
+
+`Assets/Scripts/Entities/Castle.cs` 762 LOC → split partial (Castle.cs core + Castle.HP.cs + Castle.VFX.cs).
+
+**Cap** : 500 LOC strict.
+
+---
+
+## Coordination cross-tickets
+
+- **Conflits prévisibles** :
+  - P1.4 BossUI + P3.1 Enemy refacto → BossUI subscribe OnBossSpawn event (Enemy partial OK)
+  - P1.2 events + Tower.cs additions → P3.2 Tower refacto (do P1.2 d'abord, P3.2 plus tard)
+  - P1.5 ambient lighting + LevelLoader → si LevelLoader stable, no conflict ; si LevelLoader splitting en // : coord
+- **Pas de touch simultané** : EnemyBossBehaviors.cs (split fragile post-7817aeb), DynamicEventManager.cs (sauf P1.2 owner), PathTilesController.cs (sauf P1.6 owner)
+
+## Dispatch strategy recommandée
+
+**Immediate (slot 1-4)** :
+- Slot 1 : P1.1 UI HARDENING (bug-fixer, 30 min — premier slot court pour libérer rapidement)
+- Slot 2 : P1.2 events V4 FIDELITY (feature-dev, 4-5h)
+- Slot 3 : P1.3 Castle skins (feature-dev, 1-2h)
+- Slot 4 : P1.4 BossUI cutscene (feature-dev, 2-3h)
+
+**Cascade (slot libère)** :
+- Slot 1 free (30 min) → dispatch P1.5 ambient
+- Slot 3 free (1.5h) → dispatch P1.6 water/lava anim
+- Slot 4 free (2.5h) → dispatch P1.7 castle PointLight
+- Slot 1 free again (2h) → dispatch P1.8 schools audit
+- Au cours de la cascade : P2.1 cleanup à insérer sans agent (exec bash direct entre 2 commits)
+- Slots P3.x dispatched seulement si tous P1+P2 done OU exec ≥6h sans interruption
+
+**Adaptive** :
+- Si Mike retest crash résolu → continue backlog comme prévu
+- Si Mike retest crash persiste → P2.2 Floating Popup scene fix devient P0, push en tête, autres slots continuent backlog normalement
+- Si Mike demande revert partial → exec pause backlog 30 min pour exécuter revert, puis resume
+
+## Time cap
+
+**Sprint R6-PARITY-V4 P1 actif** : cap d'origine 20h00 local (ack 16h00 + 4h). Mike a accordé autonomous mode = soft cap (peut être étendu sans nouvelle validation explicite).
+
+**Backlog completion estimé** : P1 (8 tickets) + P2 (2 tickets) = ~20h total séquentiel, ~5-6h en 4-parallel. P3 (3 tickets refacto) = ~15h additionnel hors sprint actuel.
+
+**Sprint R6-PARITY-V4 effective complete = P1 done** (~5-6h depuis maintenant ~17h45 → cap ~23h45). P2-P3 = follow-up sprints futurs.
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-backlog-fourni-autonomous-ack.md` contenant :
+- Confirmation 8 specs tickets P1 créés (paths `.claude/specs/R6-PARITY-V4/R6-PARITY-XXX.md` ou inline dans backlog file)
+- 4 worktrees Slot 1-4 dispatched (paths + agent IDs)
+- Acknowledgment cascade strategy (pioche dans backlog au fur et à mesure)
+- Time cap noté (soft, autonomous mode)
+- Pas d'attente nouvelle décision Mike sauf préemption retest
+
+## Constraints rappel charter §1
+
+- Hard cap 500 LOC par fichier C# (règle #3) — TOLERANCE ZERO (sauf legacy déjà >500 hors scope)
+- No Sub-Opus spawn (règle #10) : Sonnet feature-dev ou bug-fixer
+- No feature creep (règle #4) : opportunités → `.claude/backlog/R6-found-during-exec.md`
+- Compile gate post-commit (règle #5)
+- Self-report 100 mots max (règle #8) chaque ticket
+
+## Status
+
+⏳ pending exec ack + dispatch batch P1 4 worktrees + start cascade
 
 
