@@ -86,8 +86,9 @@ namespace CrowdDefense.Entities
         // Tier pip GameObjects (L2 = 2 pips, L3 = 3 pips)
         private readonly List<GameObject> _tierPips = new();
 
-        // Idle animation phase (random offset per tower)
+        // Idle animation phase (random offset per tower) + base world Y for root bob
         private float _idlePhase;
+        private Vector3 _basePos;
         private float _lastFireAt;
 
         // DOT feedback popup throttle — skip if popup emitted within last 0.5s
@@ -277,6 +278,7 @@ namespace CrowdDefense.Entities
             _slowTickTimer = 0f;
             _heroBuffDmgMul = 1f;
             _idlePhase = Random.value * Mathf.PI * 2f;
+            _basePos = transform.position;
             _lastFireAt = 0f;
             UpgradeLevel = 1;
             UpgradeBranch = TowerBranch.None;
@@ -1349,6 +1351,13 @@ namespace CrowdDefense.Entities
         {
             TickSynergyHalo();
             TickAffordableHighlight();
+
+            bool isSelected = PlacementController.Instance?.SelectedTower == this;
+            if (!isSelected)
+            {
+                float bobY = _basePos.y + Mathf.Sin(Time.time * 2f + _idlePhase) * 0.03f;
+                transform.position = new Vector3(_basePos.x, bobY, _basePos.z);
+            }
 
             if (_meshChild == null) return;
 
