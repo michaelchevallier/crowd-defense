@@ -161,6 +161,7 @@ namespace CrowdDefense.UI
             waveKillCounter = root.Q<Label>("wave-kill-counter");
             waveTimeLabel = root.Q<Label>("wave-time");
             bluePillBtn = root.Q<Button>("bluepill-btn");
+            _comboMultiplierLabel = root.Q<Label>("combo-multiplier-label");
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -215,6 +216,9 @@ namespace CrowdDefense.UI
                 OnBreakStateChanged();
             }
 
+            EventManager.Instance?.Subscribe<ComboUpdatedEvent>(HandleComboUpdated);
+            EventManager.Instance?.Subscribe<ComboResetEvent>(HandleComboReset);
+
             // Wire perk badges + sidebar once hero is known
             var hero = LevelRunner.Instance?.Hero;
             if (_perkBadges != null && hero != null)
@@ -238,6 +242,25 @@ namespace CrowdDefense.UI
                 WaveManager.Instance.OnBreakStateChanged -= OnBreakStateChanged;
                 WaveManager.Instance.OnKillCountChanged -= OnKillCountChanged;
             }
+            EventManager.Instance?.Unsubscribe<ComboUpdatedEvent>(HandleComboUpdated);
+            EventManager.Instance?.Unsubscribe<ComboResetEvent>(HandleComboReset);
+        }
+
+        private void HandleComboUpdated(ComboUpdatedEvent evt)
+        {
+            if (_comboMultiplierLabel == null) return;
+            if (evt.Multiplier <= 1.01f)
+            {
+                _comboMultiplierLabel.AddToClassList("hidden");
+                return;
+            }
+            _comboMultiplierLabel.text = $"x{evt.Multiplier:F1}";
+            _comboMultiplierLabel.RemoveFromClassList("hidden");
+        }
+
+        private void HandleComboReset(ComboResetEvent _)
+        {
+            _comboMultiplierLabel?.AddToClassList("hidden");
         }
 
         private void ApplyLocalizedTexts()
