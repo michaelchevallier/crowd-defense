@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
@@ -66,22 +67,57 @@ namespace CrowdDefense.UI
             if (_title != null)
                 _title.text = r.IsVictory ? "VICTOIRE !" : "DEFAITE";
 
-            if (_stars != null)
-                _stars.text = r.IsVictory
-                    ? new string('★', r.StarsEarned) + new string('☆', 3 - r.StarsEarned)
-                    : "";
+            // Stars and score start blank — coroutines populate them with animation
+            if (_stars != null) _stars.text = "";
+            if (_score != null) _score.text = "0";
 
             int totalWaves = WaveManager.Instance?.TotalWaves > 0
                 ? WaveManager.Instance.TotalWaves
                 : r.WaveReached;
 
-            if (_score  != null) _score.text  = r.Score.ToString();
             if (_waves  != null) _waves.text  = $"{r.WaveReached} / {totalWaves}";
             if (_kills  != null) _kills.text  = r.Kills.ToString();
             if (_gold   != null) _gold.text   = $"{r.GoldEarned}c";
             if (_towers != null) _towers.text = r.TowersPlaced.ToString();
             if (_perks  != null) _perks.text  = r.PerksAcquired.ToString();
             if (_time   != null) _time.text   = FormatTime(r.PlaytimeSeconds);
+
+            StartCoroutine(CountUpScore(r.Score, 1.5f));
+            if (r.IsVictory)
+                StartCoroutine(AnimateStars(r.StarsEarned));
+        }
+
+        private IEnumerator CountUpScore(int target, float dur)
+        {
+            float t = 0f;
+            while (t < dur)
+            {
+                t += Time.unscaledDeltaTime;
+                float k = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / dur), 3f); // ease-out cubic
+                if (_score != null)
+                    _score.text = Mathf.RoundToInt(target * k).ToString();
+                yield return null;
+            }
+            if (_score != null)
+                _score.text = target.ToString();
+        }
+
+        private IEnumerator AnimateStars(int earned)
+        {
+            if (_stars == null) yield break;
+            int revealed = 0;
+            for (int i = 0; i < 3; i++)
+            {
+                yield return new WaitForSecondsRealtime(0.3f);
+                revealed++;
+                int shown = Mathf.Min(revealed, earned);
+                _stars.text = new string('★', shown) + new string('☆', 3 - shown);
+
+                if (revealed <= earned)
+                    AudioController.Instance?.Play("star");
+            }
+            // Ensure final state is correct
+            _stars.text = new string('★', earned) + new string('☆', 3 - earned);
         }
 
         private void OnContinue() => LevelLoader.GoToWorldMap();
