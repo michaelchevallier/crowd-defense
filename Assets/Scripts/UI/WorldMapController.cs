@@ -114,11 +114,7 @@ namespace CrowdDefense.UI
             BuildWorldTabs();
 
             _levelGrid = _root.Q<VisualElement>("worldmap-level-grid");
-            if (_levelGrid == null)
-            {
-                // TODO: separate UIDocument with WorldMap.uxml would decouple logic from main scene.
-                return;
-            }
+            if (_levelGrid == null) return;
 
             RefreshHeader();
             ShowWorld(_activeWorld);
