@@ -63,10 +63,10 @@ namespace CrowdDefense.Systems
             }
 
             // Hotkeys 1/2/3/4 — quick select tower type for placement
-            if (Input.GetKeyDown(KeyCode.Alpha1)) { SelectTowerType("archer"); return; }
-            if (Input.GetKeyDown(KeyCode.Alpha2)) { SelectTowerType("mage");   return; }
-            if (Input.GetKeyDown(KeyCode.Alpha3)) { SelectTowerType("cannon"); return; }
-            if (Input.GetKeyDown(KeyCode.Alpha4)) { SelectTowerType("frost");  return; }
+            if (Input.GetKeyDown(KeyBindings.GetKey("tower_select_1"))) { SelectTowerType("archer"); return; }
+            if (Input.GetKeyDown(KeyBindings.GetKey("tower_select_2"))) { SelectTowerType("mage");   return; }
+            if (Input.GetKeyDown(KeyBindings.GetKey("tower_select_3"))) { SelectTowerType("cannon"); return; }
+            if (Input.GetKeyDown(KeyBindings.GetKey("tower_select_4"))) { SelectTowerType("frost");  return; }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             // Hotkey S : sell la tour sélectionnée (debug, UI radial menu = CORE-20)

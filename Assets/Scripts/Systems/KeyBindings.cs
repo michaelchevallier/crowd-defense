@@ -9,17 +9,26 @@ namespace CrowdDefense.Systems
     {
         private static readonly Dictionary<string, KeyCode> Defaults = new()
         {
-            { "pause",       KeyCode.Escape },
-            { "speed",       KeyCode.Space },
-            { "mute",        KeyCode.M },
-            { "debug",       KeyCode.F3 },
-            { "birdseye",    KeyCode.V },
-            { "follow",      KeyCode.F },
-            { "help",        KeyCode.H },
-            { "pathPreview", KeyCode.P },
-            { "save",        KeyCode.F5 },
-            { "load",        KeyCode.F9 },
-            { "reset",       KeyCode.R },
+            { "pause",            KeyCode.Escape },
+            { "speed",            KeyCode.Space },
+            { "mute",             KeyCode.M },
+            { "debug",            KeyCode.F3 },
+            { "birdseye",         KeyCode.V },
+            { "follow",           KeyCode.F },
+            { "help",             KeyCode.H },
+            { "pathPreview",      KeyCode.P },
+            { "save",             KeyCode.F5 },
+            { "load",             KeyCode.F9 },
+            { "reset",            KeyCode.R },
+            { "tower_select_1",   KeyCode.Alpha1 },
+            { "tower_select_2",   KeyCode.Alpha2 },
+            { "tower_select_3",   KeyCode.Alpha3 },
+            { "tower_select_4",   KeyCode.Alpha4 },
+            { "skill_q",          KeyCode.Q },
+            { "skill_w",          KeyCode.W },
+            { "skill_e",          KeyCode.E },
+            { "speed_adjust_up",  KeyCode.Equals },
+            { "speed_adjust_down", KeyCode.Minus },
         };
 
         private readonly Dictionary<string, KeyCode> _bindings = new();

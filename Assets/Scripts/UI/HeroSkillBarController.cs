@@ -72,9 +72,9 @@ namespace CrowdDefense.UI
         private void HandleKeyInput()
         {
             // Legacy Input API (InputSystem package not installed)
-            if (Input.GetKeyDown(KeyCode.Q)) TriggerSlot(0);
-            if (Input.GetKeyDown(KeyCode.W)) TriggerSlot(1);
-            if (Input.GetKeyDown(KeyCode.E)) TriggerSlot(2);
+            if (Input.GetKeyDown(KeyBindings.GetKey("skill_q"))) TriggerSlot(0);
+            if (Input.GetKeyDown(KeyBindings.GetKey("skill_w"))) TriggerSlot(1);
+            if (Input.GetKeyDown(KeyBindings.GetKey("skill_e"))) TriggerSlot(2);
         }
 
         private void TriggerSlot(int index)

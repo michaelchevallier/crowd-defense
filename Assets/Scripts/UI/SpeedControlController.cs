@@ -38,9 +38,9 @@ namespace CrowdDefense.UI
         {
             if (Input.GetKeyDown(KeyBindings.GetKey("speed")))
                 CycleForward();
-            else if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
+            else if (Input.GetKeyDown(KeyBindings.GetKey("speed_adjust_up")) || Input.GetKeyDown(KeyCode.KeypadPlus))
                 Shift(+1);
-            else if (Input.GetKeyDown(KeyCode.Minus) || Input.GetKeyDown(KeyCode.KeypadMinus))
+            else if (Input.GetKeyDown(KeyBindings.GetKey("speed_adjust_down")) || Input.GetKeyDown(KeyCode.KeypadMinus))
                 Shift(-1);
         }
 
