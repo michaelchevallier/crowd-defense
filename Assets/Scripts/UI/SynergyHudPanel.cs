@@ -17,6 +17,9 @@ namespace CrowdDefense.UI
         private VisualElement? _panel;
         private VisualElement? _list;
 
+        // TowerIds currently flashing gold border (newly activated synergy pair)
+        private readonly HashSet<string> _flashingIds = new();
+
         // All known synergy definitions for display (active+inactive)
         private static readonly SynergyInfo[] AllSynergies = new SynergyInfo[]
         {
@@ -41,6 +44,30 @@ namespace CrowdDefense.UI
             _panel = root.Q<VisualElement>("synergy-hud-panel");
             _list  = root.Q<VisualElement>("synergy-hud-list");
             StartCoroutine(PollLoop());
+
+            if (Synergies.Instance != null)
+                Synergies.Instance.OnSynergyActivated += OnSynergyActivated;
+        }
+
+        private void OnDestroy()
+        {
+            if (Synergies.Instance != null)
+                Synergies.Instance.OnSynergyActivated -= OnSynergyActivated;
+        }
+
+        private void OnSynergyActivated(SynergyActivatedInfo info)
+        {
+            StartCoroutine(FlashRow(info.FromType, 0.6f));
+            StartCoroutine(FlashRow(info.ToType, 0.6f));
+        }
+
+        private IEnumerator FlashRow(string towerId, float duration)
+        {
+            _flashingIds.Add(towerId);
+            Redraw();
+            yield return new WaitForSeconds(duration);
+            _flashingIds.Remove(towerId);
+            Redraw();
         }
 
         private IEnumerator PollLoop()
@@ -74,7 +101,8 @@ namespace CrowdDefense.UI
             {
                 activeMap.TryGetValue(info.TowerId, out int count);
                 bool active = count > 0;
-                _list.Add(BuildRow(info, count, active));
+                bool flashing = _flashingIds.Contains(info.TowerId);
+                _list.Add(BuildRow(info, count, active, flashing));
                 anyVisible = true;
             }
 
@@ -84,7 +112,7 @@ namespace CrowdDefense.UI
                 _panel.AddToClassList("hidden");
         }
 
-        private static VisualElement BuildRow(SynergyInfo info, int count, bool active)
+        private static VisualElement BuildRow(SynergyInfo info, int count, bool active, bool flashing = false)
         {
             string icon  = L.Get($"syn.icon.{info.TowerId}");
             string name  = L.Get(info.NameKey, "UI");
@@ -101,6 +129,7 @@ namespace CrowdDefense.UI
             var wrap = new VisualElement();
             wrap.AddToClassList("synergy-hud-row");
             if (!active) wrap.AddToClassList("synergy-hud-row-inactive");
+            if (flashing) wrap.AddToClassList("synergy-hud-row-flash");
 
             var lbl = new Label(countLabel);
             lbl.AddToClassList("synergy-hud-row-label");

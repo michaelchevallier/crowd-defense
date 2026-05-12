@@ -1621,6 +1621,12 @@
     -unity-font-style: italic;
 }
 
+.synergy-hud-row-flash {
+    border-color: rgb(255, 200, 50);
+    border-width: 2px;
+    border-radius: 3px;
+}
+
 .synergy-hud-tooltip {
     position: absolute;
     right: 210px;
