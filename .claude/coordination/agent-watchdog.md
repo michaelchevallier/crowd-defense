@@ -1,30 +1,25 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 10:20
+## 2026-05-12 14:03 — Phase R6-01 ✅ DONE
 
 ### Snapshot
 
-- Actifs (<8 min) : 3 Sonnet polish in flight (Wave skip bonus, Tower path cursor, Achievement showcase anim)
+- Actifs (<8 min) : 1 Sonnet en flight (Track B bug-fixer a778ed93 4min — runtime errors)
 - Stalled (8-30 min) : 0
 - Worktrees : 16
-- Unity batch : NO (idle)
-- r43 LIVE : 5f2a605 (3 commits buffered)
+- Unity batch : YES PID 80387 (bug-fixer play mode repro)
+- r59 LIVE : 21bbc69 (1b2af7d) — pas de deploy R6-01
 
-### Killed
+### R6-01 progress
 
-0. Aucun.
-
-### Sonnet en flight
-
-- aaa19e9d42646082c (HUD wave-skip bonus +30g popup)
-- a581e23e249351940 (Tower placement path indicator yellow dots)
-- a260b813eba4f242f (Achievement showcase icons rotate+scale hover)
+- **Track A** ✅ DONE — `.claude/audit/2026-05-12-triage-table.md` (56 rows)
+- **Track B** 🚧 IN FLIGHT — bug-fixer 5 bugs runtime (3 shaders + 2 exceptions)
 
 ### Notes
 
-🔥 V4 PARITY HOLDS 100% confirmed at 10:17 eval (16 commits clean).
-13 deploys r28→r43 (~3h15). Cycle stable.
+🛑 R6-01 supervisé. Pas de ScheduleWakeup. Pas de Sub-Opus. Pas de feature dispatch.
+Mike doit valider triage + Track B done avant R6-02.
 
 ### Stdout
 
-`Actifs:3 Stalled:0 Killed:0 Worktrees:16 UnityBatch:NO r43=LIVE(5f2a605) V4_PARITY=100%`
+`Actifs:1 Stalled:0 Killed:0 Worktrees:16 UnityBatch:YES(bugfixer-playmode) R6-01_TRACK_A=DONE R6-01_TRACK_B=4min`
