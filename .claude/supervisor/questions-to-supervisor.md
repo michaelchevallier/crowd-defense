@@ -36,6 +36,20 @@ Quand question `[resolved]`, déplacer la section dans `_archive.md` (ou laisser
 
 (les questions actives en attente d'ack ici, plus récente en bas)
 
+### 2026-05-13 00h55 — Q-N9-80levels-design-decisions
+Type : escalation (design Mike)
+Category : B
+Blocking : false (impl N12 attend, autres tickets pioche continue)
+Source : N9 game-designer spec `~/.claude/specs/N9-80levels-rebalance.md` (hors repo)
+Questions design Mike :
+- **Q9-1** : W*-9 endurance levels (10 levels 10 waves chacun) — keep 10 waves (BTD6 endurance pattern, 11% content share) OU reduce à 5 waves spec D1-04 ? Reco game-designer : keep (precedent industry).
+- **Q9-2** : W9/W10 wave1 ramp factor — 0.40 (conservatif) vs 0.50 (medium) ? Affecte 18 levels. Reco : 0.45 hybride.
+- **Q9-3** : LevelDifficultyMul overrides W3-W8 L2-L7 — cleanup now (apply formula uniformly) OR keep manual tuning ? Reco game-designer : cleanup pour cohérence.
+- **Q9-4** : Castle HP W2-1 régression 130 vs W1-9 160 — bug formule ? Reco fix difficultyMul L9 = 1.30f.
+Context : 90 levels content scale audit (50 WARN, 0 FAIL). Mike décide direction balance. Status `[ ] pending`.
+
+---
+
 ### 2026-05-12 18h18 — Q-P3-enemy-refacto-cap `[resolved]` 18h25 exec-auto-action
 Type : tactical / Category : A / Blocking : false
 Question : P3.1 R6-REFACTO-ENEMY core reste 850 LOC > cap 500. Que faire ?
