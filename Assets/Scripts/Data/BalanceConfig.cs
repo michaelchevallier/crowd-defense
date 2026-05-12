@@ -123,6 +123,17 @@ namespace CrowdDefense.Data
             return rounded;
         }
 
+        // D1-04: static helper used as fallback when no LevelData is loaded.
+        public static int GetCastleMaxHp(int worldIndex, int levelIndex = 1)
+        {
+            var cfg = Get();
+            float diffMul = DifficultyHpDmgMul();
+            float formula = cfg.CastleHPBase + cfg.CastleHPSqrtMul * Mathf.Sqrt(Mathf.Max(worldIndex, 1)) * diffMul;
+            int rounded = Mathf.RoundToInt(formula);
+            if (worldIndex == 1 && levelIndex == 1) return Mathf.Max(rounded, cfg.FloorCastleHPW1);
+            return rounded;
+        }
+
         public int RollTreasureValue() =>
             Random.Range(TreasureValueMin, TreasureValueMax + 1);
 

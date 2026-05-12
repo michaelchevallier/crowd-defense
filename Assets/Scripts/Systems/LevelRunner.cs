@@ -234,7 +234,9 @@ namespace CrowdDefense.Systems
         }
 
         public int ResolveCastleHP() =>
-            _dailySpec != null ? _dailySpec.CastleHP : currentLevel?.CastleHP ?? 120;
+            _dailySpec != null
+                ? _dailySpec.CastleHP
+                : currentLevel?.CastleHP ?? BalanceConfig.GetCastleMaxHp(1, 1);
 
         // Called externally (e.g. perk picker done) to proceed from LevelComplete → Summary.
         public void ConfirmLevelComplete()
