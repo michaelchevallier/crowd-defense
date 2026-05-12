@@ -15,6 +15,9 @@ namespace CrowdDefense.Entities
         private float lifetimeSec;
         private ProjectilePool? pool;
         private MeshRenderer? rend;
+        private MaterialPropertyBlock? _mpb;
+        private static readonly int _colorId     = Shader.PropertyToID("_BaseColor");
+        private static readonly int _smoothnessId = Shader.PropertyToID("_Smoothness");
 
         // Source tower — used to apply synergy on-hit effects (slow / freeze)
         private Tower? sourceTower;
@@ -67,10 +70,10 @@ namespace CrowdDefense.Entities
             rend = GetComponent<MeshRenderer>();
             if (rend != null)
             {
-                if (rend.material == null)
-                    rend.material = new Material(ShaderUtil.GetLitShader());
-                rend.material.color = color;
-                rend.material.SetFloat("_Smoothness", 0.9f);
+                _mpb ??= new MaterialPropertyBlock();
+                _mpb.SetColor(_colorId, color);
+                _mpb.SetFloat(_smoothnessId, 0.9f);
+                rend.SetPropertyBlock(_mpb);
             }
         }
 
