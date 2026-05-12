@@ -316,7 +316,29 @@ namespace CrowdDefense.UI
                 icon.style.fontSize  = 28;
                 icon.style.marginLeft  = 6;
                 icon.style.marginRight = 6;
+                icon.style.transformOrigin = new StyleTransformOrigin(
+                    new TransformOrigin(Length.Percent(50), Length.Percent(50)));
+                icon.style.transitionProperty  = new StyleList<StylePropertyName>(
+                    new System.Collections.Generic.List<StylePropertyName>
+                    { new StylePropertyName("scale"), new StylePropertyName("rotate") });
+                icon.style.transitionDuration  = new StyleList<TimeValue>(
+                    new System.Collections.Generic.List<TimeValue>
+                    { new TimeValue(150, TimeUnit.Millisecond), new TimeValue(150, TimeUnit.Millisecond) });
+                icon.style.transitionTimingFunction = new StyleList<EasingFunction>(
+                    new System.Collections.Generic.List<EasingFunction>
+                    { new EasingFunction(EasingMode.EaseOut), new EasingFunction(EasingMode.EaseOut) });
                 icon.tooltip = string.IsNullOrEmpty(def.titleKey) ? def.id : L.Get(def.titleKey);
+
+                icon.RegisterCallback<PointerEnterEvent>(_ =>
+                {
+                    icon.style.scale  = new StyleScale(new Scale(new Vector3(1.2f, 1.2f, 1f)));
+                    icon.style.rotate = new StyleRotate(new Rotate(new Angle(15f, AngleUnit.Degree)));
+                });
+                icon.RegisterCallback<PointerLeaveEvent>(_ =>
+                {
+                    icon.style.scale  = new StyleScale(new Scale(Vector3.one));
+                    icon.style.rotate = new StyleRotate(new Rotate(new Angle(0f, AngleUnit.Degree)));
+                });
 
                 // Click on any icon → open achievements panel.
                 icon.RegisterCallback<ClickEvent>(_ => AchievementsPanel.Instance?.Show());
