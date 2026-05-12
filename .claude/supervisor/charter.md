@@ -5,7 +5,19 @@
 ## 1. Guard rails (toutes les phases R6)
 
 1. **Trigger sprint = Mike chat explicite.** Aucun `ScheduleWakeup`,
-   aucun `/loop`, aucun cron pour démarrer un sprint sans message Mike.
+   aucun `/loop`, aucun cron pour **démarrer** un sprint sans message Mike
+   explicite OU instruction superviseur datée.
+   - **EXCEPTION cron scrute-only** : un cron exec peut tourner en
+     permanence pour `read instructions-to-exec.md → ack si nouvelle
+     instruction → dispatch agents SI superviseur a publié un GO`. Le
+     dispatch reste gated par instruction superviseur (qui est gated par
+     Mike via chat ou via canal direct), donc OK.
+   - **INTERDIT pour ce cron exec** : initier un sprint sans instruction
+     superviseur, dispatcher polish/feature creep, étendre time cap au-delà
+     de l'instruction, re-dispatcher après time cap reached.
+   - Intervalle cron exec recommandé : 15min décalé du cron superviseur
+     (ex superviseur `12,27,42,57` → exec `4,19,34,49`). L'exec process
+     ack/dispatch 4-8min avant le check superviseur suivant.
 2. **Gate avant dispatch agent.** Tu dispatch UNIQUEMENT si :
    - Ticket existe dans `.claude/specs/R6-XX/MIGRATE-R6-XX-YY.md`
    - Ticket référence : 1 row triage table validée Mike OU 1 Q-N (Q1-Q18)
