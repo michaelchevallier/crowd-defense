@@ -549,6 +549,78 @@ namespace CrowdDefense.Entities
         {
             if (slotIndex == 0 && !_autoAttack) TryManualFire();
             if (slotIndex == 2) TryUlt();
+            StartCoroutine(CastSweepRoutine(slotIndex));
+        }
+
+        // ── Ability cast radial sweep VFX ─────────────────────────────────────
+        // Q(0)=red  W(1)=blue  E(2)=green — LineRenderer 64 verts, 0.4s, r 0.5→1.5, alpha 1→0
+        private System.Collections.IEnumerator CastSweepRoutine(int slotIndex)
+        {
+            Color sweepColor = slotIndex switch
+            {
+                1 => new Color(0.2f, 0.4f, 1f),
+                2 => new Color(0.15f, 0.9f, 0.25f),
+                _ => new Color(1f, 0.18f, 0.18f),
+            };
+
+            const int   Verts    = 64;
+            const float Duration = 0.4f;
+            const float RadiusStart = 0.5f;
+            const float RadiusEnd   = 1.5f;
+            const float HeightY     = 0.15f; // slightly above ground
+
+            var go = new GameObject("CastSweep_VFX");
+            go.transform.SetParent(null); // world space, not child of hero
+            go.transform.position = transform.position;
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.loop           = true;
+            lr.positionCount  = Verts;
+            lr.useWorldSpace  = true;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                               ?? Shader.Find("Sprites/Default")
+                               ?? Shader.Find("Standard")!)
+            {
+                color = sweepColor
+            };
+            mat.SetFloat("_Surface", 1f);
+            mat.SetInt("_ZWrite", 0);
+            mat.renderQueue = 3000;
+            lr.material = mat;
+
+            float elapsed = 0f;
+            while (elapsed < Duration)
+            {
+                elapsed += Time.deltaTime;
+                float t      = Mathf.Clamp01(elapsed / Duration);
+                float radius = Mathf.Lerp(RadiusStart, RadiusEnd, t);
+                float alpha  = Mathf.Lerp(1f, 0f, t);
+                float width  = Mathf.Lerp(0.06f, 0.02f, t);
+
+                lr.startWidth = width;
+                lr.endWidth   = width;
+
+                var c = sweepColor;
+                c.a = alpha;
+                lr.startColor = c;
+                lr.endColor   = c;
+
+                var origin = transform.position;
+                for (int i = 0; i < Verts; i++)
+                {
+                    float angle = i * (2f * Mathf.PI / Verts);
+                    lr.SetPosition(i, new Vector3(
+                        origin.x + Mathf.Cos(angle) * radius,
+                        origin.y + HeightY,
+                        origin.z + Mathf.Sin(angle) * radius));
+                }
+                yield return null;
+            }
+
+            Destroy(go);
         }
 
         private void TryManualFire()
