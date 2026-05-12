@@ -9,7 +9,10 @@ namespace CrowdDefense.Systems
         public static string? NextLevelId { get; set; }
 
         // Non-null when the next run is a Daily challenge (no LevelData asset needed).
-        public static DailyLevelSpec? NextDailySpec { get; set; }
+        public static DailyLevelSpec?    NextDailySpec      { get; set; }
+
+        // Non-null when the daily challenge modifier applies (banned tower, gold mul, etc.).
+        public static ChallengeSpec? NextDailyChallenge { get; set; }
 
         public static bool HasHeroChoice()
             => !string.IsNullOrEmpty(UnityEngine.PlayerPrefs.GetString(HeroPickScreen.PrefsKey, ""));
@@ -29,8 +32,8 @@ namespace CrowdDefense.Systems
 
         public static void LoadDailyLevel()
         {
-            NextDailySpec = Daily.BuildDailyLevel();
-            NextLevelId   = "daily";
+            NextDailySpec     = Daily.BuildDailyLevel();
+            NextLevelId       = "daily";
             Fade("Main");
         }
 

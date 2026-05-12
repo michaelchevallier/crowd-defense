@@ -101,16 +101,17 @@ namespace CrowdDefense.UI
             row.Add(label);
 
             var btn = new Button();
-            bool playedToday = Daily.HasPlayedToday();
-            int bestScore    = Daily.GetStoredScore();
-            string sub       = playedToday
+            bool playedToday  = Daily.HasPlayedToday();
+            bool doneChallenge = DailyChallenge.Instance?.HasCompletedToday() ?? false;
+            int  bestScore    = Daily.GetStoredScore();
+            string sub = (playedToday || doneChallenge)
                 ? $"{L.Get("daily.played_today")} ({L.Get("daily.best_score_label")}: {bestScore})"
-                : L.Get("daily.play_btn");
+                : "Defi Quotidien";
             btn.text = sub;
             btn.AddToClassList("level-btn");
-            if (playedToday) btn.AddToClassList("cleared");
+            if (playedToday || doneChallenge) btn.AddToClassList("cleared");
 
-            btn.RegisterCallback<ClickEvent>(_ => LevelLoader.LoadDailyLevel());
+            btn.RegisterCallback<ClickEvent>(_ => DailyChallengeModal.Instance?.Show());
             row.Add(btn);
 
             grid.Add(row);
