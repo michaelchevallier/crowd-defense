@@ -59,6 +59,9 @@ namespace CrowdDefense.UI
         // Keyboard hints footer label
         private Label? keyboardHintsLabel;
 
+        // Wave kill counter label
+        private Label? waveKillCounter;
+
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
 
@@ -134,6 +137,7 @@ namespace CrowdDefense.UI
             ultBtn?.RegisterCallback<ClickEvent>(_ => TryCastUlt());
 
             keyboardHintsLabel = root.Q<Label>("keyboard-hints-label");
+            waveKillCounter = root.Q<Label>("wave-kill-counter");
             bluePillBtn = root.Q<Button>("bluepill-btn");
             bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
 
@@ -174,6 +178,7 @@ namespace CrowdDefense.UI
                 _waveManagerSubscribed = true;
                 WaveManager.Instance.OnWaveStart += OnWaveStart;
                 WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
+                WaveManager.Instance.OnKillCountChanged += OnKillCountChanged;
                 OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
                 // Sync initial break state (W1 waits for player)
                 OnBreakStateChanged();
@@ -198,6 +203,7 @@ namespace CrowdDefense.UI
             {
                 WaveManager.Instance.OnWaveStart -= OnWaveStart;
                 WaveManager.Instance.OnBreakStateChanged -= OnBreakStateChanged;
+                WaveManager.Instance.OnKillCountChanged -= OnKillCountChanged;
             }
         }
 
@@ -228,6 +234,7 @@ namespace CrowdDefense.UI
                 _waveManagerSubscribed = true;
                 WaveManager.Instance.OnWaveStart += OnWaveStart;
                 WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
+                WaveManager.Instance.OnKillCountChanged += OnKillCountChanged;
                 OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
                 OnBreakStateChanged();
             }
@@ -434,6 +441,18 @@ namespace CrowdDefense.UI
             // Hide launch button while wave is in progress
             if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
             if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
+            // Reset kill counter display at wave start
+            if (waveKillCounter != null)
+            {
+                waveKillCounter.text = "\U0001F480 0 / 0";
+                SetVisible(waveKillCounter, true);
+            }
+        }
+
+        private void OnKillCountChanged(int kills, int total)
+        {
+            if (waveKillCounter == null) return;
+            waveKillCounter.text = $"\U0001F480 {kills} / {total}";
         }
 
         private void OnBreakStateChanged()

@@ -47,6 +47,13 @@ namespace CrowdDefense.Systems
         public event Action? OnAllWavesCompleted;
         // Fired when the break/skip window state changes (HUD updates pill + button)
         public event Action? OnBreakStateChanged;
+        // Fired each time an enemy is killed during the current wave (kill count, total spawned)
+        public event Action<int, int>? OnKillCountChanged;
+
+        private int _waveKillCount = 0;
+        private int _waveTotalSpawned = 0;
+        public int WaveKillCount => _waveKillCount;
+        public int WaveTotalSpawned => _waveTotalSpawned;
 
         private void Start()
         {
@@ -72,6 +79,8 @@ namespace CrowdDefense.Systems
         {
             currentWaveIdx = idx;
             spawnCounter = 0;
+            _waveKillCount = 0;
+            _waveTotalSpawned = 0;
             var wave = levelData!.Waves[idx];
             var cfg = BalanceConfig.Get();
             float swarmMul = cfg.SwarmMul;
@@ -237,6 +246,7 @@ namespace CrowdDefense.Systems
             var enemy = EnemyPool.Instance.SpawnFromType(type, spawnPos, resolvedPathIdx, _currentWaveScaleMul);
             activeEnemies.Add(enemy);
             spawnCounter++;
+            _waveTotalSpawned++;
             EventManager.Instance?.Publish(new EnemySpawnedEvent(enemy));
 #if UNITY_EDITOR
             Debug.Log($"[WaveManager] spawned {type.Id} pathIdx={resolvedPathIdx} active={activeEnemies.Count}");
@@ -279,7 +289,15 @@ namespace CrowdDefense.Systems
             return levelData.Waves[nextWaveToStart];
         }
 
-        public void NotifyEnemyDied(Enemy e) => activeEnemies.Remove(e);
+        public void NotifyEnemyDied(Enemy e)
+        {
+            activeEnemies.Remove(e);
+            if (waveActive || pendingSpawns.Count > 0)
+            {
+                _waveKillCount++;
+                OnKillCountChanged?.Invoke(_waveKillCount, _waveTotalSpawned);
+            }
+        }
 
         // Called by boss enemies when they summon a minion mid-wave.
         public void RegisterSpawnedEnemy(Enemy e) => activeEnemies.Add(e);

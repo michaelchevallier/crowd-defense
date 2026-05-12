@@ -22,6 +22,7 @@
             <ui:VisualElement class="pill pill-wave" name="pill-wave">
                 <ui:Label text="WAVE" name="wave-label" class="pill-label" />
                 <ui:Label text="1/4" name="wave-value" class="pill-value" />
+                <ui:Label text="" name="wave-kill-counter" class="wave-kill-counter hidden" />
             </ui:VisualElement>
 
             <ui:VisualElement class="pill pill-hp" name="pill-hp">
@@ -248,6 +249,12 @@
             <ui:VisualElement name="joystick-base" class="joystick-base hidden">
                 <ui:VisualElement name="joystick-thumb" class="joystick-thumb" />
             </ui:VisualElement>
+        </ui:VisualElement>
+
+        <!-- Synergy active panel (top-right, shows active synergy effect labels) -->
+        <ui:VisualElement name="synergy-hud-panel" class="synergy-hud-panel hidden">
+            <ui:Label text="Synergies actives" name="synergy-hud-title" class="synergy-hud-title" />
+            <ui:VisualElement name="synergy-hud-list" class="synergy-hud-list" />
         </ui:VisualElement>
 
         <!-- Synergy badges (bottom-center, above toolbar) -->
