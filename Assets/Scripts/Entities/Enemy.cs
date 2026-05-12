@@ -57,6 +57,11 @@ namespace CrowdDefense.Entities
         private float _dmgTakenMul        = 1f;
         private float _dmgTakenMulUntil   = 0f;
 
+        // Variant modifiers (set once in ApplyVariant after Init)
+        private float _variantSpeedMul    = 1f;
+        private float _regenPerSec        = 0f;
+        private float _dmgReduction       = 0f;
+
         // Child GO holding the spawned GLTF mesh (null = using capsule primitive)
         private GameObject? _meshChild;
 
@@ -217,6 +222,40 @@ namespace CrowdDefense.Entities
 
         // D1-04 pressure mob — multiply movement speed after spawn (stacks with pressureSpeedMul)
         public void ApplySpeedMultiplier(float mul) => pressureSpeedMul *= mul;
+
+        void SetTint(Color c)
+        {
+            if (_cachedRenderers == null) return;
+            _mpb ??= new MaterialPropertyBlock();
+            _mpb.SetColor(_baseColorId, c);
+            _mpb.SetColor(_colorId,     c);
+            for (int i = 0; i < _cachedRenderers.Length; i++)
+                _cachedRenderers[i].SetPropertyBlock(_mpb);
+        }
+
+        public void ApplyVariant(CrowdDefense.Data.EnemyVariant v)
+        {
+            switch (v)
+            {
+                case CrowdDefense.Data.EnemyVariant.Fast:
+                    _variantSpeedMul *= 1.5f;
+                    SetTint(Color.yellow);
+                    break;
+                case CrowdDefense.Data.EnemyVariant.Tough:
+                    maxHp = maxHp * 1.5f;
+                    hp    = maxHp;
+                    SetTint(new Color(0.6f, 0.3f, 0.1f));
+                    break;
+                case CrowdDefense.Data.EnemyVariant.Regen:
+                    _regenPerSec = 2f;
+                    SetTint(Color.green);
+                    break;
+                case CrowdDefense.Data.EnemyVariant.Armored:
+                    _dmgReduction = 0.3f;
+                    SetTint(new Color(0.7f, 0.7f, 0.8f));
+                    break;
+            }
+        }
 
         // Called by EnemyPool after Init when the 5% elite roll succeeds.
         public void ApplyElite()
@@ -389,6 +428,9 @@ namespace CrowdDefense.Entities
             _enragedSelfTriggered = false;
             _dmgTakenMul      = 1f;
             _dmgTakenMulUntil = 0f;
+            _variantSpeedMul  = 1f;
+            _regenPerSec      = 0f;
+            _dmgReduction     = 0f;
             _hitFlashTimer    = 0f;
             _freezeUntilTime  = 0f;
             _frozenTinted     = false;
@@ -937,6 +979,9 @@ namespace CrowdDefense.Entities
                 return;
             }
 
+            if (_regenPerSec > 0f)
+                hp = Mathf.Min(hp + _regenPerSec * Time.deltaTime, maxHp);
+
             if (cfg.IsFlyer)
             {
                 UpdateFlyer();
@@ -1021,11 +1066,11 @@ namespace CrowdDefense.Entities
         private float ComputeEffectiveSpeed()
         {
             if (cfg == null) return 0f;
-            float speed = cfg.Speed * currentSpeedMul * pressureSpeedMul * _enragedSpeedMul;
+            float speed = cfg.Speed * currentSpeedMul * pressureSpeedMul * _enragedSpeedMul * _variantSpeedMul;
             if (_freezeUntilTime > 0f && Time.time < _freezeUntilTime)
                 speed = 0f;
             if (_chargeActive)
-                speed = cfg.Speed * cfg.ChargeMul * pressureSpeedMul * _enragedSpeedMul;
+                speed = cfg.Speed * cfg.ChargeMul * pressureSpeedMul * _enragedSpeedMul * _variantSpeedMul;
             return speed;
         }
 
@@ -1498,6 +1543,10 @@ namespace CrowdDefense.Entities
                     _dmgTakenMulUntil = 0f;
                 }
             }
+
+            // Armored variant: flat damage reduction
+            if (_dmgReduction > 0f)
+                actualDmg *= (1f - _dmgReduction);
 
             // Apocalypse boss phase invulnerability: clamp HP floor
             if (cfg != null && cfg.IsApocalypseBoss && _invulUntilTime > 0f && Time.time < _invulUntilTime)

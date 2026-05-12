@@ -18,6 +18,7 @@ namespace CrowdDefense.Data
     {
         public EnemyType type;
         public int count;
+        public EnemyVariant variant;
     }
 
     [Serializable]

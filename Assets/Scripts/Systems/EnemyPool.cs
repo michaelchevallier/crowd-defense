@@ -24,7 +24,7 @@ namespace CrowdDefense.Systems
 
         // Spawn, position, and Init an enemy of the given type in one call.
         // Called by WaveManager instead of Get() + manual Init.
-        public Enemy SpawnFromType(EnemyType type, Vector3 position, int pathIdx, float endlessMul = 1f)
+        public Enemy SpawnFromType(EnemyType type, Vector3 position, int pathIdx, float endlessMul = 1f, CrowdDefense.Data.EnemyVariant variant = CrowdDefense.Data.EnemyVariant.Normal)
         {
             // Fallback: if PathManager has no paths, inject a hardcoded straight-line path so
             // enemies don't silently self-release and the bug is visible in play mode.
@@ -44,6 +44,7 @@ namespace CrowdDefense.Systems
             enemy.transform.rotation = Quaternion.identity;
             VfxPool.Instance?.SpawnPortal(position);
             enemy.Init(type, pathIdx, endlessMul);
+            if (variant != CrowdDefense.Data.EnemyVariant.Normal) enemy.ApplyVariant(variant);
             if (Random.value < 0.05f) enemy.ApplyElite();
 
 #if UNITY_EDITOR

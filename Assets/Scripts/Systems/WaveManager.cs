@@ -22,7 +22,7 @@ namespace CrowdDefense.Systems
         private float _currentWaveScaleMul = 1f;  // endless mode: applied per-spawn (HP-based)
         private float _specialSpawnRateMul = 1f;   // endless special wave: spawn rate modifier
         private float _specialCountMul = 1f;        // endless special wave: enemy count modifier
-        private Queue<EnemyType> pendingSpawns = new();
+        private Queue<(EnemyType type, EnemyVariant variant)> pendingSpawns = new();
         private List<Enemy> activeEnemies = new();
 
         // D1-02 pacing state
@@ -150,12 +150,12 @@ namespace CrowdDefense.Systems
                     ApplySpecialWaveModifier(idx);
             }
 
-            var list = new List<EnemyType>();
+            var list = new List<(EnemyType type, EnemyVariant variant)>();
             foreach (var entry in wave.entries)
             {
                 if (entry.type == null) continue;
                 int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul * countMul * _specialCountMul));
-                for (int i = 0; i < count; i++) list.Add(entry.type);
+                for (int i = 0; i < count; i++) list.Add((entry.type, entry.variant));
             }
             // Prewarm per-type sub-pools before wave starts — avoids mid-wave Instantiate spikes.
             if (EnemyPool.Instance != null)
@@ -174,7 +174,7 @@ namespace CrowdDefense.Systems
                 int j = rng.Next(i + 1);
                 (list[i], list[j]) = (list[j], list[i]);
             }
-            pendingSpawns = new Queue<EnemyType>(list);
+            pendingSpawns = new Queue<(EnemyType type, EnemyVariant variant)>(list);
             spawnTimerMs = 0f;
             // Endless scaling already set by ApplyEndlessScaling(); only use WaveDef value for normal levels.
             if (!isEndless)
@@ -219,7 +219,8 @@ namespace CrowdDefense.Systems
                 if (spawnTimerMs >= actualInterval && pendingSpawns.Count > 0)
                 {
                     spawnTimerMs = 0f;
-                    SpawnEnemy(pendingSpawns.Dequeue(), wave.portalIdx);
+                    var (spawnType, spawnVariant) = pendingSpawns.Dequeue();
+                    SpawnEnemy(spawnType, wave.portalIdx, spawnVariant);
                 }
                 if (pendingSpawns.Count == 0 && activeEnemies.Count == 0)
                 {
@@ -316,7 +317,7 @@ namespace CrowdDefense.Systems
             }
         }
 
-        private void SpawnEnemy(EnemyType type, int wavePortalIdx)
+        private void SpawnEnemy(EnemyType type, int wavePortalIdx, EnemyVariant variant = EnemyVariant.Normal)
         {
             if (PathManager.Instance == null) return;
             var pm = PathManager.Instance;
@@ -332,7 +333,7 @@ namespace CrowdDefense.Systems
 
             int resolvedPathIdx = ResolvePathIdx(wavePortalIdx);
             Vector3 spawnPos = pm.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
-            var enemy = EnemyPool.Instance.SpawnFromType(type, spawnPos, resolvedPathIdx, _currentWaveScaleMul);
+            var enemy = EnemyPool.Instance.SpawnFromType(type, spawnPos, resolvedPathIdx, _currentWaveScaleMul, variant);
             activeEnemies.Add(enemy);
             spawnCounter++;
             _waveTotalSpawned++;

@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace CrowdDefense.Data
 {
+    public enum EnemyVariant { Normal, Fast, Tough, Regen, Armored }
+
     [CreateAssetMenu(fileName = "EnemyType", menuName = "CrowdDefense/EnemyType")]
     public class EnemyType : ScriptableObject
     {
