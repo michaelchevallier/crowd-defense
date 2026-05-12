@@ -30,6 +30,7 @@ namespace CrowdDefense.UI
         private VisualElement? _xpFlashOverlay;
         private VisualElement? _damageFlashOverlay;
         private VisualElement? _flameRing;
+        private VisualElement? _hpCircle;
 
         protected override void OnAwakeSingleton()
         {
@@ -148,6 +149,19 @@ namespace CrowdDefense.UI
                 _hpBarFill.style.width = new StyleLength(new Length(ratio * 100f, LengthUnit.Percent));
             }
 
+            // HP circle ring: green (1.0) → yellow (0.5) → red (0.0)
+            if (_hpCircle != null)
+            {
+                Color ringColor = ratio > 0.5f
+                    ? Color.Lerp(new Color(1f, 0.85f, 0f), new Color(0.1f, 0.9f, 0.1f), (ratio - 0.5f) * 2f)
+                    : Color.Lerp(new Color(0.9f, 0.1f, 0.1f), new Color(1f, 0.85f, 0f), ratio * 2f);
+                ringColor.a = 0.85f;
+                _hpCircle.style.borderTopColor    = new StyleColor(ringColor);
+                _hpCircle.style.borderRightColor  = new StyleColor(ringColor);
+                _hpCircle.style.borderBottomColor = new StyleColor(ringColor);
+                _hpCircle.style.borderLeftColor   = new StyleColor(ringColor);
+            }
+
             if (_levelLabel != null)
                 _levelLabel.text = atMaxLevel ? $"Niv MAX" : $"Niv {hero.Level}";
 
@@ -230,6 +244,25 @@ namespace CrowdDefense.UI
             _portrait = new VisualElement();
             _portrait.AddToClassList("portrait");
             root.Add(_portrait);
+
+            // HP circle ring: absolute inside portrait, between bg and damage flash.
+            _hpCircle = new VisualElement();
+            _hpCircle.style.position              = Position.Absolute;
+            _hpCircle.style.top                   = new StyleLength(2f);
+            _hpCircle.style.left                  = new StyleLength(2f);
+            _hpCircle.style.right                 = new StyleLength(2f);
+            _hpCircle.style.bottom                = new StyleLength(2f);
+            _hpCircle.style.borderTopWidth        = 4f;
+            _hpCircle.style.borderRightWidth      = 4f;
+            _hpCircle.style.borderBottomWidth     = 4f;
+            _hpCircle.style.borderLeftWidth       = 4f;
+            _hpCircle.style.borderTopLeftRadius     = new StyleLength(50f);
+            _hpCircle.style.borderTopRightRadius    = new StyleLength(50f);
+            _hpCircle.style.borderBottomLeftRadius  = new StyleLength(50f);
+            _hpCircle.style.borderBottomRightRadius = new StyleLength(50f);
+            _hpCircle.style.backgroundColor       = new StyleColor(Color.clear);
+            _hpCircle.pickingMode                 = PickingMode.Ignore;
+            _portrait.Add(_hpCircle);
 
             _damageFlashOverlay = new VisualElement();
             _damageFlashOverlay.style.position   = Position.Absolute;
