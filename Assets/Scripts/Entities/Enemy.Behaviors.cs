@@ -168,6 +168,72 @@ namespace CrowdDefense.Entities
         }
 
         private void UpdateGroundDecals()
+        {
+            if (++_decalFrame % 2 != 0) return; // throttle: every 2 frames
+
+            float now  = Time.time;
+            bool slow  = currentSpeedMul < 0.99f;
+            bool burn  = _burnUntilTime > 0f && now < _burnUntilTime;
+
+            // ── Slow decal (cyan glow) ──────────────────────────────────────
+            if (slow)
+            {
+                if (_decalSlow == null)
+                {
+                    _decalSlow = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    _decalSlow.name = "DecalSlow";
+                    Object.Destroy(_decalSlow.GetComponent<Collider>());
+                    _decalSlow.transform.SetParent(transform, false);
+                    _decalSlow.transform.localPosition = new Vector3(0f, 0.02f, 0f);
+                    _decalSlow.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                    _decalSlow.transform.localScale    = Vector3.one * 1.5f;
+                    _decalSlowRend = _decalSlow.GetComponent<MeshRenderer>();
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+                    mat.color = new Color(0f, 1f, 1f, 0.45f);
+                    if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f); // transparent
+                    _decalSlowRend.material = mat;
+                    _decalSlowRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    _decalSlowRend.receiveShadows = false;
+                }
+                if (!_decalSlow.activeSelf) _decalSlow.SetActive(true);
+                // alpha pulse 0.3-0.6
+                float alpha = 0.3f + 0.3f * (0.5f + 0.5f * Mathf.Sin(now * 4f));
+                _decalMpb.Clear();
+                _decalMpb.SetColor("_BaseColor", new Color(0f, 1f, 1f, alpha));
+                _decalSlowRend!.SetPropertyBlock(_decalMpb);
+            }
+            else if (_decalSlow != null && _decalSlow.activeSelf)
+                _decalSlow.SetActive(false);
+
+            // ── Burn decal (orange-red) + sparks ───────────────────────────
+            if (burn)
+            {
+                if (_decalBurn == null)
+                {
+                    _decalBurn = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                    _decalBurn.name = "DecalBurn";
+                    Object.Destroy(_decalBurn.GetComponent<Collider>());
+                    _decalBurn.transform.SetParent(transform, false);
+                    _decalBurn.transform.localPosition = new Vector3(0f, 0.03f, 0f);
+                    _decalBurn.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                    _decalBurn.transform.localScale    = Vector3.one * 1.5f;
+                    _decalBurnRend = _decalBurn.GetComponent<MeshRenderer>();
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+                    mat.color = new Color(1f, 0.3f, 0f, 0.4f);
+                    if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
+                    _decalBurnRend.material = mat;
+                    _decalBurnRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    _decalBurnRend.receiveShadows = false;
+                }
+                if (!_decalBurn.activeSelf) _decalBurn.SetActive(true);
+                // occasional spark at feet
+                if (UnityEngine.Random.value < 0.15f)
+                    VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 0.1f, new Color(1f, 0.45f, 0f));
+            }
+            else if (_decalBurn != null && _decalBurn.activeSelf)
+                _decalBurn.SetActive(false);
+        }
+
         private void SpawnMinion()
         {
             if (cfg?.SummonType == null) return;

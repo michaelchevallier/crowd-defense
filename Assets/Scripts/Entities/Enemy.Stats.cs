@@ -92,7 +92,6 @@ namespace CrowdDefense.Entities
         }
 
         private void BuildShieldHalo()
-        private void BuildShieldHalo()
         {
             shieldHalo = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             shieldHalo.name = "ShieldHalo";

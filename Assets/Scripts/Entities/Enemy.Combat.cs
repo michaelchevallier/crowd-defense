@@ -19,7 +19,6 @@ namespace CrowdDefense.Entities
             _hitFlashTimer = HitFlashDuration;
         }
 
-        private void ClearHitFlash()
         private void TickHitFlash()
         {
             if (_hitFlashTimer <= 0f) return;
