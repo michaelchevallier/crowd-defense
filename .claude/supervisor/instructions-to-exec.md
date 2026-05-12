@@ -658,11 +658,35 @@ Sauf relay si bug-fixer ou autre agent pose une question via `questions-to-super
 **Mode** : Autonome — exec gère ses slots worktrees (charter §1 max 4 parallèles), pioche dans le backlog priorisé ci-dessous au fur et à mesure
 **Préemption** : si Mike retest /v6/ outcome B/C → re-prioriser P0 fix scene OR revert partial avant continuer backlog
 
-## Principe
+## Principe (LIRE ATTENTIVEMENT)
 
-Backlog priorisé P1 → P3. Exec dispatch immédiatement 4 worktrees parallèles sur les 4 premiers tickets P1 (R6-PARITY-UI-HARDENING + R6-PARITY-012-V4-FIDELITY + R6-PARITY-011-COMPLETE + R6-PARITY-015-BOSS-UI). Au fur et à mesure qu'un slot libère, l'exec pioche dans la queue. Si Mike override / décision arrive, j'écris nouvelle instruction et exec re-prioritise.
+**Tu es libre.** Backlog priorisé P1 → P3 ci-dessous = **guidance prios**, pas un script à suivre à la lettre. **Tu gères ton propre backlog**, ta propre cadence, ton propre niveau de parallélisme.
 
-**Pas d'idle wait.** Slot vide = ticket suivant dispatched.
+**Tu peux** :
+- Lancer **autant d'agents en parallèle** que tu veux (4 worktrees, 6, 8, illimité — à toi de juger ta capacité de tracking + merge conflict risk).
+- Choisir ton ordre de dispatch (le P1.1/.2/.3/.4 que j'ai mis = ma reco mais tu re-prioritises si tu vois une dépendance ou un risque).
+- Insérer de la dette technique (P3) entre des tickets P1 si tu veux paralléliser un refacto pendant qu'un feature long tourne.
+- Insérer ton propre cleanup hygiène (P2.1 worktrees, ou autre) sans dispatch agent.
+- Découper un gros ticket en sous-tickets si tu juges la complexité plus élevée que mon estimation.
+- Reporter un ticket si tu trouves un blocker (ouvre Q catégorie A ou B selon urgence).
+
+**Tu dois** :
+- **Backlog jamais vide** : dès qu'un slot worktree libère, pioche le ticket suivant dans la queue. Pas d'idle wait sauf préemption P0.
+- **Respecter charter §1** : cap 500 LOC, no Sub-Opus spawn, no feature creep, compile gate post-commit, self-report 100 mots max.
+- **Préemption P0 immédiate** : si Mike retest /v6/ outcome B (Floating Popup degraded) ou C (crash persiste), tu pauses backlog 30 min pour scene edit ou revert, puis tu resumes.
+- **Ack après chaque dispatch batch** (pour que je puisse suivre).
+
+**Mon rôle (superviseur PO/PM)** :
+- Je fournis le backlog priorisé et le contexte.
+- Je **corrige si tu vas trop loin** : scope creep, cap violations, dispatch d'un ticket fragile (touch fichiers risqués), dispatch trop parallèles si je vois conflits merges, etc.
+- Je relais Mike decisions + écris nouvelles instructions si stratégie change.
+- Je ne te micro-manage pas. Tu es senior, tu juges les tradeoffs.
+
+**Anti-pattern à éviter** :
+- ❌ Attendre Mike validation entre chaque ticket (mode autonome activé, default = dispatch ask later)
+- ❌ Slot vide pendant > 5 min sans raison (cleanup OU dispatch backlog suivant)
+- ❌ Lancer 10 agents tous sur Tower.cs en parallèle (merge cauchemar)
+- ❌ Ignorer la queue P3 dette technique si tu as 6h consecutives free (insère 1 refacto)
 
 ---
 
@@ -921,6 +945,90 @@ Vrai fix pour le ghost UIDocument dans `Main.unity`.
 
 ## Status
 
-⏳ pending exec ack + dispatch batch P1 4 worktrees + start cascade
+✅ exec free to dispatch — outcome A confirmé 17h47, backlog actif
+
+---
+
+### 2026-05-12 17h47 — 🟢 RETEST-OUTCOME-A-CONFIRMED + 3 issues mineurs à intégrer P1.1
+
+**Type** : ✅ MILESTONE-CONFIRMED + REPRIORITIZATION-LEGÈRE
+**From** : Mike retest live `/v6/` (paste console output @ 17h47, build post auto-build-loop deploy avec commits 443c816+e82d6e7+ef28060)
+**Drift D10/D11** : **LIFTED** ✅ (no more RuntimeError, no more Halting Program)
+
+## Console observation
+
+**ABSENT** ✅ :
+- `RuntimeError: table index is out of bounds → Halting Program` ✅
+- 5× ArgumentNullException UIElements.Q (down to 2 maintenant)
+
+**PRÉSENT (defensive patches travaillent)** ✅ :
+- `[HudController] rootVisualElement is null — HUD UXML failed to load` (log défensif, pas crash)
+- `[HudController] rootVisualElement is null in WireCallbacks — UXML failed to load` (log défensif, pas crash)
+- `Audio context resumed after 4.819 seconds` (audio fonctionne)
+- WebGL 2.0 init OK, Physics PhysX init OK, Input System init OK
+
+**ISSUES MINEURS RESTANTS (3 à intégrer P1.1)** ⚠️ :
+1. **3 shaders URP not supported** (toujours présent) : `Hidden/CoreSRP/CoreCopy`, `Hidden/Universal Render Pipeline/StencilDitherMaskSeed`, `Hidden/Universal/HDRDebugView` — non-bloquant gameplay mais visuel possible dégradé (post-FX, debug HDR view)
+2. **1× ArgumentNullException** `Parameter name: e` (down from 5×) : un controller pas encore patché par bug-fixer 2
+3. **1× ArgumentNullException** `Parameter name: collection` **NOUVEAU SYMPTÔME** : un appel LINQ `.Sum/.Where/.OrderBy(null collection)` ou iterable nullé. Pas un Q<T> issue donc HORS du pattern P1.1 UI hardening. Possible : score panel, leaderboard, stats agrégation.
+4. **1× NullReferenceException** stack stripped (Bindings.ThrowHelper) — probable collateral des autres exceptions
+
+## Action exec — UPDATE P1.1 + add P1.0
+
+### P1.0 NEW — R6-FIX-URP-SHADERS (bug-fixer Sonnet, 15-30 min)
+
+**Priorité absolue (intervertir avec P1.1)** : ajouter les 3 shaders URP aux Always Included Shaders du projet.
+
+**Action** :
+1. Ouvrir `ProjectSettings/GraphicsSettings.asset` (YAML)
+2. Sous `m_AlwaysIncludedShaders:` ajouter 3 entries :
+   ```yaml
+   - {fileID: 4800000, guid: <CoreCopy-shader-guid>, type: 3}
+   - {fileID: 4800000, guid: <StencilDitherMaskSeed-guid>, type: 3}
+   - {fileID: 4800000, guid: <HDRDebugView-guid>, type: 3}
+   ```
+3. Find shader GUIDs via : `grep -r "Hidden/CoreSRP/CoreCopy" Packages/com.unity.render-pipelines.universal/` ou via Resources scan
+4. Alternative : modifier `Assets/Resources/ShaderInclude.shadervariants` (Unity ShaderVariantCollection) pour inclure ces 3
+5. Commit `fix(urp): include 3 shaders in build (CoreCopy + StencilDitherMaskSeed + HDRDebugView)`
+6. Build + verify console post-deploy ne montre plus l'erreur
+
+**Si shader GUID introuvable** : ack escalation Mike catégorie B (peut-être URP package version mismatch Unity 6000.3.15f1).
+
+### P1.1 UPDATE — R6-PARITY-UI-HARDENING-FINAL (extend scope)
+
+Identique au scope précédent (15-20 controllers restants null-check pattern) **MAIS ajouter** :
+
+**Sous-ticket P1.1b** : Trace + fix le `ArgumentNullException Parameter name: collection` :
+- Grep `Linq` operations sur potentially null collections : `.Sum(\|.Average(\|.Min(\|.Max(\|.OrderBy(\|.Where(\|.Select(\|.Aggregate(`
+- Filtrer pour les usages dans UI controllers ou stats/score aggregation
+- Pour chaque match : null-check avant LINQ call
+- Likely culprits : ScorePanel, LeaderboardController, StatisticsController, RunSummaryController (déjà patched pour UIDocument null mais pas pour collection null)
+- Commit `fix(runtime-crash-3b): null-check collections avant LINQ aggregation (N call sites)`
+
+### Backlog P1.2-P1.8 + P2 + P3 : INCHANGÉ
+
+Continue ton cascade dispatch normal. P1.0 + P1.1b en supplément.
+
+## Sprint R6-PARITY-V4 status update
+
+- **D10/D11 LIFTED** ✅ (crash résolu, defensive OK)
+- **Sprint effectif unblocked** : continue backlog P1 normal
+- **Outcome A** path validé : pas de scene edit FloatingPopup obligatoire pour l'instant (P2.2 reste en backlog low-prio)
+- Pas de revert nécessaire
+- **Mike satisfaction** : confirmer post-P1.0 deploy (3 shaders URP fix) que console est clean (ou quasi clean : 0-1 ArgNull restants OK)
+
+## Mike's chat directive (rappel)
+
+> "il est libre de remplir ses slots a l'infini ou pas et de gérer son backlog, le corriger si il va trop loin"
+
+**Exec est autonome.** Le backlog P1/P2/P3 est ton guide, pas ta cage. Empile parallèles comme tu juges, pioche dans la queue dès qu'un slot libère. Je corrige seulement si je vois drift (charter §1 violations, scope creep, conflicts merge prévisibles).
+
+## Ack expected (cumulé avec BACKLOG-FOURNI-AUTONOMOUS)
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-backlog-fourni-autonomous-ack.md` peut être unique (ack le backlog complet + l'update outcome A en 1 fichier).
+
+## Status
+
+✅ D10/D11 LIFTED + backlog P1 actif, exec dispatch ses parallèles
 
 
