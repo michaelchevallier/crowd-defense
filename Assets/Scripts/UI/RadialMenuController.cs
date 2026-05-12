@@ -38,6 +38,7 @@ namespace CrowdDefense.UI
         private Button? btnRange;
         private Button? btnTarget;
         private Button? btnGuard;
+        private Button? btnResearch;
         private Label? btnDpsLabel;
         private Label? btnDpsCost;
         private Label? btnDpsHint;
@@ -75,6 +76,7 @@ namespace CrowdDefense.UI
             btnRange          = root.Q<Button>("btn-range");
             btnTarget         = root.Q<Button>("btn-target");
             btnGuard          = root.Q<Button>("btn-guard");
+            btnResearch       = root.Q<Button>("btn-research");
             btnDpsLabel       = root.Q<Label>("btn-dps-label");
             btnDpsCost        = root.Q<Label>("btn-dps-cost");
             btnDpsHint        = root.Q<Label>("btn-dps-hint");
@@ -92,6 +94,7 @@ namespace CrowdDefense.UI
             btnRange?.RegisterCallback<ClickEvent>(_ => OnRangeClicked());
             btnTarget?.RegisterCallback<ClickEvent>(_ => OnTargetClicked());
             btnGuard?.RegisterCallback<ClickEvent>(_ => OnGuardClicked());
+            btnResearch?.RegisterCallback<ClickEvent>(_ => OnResearchClicked());
 
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnTowerSelected += OnTowerSelected;
@@ -195,6 +198,7 @@ namespace CrowdDefense.UI
             RefreshRepairButton(tower);
             RefreshTargetButton(tower);
             RefreshGuardButton(tower);
+            RefreshResearchButton(tower);
 
             // Sync range button active class to current _rangeVisible state
             if (btnRange != null)
@@ -388,6 +392,29 @@ namespace CrowdDefense.UI
                 else
                     btnRange.RemoveFromClassList("radial-btn-range--active");
             }
+        }
+
+        private void RefreshResearchButton(Tower tower)
+        {
+            if (btnResearch == null) return;
+            string towerId = tower.Config?.Id ?? "";
+            int unlocked = TowerResearchTree.UnlockedCount(towerId);
+            bool fullyResearched = unlocked >= TowerResearchTree.NodeCount;
+            bool hasPoints = TalentSystem.AvailablePoints > 0;
+            SetVisible(btnResearch, !fullyResearched);
+            if (!fullyResearched)
+            {
+                btnResearch.text = $"Recherche ({unlocked}/{TowerResearchTree.NodeCount})";
+                btnResearch.SetEnabled(hasPoints);
+            }
+        }
+
+        private void OnResearchClicked()
+        {
+            var tower = currentTower;
+            if (tower == null) return;
+            string towerId = tower.Config?.Id ?? "";
+            TowerResearchPanel.Show(towerId, onClose: () => RefreshMenu(tower));
         }
 
         // Called by TowerInfoPanel sell button as well as internal btn-sell click

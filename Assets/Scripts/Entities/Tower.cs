@@ -244,6 +244,11 @@ namespace CrowdDefense.Entities
 
         public TowerType? Config => cfg;
 
+        // Research-augmented stat helpers — read-only, computed each call (not cached).
+        public float ResearchDamageMul  => cfg != null ? TowerResearchTree.DamageMul(cfg.Id)              : 1f;
+        public float ResearchRangeMul   => cfg != null ? TowerResearchTree.RangeMul(cfg.Id)               : 1f;
+        public float ResearchFireRateMul => cfg != null ? TowerResearchTree.FireRateIntervalMul(cfg.Id)   : 1f;
+
         /// <summary>
         /// Returns the upgrade cost for the next level, applying a -20% cluster discount
         /// if 3 or more towers of the same type are placed within radius meters (P1 synergie cluster).
@@ -734,7 +739,7 @@ namespace CrowdDefense.Entities
             {
                 Fire(target);
                 // L3FireRateMul >1 ralentit la cadence (sniper L3-DPS archer = x2)
-                float rateMs = cfg!.FireRateMs * L3FireRateMul;
+                float rateMs = cfg!.FireRateMs * L3FireRateMul * ResearchFireRateMul;
                 cooldown = rateMs / 1000f;
             }
         }
@@ -781,7 +786,8 @@ namespace CrowdDefense.Entities
             _slowTickTimer = 0.15f; // tick toutes les 150 ms
 
             if (WaveManager.Instance == null || SlowEffectManager.Instance == null) return;
-            float rangeSq = cfg.Range * cfg.Range;
+            float eff1Range = cfg.Range * ResearchRangeMul;
+            float rangeSq = eff1Range * eff1Range;
             var enemies = WaveManager.Instance.ActiveEnemies;
             bool hitAny = false;
             for (int i = 0; i < enemies.Count; i++)
@@ -832,7 +838,8 @@ namespace CrowdDefense.Entities
         private Enemy? AcquireTarget()
         {
             if (cfg == null || WaveManager.Instance == null) return null;
-            float rangeSq = cfg.Range * cfg.Range;
+            float effRange = cfg.Range * ResearchRangeMul;
+            float rangeSq = effRange * effRange;
             Enemy? best = null;
             float bestScore = float.MinValue;
             var enemies = WaveManager.Instance.ActiveEnemies;
@@ -916,7 +923,7 @@ namespace CrowdDefense.Entities
             // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
             // L3DmgMul applique la divergence de branche (D1-03)
             // _heroBuffDmgMul: aura du Hero (ApplyHeroBuff / ClearHeroBuff)
-            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * ResearchDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
 
             // L3 Berserker (tank DPS) : x2 dmg when castle HP ratio < threshold (D1-03)
             if (L3BerserkerActive && Castle.Instance != null && Castle.Instance.HPMax > 0)
@@ -1687,7 +1694,7 @@ namespace CrowdDefense.Entities
             if (cfg == null) return;
             if (ProjectilePool.Instance == null) return;
 
-            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * ResearchDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
 
             Vector3 baseDir = (t.transform.position - transform.position).normalized;
             Vector3 angledDir = Quaternion.Euler(0f, angleDeg, 0f) * baseDir;

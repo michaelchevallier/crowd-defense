@@ -61,6 +61,15 @@ namespace CrowdDefense.Systems
             PlayerPrefs.Save();
         }
 
+        // Spend one point — returns false if none available (used by TowerResearchTree)
+        public static bool TrySpendPoint()
+        {
+            if (AvailablePoints <= 0) return false;
+            AvailablePoints--;
+            PlayerPrefs.Save();
+            return true;
+        }
+
         // ── Upgrade ──────────────────────────────────────────────────────────
 
         public static bool CanUpgrade(string talentKey)
