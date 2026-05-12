@@ -36,17 +36,19 @@ Quand question `[resolved]`, déplacer la section dans `_archive.md` (ou laisser
 
 (les questions actives en attente d'ack ici, plus récente en bas)
 
-### 2026-05-12 18h18 — Q-P3-enemy-refacto-cap
-Type : tactical
-Category : A
-Blocking : false (P3.1 commit `948a9d4` livré + push main, P3.2 Tower toujours in-flight)
-Question : P3.1 R6-REFACTO-ENEMY commit `948a9d4` split Enemy.cs 2051 → 6 partials, MAIS `Enemy.cs` core reste à **850 LOC** (+350 over cap 500 charter §1 règle #3). Autres partials OK (Movement 61, Combat 299, Behaviors 258, Stats 157, Anim 410).
-Options envisagées :
-- (a) Accept ship-temp + ticket follow-up `R6-REFACTO-ENEMY-CORE-V2` P3 pour split core 850 → 2 partials (ex : `Enemy.cs` ~400 LOC fields+init / `Enemy.Lifecycle.cs` ~450 LOC Update dispatch + lifecycle hooks)
-- (b) Block + re-dispatch refacto core split immédiat (worktree bug-fixer ~30 min)
-- (c) Tolérer 850 LOC (refusé, charter strict 500)
-Reco interne : (a) accept + ticket P3 follow-up. Cohérence avec précédent A-vfx-bindings-cap. Refacto V2 ~30 min dispatch quand slot libère.
-Context : agent self-report 850 LOC core. Agent plan disait ~300 LOC core mais réalité 850 (sur-estim downsize). Pas urgent car cap strict pour nouveaux fichiers, Enemy.cs legacy déjà à 2051 avant — split déjà 60% downsize. Status `[ ] pending`.
+### 2026-05-12 18h18 — Q-P3-enemy-refacto-cap `[resolved]` 18h25 exec-auto-action
+Type : tactical / Category : A / Blocking : false
+Question : P3.1 R6-REFACTO-ENEMY core reste 850 LOC > cap 500. Que faire ?
+**Action exec autonome (cohérence A-vfx-bindings-cap)** : dispatched R6-REFACTO-ENEMY-CORE-V2 bug-fixer immédiat ~2.5 min.
+**Résultat** :
+- ✅ Enemy.cs 850 → 491 LOC (under cap)
+- ✅ Enemy.Init.cs 217 LOC nouveau
+- ✅ Enemy.Update.cs 161 LOC nouveau
+- ✅ Enemy.Lifecycle.cs 44 LOC nouveau
+- ✅ ALL partials Enemy ecosystem (11 fichiers) under cap 500 LOC strict
+- ✅ Zero behavior change
+- ✅ Commit `d79b853` push origin main
+- Status : `[resolved]` 18h25
 
 ---
 
