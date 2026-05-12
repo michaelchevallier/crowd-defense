@@ -10,6 +10,7 @@
     <Style src="PauseMenu.uss" />
     <Style src="FloatingPopup.uss" />
     <Style src="SettingsPanel.uss" />
+    <Style src="HelpOverlay.uss" />
     <ui:VisualElement name="hud-root" class="hud-root">
         <!-- Top bar pills -->
         <ui:VisualElement class="top-bar">
@@ -31,11 +32,12 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <!-- Speed control (×1, ×2, ×3) -->
+            <!-- Speed control (×0.5, ×1, ×2, ×3) — Space to cycle -->
             <ui:VisualElement class="speed-control">
-                <ui:Button text="×1" name="speed-1" class="speed-btn speed-active" tooltip="Vitesse x1" />
-                <ui:Button text="×2" name="speed-2" class="speed-btn" tooltip="Vitesse x2" />
-                <ui:Button text="×3" name="speed-3" class="speed-btn" tooltip="Vitesse x3" />
+                <ui:Button text="×0.5" name="speed-0" class="speed-btn" tooltip="Vitesse x0.5 [Space]" />
+                <ui:Button text="×1" name="speed-1" class="speed-btn speed-active" tooltip="Vitesse x1 [Space]" />
+                <ui:Button text="×2" name="speed-2" class="speed-btn" tooltip="Vitesse x2 [Space]" />
+                <ui:Button text="×3" name="speed-3" class="speed-btn" tooltip="Vitesse x3 [Space]" />
             </ui:VisualElement>
 
             <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines [D]" />
@@ -261,7 +263,7 @@
 
         <!-- Keyboard hints footer bar -->
         <ui:VisualElement name="keyboard-hints" class="keyboard-hints">
-            <ui:Label name="keyboard-hints-label" class="key-hint" text="N=vague  ESC=pause  Espace=ult  F3=debug  M=minimap" />
+            <ui:Label name="keyboard-hints-label" class="key-hint" text="N=vague  ESC=pause  U=ult  Espace=vitesse  F3=debug  M=minimap" />
         </ui:VisualElement>
 
         <!-- Toast stack (generic toasts: perk, synergy, combo, modifier, achievement) -->
@@ -287,7 +289,71 @@
         <!-- Tower select popup (TowerSelectMenuController — affiché sur cellule vide buildable) -->
         <ui:VisualElement name="tower-select-menu" class="tower-select-menu hidden" />
 
+        <!-- Tower info panel (bottom-right, sticky, shown on tower select) -->
+        <ui:VisualElement name="tower-info-panel" class="tower-info-panel hidden">
+            <ui:VisualElement class="info-header-row">
+                <ui:VisualElement name="info-portrait" class="info-portrait" />
+                <ui:VisualElement class="info-title-col">
+                    <ui:Label text="" name="info-name" class="info-name" />
+                    <ui:Label text="" name="info-level" class="info-level" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label text="" name="info-branch" class="info-branch" />
+            <ui:Label text="" name="info-stats" class="info-stats" />
+            <ui:VisualElement class="info-live-row">
+                <ui:Label text="" name="info-dps-live" class="info-live-value" />
+            </ui:VisualElement>
+            <ui:VisualElement class="info-cumul-row">
+                <ui:Label text="" name="info-total-dmg" class="info-cumul-value" />
+                <ui:Label text="" name="info-kills" class="info-cumul-value" />
+            </ui:VisualElement>
+            <ui:Button text="" name="info-sell-btn" class="info-sell-btn" />
+        </ui:VisualElement>
+
         <ui:VisualElement name="popup-overlay" class="popup-overlay" picking-mode="Ignore" />
+
+        <!-- Help overlay (HelpOverlayController — H or ? key, or btn-help click) -->
+        <ui:Button text="?" name="btn-help" class="help-question-btn" tooltip="Raccourcis [H]" />
+        <ui:VisualElement name="help-root" class="help-root hidden">
+            <ui:VisualElement class="help-panel">
+                <ui:Label text="Raccourcis Clavier" name="help-title" class="help-title" />
+                <ui:VisualElement class="help-list">
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="ESC" class="help-key" />
+                        <ui:Label text="Pause / Menu" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="1 - 4" class="help-key" />
+                        <ui:Label text="Selectionner type de tour" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="Q / W / E" class="help-key" />
+                        <ui:Label text="Capacites du heros" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="M" class="help-key" />
+                        <ui:Label text="Couper le son" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="Espace" class="help-key" />
+                        <ui:Label text="Controle de vitesse" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="F3" class="help-key" />
+                        <ui:Label text="Overlay debug" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="P" class="help-key" />
+                        <ui:Label text="Afficher chemin ennemis" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="H / ?" class="help-key" />
+                        <ui:Label text="Cette aide" class="help-desc" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Button text="Fermer" name="help-close-btn" class="help-close-btn" />
+            </ui:VisualElement>
+        </ui:VisualElement>
 
         <!-- Pause menu (PauseMenuController toggles via LevelRunner.OnPauseChanged) -->
         <ui:VisualElement name="pause-root" class="pause-root hidden">
