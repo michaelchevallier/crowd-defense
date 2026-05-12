@@ -7,13 +7,21 @@
 
 ## Current sprint
 
-**R6-PARITY-V4-FINAL** — V6 effectif 96-99% parité V4 (code-level). Post wave-1+2+3+4 backlog.
+**R6-PARITY-V4-FINAL** — ✅ **COMPLETE** (95%+ parity atteint, closure `16fe830`).
 
-- Code-level parity (audit `ad3804d`) : **96-97%** feature coverage
-- User-facing visible parity (audit `adb68ee` honest) : **45-65%** (wiring scene Unity incomplet)
+- Sprint dates : 2026-05-12 16h05 → 2026-05-13 02h35 (~10h30 wall)
+- Total commits : **98** (`739efc7..HEAD`)
+- Retrospective : `.claude/audit/SPRINT-R6-RETROSPECTIVE.md`
+- Tag : `v6.0-parity-v4-sprint-r6`
 - Live build : `https://michaelchevallier.github.io/crowd-defense/v6/`
 
-**Stratégie active** (Mike chat 14h48) : parité V4 le plus vite possible. Features V6 en + OK si plus joli/propre. Bloat LOC acceptable temporairement. R6-02 DELETE pass PAUSED.
+## Next sprint
+
+**Candidates** (à arbitrer Mike) :
+- **R7 polish** : Foire/Medieval castle textures + 80 levels art + L3 upgrade branching
+- **R8 perf** : 3 perf-3fix profilage live (60 FPS desktop / 30 FPS mobile)
+- **R9 playable MVP** : 5-wave loop polish + onboarding tutorial + FTUE
+- **STOP** : break + replayability self-test
 
 ---
 
@@ -136,4 +144,4 @@ Risks transverse (cf root STATUS.md "Risks raised") :
 
 ---
 
-*Dernière update : 2026-05-12 23h45 — created (W3-V7).*
+*Dernière update : 2026-05-13 02h35 — sprint R6-PARITY-V4-FINAL marked COMPLETE (closure `16fe830`).*
