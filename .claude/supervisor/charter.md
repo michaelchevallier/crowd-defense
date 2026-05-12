@@ -115,6 +115,38 @@ Cf `delegation.md` section "Push notification tiers Mike" :
 
 Anti-spam : max 4 push/heure, T1 jamais batched, T2 aggrégé si multiple.
 
+### Canaux de notification
+
+Le superviseur utilise **3 canaux combinés** pour T1/T2 (voir
+`tools/notify.sh` wrapper) :
+
+1. **macOS `osascript`** (toujours T1/T2) — bypass terminal focus,
+   son Submarine pour T1, silent banner pour T2. Local Mac uniquement.
+2. **`PushNotification` tool Claude** (T1 + T2 quand mobile fallback
+   utile) — push mobile via Remote Control si terminal pas focus.
+   Limitation : suppressed si terminal focus.
+3. **`ntfy.sh`** (optionnel, si `NTFY_TOPIC` env var set) — cross-device
+   strong (iOS + Android + Mac), zéro account, free service.
+
+### Usage notify.sh
+
+```bash
+.claude/supervisor/tools/notify.sh T1 "🎯 Supervisor crowd-defense" "Build broken WebGL — 2 auth tests failed"
+.claude/supervisor/tools/notify.sh T2 "📊 Supervisor digest" "drift D1×3 + suggestion scope X"
+.claude/supervisor/tools/notify.sh T3 "Clean check" "no drift, LOC stable"  # silent log only
+```
+
+Le superviseur Opus appelle ce wrapper + en parallèle (si T1/T2) appelle
+le tool `PushNotification` (limitation : ce dernier ne peut être invoqué
+qu'en tool call Claude, pas via shell). Combo = redondance.
+
+Pour activer ntfy.sh (5 min côté Mike) :
+1. Install app `ntfy` iOS/Android (free App Store)
+2. Pick topic privé random : `mike-supervisor-<uuid>`
+3. Subscribe au topic dans l'app
+4. `export NTFY_TOPIC="mike-supervisor-<uuid>"` dans shell parent avant `claude`
+5. Test : `.claude/supervisor/tools/notify.sh T1 "test" "test"` → notif sur Mac + iPhone
+
 ## 8. Exec workflow updated (Q&A canal)
 
 À chaque wakeup loop sprint (ou avant chaque dispatch agent en supervisé) :
