@@ -27,6 +27,9 @@ namespace CrowdDefense.Data
         [SerializeField] public int BossHitShakeMs = 400;
         [SerializeField] public float BossHitFlashAlpha = 0.8f;
         [SerializeField] public int BossHitFlashMs = 250;
+        [SerializeField] public float BossSpawnShakeAmp = 0.8f;
+        [SerializeField] public float BossSpawnShakeDur = 0.6f;
+        [SerializeField] public float BossDeathFlashScale = 2.5f;
 
         [Header("Victory")]
         [SerializeField] public float VictoryFlashAlpha = 0.4f;

@@ -80,6 +80,8 @@ namespace CrowdDefense.Systems
             _lastRatio = 1f;
             _defeatedPublished = false;
 
+            var juice = JuiceConfig.Get();
+            JuiceFX.Instance?.Shake(juice.BossSpawnShakeAmp, Mathf.RoundToInt(juice.BossSpawnShakeDur * 1000f));
             EventManager.Instance?.Publish(new BossEncounteredEvent(
                 def.DisplayNameFr, cfg.Hp, def.AuraColor, e.Enemy.transform.position));
         }
