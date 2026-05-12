@@ -229,16 +229,32 @@ namespace CrowdDefense.UI
             audio.SetMusicVolume(_musicMuted ? 0f : _musicVolume);
             audio.SetUIVolume(_uiVolume);
             audio.SetMuted(_muted);
+
+            var mixerCtrl = Systems.AudioMixerController.Instance;
+            if (mixerCtrl == null) return;
+            mixerCtrl.SetGroupVolume("Master",  _muted ? 0f : _masterVolume);
+            mixerCtrl.SetGroupVolume("SFX",     _sfxMuted ? 0f : _sfxVolume);
+            mixerCtrl.SetGroupVolume("Music",   _musicMuted ? 0f : _musicVolume);
+            mixerCtrl.SetGroupVolume("UI",      _uiVolume);
         }
 
-        private void ApplyAudioSFX() =>
+        private void ApplyAudioSFX()
+        {
             Systems.AudioController.Instance?.SetSFXVolume(_sfxMuted ? 0f : _sfxVolume);
+            Systems.AudioMixerController.Instance?.SetGroupVolume("SFX", _sfxMuted ? 0f : _sfxVolume);
+        }
 
-        private void ApplyAudioMusic() =>
+        private void ApplyAudioMusic()
+        {
             Systems.AudioController.Instance?.SetMusicVolume(_musicMuted ? 0f : _musicVolume);
+            Systems.AudioMixerController.Instance?.SetGroupVolume("Music", _musicMuted ? 0f : _musicVolume);
+        }
 
-        private void ApplyAudioUI() =>
+        private void ApplyAudioUI()
+        {
             Systems.AudioController.Instance?.SetUIVolume(_uiVolume);
+            Systems.AudioMixerController.Instance?.SetGroupVolume("UI", _uiVolume);
+        }
 
         private void ApplyQuality()
         {
