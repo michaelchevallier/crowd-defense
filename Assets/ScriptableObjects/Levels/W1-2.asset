@@ -13,58 +13,72 @@ MonoBehaviour:
   m_Name: W1-2
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world1-2
-  displayName: "Plaine \u2014 2"
+  displayName: "Plaine — 2"
   theme: plaine
   world: 1
   level: 2
   mapRows:
-  - 0000000W0D00000
-  - P111110W0000D00
-  - 0000010W0000000
-  - 0000011~1111C00
-  - 0000000W0000000
-  - 0D000T0W00T0D00
-  - 000T000W0D00000
+  - 000000000000000
+  - P111110000000D0
+  - 000001000000000
+  - 0000010000000D0
+  - 000001111111100
+  - 0000000000001D0
+  - 000T000000001C0
+  - 000000D00000D00
   cellSize: 4
-  startCoins: 100
+  startCoins: 125
   overrideCastleHP: 1
-  castleHPOverride: 120
-  lossMode: 0
+  castleHPOverride: 150
+  briefing: "Ils avancent par le zigzag ! Couvre chaque virage avec tes tours."
+  cutsceneIdAtStart:
+  isEndless: 0
   allowMultiMagnet: 0
+  gridVariants: []
   waves:
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
-      count: 36
+      count: 40
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
       count: 8
-    spawnRateMs: 650
-    breakMs: 4000
+    spawnRateMs: 800
+    breakMs: 4500
     portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
-      count: 36
+      count: 38
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 16
-    spawnRateMs: 600
-    breakMs: 4000
+      count: 18
+    spawnRateMs: 720
+    breakMs: 4500
     portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
-      count: 32
+      count: 34
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 20
+      count: 22
     - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
-      count: 2
-    spawnRateMs: 550
-    breakMs: 4000
+      count: 3
+    spawnRateMs: 650
+    breakMs: 4500
     portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
       count: 28
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 24
+      count: 26
     - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
-      count: 4
-    spawnRateMs: 500
+      count: 5
+    spawnRateMs: 580
+    breakMs: 4500
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 42
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 22
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 7
+    spawnRateMs: 520
     breakMs: 0
     portalIdx: -1

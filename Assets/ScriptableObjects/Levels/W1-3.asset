@@ -13,70 +13,85 @@ MonoBehaviour:
   m_Name: W1-3
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world1-3
-  displayName: "Plaine \u2014 3"
+  displayName: "Plaine — 3"
   theme: plaine
   world: 1
   level: 3
   mapRows:
-  - P1110T000000D00
-  - 000100000D00000
-  - 000111000T00000
-  - 0000010000000T0
-  - 0T0001111110000
-  - 00000000001C000
-  - D000T0D000000T0
+  - P11110000000000
+  - 000010000000000
+  - 000010000000000
+  - 000011100000D00
+  - 000000100000000
+  - 000000111110000
+  - 0000000000100D0
+  - 000000T000110C0
+  - 0D0000000000D00
   cellSize: 4
-  startCoins: 110
+  startCoins: 125
   overrideCastleHP: 1
-  castleHPOverride: 120
-  lossMode: 0
+  castleHPOverride: 153
+  briefing: "Deux couloirs convergent ! Déploie tes archers au carrefour central."
+  cutsceneIdAtStart:
+  isEndless: 0
   allowMultiMagnet: 0
+  gridVariants: []
   waves:
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
-      count: 32
+      count: 36
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 12
-    spawnRateMs: 600
+      count: 14
+    spawnRateMs: 750
     breakMs: 4000
     portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
       count: 32
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 16
+      count: 20
     - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
       count: 4
-    spawnRateMs: 560
+    spawnRateMs: 680
     breakMs: 4000
     portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
       count: 28
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 20
+      count: 24
     - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
       count: 6
-    spawnRateMs: 520
+    spawnRateMs: 620
     breakMs: 4000
     portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
       count: 24
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 20
+      count: 22
     - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
-      count: 8
-    spawnRateMs: 480
+      count: 9
+    spawnRateMs: 560
     breakMs: 4000
     portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
-      count: 20
+      count: 22
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 16
+      count: 20
     - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
       count: 12
-    spawnRateMs: 450
+    spawnRateMs: 500
+    breakMs: 4000
+    portalIdx: -1
+  - entries:
+    - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
+      count: 18
+    - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
+      count: 18
+    - type: {fileID: 11400000, guid: b9f34994a48ae4139b54151e8489ee0b, type: 2}
+      count: 14
+    spawnRateMs: 460
     breakMs: 0
     portalIdx: -1
