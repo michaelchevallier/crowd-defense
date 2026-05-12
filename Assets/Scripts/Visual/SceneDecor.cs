@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.Entities;
 
 namespace CrowdDefense.Visual
 {
     // Port of SceneDecor.js (V5) → Unity.
     // Spawns background props beyond the grid at level start; cleans up on level end.
     // Props are looked up by key from AssetRegistry (assign in Inspector) with capsule fallback.
-    // X-ray fade deferred (hero not in Unity yet).
+    // LateUpdate: decor fade (occluding towers → alpha 0.3) + tower xray (occluding hero → blue ghost).
     public class SceneDecor : MonoSingleton<SceneDecor>
     {
         [Header("Background Prefabs per Theme")]
@@ -125,6 +126,36 @@ namespace CrowdDefense.Visual
         private const string PrefabRoot = "Prefabs/Decor/";
         private readonly List<GameObject> _spawnedDecor = new();
 
+        // Registered towers for xray occlusion check (populated by Tower.Init via RegisterTower).
+        private readonly List<Tower> _towers = new();
+
+        // Per-renderer MaterialPropertyBlock pool (zero alloc per frame).
+        private readonly MaterialPropertyBlock _mpb = new();
+
+        // Cached hero reference (lazy, re-checked if null).
+        private Hero? _hero;
+
+        // Track xray state per tower to avoid redundant SetPropertyBlock calls.
+        private readonly Dictionary<Tower, bool> _towerXRayState = new();
+
+        // Track fade state per prop to avoid redundant SetPropertyBlock calls.
+        private readonly Dictionary<GameObject, bool> _decorFadeState = new();
+
+        private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
+        private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+
+        // Called by Tower.Init after spawning so SceneDecor can track it for xray.
+        public void RegisterTower(Tower t)
+        {
+            if (!_towers.Contains(t)) _towers.Add(t);
+        }
+
+        public void UnregisterTower(Tower t)
+        {
+            _towers.Remove(t);
+            _towerXRayState.Remove(t);
+        }
+
         // Entry point used by LevelVisualBridge and direct callers (alias for clarity).
         public void BuildForTheme(LevelTheme theme, string levelId, Bounds gridBounds)
             => SpawnForLevel(theme, levelId, gridBounds);
@@ -162,6 +193,132 @@ namespace CrowdDefense.Visual
                 if (go != null) Destroy(go);
             }
             _spawnedDecor.Clear();
+            _decorFadeState.Clear();
+            _towers.Clear();
+            _towerXRayState.Clear();
+            _hero = null;
+        }
+
+        private void LateUpdate()
+        {
+            UpdateDecorFade();
+            UpdateTowerXRay();
+        }
+
+        // Decor props that are between the camera and any tower become semi-transparent (alpha 0.3).
+        private void UpdateDecorFade()
+        {
+            var cam = MainCameraCache.Main;
+            if (cam == null || _spawnedDecor.Count == 0 || _towers.Count == 0) return;
+
+            Vector3 camPos = cam.transform.position;
+
+            foreach (var prop in _spawnedDecor)
+            {
+                if (prop == null) continue;
+                bool occluding = IsBetweenCamAndTower(camPos, prop.transform.position);
+                _decorFadeState.TryGetValue(prop, out bool prev);
+                if (occluding == prev && _decorFadeState.ContainsKey(prop)) continue;
+                _decorFadeState[prop] = occluding;
+                SetRendererAlpha(prop, occluding ? 0.3f : 1f);
+            }
+        }
+
+        // Towers that are between the camera and the hero get a blue ghost outline (xray).
+        private void UpdateTowerXRay()
+        {
+            var cam = MainCameraCache.Main;
+            if (cam == null || _towers.Count == 0) return;
+
+            if (_hero == null) _hero = FindFirstObjectByType<Hero>();
+            if (_hero == null) return;
+
+            Vector3 camPos  = cam.transform.position;
+            Vector3 heroPos = _hero.transform.position;
+
+            foreach (var tower in _towers)
+            {
+                if (tower == null) continue;
+                bool occluding = IsBetweenCamAndTarget(camPos, tower.transform.position, heroPos);
+                _towerXRayState.TryGetValue(tower, out bool prev);
+                if (occluding == prev && _towerXRayState.ContainsKey(tower)) continue;
+                _towerXRayState[tower] = occluding;
+                SetTowerXRayActive(tower.gameObject, occluding);
+            }
+        }
+
+        // Returns true if testPos lies within the camera-to-towerPos segment (within tolerance).
+        private bool IsBetweenCamAndTower(Vector3 camPos, Vector3 testPos)
+        {
+            foreach (var tower in _towers)
+            {
+                if (tower == null) continue;
+                if (IsBetweenCamAndTarget(camPos, testPos, tower.transform.position))
+                    return true;
+            }
+            return false;
+        }
+
+        // Returns true if midPos lies roughly between camPos and targetPos (dot + distance heuristic).
+        private static bool IsBetweenCamAndTarget(Vector3 camPos, Vector3 midPos, Vector3 targetPos)
+        {
+            Vector3 camToTarget = targetPos - camPos;
+            float totalDist = camToTarget.magnitude;
+            if (totalDist < 0.01f) return false;
+
+            Vector3 dir = camToTarget / totalDist;
+            Vector3 camToMid = midPos - camPos;
+            float proj = Vector3.Dot(camToMid, dir);
+
+            // midPos must be along the segment (not behind cam or beyond target).
+            if (proj < 0.5f || proj > totalDist - 0.5f) return false;
+
+            // Lateral deviation: prop must be within 1.5 world units of the line.
+            Vector3 closest = camPos + dir * proj;
+            return (midPos - closest).sqrMagnitude < 2.25f; // 1.5^2
+        }
+
+        // Apply alpha via MaterialPropertyBlock on all renderers of the prop (zero alloc).
+        private void SetRendererAlpha(GameObject prop, float alpha)
+        {
+            foreach (var r in prop.GetComponentsInChildren<Renderer>())
+            {
+                _mpb.Clear();
+                r.GetPropertyBlock(_mpb);
+                // Try _BaseColor (URP Lit / ToonBase) then _Alpha fallback.
+                if (r.sharedMaterial != null && r.sharedMaterial.HasProperty(BaseColorId))
+                {
+                    Color c = r.sharedMaterial.GetColor(BaseColorId);
+                    c.a = alpha;
+                    _mpb.SetColor(BaseColorId, c);
+                }
+                else
+                {
+                    _mpb.SetFloat(AlphaId, alpha);
+                }
+                r.SetPropertyBlock(_mpb);
+            }
+        }
+
+        // Toggle blue ghost (xray) on a tower: tint renderers blue+transparent via MPB.
+        private void SetTowerXRayActive(GameObject towerRoot, bool active)
+        {
+            foreach (var r in towerRoot.GetComponentsInChildren<Renderer>())
+            {
+                _mpb.Clear();
+                r.GetPropertyBlock(_mpb);
+                if (active)
+                {
+                    // Semi-transparent blue overlay via _BaseColor alpha channel.
+                    _mpb.SetColor(BaseColorId, new Color(0.3f, 0.6f, 1f, 0.35f));
+                }
+                else
+                {
+                    // Restore: clear mpb overrides so material defaults take effect.
+                    // SetPropertyBlock with empty block resets overrides.
+                }
+                r.SetPropertyBlock(_mpb);
+            }
         }
 
         private void SpawnRing(
