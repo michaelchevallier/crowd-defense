@@ -38,9 +38,11 @@ MonoBehaviour:
   immuneToFlyerBonus: 0
   bossName: Sorcier de la Foret
   bossAuraColor: {r: 0.565, g: 0.188, b: 1, a: 1}
-  chargeMs: 0
-  chargeCooldownMs: 0
-  chargeMul: 1
+  enableCharge: 1
+  chargeMs: 1500
+  chargeCooldownMs: 6000
+  chargeMul: 4
+  hasFireBreath: 0
   summonsMinions: 1
   summonCooldownMs: 5000
   summonType: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
