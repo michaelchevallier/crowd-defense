@@ -83,12 +83,30 @@ namespace CrowdDefense.Systems
             OnBreakStateChanged?.Invoke();
         }
 
-        // Returns HP multiplier for endless wave idx.
-        // Exponential first 10 waves, linear after.
+        // Returns the combined scale multiplier (HP-dominant) for endless wave idx.
+        // W0-29  : exponential 1.15^wave (early climb)
+        // W30-49 : compounded from W29 base × 1.10 HP / 1.08 dmg per wave (avg 1.09)
+        // W50+   : compounded from W49 base × 1.15 HP / 1.12 dmg per wave (avg 1.135)
+        // Note: _currentWaveScaleMul feeds a single HP+dmg multiplier at spawn time;
+        //       HP/dmg distinction is preserved in EndlessMode constants for future split.
         private float ComputeEndlessHpMul(int waveIdx)
         {
-            if (waveIdx < 10) return Mathf.Pow(1.15f, waveIdx);
-            return Mathf.Pow(1.15f, 10) * (1f + (waveIdx - 10) * 0.05f);
+            const int thresholdMid  = EndlessMode.WaveThresholdMid;
+            const int thresholdHard = EndlessMode.WaveThresholdHard;
+
+            if (waveIdx < thresholdMid)
+                return Mathf.Pow(1.15f, waveIdx);
+
+            float baseMid = Mathf.Pow(1.15f, thresholdMid);
+            if (waveIdx < thresholdHard)
+            {
+                // avg of HP×1.10 and dmg×1.08 = 1.09 per wave
+                return baseMid * Mathf.Pow(1.09f, waveIdx - thresholdMid);
+            }
+
+            float baseHard = baseMid * Mathf.Pow(1.09f, thresholdHard - thresholdMid);
+            // avg of HP×1.15 and dmg×1.12 = 1.135 per wave
+            return baseHard * Mathf.Pow(1.135f, waveIdx - thresholdHard);
         }
 
         // Overwrites _currentWaveScaleMul based on endless formulas.

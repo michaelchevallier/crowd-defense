@@ -28,7 +28,13 @@ namespace CrowdDefense.Systems
     public class EndlessMode : MonoSingleton<EndlessMode>
     {
         public const string LevelId = "endless";
-        private const float ScaleMul = 1.15f;
+        // Scaling regimes: W0-29 base exponential, W30-49 +10% HP /+8% dmg per wave, W50+ +15%/+12%
+        public const float ScaleMulHpW30  = 1.10f;
+        public const float ScaleMulDmgW30 = 1.08f;
+        public const float ScaleMulHpW50  = 1.15f;
+        public const float ScaleMulDmgW50 = 1.12f;
+        public const int   WaveThresholdMid  = 30;
+        public const int   WaveThresholdHard = 50;
         private const int SeedWaveCount = 40;
         private const int BaseSpawnRateMs = 900;
         private const string RecordsKey = "cd.endless.records";
@@ -156,7 +162,7 @@ namespace CrowdDefense.Systems
             for (int i = 0; i < count; i++)
             {
                 int waveIdx = startIdx + i;
-                float mul = Mathf.Pow(ScaleMul, waveIdx);
+                // WaveDef.scaleMul is bypassed for endless runs (WaveManager.ApplyEndlessScaling takes over).
                 int baseCount = Mathf.RoundToInt(Mathf.Lerp(4f, 22f, Mathf.Min(waveIdx, 39) / 39f));
 
                 var entries = new List<EnemySpawnEntry>();
@@ -180,7 +186,7 @@ namespace CrowdDefense.Systems
                     spawnRateMs = Mathf.Max(250, BaseSpawnRateMs - waveIdx * 10),
                     breakMs = 3000,
                     portalIdx = -1,
-                    scaleMul = mul,
+                    scaleMul = 1f,
                 });
             }
             return waves;
