@@ -190,6 +190,34 @@ namespace CrowdDefense.Systems
         }
 
         /// <summary>
+        /// Duck music by <paramref name="ratio"/> for <paramref name="depth"/> seconds,
+        /// then recover linearly over <paramref name="recover"/> seconds.
+        /// Called by AudioController on critical SFX (boss_roar, victory).
+        /// </summary>
+        public void DuckMusic(float depth, float ratio = 0.3f, float recover = 0.5f)
+        {
+            if (_duckCo != null) StopCoroutine(_duckCo);
+            _duckCo = StartCoroutine(DuckRoutine(depth, ratio, recover));
+        }
+
+        private IEnumerator DuckRoutine(float depth, float ratio, float recover)
+        {
+            if (_currentTrack == null || !_sources.TryGetValue(_currentTrack, out var src)) yield break;
+            float orig = src.volume;
+            src.volume = orig * ratio;
+            yield return new WaitForSecondsRealtime(depth);
+            float t = 0f;
+            while (t < recover)
+            {
+                t += Time.unscaledDeltaTime;
+                src.volume = Mathf.Lerp(orig * ratio, orig, t / recover);
+                yield return null;
+            }
+            src.volume = orig;
+            _duckCo = null;
+        }
+
+        /// <summary>
         /// Select track based on level theme string from LevelData.
         /// Mapping: "boss" → boss track, "intense" → intense, else calm.
         /// </summary>

@@ -83,6 +83,9 @@ namespace CrowdDefense.Systems
                 source.volume = Mathf.Clamp01(volMul);
                 source.Play();
             }
+
+            if (clipKey == "boss_roar" || clipKey == "victory")
+                MusicManager.Instance?.DuckMusic(1.5f);
             else
             {
                 if (!_warned.Contains(clipKey))
