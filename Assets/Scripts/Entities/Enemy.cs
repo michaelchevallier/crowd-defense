@@ -1578,6 +1578,18 @@ namespace CrowdDefense.Entities
         public void TakeDamage(float dmg, Vector3 hitOrigin = default)
         {
             if (IsDead || _dying) return;
+
+            // Heal (negative damage) — show green popup then bail
+            if (dmg < 0f)
+            {
+                float heal = -dmg;
+                hp = Mathf.Min(hp + heal, maxHp);
+                if (heal >= 5f)
+                    CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                        $"+{Mathf.RoundToInt(heal)}", transform.position + Vector3.up * 1.0f, Color.green);
+                return;
+            }
+
             if (hitOrigin != default)
                 _lastDamageDirection = (transform.position - hitOrigin).normalized;
             else
@@ -1669,12 +1681,15 @@ namespace CrowdDefense.Entities
             bool isBossHit = cfg != null && (cfg.IsBoss || cfg.IsApocalypseBoss);
             bool isCrit    = actualDmg > maxHp * 0.08f;
             var  popup     = CrowdDefense.UI.FloatingPopupController.Instance;
-            if (isBossHit)
-                popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
-            else if (isCrit)
-                popup?.SpawnCrit(actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
-            else
-                popup?.SpawnDamage(actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
+            if (actualDmg >= 5f)
+            {
+                if (isBossHit)
+                    popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
+                else if (isCrit)
+                    popup?.SpawnCrit(actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
+                else
+                    popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
+            }
 
             // Juice screen shake on hit for bosses
             if (cfg != null && cfg.IsBoss)
