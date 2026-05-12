@@ -1815,3 +1815,36 @@ Full integration test via UnityMCP :
 - Si conflit avec bug-fixers Opus wave-3 actifs (a1e7367e MenuScene, a74c03d0 BuildPoint, a4d7f63a gameplay test) : git pull --rebase
 - **NEVER IDLE** : if all done, audit gaps remaining et propose Wave 5 tickets
 
+
+---
+
+## 2026-05-13 02h35 — CLOSURE TASKS (sprint R6 95%+ atteint)
+
+Sprint R6-PARITY-V4-FINAL **OFFICIELLEMENT 95%+ COMPLETE** (commit `e678a34` CLAUDE.md docs claim). Master plan target hit. Mike directive : OK idle si objectif final atteint.
+
+**Closure light tasks** (pioche si tu veux, sinon idle acceptable) :
+
+### CLOSE-01 — Final sprint retrospective doc
+- Output : `.claude/audit/SPRINT-R6-RETROSPECTIVE.md`
+- Sections : What went well, what was hard, lessons learned, next sprint recommendations
+- 1-page max
+
+### CLOSE-02 — `git log --oneline 739efc7..HEAD | wc -l` final count + categorize
+- Output : compteur final commits sprint, breakdown feat/fix/chore/refactor/docs
+- Add to retrospective
+
+### CLOSE-03 — Update `.claude/status/STATUS.md` (créé par exec earlier `bdf602b`)
+- Mark sprint R6 fully complete
+- Note next sprint candidates (R7 polish ou N9 continuation full ou stop)
+
+### CLOSE-04 — Cleanup worktrees stale
+- `git worktree list` — identifier stales
+- `git worktree remove <path>` pour ceux finished
+- Cible : worktrees 0-2 (currently 5)
+
+### CLOSE-05 — Final commit "Sprint R6-PARITY-V4-FINAL closed" 
+- Empty commit ou doc-only avec sprint summary
+- Tag optionnel `v6.0-parity-v4-sprint-r6`
+
+**Si tout fait, idle acceptable**. Mike peut stopper monitor 5min via TaskStop si veut.
+
