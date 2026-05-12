@@ -44,6 +44,24 @@ namespace CrowdDefense.Editor
             EnsureAudioController(systems, ref created, ref existing);
             EnsureVfxPool(systems, ref created, ref existing);
 
+            // Phase 3 singletons — idempotent via EnsureSingleton
+            EnsureSingleton<HeroProjectilePool>(systems, "HeroProjectilePool", ref created, ref existing);
+            EnsureSingleton<SkinSystem>        (systems, "SkinSystem",         ref created, ref existing);
+            EnsureSingleton<RunContext>         (systems, "RunContext",          ref created, ref existing);
+            EnsureSingleton<LevelEvents>        (systems, "LevelEvents",         ref created, ref existing);
+            EnsureSingleton<BossSystem>         (systems, "BossSystem",          ref created, ref existing);
+            EnsureSingleton<CrowdDefense.Systems.EventSystem>(systems, "EventSystem", ref created, ref existing);
+            EnsureSingleton<Achievements>       (systems, "Achievements",        ref created, ref existing);
+            EnsureSingleton<ComboSystem>        (systems, "ComboSystem",         ref created, ref existing);
+            EnsureSingleton<FloatingPopupController>(systems, "FloatingPopupController", ref created, ref existing);
+            EnsureSingleton<RunMap>             (systems, "RunMap",              ref created, ref existing);
+            EnsureSingleton<MetaUpgradeSystem>  (systems, "MetaUpgradeSystem",   ref created, ref existing);
+            EnsureSingleton<DoctrineSystem>     (systems, "DoctrineSystem",      ref created, ref existing);
+            EnsureSingleton<SchoolRegistry>     (systems, "SchoolRegistry",      ref created, ref existing);
+            EnsureSingleton<TutorialState>      (systems, "TutorialState",       ref created, ref existing);
+            EnsureSingleton<StatsTracker>       (systems, "StatsTracker",        ref created, ref existing);
+            // TODO: MapPathfinder (needs nav mesh config), SceneTransition (needs animator refs)
+
             EnsureCastle(ref created, ref existing);
             EnsureCamera(ref created, ref existing);
             EnsureDirectionalLight(ref created, ref existing);
@@ -85,6 +103,18 @@ namespace CrowdDefense.Editor
             if (comp == null)
                 comp = child.gameObject.AddComponent<T>();
             return comp;
+        }
+
+        // Returns existing component or creates new child GO + component under parent.
+        // Idempotent: if GO already in hierarchy it is reused.
+        private static T EnsureSingleton<T>(GameObject parent, string goName, ref int created, ref int existing) where T : Component
+        {
+            var existing_ = Object.FindFirstObjectByType<T>();
+            if (existing_ != null) { existing++; return existing_; }
+            var go = new GameObject(goName);
+            go.transform.SetParent(parent.transform, false);
+            created++;
+            return go.AddComponent<T>();
         }
 
         private static void EnsureJuiceFX(GameObject parent, ref int created, ref int existing)
