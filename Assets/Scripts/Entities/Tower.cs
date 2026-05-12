@@ -155,6 +155,8 @@ namespace CrowdDefense.Entities
         private float _lastKillTime  = -999f;
         private const float StreakWindow  = 0.5f;
         private const int   StreakMax     = 10;
+        // Set in Fire() when a crit lands; consumed once in RegisterKill() for floating +1 CRIT! text.
+        private bool _lastKillWasCrit = false;
 
         // XP system — +5% dmg per 10 kills, max 50% (10 levels)
         private int   _xpKills    = 0;
@@ -285,6 +287,8 @@ namespace CrowdDefense.Entities
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
                     $"x{_streakCount}", transform.position + Vector3.up * 2f, new Color(1f, 0.85f, 0.1f));
 
+            SpawnKillFloatText();
+
             // XP level-up every XpKillsPerLevel kills
             _xpKills++;
             if (_xpKills % XpKillsPerLevel == 0 && _xpDmgMul < XpDmgMax)
@@ -292,6 +296,30 @@ namespace CrowdDefense.Entities
                 _xpDmgMul = Mathf.Min(_xpDmgMul + XpDmgPerLevel, XpDmgMax);
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
                     "+LVL", transform.position + Vector3.up * 2.5f, new Color(0.4f, 1f, 0.4f));
+            }
+        }
+
+        private void SpawnKillFloatText()
+        {
+            if (!gameObject.activeInHierarchy) return;
+            var popup = CrowdDefense.UI.FloatingPopupController.Instance;
+            if (popup == null) return;
+
+            Vector3 pos = transform.position + Vector3.up * 1.5f;
+            bool isCrit = _lastKillWasCrit;
+            _lastKillWasCrit = false;
+
+            if (_streakCount >= 5)
+            {
+                popup.SpawnReward($"+1 STREAK x{_streakCount}!", pos, new Color(1f, 0.75f, 0f));
+            }
+            else if (isCrit)
+            {
+                popup.SpawnReward("+1 CRIT!", pos, new Color(1f, 0.9f, 0.1f));
+            }
+            else
+            {
+                popup.SpawnReward("+1", pos, Color.white);
             }
         }
 
@@ -1121,6 +1149,7 @@ namespace CrowdDefense.Entities
                 if (baseCrit > 0f && Random.value < baseCrit)
                 {
                     dmg *= bal.CritDmgMul;
+                    _lastKillWasCrit = true;
                     CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCrit(dmg, t.transform.position);
                     VfxPool.Instance?.SpawnConfetti(t.transform.position, 0.5f, new Color(1f, 0.9f, 0.1f));
                     ac?.Play3DPitched("tower_fire", transform.position, 0.45f, firePitch * 1.35f);
@@ -1131,6 +1160,7 @@ namespace CrowdDefense.Entities
             if (L3CritChance > 0f && Random.value < L3CritChance)
             {
                 dmg *= L3CritMul;
+                _lastKillWasCrit = true;
                 VfxPool.Instance?.SpawnConfetti(t.transform.position, 0.5f, new Color(1f, 0.9f, 0.1f));
                 ac?.Play3DPitched("tower_fire", transform.position, 0.45f, firePitch * 1.35f);
             }
