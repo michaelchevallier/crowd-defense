@@ -249,11 +249,12 @@ namespace CrowdDefense.UI
             if (unlocked) card.AddToClassList("ach-card--unlocked");
             else          card.AddToClassList("ach-card--locked");
 
+            bool hiddenLocked = def.hidden && !unlocked;
             var icon = new Label(unlocked ? def.IconEmoji : "\U0001F512");
             icon.AddToClassList("ach-icon");
             card.Add(icon);
 
-            var title = new Label(string.IsNullOrEmpty(def.titleKey) ? def.id : L.Get(def.titleKey));
+            var title = new Label(hiddenLocked ? "???" : (string.IsNullOrEmpty(def.titleKey) ? def.id : L.Get(def.titleKey)));
             title.AddToClassList("ach-title");
             card.Add(title);
 
@@ -263,7 +264,7 @@ namespace CrowdDefense.UI
                 desc.AddToClassList("ach-desc");
                 card.Add(desc);
             }
-            else if (def.predicateType == AchievementPredicateType.Counter && def.threshold > 0)
+            else if (!hiddenLocked && def.predicateType == AchievementPredicateType.Counter && def.threshold > 0)
             {
                 // Show progress count instead of description.
                 int clamped = Math.Min(counterProgress, def.threshold);
@@ -283,8 +284,8 @@ namespace CrowdDefense.UI
             }
             else
             {
-                // Predicate (Event) locked: show description if not hidden, else "???".
-                string descText = def.hidden || string.IsNullOrEmpty(def.descKey)
+                // Predicate locked or hidden: show description if not hidden, else "???".
+                string descText = hiddenLocked || string.IsNullOrEmpty(def.descKey)
                     ? "???"
                     : L.Get(def.descKey);
                 var desc = new Label(descText);

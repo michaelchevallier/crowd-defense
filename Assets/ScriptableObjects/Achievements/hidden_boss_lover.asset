@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ab9dd0f5f4742a69824470e0b5e3535, type: 3}
+  m_Name: hidden_boss_lover
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.AchievementDef
+  id: hidden_boss_lover
+  titleKey: ach.hidden_boss_lover.title
+  descKey: ach.hidden_boss_lover.desc
+  iconPath: UI/Achievements/hidden_boss_lover
+  hidden: 1
+  points: 40
+  icon: {fileID: 0}
+  predicateType: 1
+  threshold: 5
+  eventKey: boss_killed
+  iconEmoji: "\U0001F480"
+  category: 0
+  rewardGold: 100
