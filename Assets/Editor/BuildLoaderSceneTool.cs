@@ -108,8 +108,9 @@ namespace CrowdDefense.Editor
                 docSO.FindProperty("sourceAsset").objectReferenceValue = loaderTree;
             docSO.ApplyModifiedProperties();
 
-            // LoaderController removed (cleanup commit 0fa9756) — stub left for menu compat
-            MonoBehaviour? loader = null;
+            // MenuController wires main menu buttons (btn-continue, btn-newrun, btn-settings, btn-credits, btn-quit)
+            if (loaderGO.GetComponent<MenuController>() == null)
+                loaderGO.AddComponent<MenuController>();
 
             // Settings panel on a separate GO
             var settingsGO = GameObject.Find("SettingsPanelUI");
@@ -132,16 +133,32 @@ namespace CrowdDefense.Editor
                 settingsSO.FindProperty("sourceAsset").objectReferenceValue = settingsTree;
             settingsSO.ApplyModifiedProperties();
 
-            var settingsCtrl = settingsGO.GetComponent<SettingsPanelController>()
-                            ?? settingsGO.AddComponent<SettingsPanelController>();
+            if (settingsGO.GetComponent<SettingsPanelController>() == null)
+                settingsGO.AddComponent<SettingsPanelController>();
 
-            // Wire settingsPanel reference on LoaderController — disabled (LoaderController removed)
-            if (loader != null)
+            // Credits screen on a separate GO (modal overlay)
+            var creditsGO = GameObject.Find("CreditsScreenUI");
+            if (creditsGO == null)
             {
-                var loaderSerObj = new SerializedObject(loader);
-                loaderSerObj.FindProperty("settingsPanel").objectReferenceValue = settingsCtrl;
-                loaderSerObj.ApplyModifiedProperties();
+                creditsGO = new GameObject("CreditsScreenUI");
+                created++;
             }
+            else
+            {
+                existing++;
+            }
+
+            var creditsDoc = creditsGO.GetComponent<UIDocument>() ?? creditsGO.AddComponent<UIDocument>();
+            var creditsTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UI/CreditsScreen.uxml");
+            var creditsSO = new SerializedObject(creditsDoc);
+            if (panelSettings != null)
+                creditsSO.FindProperty("m_PanelSettings").objectReferenceValue = panelSettings;
+            if (creditsTree != null)
+                creditsSO.FindProperty("sourceAsset").objectReferenceValue = creditsTree;
+            creditsSO.ApplyModifiedProperties();
+
+            if (creditsGO.GetComponent<CreditsScreen>() == null)
+                creditsGO.AddComponent<CreditsScreen>();
         }
 
         private static void EnsureBuildSettings()

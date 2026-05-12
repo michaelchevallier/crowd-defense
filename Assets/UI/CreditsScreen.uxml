@@ -4,7 +4,7 @@
     <Style src="CreditsScreen.uss" />
     <ui:VisualElement name="credits-root" class="credits-root hidden">
         <ui:VisualElement name="credits-panel" class="credits-panel">
-            <ui:Label text="Credits" name="credits-title" class="credits-title" />
+            <ui:Label text="Crowd Defense Unity" name="credits-title" class="credits-title" />
             <ui:ScrollView name="credits-scroll" class="credits-scroll"
                            vertical-scroller-visibility="Hidden"
                            horizontal-scroller-visibility="Hidden">

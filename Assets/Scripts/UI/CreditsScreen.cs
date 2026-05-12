@@ -11,22 +11,11 @@ namespace CrowdDefense.UI
         public static CreditsScreen? Instance { get; private set; }
 
         private const string CreditsBody =
-            "Crowd Defense\nVersion v6.0 (2026-05-12)\n\n" +
-            "Game by Michael Chevallier + Claude (Anthropic)\n\n" +
-            "Built with Unity 6 LTS + URP\n\n" +
-            "Assets\n" +
-            "KayKit Adventurers Pack\n" +
-            "Quaternius Medieval Pack\n" +
-            "Stylized Nature Megakit\n\n" +
-            "Icons\n" +
-            "Font Awesome (fontawesome.com)\n\n" +
-            "Tools\n" +
-            "Unity 6 LTS\n" +
-            "Claude Code by Anthropic\n\n" +
-            "Music\n" +
-            "(placeholder royalty-free)\n\n" +
-            "Special Thanks\n" +
-            "Mike's coffee mug";
+            "Designed by Michael Chevallier\n\n" +
+            "Built with Claude Code Opus 4.7 — Anthropic\n\n" +
+            "Unity 6 LTS + URP + UI Toolkit\n\n" +
+            "KayKit prototype assets (CC0)\n\n" +
+            "© 2026";
 
         private const float ScrollSpeed    = 28f;   // px per second
         private const float ScrollPauseSec = 2.5f;  // pause at top before restarting

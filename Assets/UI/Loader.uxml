@@ -18,6 +18,7 @@
             <ui:Button name="btn-continue" text="Continuer" class="menu-btn menu-btn-primary" />
             <ui:Button name="btn-newrun" text="Nouvelle partie" class="menu-btn" />
             <ui:Button name="btn-settings" text="Options" class="menu-btn menu-btn-secondary" />
+            <ui:Button name="btn-credits" text="Credits" class="menu-btn menu-btn-secondary" />
             <ui:Button name="btn-quit" text="Quitter" class="menu-btn menu-btn-quit" />
         </ui:VisualElement>
 
