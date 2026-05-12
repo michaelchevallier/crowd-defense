@@ -58,6 +58,11 @@ namespace CrowdDefense.UI
         private Coroutine?  _toastCoroutine;
         private string      _shareLevelName = "";
 
+        // Confirm modal (Menu / exit accidental click guard)
+        private GameObject? _confirmModal;
+        private Button?     _btnConfirmYes;
+        private Button?     _btnConfirmNo;
+
         private bool _isVictory;
 
         // ── Colours ─────────────────────────────────────────────────────────────
@@ -418,6 +423,34 @@ namespace CrowdDefense.UI
 
         private void OnSecondaryClicked()
         {
+            if (!_isVictory)
+            {
+                ShowConfirmModal();
+                return;
+            }
+
+            ExecuteSecondaryAction();
+        }
+
+        private void ShowConfirmModal()
+        {
+            if (_confirmModal == null) return;
+            _confirmModal.SetActive(true);
+        }
+
+        private void OnConfirmYes()
+        {
+            _confirmModal?.SetActive(false);
+            ExecuteSecondaryAction();
+        }
+
+        private void OnConfirmNo()
+        {
+            _confirmModal?.SetActive(false);
+        }
+
+        private void ExecuteSecondaryAction()
+        {
             Time.timeScale = 1f;
             _panel?.SetActive(false);
 
@@ -758,7 +791,68 @@ namespace CrowdDefense.UI
                 anchorMax: new Vector2(0.95f, 0.11f));
             _btnSecondary.onClick.AddListener(OnSecondaryClicked);
 
+            // Confirm modal — fullscreen overlay inside the canvas (not the panel)
+            BuildConfirmModal(canvasGo.transform);
+
             _panel.SetActive(false);
+        }
+
+        private void BuildConfirmModal(Transform canvasTransform)
+        {
+            // Dark overlay (covers everything including end panel)
+            var overlayGo = new GameObject("ConfirmModal");
+            overlayGo.transform.SetParent(canvasTransform, false);
+            var overlayRect = overlayGo.AddComponent<RectTransform>();
+            Stretch(overlayRect);
+            var overlayImg = overlayGo.AddComponent<Image>();
+            overlayImg.color = new Color(0f, 0f, 0f, 0.70f);
+            // Block raycasts so clicks don't bleed through
+            overlayGo.AddComponent<GraphicRaycaster>();
+            _confirmModal = overlayGo;
+
+            // Centered dialog box
+            var boxGo = new GameObject("ConfirmBox");
+            boxGo.transform.SetParent(overlayGo.transform, false);
+            var boxRect = boxGo.AddComponent<RectTransform>();
+            boxRect.anchorMin = new Vector2(0.5f, 0.5f);
+            boxRect.anchorMax = new Vector2(0.5f, 0.5f);
+            boxRect.pivot     = new Vector2(0.5f, 0.5f);
+            boxRect.sizeDelta = new Vector2(420f, 180f);
+            var boxImg = boxGo.AddComponent<Image>();
+            boxImg.color = new Color(0.10f, 0.10f, 0.10f, 0.97f);
+
+            // Message text
+            var msgGo   = new GameObject("ConfirmMessage");
+            msgGo.transform.SetParent(boxGo.transform, false);
+            var msgRect = msgGo.AddComponent<RectTransform>();
+            msgRect.anchorMin = new Vector2(0.05f, 0.50f);
+            msgRect.anchorMax = new Vector2(0.95f, 0.95f);
+            msgRect.offsetMin = Vector2.zero;
+            msgRect.offsetMax = Vector2.zero;
+            var msgTxt = msgGo.AddComponent<Text>();
+            msgTxt.text      = "Quitter ? La progression sera perdue.";
+            msgTxt.fontSize  = 20;
+            msgTxt.color     = new Color(0.92f, 0.92f, 0.92f, 1f);
+            msgTxt.alignment = TextAnchor.MiddleCenter;
+            msgTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            // Yes button
+            (_btnConfirmYes, _) = CreateColoredButton(boxGo.transform, "BtnConfirmYes",
+                anchorMin: new Vector2(0.05f, 0.05f),
+                anchorMax: new Vector2(0.45f, 0.45f),
+                bgColor: new Color(0.70f, 0.15f, 0.10f, 1f),
+                labelText: "Quitter");
+            _btnConfirmYes.onClick.AddListener(OnConfirmYes);
+
+            // No button
+            (_btnConfirmNo, _) = CreateColoredButton(boxGo.transform, "BtnConfirmNo",
+                anchorMin: new Vector2(0.55f, 0.05f),
+                anchorMax: new Vector2(0.95f, 0.45f),
+                bgColor: new Color(0.18f, 0.18f, 0.18f, 1f),
+                labelText: "Annuler");
+            _btnConfirmNo.onClick.AddListener(OnConfirmNo);
+
+            overlayGo.SetActive(false);
         }
 
         private static (Button btn, Text label) CreateColoredButton(Transform parent, string name,
