@@ -25,8 +25,11 @@ namespace CrowdDefense.Visual
             string? idleClipName,
             string? walkClipName)
         {
-            var animator = meshRoot.GetComponent<Animator>()
-                ?? meshRoot.AddComponent<Animator>();
+            if (!meshRoot.TryGetComponent(out Animator animator))
+            {
+                animator = meshRoot.AddComponent<Animator>();
+                if (animator == null) return null;
+            }
 
             // meshRoot.name may be "Mesh_knight" — strip "Mesh_" prefix, try exact then lowercase
             string rawName = meshRoot.name;
