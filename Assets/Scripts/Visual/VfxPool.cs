@@ -61,20 +61,21 @@ namespace CrowdDefense.Visual
             _additiveMat = VfxPoolBindings.BuildAdditiveMaterial();
             VfxPoolBindings.LoadAllTextures();
 
-            impactPrefab    ??= MakeProcPrefab("Impact",    ps => VfxPoolBindings.BuildImpactModule(ps, _additiveMat));
-            deathPrefab     ??= MakeProcPrefab("Death",     ps => VfxPoolBindings.BuildDeathModule(ps, _additiveMat));
-            explosionPrefab ??= MakeProcPrefab("Explosion", ps => VfxPoolBindings.BuildExplosionModule(ps, _additiveMat));
-            coinBurstPrefab ??= MakeProcPrefab("CoinBurst", ps => VfxPoolBindings.BuildCoinBurstModule(ps, _additiveMat));
-            hitFlashPrefab  ??= MakeProcPrefab("HitFlash",  ps => VfxPoolBindings.BuildHitFlashModule(ps, _additiveMat));
-            levelUpPrefab   ??= MakeProcPrefab("LevelUp",   ps => VfxPoolBindings.BuildLevelUpModule(ps, _additiveMat));
-            perkPickupPrefab ??= MakeProcPrefab("PerkPickup", ps => VfxPoolBindings.BuildPerkPickupModule(ps, _additiveMat));
-            frostPrefab     ??= MakeProcPrefab("Frost",     ps => VfxPoolBindings.BuildFrostModule(ps, _additiveMat));
-            portalPrefab    ??= MakeProcPrefab("Portal",    ps => VfxPoolBindings.BuildPortalModule(ps, _additiveMat));
-            fireBreathPrefab ??= MakeProcPrefab("FireBreath", ps => VfxPoolBindings.BuildFireBreathModule(ps, _additiveMat));
-            muzzleFlashPrefab    ??= MakeProcPrefab("MuzzleFlash",    ps => VfxPoolBindings.BuildMuzzleFlashModule(ps, _additiveMat));
-            upgradeBurstPrefab   ??= MakeProcPrefab("UpgradeBurst",   ps => VfxPoolBindings.BuildUpgradeBurstModule(ps, _additiveMat));
-            sparkPrefab          ??= MakeProcPrefab("Spark",          ps => VfxPoolBindings.BuildSparkModule(ps, _additiveMat));
-            upgradeConfettiPrefab ??= MakeProcPrefab("UpgradeConfetti", ps => VfxPoolBindings.BuildUpgradeConfettiModule(ps, _additiveMat));
+            // Unity-aware null check : `??=` skips fake-null missing refs ; `==` op handles both.
+            if (impactPrefab          == null) impactPrefab          = MakeProcPrefab("Impact",          ps => VfxPoolBindings.BuildImpactModule(ps, _additiveMat));
+            if (deathPrefab           == null) deathPrefab           = MakeProcPrefab("Death",           ps => VfxPoolBindings.BuildDeathModule(ps, _additiveMat));
+            if (explosionPrefab       == null) explosionPrefab       = MakeProcPrefab("Explosion",       ps => VfxPoolBindings.BuildExplosionModule(ps, _additiveMat));
+            if (coinBurstPrefab       == null) coinBurstPrefab       = MakeProcPrefab("CoinBurst",       ps => VfxPoolBindings.BuildCoinBurstModule(ps, _additiveMat));
+            if (hitFlashPrefab        == null) hitFlashPrefab        = MakeProcPrefab("HitFlash",        ps => VfxPoolBindings.BuildHitFlashModule(ps, _additiveMat));
+            if (levelUpPrefab         == null) levelUpPrefab         = MakeProcPrefab("LevelUp",         ps => VfxPoolBindings.BuildLevelUpModule(ps, _additiveMat));
+            if (perkPickupPrefab      == null) perkPickupPrefab      = MakeProcPrefab("PerkPickup",      ps => VfxPoolBindings.BuildPerkPickupModule(ps, _additiveMat));
+            if (frostPrefab           == null) frostPrefab           = MakeProcPrefab("Frost",           ps => VfxPoolBindings.BuildFrostModule(ps, _additiveMat));
+            if (portalPrefab          == null) portalPrefab          = MakeProcPrefab("Portal",          ps => VfxPoolBindings.BuildPortalModule(ps, _additiveMat));
+            if (fireBreathPrefab      == null) fireBreathPrefab      = MakeProcPrefab("FireBreath",      ps => VfxPoolBindings.BuildFireBreathModule(ps, _additiveMat));
+            if (muzzleFlashPrefab     == null) muzzleFlashPrefab     = MakeProcPrefab("MuzzleFlash",     ps => VfxPoolBindings.BuildMuzzleFlashModule(ps, _additiveMat));
+            if (upgradeBurstPrefab    == null) upgradeBurstPrefab    = MakeProcPrefab("UpgradeBurst",    ps => VfxPoolBindings.BuildUpgradeBurstModule(ps, _additiveMat));
+            if (sparkPrefab           == null) sparkPrefab           = MakeProcPrefab("Spark",           ps => VfxPoolBindings.BuildSparkModule(ps, _additiveMat));
+            if (upgradeConfettiPrefab == null) upgradeConfettiPrefab = MakeProcPrefab("UpgradeConfetti", ps => VfxPoolBindings.BuildUpgradeConfettiModule(ps, _additiveMat));
 
             // Sub-emitter smoke on explosion (fires on particle death)
             var smokePrefab = MakeProcPrefab("ExplosionSmoke", ps => VfxPoolBindings.BuildExplosionSmokeModule(ps, _additiveMat));
