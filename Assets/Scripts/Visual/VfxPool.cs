@@ -608,17 +608,17 @@ namespace CrowdDefense.Visual
         private static void BuildLevelUpModule(ParticleSystem ps)
         {
             var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.6f, 1.1f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(3f, 9f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.12f, 0.42f);
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.7f, 1.3f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(4f, 11f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.14f, 0.48f);
             main.startColor     = new Color(1f, 0.84f, 0f);
-            main.maxParticles   = 400;
+            main.maxParticles   = 600;
             main.duration       = 0.2f;
-            main.gravityModifier = -0.4f;
+            main.gravityModifier = -0.5f;
 
             var emission = ps.emission;
             emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 25, 45, 1, 0.01f) });
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 50, 70, 1, 0.01f) });
 
             var shape = ps.shape;
             shape.enabled   = true;

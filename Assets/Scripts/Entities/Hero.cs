@@ -465,11 +465,14 @@ namespace CrowdDefense.Entities
                 if (cfg != null) XpToNext = cfg.XpToNext(Level);
                 OnLevelUp?.Invoke(Level, Xp, XpToNext);
 
-                // Stage B: audio + juice feedback
-                AudioController.Instance?.Play("level_up", 0.9f);
-                JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.35f), 250);
-                JuiceFX.Instance?.PunchScale(transform, 1.25f, 0.3f);
-                VfxPool.Instance?.SpawnLevelUp(transform.position + Vector3.up * 1.5f);
+                var levelUpPos = transform.position;
+                VfxPool.Instance?.SpawnLevelUp(levelUpPos + Vector3.up * 1.5f);
+                VfxPool.Instance?.SpawnLevelUp(levelUpPos + Vector3.up * 1.8f);
+                FloatingPopupController.Instance?.SpawnReward("LEVEL UP!", levelUpPos + Vector3.up * 2.5f, new Color(1f, 0.84f, 0f));
+                AudioController.Instance?.Play("hero_levelup", 1f);
+                JuiceFX.Instance?.SlowMo(0.5f, 500);
+                JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.4f), 200);
+                JuiceFX.Instance?.PunchScale(transform, 1.5f, 0.4f);
                 StartCoroutine(RimLightGlowRoutine());
             }
         }
