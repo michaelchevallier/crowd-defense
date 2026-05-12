@@ -48,12 +48,6 @@ namespace CrowdDefense.Entities
         private Vector2 _smoothedMoveDir;
         private const float MoveAccel = 8f;
 
-        // ── Footstep dust VFX ─────────────────────────────────────────────────
-        private float   _lastFootstepTime;
-        private Vector3 _lastPos;
-        private Color   _footstepDustTint  = new(0.7f, 0.65f, 0.55f, 0.6f);
-        private string  _footstepAudioKey  = "footstep_dirt";
-
         // ── Idle dance ────────────────────────────────────────────────────────
         private float _idleSeconds;
         private const float IdleDanceDelay  = 5f;
@@ -234,7 +228,6 @@ namespace CrowdDefense.Entities
         private System.Collections.IEnumerator RespawnCinematic()
         {
             _isDead = false;
-            CrowdDefense.UI.HeroPortraitController.Instance?.CleanupUltimateRing();
 
             var castlePos = Castle.Instance != null
                 ? Castle.Instance.transform.position

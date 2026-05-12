@@ -9,13 +9,11 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    // Standalone bottom-left panel: portrait circle + XP bar (hero has no HP stat,
-    // XP-to-next is the closest "health" analog) + 5 perk icon slots.
+    // Bottom-left panel: portrait circle + XP bar (label "Lv N X/Y") + level label.
     // Auto-creates its own UIDocument at runtime; wired by LevelRunner.Start or auto-spawned.
     public class HeroPortraitController : MonoSingleton<HeroPortraitController>
     {
-        private const int   MaxPerkSlots  = 5;
-        private const float TickInterval  = 0.2f;
+        private const float TickInterval = 0.2f;
 
         private VisualElement? _root;
         private VisualElement? _portrait;
@@ -23,18 +21,10 @@ namespace CrowdDefense.UI
         private Label?         _hpLabel;
         private Label?         _levelLabel;
         private Label?         _killLabel;
-        private VisualElement[]? _perkSlots;
-        private Label[]?         _perkLabels;
 
         private float _tickTimer;
         private VisualElement? _xpFlashOverlay;
         private VisualElement? _damageFlashOverlay;
-        private VisualElement? _flameRing;
-        private VisualElement? _hpCircle;
-        private VisualElement? _tooltip;
-        private VisualElement? _ultimateRing;
-        private bool           _wasUltimateReady;
-        private float          _ultimateRingT;
 
         protected override void OnAwakeSingleton()
         {
@@ -44,15 +34,11 @@ namespace CrowdDefense.UI
         private void OnEnable()
         {
             EventManager.Instance?.Subscribe<HeroDamagedEvent>(OnHeroDamaged);
-            StartCoroutine(FlameRingRoutine());
-            StartCoroutine(UltimateRingRoutine());
         }
 
         private void OnDisable()
         {
             EventManager.Instance?.Unsubscribe<HeroDamagedEvent>(OnHeroDamaged);
-            StopCoroutine(nameof(FlameRingRoutine));
-            StopCoroutine(nameof(UltimateRingRoutine));
         }
 
         private void OnHeroDamaged(HeroDamagedEvent _)
@@ -60,53 +46,6 @@ namespace CrowdDefense.UI
             if (_damageFlashOverlay == null) return;
             StopCoroutine(nameof(DamageFlashRoutine));
             StartCoroutine(DamageFlashRoutine());
-        }
-
-        // Flame ring: outer border pulse orange alpha 0.3→0.6→0.3 at 1Hz via sin wave.
-        private IEnumerator FlameRingRoutine()
-        {
-            float t = 0f;
-            while (true)
-            {
-                t += Time.unscaledDeltaTime;
-                // sin oscillates -1..1 at 1Hz; remap to 0.3..0.6
-                float alpha = 0.45f + 0.15f * Mathf.Sin(t * Mathf.PI * 2f);
-                if (_flameRing != null)
-                {
-                    var c = new Color(1f, 0.5f, 0f, alpha);
-                    _flameRing.style.borderTopColor    = new StyleColor(c);
-                    _flameRing.style.borderRightColor  = new StyleColor(c);
-                    _flameRing.style.borderBottomColor = new StyleColor(c);
-                    _flameRing.style.borderLeftColor   = new StyleColor(c);
-                }
-                yield return null;
-            }
-        }
-
-        // Ultimate ring: gold border breathing at 2Hz when ultimate is ready.
-        private IEnumerator UltimateRingRoutine()
-        {
-            while (true)
-            {
-                _ultimateRingT += Time.unscaledDeltaTime;
-                if (_ultimateRing != null)
-                {
-                    float sin  = Mathf.Sin(_ultimateRingT * Mathf.PI * 4f); // 2Hz
-                    float alpha = 0.7f + sin * 0.3f;
-                    var c = new Color(1f, 0.85f, 0.2f, alpha);
-                    _ultimateRing.style.borderTopColor    = new StyleColor(c);
-                    _ultimateRing.style.borderRightColor  = new StyleColor(c);
-                    _ultimateRing.style.borderBottomColor = new StyleColor(c);
-                    _ultimateRing.style.borderLeftColor   = new StyleColor(c);
-                    // Breathing scale via border width: 3px → 5px at peak
-                    float bw = 3f + sin * 1f;
-                    _ultimateRing.style.borderTopWidth    = bw;
-                    _ultimateRing.style.borderRightWidth  = bw;
-                    _ultimateRing.style.borderBottomWidth = bw;
-                    _ultimateRing.style.borderLeftWidth   = bw;
-                }
-                yield return null;
-            }
         }
 
         private IEnumerator DamageFlashRoutine()
@@ -142,37 +81,10 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
-            UpdateUltimateRingVisibility();
-
             _tickTimer -= Time.unscaledDeltaTime;
             if (_tickTimer > 0f) return;
             _tickTimer = TickInterval;
             Refresh();
-        }
-
-        private void UpdateUltimateRingVisibility()
-        {
-            if (_ultimateRing == null) return;
-            var hero = LevelRunner.Instance?.Hero;
-            bool isReady = hero != null && hero.IsUltimateUnlocked && hero.UltimateCooldownRemaining <= 0f;
-
-            if (isReady != _wasUltimateReady)
-            {
-                _wasUltimateReady = isReady;
-                _ultimateRing.style.display = isReady ? DisplayStyle.Flex : DisplayStyle.None;
-                if (isReady)
-                {
-                    _ultimateRingT = 0f;
-                    AudioController.Instance?.Play("hero_ult", 0.5f);
-                }
-            }
-        }
-
-        public void CleanupUltimateRing()
-        {
-            _wasUltimateReady = false;
-            if (_ultimateRing != null)
-                _ultimateRing.style.display = DisplayStyle.None;
         }
 
         private void Refresh()
@@ -208,68 +120,14 @@ namespace CrowdDefense.UI
                 _hpBarFill.style.width = new StyleLength(new Length(ratio * 100f, LengthUnit.Percent));
             }
 
-            // HP circle ring: green (1.0) → yellow (0.5) → red (0.0)
-            if (_hpCircle != null)
-            {
-                Color ringColor = ratio > 0.5f
-                    ? Color.Lerp(new Color(1f, 0.85f, 0f), new Color(0.1f, 0.9f, 0.1f), (ratio - 0.5f) * 2f)
-                    : Color.Lerp(new Color(0.9f, 0.1f, 0.1f), new Color(1f, 0.85f, 0f), ratio * 2f);
-                ringColor.a = 0.85f;
-                _hpCircle.style.borderTopColor    = new StyleColor(ringColor);
-                _hpCircle.style.borderRightColor  = new StyleColor(ringColor);
-                _hpCircle.style.borderBottomColor = new StyleColor(ringColor);
-                _hpCircle.style.borderLeftColor   = new StyleColor(ringColor);
-            }
-
             if (_levelLabel != null)
-                _levelLabel.text = atMaxLevel ? $"Niv MAX" : $"Niv {hero.Level}";
+                _levelLabel.text = atMaxLevel ? "Niv MAX" : $"Niv {hero.Level}";
 
             if (_hpLabel != null)
-                _hpLabel.text = atMaxLevel ? $"XP MAX" : $"XP {hero.Xp}/{hero.XpToNext}";
+                _hpLabel.text = atMaxLevel ? "XP MAX" : $"XP {hero.Xp}/{hero.XpToNext}";
 
             if (_killLabel != null)
                 _killLabel.text = $"Tues : {hero.KillCount}";
-
-            // Perk slots
-            if (_perkSlots == null || _perkLabels == null) return;
-            var perks    = hero.Perks;
-            var registry = PerkRegistry.Get();
-            for (int i = 0; i < MaxPerkSlots; i++)
-            {
-                bool filled = i < perks.Count;
-                _perkSlots[i].RemoveFromClassList(filled ? "perk-slot-empty" : "perk-slot-filled");
-                _perkSlots[i].AddToClassList(filled ? "perk-slot-filled" : "perk-slot-empty");
-
-                if (filled)
-                {
-                    var def = registry?.Get(perks[i]);
-                    // Label: iconEmoji if set, else first char of displayName, else perk id[0]
-                    string label = "";
-                    if (def != null)
-                        label = !string.IsNullOrEmpty(def.iconEmoji) ? def.iconEmoji
-                              : !string.IsNullOrEmpty(def.displayName) ? def.displayName[0].ToString().ToUpper()
-                              : perks[i].Length > 0 ? perks[i][0].ToString().ToUpper() : "";
-                    else
-                        label = perks[i].Length > 0 ? perks[i][0].ToString().ToUpper() : "";
-                    _perkLabels[i].text = label;
-
-                    // Border color by rarity
-                    Color rarityColor = def != null ? RarityColor(def.rarity) : new Color(0.4f, 0.4f, 0.4f);
-                    _perkSlots[i].style.borderTopColor    = new StyleColor(rarityColor);
-                    _perkSlots[i].style.borderRightColor  = new StyleColor(rarityColor);
-                    _perkSlots[i].style.borderBottomColor = new StyleColor(rarityColor);
-                    _perkSlots[i].style.borderLeftColor   = new StyleColor(rarityColor);
-                }
-                else
-                {
-                    _perkLabels[i].text = "";
-                    var dim = new StyleColor(new Color(0.3f, 0.3f, 0.3f, 0.5f));
-                    _perkSlots[i].style.borderTopColor    = dim;
-                    _perkSlots[i].style.borderRightColor  = dim;
-                    _perkSlots[i].style.borderBottomColor = dim;
-                    _perkSlots[i].style.borderLeftColor   = dim;
-                }
-            }
         }
 
         public void AnimateXpGain(int amount)
@@ -281,7 +139,6 @@ namespace CrowdDefense.UI
 
         private IEnumerator XpFlashRoutine(int amount)
         {
-            // Flash doré sur la bar XP
             _xpFlashOverlay!.style.backgroundColor = new StyleColor(new Color(1f, 0.84f, 0f, 0.3f));
             float elapsed = 0f;
             while (elapsed < 0.3f)
@@ -302,33 +159,6 @@ namespace CrowdDefense.UI
             }
         }
 
-        private static VisualElement BuildUltimateRing()
-        {
-            var ring = new VisualElement();
-            ring.style.position              = Position.Absolute;
-            ring.style.top                   = new StyleLength(-8f);
-            ring.style.left                  = new StyleLength(-8f);
-            ring.style.right                 = new StyleLength(-8f);
-            ring.style.bottom                = new StyleLength(-8f);
-            ring.style.borderTopWidth        = 3f;
-            ring.style.borderRightWidth      = 3f;
-            ring.style.borderBottomWidth     = 3f;
-            ring.style.borderLeftWidth       = 3f;
-            ring.style.borderTopLeftRadius     = new StyleLength(62f);
-            ring.style.borderTopRightRadius    = new StyleLength(62f);
-            ring.style.borderBottomLeftRadius  = new StyleLength(62f);
-            ring.style.borderBottomRightRadius = new StyleLength(62f);
-            var gold = new StyleColor(new Color(1f, 0.85f, 0.2f, 0.7f));
-            ring.style.borderTopColor    = gold;
-            ring.style.borderRightColor  = gold;
-            ring.style.borderBottomColor = gold;
-            ring.style.borderLeftColor   = gold;
-            ring.style.backgroundColor   = new StyleColor(Color.clear);
-            ring.style.display           = DisplayStyle.None;
-            ring.pickingMode             = PickingMode.Ignore;
-            return ring;
-        }
-
         // Build VisualElement tree in code (no .uxml dependency).
         private VisualElement BuildTree(StyleSheet? sheet)
         {
@@ -336,51 +166,9 @@ namespace CrowdDefense.UI
             root.AddToClassList("hero-portrait-root");
             if (sheet != null) root.styleSheets.Add(sheet);
 
-            // Flame ring sits behind the portrait as an absolute overlay on root.
-            _flameRing = new VisualElement();
-            _flameRing.style.position              = Position.Absolute;
-            _flameRing.style.top                   = new StyleLength(-4f);
-            _flameRing.style.left                  = new StyleLength(-4f);
-            _flameRing.style.right                 = new StyleLength(-4f);
-            _flameRing.style.bottom                = new StyleLength(-4f);
-            _flameRing.style.borderTopWidth        = 3f;
-            _flameRing.style.borderRightWidth      = 3f;
-            _flameRing.style.borderBottomWidth     = 3f;
-            _flameRing.style.borderLeftWidth       = 3f;
-            _flameRing.style.borderTopLeftRadius     = new StyleLength(54f);
-            _flameRing.style.borderTopRightRadius    = new StyleLength(54f);
-            _flameRing.style.borderBottomLeftRadius  = new StyleLength(54f);
-            _flameRing.style.borderBottomRightRadius = new StyleLength(54f);
-            _flameRing.style.backgroundColor  = new StyleColor(Color.clear);
-            _flameRing.pickingMode            = PickingMode.Ignore;
-            root.Add(_flameRing);
-
-            // Ultimate ring: gold, sits between flame ring and portrait, hidden by default.
-            _ultimateRing = BuildUltimateRing();
-            root.Add(_ultimateRing);
-
             _portrait = new VisualElement();
             _portrait.AddToClassList("portrait");
             root.Add(_portrait);
-
-            // HP circle ring: absolute inside portrait, between bg and damage flash.
-            _hpCircle = new VisualElement();
-            _hpCircle.style.position              = Position.Absolute;
-            _hpCircle.style.top                   = new StyleLength(2f);
-            _hpCircle.style.left                  = new StyleLength(2f);
-            _hpCircle.style.right                 = new StyleLength(2f);
-            _hpCircle.style.bottom                = new StyleLength(2f);
-            _hpCircle.style.borderTopWidth        = 4f;
-            _hpCircle.style.borderRightWidth      = 4f;
-            _hpCircle.style.borderBottomWidth     = 4f;
-            _hpCircle.style.borderLeftWidth       = 4f;
-            _hpCircle.style.borderTopLeftRadius     = new StyleLength(50f);
-            _hpCircle.style.borderTopRightRadius    = new StyleLength(50f);
-            _hpCircle.style.borderBottomLeftRadius  = new StyleLength(50f);
-            _hpCircle.style.borderBottomRightRadius = new StyleLength(50f);
-            _hpCircle.style.backgroundColor       = new StyleColor(Color.clear);
-            _hpCircle.pickingMode                 = PickingMode.Ignore;
-            _portrait.Add(_hpCircle);
 
             _damageFlashOverlay = new VisualElement();
             _damageFlashOverlay.style.position   = Position.Absolute;
@@ -393,35 +181,6 @@ namespace CrowdDefense.UI
             _damageFlashOverlay.style.backgroundColor = new StyleColor(new Color(1f, 0f, 0f, 0f));
             _damageFlashOverlay.pickingMode = PickingMode.Ignore;
             _portrait.Add(_damageFlashOverlay);
-
-            // Tooltip: appears right of portrait on hover, hidden by default.
-            _tooltip = new VisualElement();
-            _tooltip.style.position          = Position.Absolute;
-            _tooltip.style.left              = new StyleLength(84f);
-            _tooltip.style.top               = new StyleLength(0f);
-            _tooltip.style.backgroundColor   = new StyleColor(new Color(0.05f, 0.05f, 0.1f, 0.92f));
-            _tooltip.style.borderTopWidth    = 1f; _tooltip.style.borderRightWidth  = 1f;
-            _tooltip.style.borderBottomWidth = 1f; _tooltip.style.borderLeftWidth   = 1f;
-            _tooltip.style.borderTopColor    = new StyleColor(new Color(1f, 0.5f, 0f, 0.7f));
-            _tooltip.style.borderRightColor  = new StyleColor(new Color(1f, 0.5f, 0f, 0.7f));
-            _tooltip.style.borderBottomColor = new StyleColor(new Color(1f, 0.5f, 0f, 0.7f));
-            _tooltip.style.borderLeftColor   = new StyleColor(new Color(1f, 0.5f, 0f, 0.7f));
-            _tooltip.style.borderTopLeftRadius     = new StyleLength(6f);
-            _tooltip.style.borderTopRightRadius    = new StyleLength(6f);
-            _tooltip.style.borderBottomLeftRadius  = new StyleLength(6f);
-            _tooltip.style.borderBottomRightRadius = new StyleLength(6f);
-            _tooltip.style.paddingTop    = new StyleLength(6f); _tooltip.style.paddingBottom = new StyleLength(6f);
-            _tooltip.style.paddingLeft   = new StyleLength(8f); _tooltip.style.paddingRight  = new StyleLength(8f);
-            _tooltip.style.minWidth      = new StyleLength(160f);
-            _tooltip.style.display       = DisplayStyle.None;
-            _tooltip.pickingMode         = PickingMode.Ignore;
-            root.Add(_tooltip);
-
-            root.RegisterCallback<PointerEnterEvent>(_ => RefreshTooltip());
-            root.RegisterCallback<PointerLeaveEvent>(_ =>
-            {
-                if (_tooltip != null) _tooltip.style.display = DisplayStyle.None;
-            });
 
             var info = new VisualElement();
             info.AddToClassList("hero-portrait-info");
@@ -457,145 +216,8 @@ namespace CrowdDefense.UI
             _killLabel.AddToClassList("kill-label");
             info.Add(_killLabel);
 
-            var perksRow = new VisualElement();
-            perksRow.AddToClassList("perks-row");
-            info.Add(perksRow);
-
-            _perkSlots  = new VisualElement[MaxPerkSlots];
-            _perkLabels = new Label[MaxPerkSlots];
-            for (int i = 0; i < MaxPerkSlots; i++)
-            {
-                var slot = new VisualElement();
-                slot.AddToClassList("perk-slot");
-                slot.AddToClassList("perk-slot-empty");
-                var lbl = new Label("");
-                lbl.AddToClassList("perk-slot-label");
-                slot.Add(lbl);
-                perksRow.Add(slot);
-                _perkSlots[i]  = slot;
-                _perkLabels[i] = lbl;
-            }
-
             return root;
         }
-
-        private void RefreshTooltip()
-        {
-            if (_tooltip == null) return;
-            var hero = LevelRunner.Instance?.Hero;
-            var cfg  = LevelRunner.Instance?.HeroTypeDef;
-            if (hero == null || cfg == null)
-            {
-                _tooltip.style.display = DisplayStyle.None;
-                return;
-            }
-
-            _tooltip.Clear();
-            bool atMax = hero.Level >= hero.MaxLevel;
-
-            void Row(string label, string value)
-            {
-                var row = new VisualElement();
-                row.style.flexDirection  = FlexDirection.Row;
-                row.style.justifyContent = Justify.SpaceBetween;
-                row.style.marginBottom   = new StyleLength(2f);
-
-                var lbl = new Label(label);
-                lbl.style.color    = new StyleColor(new Color(0.7f, 0.7f, 0.75f));
-                lbl.style.fontSize = new StyleLength(10f);
-                lbl.style.unityFontStyleAndWeight = FontStyle.Normal;
-
-                var val = new Label(value);
-                val.style.color    = new StyleColor(Color.white);
-                val.style.fontSize = new StyleLength(10f);
-                val.style.marginLeft = new StyleLength(8f);
-                val.style.unityFontStyleAndWeight = FontStyle.Bold;
-
-                row.Add(lbl); row.Add(val);
-                _tooltip.Add(row);
-            }
-
-            // Title row: avatar name + level
-            var title = new Label(HeroType.AvatarLabel(
-                System.Enum.TryParse<HeroAvatar>(PlayerPrefs.GetString("hero_avatar", ""), out var av) ? av : HeroAvatar.Warrior));
-            title.style.color    = new StyleColor(new Color(1f, 0.75f, 0.2f));
-            title.style.fontSize = new StyleLength(11f);
-            title.style.unityFontStyleAndWeight = FontStyle.Bold;
-            title.style.marginBottom = new StyleLength(4f);
-            _tooltip.Add(title);
-
-            float effectiveDmg   = cfg.Damage * hero.DamageMul;
-            float effectiveRange = cfg.Range  * hero.RangeMul;
-            float atkSpeedSec    = cfg.FireRateMs * hero.FireRateMul / 1000f;
-            float moveSpd        = cfg.MoveSpeed * hero.MoveSpeedMul;
-            float critPct        = hero.CritChance * 100f;
-            float ultRemaining   = hero.UltimateCooldownRemaining;
-
-            Row("Niveau",         atMax ? "MAX" : hero.Level.ToString());
-            Row("XP",             atMax ? "MAX" : $"{hero.Xp} / {hero.XpToNext}");
-            Row("DMG",            $"{effectiveDmg:F1}");
-            Row("Vitesse atk",    $"{atkSpeedSec:F2}s");
-            Row("Vitesse dep",    $"{moveSpd:F1}");
-            Row("Portee",         $"{effectiveRange:F1}");
-            Row("Crit",           $"{critPct:F0}%");
-            Row("Ult cooldown",   ultRemaining > 0f ? $"{ultRemaining:F0}s" : "PRET");
-            Row("Kills",          hero.KillCount.ToString());
-
-            // Perks section
-            var perks    = hero.Perks;
-            var registry = PerkRegistry.Get();
-            if (perks.Count > 0)
-            {
-                var separator = new VisualElement();
-                separator.style.height          = new StyleLength(1f);
-                separator.style.backgroundColor = new StyleColor(new Color(1f, 0.5f, 0f, 0.4f));
-                separator.style.marginTop        = new StyleLength(5f);
-                separator.style.marginBottom     = new StyleLength(4f);
-                _tooltip.Add(separator);
-
-                int show = Mathf.Min(perks.Count, MaxPerkSlots);
-                for (int i = 0; i < show; i++)
-                {
-                    var def       = registry?.Get(perks[i]);
-                    string name   = def != null && !string.IsNullOrEmpty(def.displayName) ? def.displayName : perks[i];
-                    string desc   = def != null && !string.IsNullOrEmpty(def.descKey)     ? def.descKey     : "";
-                    Color  rarCol = def != null ? RarityColor(def.rarity) : new Color(0.55f, 0.55f, 0.55f);
-
-                    var perkRow = new VisualElement();
-                    perkRow.style.flexDirection = FlexDirection.Column;
-                    perkRow.style.marginBottom  = new StyleLength(3f);
-                    _tooltip.Add(perkRow);
-
-                    var perkName = new Label(name);
-                    perkName.style.color                   = new StyleColor(rarCol);
-                    perkName.style.fontSize                = new StyleLength(10f);
-                    perkName.style.unityFontStyleAndWeight = FontStyle.Bold;
-                    perkRow.Add(perkName);
-
-                    if (!string.IsNullOrEmpty(desc))
-                    {
-                        var perkDesc = new Label(desc);
-                        perkDesc.style.color                   = new StyleColor(new Color(0.75f, 0.75f, 0.8f));
-                        perkDesc.style.fontSize                = new StyleLength(9f);
-                        perkDesc.style.unityFontStyleAndWeight = FontStyle.Normal;
-                        perkDesc.style.whiteSpace              = WhiteSpace.Normal;
-                        perkRow.Add(perkDesc);
-                    }
-                }
-            }
-
-            _tooltip.style.display = DisplayStyle.Flex;
-        }
-
-        private static Color RarityColor(PerkRarity rarity) => rarity switch
-        {
-            PerkRarity.Common    => new Color(0.55f, 0.55f, 0.55f),
-            PerkRarity.Uncommon  => new Color(0.2f,  0.8f,  0.2f),
-            PerkRarity.Rare      => new Color(0.2f,  0.5f,  1f),
-            PerkRarity.Epic      => new Color(0.7f,  0.2f,  1f),
-            PerkRarity.Legendary => new Color(1f,    0.75f, 0.1f),
-            _                    => new Color(0.4f,  0.4f,  0.4f),
-        };
 
         // Fallback: attempt to load USS directly from path (Editor only; runtime uses Resources).
         private static StyleSheet? LoadStyleSheetFromPath(string path)
