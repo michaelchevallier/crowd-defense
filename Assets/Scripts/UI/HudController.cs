@@ -62,6 +62,11 @@ namespace CrowdDefense.UI
         // Wave kill counter label
         private Label? waveKillCounter;
 
+        // Wave elapsed time label
+        private Label? waveTimeLabel;
+        private float _waveStartTime = -1f;
+        private float _lastWaveTickTime = -1f;
+
         // Debounce 300ms shared between click and N key (unscaled time — immune to timeScale)
         private float lastLaunchInputTime = -1f;
 
@@ -87,6 +92,7 @@ namespace CrowdDefense.UI
             EnsureSibling<TowerToolbarController>();
             EnsureSibling<TowerTooltipController>();
             EnsureSibling<SynergyHudController>();
+            EnsureSibling<SynergyHudPanel>();
             EnsureSibling<FloatingPopupController>();
             EnsureSibling<RadialMenuController>();
             EnsureSibling<TowerSelectMenuController>();
@@ -138,6 +144,7 @@ namespace CrowdDefense.UI
 
             keyboardHintsLabel = root.Q<Label>("keyboard-hints-label");
             waveKillCounter = root.Q<Label>("wave-kill-counter");
+            waveTimeLabel = root.Q<Label>("wave-time");
             bluePillBtn = root.Q<Button>("bluepill-btn");
             bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
 
@@ -248,6 +255,7 @@ namespace CrowdDefense.UI
                 TryCastUlt();
 
             TickBreakPill();
+            TickWaveTime();
             UpdateHeroPanel();
         }
 

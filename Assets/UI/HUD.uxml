@@ -23,6 +23,7 @@
                 <ui:Label text="WAVE" name="wave-label" class="pill-label" />
                 <ui:Label text="1/4" name="wave-value" class="pill-value" />
                 <ui:Label text="" name="wave-kill-counter" class="wave-kill-counter hidden" />
+                <ui:Label text="" name="wave-time" class="wave-time hidden" />
             </ui:VisualElement>
 
             <ui:VisualElement class="pill pill-hp" name="pill-hp">
