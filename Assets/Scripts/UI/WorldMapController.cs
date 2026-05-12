@@ -130,12 +130,35 @@ namespace CrowdDefense.UI
             }
         }
 
+        private static string BookmarkKey(string levelId) => $"level_bookmark_{levelId}_v1";
+
+        private static bool IsBookmarked(string levelId) =>
+            PlayerPrefs.GetInt(BookmarkKey(levelId), 0) == 1;
+
+        private void ToggleBookmark(string levelId)
+        {
+            int next = IsBookmarked(levelId) ? 0 : 1;
+            PlayerPrefs.SetInt(BookmarkKey(levelId), next);
+            PlayerPrefs.Save();
+            ShowWorld(_activeWorld);
+        }
+
         private void ShowWorld(int worldIndex)
         {
             if (_levelGrid == null) return;
             _levelGrid.Clear();
 
+            var bookmarked = new System.Collections.Generic.List<int>();
+            var normal     = new System.Collections.Generic.List<int>();
             for (int l = 1; l <= LevelsPerWorld; l++)
+            {
+                if (IsBookmarked($"world{worldIndex}-{l}")) bookmarked.Add(l);
+                else normal.Add(l);
+            }
+            var order = new System.Collections.Generic.List<int>(bookmarked);
+            order.AddRange(normal);
+
+            foreach (int l in order)
             {
                 string levelId  = $"world{worldIndex}-{l}";
                 bool unlocked   = SaveSystem.IsLevelUnlocked(levelId);
@@ -143,9 +166,10 @@ namespace CrowdDefense.UI
                 int  stars      = SaveSystem.GetStars(levelId);
                 bool isShowcase = l == LevelsPerWorld - 1;
                 bool isBoss     = l == LevelsPerWorld;
+                bool bookmark   = IsBookmarked(levelId);
                 LevelData? data = _registry?.FindById(levelId);
 
-                var tile = BuildLevelTile(levelId, l, worldIndex, unlocked, cleared, stars, isShowcase, isBoss, data);
+                var tile = BuildLevelTile(levelId, l, worldIndex, unlocked, cleared, stars, isShowcase, isBoss, bookmark, data);
                 _levelGrid.Add(tile);
             }
 
@@ -161,6 +185,7 @@ namespace CrowdDefense.UI
             int stars,
             bool isShowcase,
             bool isBoss,
+            bool bookmarked,
             LevelData? data)
         {
             var tile = new VisualElement();
@@ -170,10 +195,22 @@ namespace CrowdDefense.UI
             else if (cleared)    tile.AddToClassList("cleared");
             if (isShowcase)      tile.AddToClassList("showcase");
             if (isBoss)          tile.AddToClassList("boss");
+            if (bookmarked)      tile.AddToClassList("bookmarked");
+
+            var header = new VisualElement();
+            header.AddToClassList("tile-header");
 
             var numLabel = new Label(levelNum.ToString());
             numLabel.AddToClassList("tile-number");
-            tile.Add(numLabel);
+            header.Add(numLabel);
+
+            string id = levelId;
+            var starBtn = new Button(() => ToggleBookmark(id));
+            starBtn.AddToClassList("tile-star-btn");
+            starBtn.text = bookmarked ? "S" : "s";
+            header.Add(starBtn);
+
+            tile.Add(header);
 
             var thumb = new VisualElement();
             thumb.AddToClassList("tile-thumb");
@@ -219,7 +256,6 @@ namespace CrowdDefense.UI
 
             if (unlocked && data != null)
             {
-                string id = levelId;
                 tile.RegisterCallback<ClickEvent>(_ => LevelLoader.LoadLevel(id));
             }
             else if (!unlocked)
