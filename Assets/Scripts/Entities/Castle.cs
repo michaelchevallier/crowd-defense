@@ -54,6 +54,10 @@ namespace CrowdDefense.Entities
         private Transform?    _gateDoor;
         private Coroutine?    _gateCoroutine;
 
+        // Repair animation between waves
+        private Coroutine?    _repairCoroutine;
+        private static readonly int _emissionColorId = Shader.PropertyToID("_EmissionColor");
+
         // Visual state
         private bool          _smokeActive;
         private Coroutine?    _smokeCoroutine;
@@ -1108,7 +1112,85 @@ namespace CrowdDefense.Entities
             var wm = WaveManager.Instance;
             if (wm == null) return;
             wm.OnWaveStart   += _ => { WasHitThisWave = false; AnimateGate(open: true); };
-            wm.OnWaveCleared += _ => AnimateGate(open: false);
+            wm.OnWaveCleared += _ =>
+            {
+                AnimateGate(open: false);
+                if (!IsDead && HP < HPMax)
+                {
+                    if (_repairCoroutine != null) StopCoroutine(_repairCoroutine);
+                    _repairCoroutine = StartCoroutine(PlayRepairAnimation());
+                }
+            };
+        }
+
+        private IEnumerator PlayRepairAnimation()
+        {
+            const float duration   = 2.0f;
+            const float shimmerHz  = 0.5f;       // 0.5 Hz pulse → full cycle every 2 s
+            const float emitPeak   = 0.2f;       // _EmissionColor white * 0.2 peak
+            const int   dustCount  = 12;
+
+            // Sand-tinted dust rising from castle base
+            if (VfxPool.Instance != null)
+            {
+                var sandTint = new Color(0.85f, 0.76f, 0.55f, 0.9f);
+                var basePos  = transform.position;
+                for (int i = 0; i < dustCount; i++)
+                {
+                    var offset = new Vector3(
+                        UnityEngine.Random.Range(-0.65f, 0.65f),
+                        UnityEngine.Random.Range(0.1f, 0.5f),
+                        UnityEngine.Random.Range(-0.65f, 0.65f));
+                    VfxPool.Instance.SpawnSpark(basePos + offset, sandTint);
+                }
+            }
+
+            // "stone_grind_repair" — skip silently if clip absent
+            AudioController.Instance?.PlayPitched("stone_grind_repair", 0.5f, 0.9f);
+
+            // Gather renderers once — no per-frame allocation
+            var renderers = GetComponentsInChildren<Renderer>();
+
+            _castleMpb ??= new MaterialPropertyBlock();
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+
+                // 0.5 Hz sine pulse → 0..1 over time
+                float sin    = Mathf.Sin(elapsed * shimmerHz * Mathf.PI * 2f) * 0.5f + 0.5f;
+                float emit   = sin * emitPeak;
+                var   emitC  = Color.white * emit;
+
+                _castleMpb.SetColor(_emissionColorId, emitC);
+                _castleMpb.SetColor(_baseColorId,     _currentCastleTint);
+                _castleMpb.SetColor(_colorId,         _currentCastleTint);
+
+                for (int i = 0; i < renderers.Length; i++)
+                {
+                    var r = renderers[i];
+                    if (r == null) continue;
+                    if (r.gameObject.name.StartsWith("CastleHPBar")) continue;
+                    r.SetPropertyBlock(_castleMpb);
+                }
+
+                yield return null;
+            }
+
+            // Reset emission to zero, preserve tint
+            _castleMpb.SetColor(_emissionColorId, Color.black);
+            _castleMpb.SetColor(_baseColorId,     _currentCastleTint);
+            _castleMpb.SetColor(_colorId,         _currentCastleTint);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                var r = renderers[i];
+                if (r == null) continue;
+                if (r.gameObject.name.StartsWith("CastleHPBar")) continue;
+                r.SetPropertyBlock(_castleMpb);
+            }
+
+            _repairCoroutine = null;
         }
 
         private void AnimateGate(bool open)
