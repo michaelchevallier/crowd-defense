@@ -181,6 +181,23 @@ namespace CrowdDefense.Data
         public string Id => id;
         public string DisplayName => displayName;
         public string Icon => icon;
+        public string IconEmoji => !string.IsNullOrEmpty(icon) ? icon : id switch
+        {
+            "archer"   => "\U0001F3F9", // 🏹
+            "tank"     => "\U0001F6E1", // 🛡
+            "mage"     => "\U0001F52E", // 🔮
+            "ballista" => "\U00002694", // ⚔
+            "cannon"   => "\U0001F4A3", // 💣
+            "frost"    => "\U00002744", // ❄
+            "crossbow" => "\U000026A1", // ⚡
+            "skyguard" => "\U00002708", // ✈
+            "mine"     => "\U0001F4A5", // 💥
+            "acid"     => "\U0001F9EA", // 🧪
+            "fan"      => "\U0001F32C", // 🌬
+            "portal"   => "\U0001F300", // 🌀
+            "magnet"   => "\U0001F9F2", // 🧲
+            _          => "\U00002753", // ❓
+        };
         public int UnlockWorld => unlockWorld;
         public int Cost => cost;
         public float Damage => damage;

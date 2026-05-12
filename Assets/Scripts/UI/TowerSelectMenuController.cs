@@ -132,7 +132,7 @@ namespace CrowdDefense.UI
                 var btn = new Button();
                 btn.AddToClassList("tower-select-btn");
 
-                string icon = type != null && !string.IsNullOrEmpty(type.Icon) ? type.Icon : PickFallbackIcon(pickId);
+                string icon = type?.IconEmoji ?? PickFallbackIcon(pickId);
                 string name = type?.DisplayName ?? Capitalize(pickId);
                 int cost = type?.Cost ?? 0;
 
@@ -207,11 +207,20 @@ namespace CrowdDefense.UI
 
         private static string PickFallbackIcon(string id) => id switch
         {
-            "archer"  => "A",
-            "mage"    => "M",
-            "cannon"  => "C",
-            "frost"   => "F",
-            _         => "?",
+            "archer"   => "\U0001F3F9",
+            "tank"     => "\U0001F6E1",
+            "mage"     => "\U0001F52E",
+            "ballista" => "\U00002694",
+            "cannon"   => "\U0001F4A3",
+            "frost"    => "\U00002744",
+            "crossbow" => "\U000026A1",
+            "skyguard" => "\U00002708",
+            "mine"     => "\U0001F4A5",
+            "acid"     => "\U0001F9EA",
+            "fan"      => "\U0001F32C",
+            "portal"   => "\U0001F300",
+            "magnet"   => "\U0001F9F2",
+            _          => "\U00002753",
         };
 
         private static string Capitalize(string s) =>

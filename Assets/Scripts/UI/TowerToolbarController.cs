@@ -124,7 +124,7 @@ namespace CrowdDefense.UI
                 keyLbl.AddToClassList("toolbar-key");
                 cell.Add(keyLbl);
 
-                var iconLbl = new Label(string.IsNullOrEmpty(tower.Icon) ? "?" : tower.Icon);
+                var iconLbl = new Label(tower.IconEmoji);
                 iconLbl.AddToClassList("toolbar-icon");
                 cell.Add(iconLbl);
 
