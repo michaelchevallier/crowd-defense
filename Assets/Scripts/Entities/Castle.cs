@@ -26,14 +26,15 @@ namespace CrowdDefense.Entities
         private float _dmgTakenMulUntil   = 0f;
 
         // Damage state meshes (assign in Inspector; null = no swap)
-        [SerializeField] private Mesh? _meshIntact;   // 100–66 %
-        [SerializeField] private Mesh? _meshCracked;  // 66–33 %
-        [SerializeField] private Mesh? _meshRuined;   // < 33 %
+        [SerializeField] private Mesh? _meshIntact;    // 100–66 %
+        [SerializeField] private Mesh? _meshCracked;   // 66–33 %
+        [SerializeField] private Mesh? _meshRuined;    // 33–15 %
+        [SerializeField] private Mesh? _meshCritical;  // < 15 %
 
         private MeshFilter?   _meshFilter;
         private DamageStage   _currentStage = DamageStage.Intact;
 
-        private enum DamageStage { Intact, Cracked, Ruined }
+        private enum DamageStage { Intact, Cracked, Ruined, Critical }
 
         // Visual state
         private bool          _smokeActive;
@@ -45,6 +46,8 @@ namespace CrowdDefense.Entities
 
         // VFX components (optional — assigned lazily, null = skip)
         private ParticleSystem? _smokePs;
+        private ParticleSystem? _firePs;
+        private bool            _firePsSpawned;
 
         // HP bar (world-space canvas child)
         private Transform?    _hpBarFill;
@@ -253,14 +256,16 @@ namespace CrowdDefense.Entities
             float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
             DamageStage stage = ratio > 0.66f ? DamageStage.Intact
                               : ratio > 0.33f ? DamageStage.Cracked
-                              :                 DamageStage.Ruined;
+                              : ratio > 0.15f ? DamageStage.Ruined
+                              :                 DamageStage.Critical;
             if (stage == _currentStage) return;
             _currentStage = stage;
             Mesh? next = stage switch
             {
-                DamageStage.Cracked => _meshCracked,
-                DamageStage.Ruined  => _meshRuined,
-                _                   => _meshIntact,
+                DamageStage.Cracked  => _meshCracked,
+                DamageStage.Ruined   => _meshRuined,
+                DamageStage.Critical => _meshCritical ?? _meshRuined,
+                _                    => _meshIntact,
             };
             if (next != null) _meshFilter.sharedMesh = next;
         }
@@ -299,11 +304,25 @@ namespace CrowdDefense.Entities
                     emission.rateOverTime = 8f;
                     if (!_smokePs.isPlaying) _smokePs.Play();
                 }
-                else
+                else if (ratio > 0.15f)
                 {
                     emission.rateOverTime = 20f;
                     if (!_smokePs.isPlaying) _smokePs.Play();
                 }
+                else
+                {
+                    // Stage 4 critical — heavy smoke
+                    emission.rateOverTime = 35f;
+                    if (!_smokePs.isPlaying) _smokePs.Play();
+                }
+            }
+
+            // ── Stage 4: fire ParticleSystem + vignette flash ────────────────
+            if (ratio <= 0.15f && !_firePsSpawned)
+            {
+                _firePsSpawned = true;
+                _firePs        = SpawnFirePs();
+                JuiceFX.Instance?.Flash(new Color(0.9f, 0.1f, 0f, 0.3f), 800);
             }
 
             // ── Danger light ──────────────────────────────────────────────────
@@ -318,7 +337,7 @@ namespace CrowdDefense.Entities
                 _dangerLight.intensity = 1f;
                 _dangerLight.color     = new Color(1f, 0.9f, 0.3f);
             }
-            else
+            else if (ratio > 0.15f)
             {
                 _dangerLight.intensity = 3f;
                 _dangerLight.color     = new Color(1f, 0.3f, 0.1f);
@@ -326,6 +345,43 @@ namespace CrowdDefense.Entities
                 if (_sparksCoroutine == null)
                     _sparksCoroutine = StartCoroutine(SparksLoop());
             }
+            else
+            {
+                // Stage 4 critical — intense red light
+                _dangerLight.intensity = 5f;
+                _dangerLight.color     = new Color(1f, 0.1f, 0f);
+
+                if (_sparksCoroutine == null)
+                    _sparksCoroutine = StartCoroutine(SparksLoop());
+            }
+        }
+
+        // Orange fire ParticleSystem spawned at Stage 4 (HP < 15 %)
+        private ParticleSystem SpawnFirePs()
+        {
+            var go = new GameObject("CastleFirePs");
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = new Vector3(0f, 1.5f, 0f);
+            var ps = go.AddComponent<ParticleSystem>();
+
+            var main = ps.main;
+            main.loop           = true;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(1.5f, 3f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.2f, 0.5f);
+            main.startColor     = new ParticleSystem.MinMaxGradient(new Color(1f, 0.55f, 0.05f), new Color(1f, 0.2f, 0f));
+            main.gravityModifier = -0.3f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 25f;
+
+            var shape = ps.shape;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle     = 15f;
+            shape.radius    = 0.3f;
+
+            ps.Play();
+            return ps;
         }
 
         // Occasional spark burst every 2 s while HP < 33 %
@@ -398,6 +454,7 @@ namespace CrowdDefense.Entities
             if (_smokeCoroutine != null) { StopCoroutine(_smokeCoroutine); _smokeCoroutine = null; }
             if (_sparksCoroutine != null) { StopCoroutine(_sparksCoroutine); _sparksCoroutine = null; }
             if (_smokePs != null) _smokePs.Stop();
+            if (_firePs != null)  { _firePs.Stop(); _firePs = null; }
             if (_dangerLight != null) _dangerLight.intensity = 0f;
 
             var gray = new Color(0.53f, 0.53f, 0.53f);
@@ -413,10 +470,13 @@ namespace CrowdDefense.Entities
 
         private void Update()
         {
-            // Danger light flicker animation (mirrors V5 tick)
+            // Danger light flicker — base intensity scales with damage stage
             if (_dangerLight == null) return;
             _dangerLightPhase += Time.deltaTime * 3.5f;
-            _dangerLight.intensity = 1.5f + 1.5f * (Mathf.Sin(_dangerLightPhase) * 0.5f + 0.5f);
+            float sin   = Mathf.Sin(_dangerLightPhase) * 0.5f + 0.5f;
+            float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
+            float baseI = ratio <= 0.15f ? 3.5f : 1.5f;
+            _dangerLight.intensity = baseI + baseI * sin;
         }
     }
 }
