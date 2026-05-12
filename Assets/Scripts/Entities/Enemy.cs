@@ -141,6 +141,11 @@ namespace CrowdDefense.Entities
         private AudioSource?    _enrageAudio;
         private float           _enrageLightBaseIntensity = 4f;
 
+        // ── 30% HP enrage — red pulsing ring + castle dmg +30% ───────────────
+        private bool             _enrageActive        = false;
+        private LineRenderer?    _enrageRing;
+        private Coroutine?       _enrageRingCoroutine;
+
         // ── HP bar (world-space billboard) ────────────────────────────────────
         private Transform?    _hpBarRoot;
         private Transform?    _hpBarFg;
@@ -514,6 +519,8 @@ namespace CrowdDefense.Entities
             _bossPhaseEmission = Color.black;
             _apocPhase        = 0;
             StopEnrageVFX();
+            StopEnrageRing();
+            _enrageActive     = false;
             _invulUntilTime   = 0f;
             _summonHordePending = false;
             _summonHordeTime  = 0f;
@@ -1289,6 +1296,64 @@ namespace CrowdDefense.Entities
             if (_enrageAudio != null) { _enrageAudio.Stop(); _enrageAudio.gameObject.SetActive(false); }
         }
 
+        private void StartEnrageRing()
+        {
+            const int   Verts  = 32;
+            const float Radius = 2f;
+
+            var ringGO = new GameObject("EnrageRing");
+            ringGO.transform.SetParent(transform, false);
+            ringGO.transform.localPosition = Vector3.zero;
+
+            _enrageRing                  = ringGO.AddComponent<LineRenderer>();
+            _enrageRing.loop             = true;
+            _enrageRing.positionCount    = Verts;
+            _enrageRing.startWidth       = 0.12f;
+            _enrageRing.endWidth         = 0.12f;
+            _enrageRing.useWorldSpace    = false;
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                               ?? Shader.Find("Sprites/Default")
+                               ?? Shader.Find("Standard")!) { name = "EnrageRing_Mat" };
+            mat.SetInt("_ZWrite", 0);
+            mat.renderQueue = 3000;
+            _enrageRing.material = mat;
+
+            for (int i = 0; i < Verts; i++)
+            {
+                float angle = i / (float)Verts * Mathf.PI * 2f;
+                _enrageRing.SetPosition(i, new Vector3(Mathf.Cos(angle) * Radius, 0.1f, Mathf.Sin(angle) * Radius));
+            }
+
+            _enrageRing.startColor = new Color(1f, 0.05f, 0.05f, 0.5f);
+            _enrageRing.endColor   = new Color(1f, 0.05f, 0.05f, 0.5f);
+
+            _enrageRingCoroutine = StartCoroutine(PulseEnrageRing());
+        }
+
+        private IEnumerator PulseEnrageRing()
+        {
+            const float PulseHz = 2f;
+            while (_enrageRing != null)
+            {
+                float alpha = 0.25f + 0.25f * Mathf.Sin(Time.time * Mathf.PI * 2f * PulseHz);
+                var col = new Color(1f, 0.05f, 0.05f, alpha);
+                _enrageRing.startColor = col;
+                _enrageRing.endColor   = col;
+                yield return null;
+            }
+        }
+
+        private void StopEnrageRing()
+        {
+            if (_enrageRingCoroutine != null) { StopCoroutine(_enrageRingCoroutine); _enrageRingCoroutine = null; }
+            if (_enrageRing != null)
+            {
+                if (_enrageRing.gameObject != null) Object.Destroy(_enrageRing.gameObject);
+                _enrageRing = null;
+            }
+        }
+
         private void TickApocalypseBoss()
         {
             if (cfg == null || !cfg.IsApocalypseBoss) return;
@@ -1657,6 +1722,15 @@ namespace CrowdDefense.Entities
                 _enragedSpeedMul      = 1.4f;
                 _enragedSummonCdMul   = 0.6f;
                 EventManager.Instance?.Publish(new BossPhaseChangedEvent("enraged", 1));
+            }
+
+            // 30% HP enrage — red pulsing ring + castle dmg +30% (V4 parity)
+            if (cfg != null && cfg.IsBoss && !_enrageActive && hp <= maxHp * 0.30f && hp > 0f)
+            {
+                _enrageActive = true;
+                _damageMul   *= 1.3f;
+                StartEnrageRing();
+                AudioController.Instance?.Play3D("boss_roar", transform.position, 1f);
             }
 
             // Dynamic HP bar color (green → yellow → red) — port of Enemy.js hpBar color update
