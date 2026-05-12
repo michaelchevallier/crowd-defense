@@ -75,6 +75,13 @@ namespace CrowdDefense.UI
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
 
+        // Boss healthbar (top-center, shown while a boss is alive)
+        private VisualElement? _bossHpRoot;
+        private VisualElement? _bossHpFill;
+        private Label? _bossNameLabel;
+        private Label? _bossHpPctLabel;
+        private Enemy? _trackedBoss;
+
         // Keyboard hints footer label
         private Label? keyboardHintsLabel;
 
@@ -198,6 +205,8 @@ namespace CrowdDefense.UI
             _bankLabel = root.Q<Label>("bank-label");
             _bankTooltip = root.Q<VisualElement>("bank-tooltip");
 
+            BuildBossHpBar(root);
+
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
             if (waveValue != null) waveValue.text = "—";
@@ -266,6 +275,8 @@ namespace CrowdDefense.UI
 
             EventManager.Instance?.Subscribe<ComboUpdatedEvent>(HandleComboUpdated);
             EventManager.Instance?.Subscribe<ComboResetEvent>(HandleComboReset);
+            EventManager.Instance?.Subscribe<EnemySpawnedEvent>(HandleEnemySpawned);
+            Enemy.OnDeathStatic += HandleEnemyDeath;
 
             // Wire perk badges + sidebar once hero is known
             var hero = LevelRunner.Instance?.Hero;
@@ -298,6 +309,8 @@ namespace CrowdDefense.UI
             }
             EventManager.Instance?.Unsubscribe<ComboUpdatedEvent>(HandleComboUpdated);
             EventManager.Instance?.Unsubscribe<ComboResetEvent>(HandleComboReset);
+            EventManager.Instance?.Unsubscribe<EnemySpawnedEvent>(HandleEnemySpawned);
+            Enemy.OnDeathStatic -= HandleEnemyDeath;
         }
 
         private void HandleComboUpdated(ComboUpdatedEvent evt)
@@ -366,6 +379,7 @@ namespace CrowdDefense.UI
             TickBreakPill();
             TickWaveTime();
             UpdateHeroPanel();
+            TickBossHpBar();
         }
 
         // Per-frame smooth countdown on the pill badge and main label during the skip bonus window
@@ -728,6 +742,97 @@ namespace CrowdDefense.UI
         {
             if (visible) el.RemoveFromClassList("hidden");
             else el.AddToClassList("hidden");
+        }
+
+        // ── Boss HP bar ───────────────────────────────────────────────────────
+
+        private void BuildBossHpBar(VisualElement root)
+        {
+            _bossHpRoot = new VisualElement { name = "boss-hp-root" };
+            _bossHpRoot.style.position         = Position.Absolute;
+            _bossHpRoot.style.top              = new Length(8f,  LengthUnit.Pixel);
+            _bossHpRoot.style.left             = new Length(20f, LengthUnit.Percent);
+            _bossHpRoot.style.width            = new Length(60f, LengthUnit.Percent);
+            _bossHpRoot.style.flexDirection    = FlexDirection.Column;
+            _bossHpRoot.style.alignItems       = Align.Center;
+            _bossHpRoot.AddToClassList("hidden");
+
+            _bossNameLabel = new Label { name = "boss-name-label", text = "" };
+            _bossNameLabel.style.color         = new StyleColor(new Color(1f, 0.84f, 0f));
+            _bossNameLabel.style.fontSize      = new Length(14f, LengthUnit.Pixel);
+            _bossNameLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            _bossNameLabel.style.marginBottom  = new Length(3f, LengthUnit.Pixel);
+            _bossHpRoot.Add(_bossNameLabel);
+
+            var track = new VisualElement { name = "boss-hp-track" };
+            track.style.width           = new Length(100f, LengthUnit.Percent);
+            track.style.height          = new Length(30f, LengthUnit.Pixel);
+            track.style.backgroundColor = new StyleColor(new Color(0.08f, 0.08f, 0.08f, 0.88f));
+            track.style.borderTopWidth  = track.style.borderBottomWidth =
+            track.style.borderLeftWidth = track.style.borderRightWidth = 2f;
+            track.style.borderTopColor  = track.style.borderBottomColor =
+            track.style.borderLeftColor = track.style.borderRightColor = new StyleColor(new Color(0.85f, 0.65f, 0.1f));
+            track.style.borderTopLeftRadius  = track.style.borderTopRightRadius =
+            track.style.borderBottomLeftRadius = track.style.borderBottomRightRadius = new Length(4f, LengthUnit.Pixel);
+            track.style.overflow        = Overflow.Hidden;
+            _bossHpRoot.Add(track);
+
+            _bossHpFill = new VisualElement { name = "boss-hp-fill" };
+            _bossHpFill.style.height        = new Length(100f, LengthUnit.Percent);
+            _bossHpFill.style.width         = new Length(100f, LengthUnit.Percent);
+            _bossHpFill.style.position      = Position.Absolute;
+            _bossHpFill.style.left          = 0f;
+            _bossHpFill.style.top           = 0f;
+            track.Add(_bossHpFill);
+
+            _bossHpPctLabel = new Label { name = "boss-hp-pct", text = "100%" };
+            _bossHpPctLabel.style.position  = Position.Absolute;
+            _bossHpPctLabel.style.left      = new Length(50f, LengthUnit.Percent);
+            _bossHpPctLabel.style.top       = new Length(50f, LengthUnit.Percent);
+            _bossHpPctLabel.style.translate = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
+            _bossHpPctLabel.style.color     = new StyleColor(Color.white);
+            _bossHpPctLabel.style.fontSize  = new Length(12f, LengthUnit.Pixel);
+            _bossHpPctLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            track.Add(_bossHpPctLabel);
+
+            root.Add(_bossHpRoot);
+        }
+
+        private void HandleEnemySpawned(EnemySpawnedEvent evt)
+        {
+            if (evt.Enemy == null) return;
+            if (evt.Enemy.Config == null || !evt.Enemy.Config.IsBoss) return;
+            _trackedBoss = evt.Enemy;
+            if (_bossNameLabel != null)
+                _bossNameLabel.text = evt.Enemy.Config.DisplayName ?? evt.Enemy.Config.Id ?? "BOSS";
+            if (_bossHpRoot != null) SetVisible(_bossHpRoot, true);
+        }
+
+        private void HandleEnemyDeath(Enemy enemy, bool isBoss)
+        {
+            if (!isBoss || enemy != _trackedBoss) return;
+            _trackedBoss = null;
+            if (_bossHpRoot != null) SetVisible(_bossHpRoot, false);
+        }
+
+        private void TickBossHpBar()
+        {
+            if (_trackedBoss == null || _bossHpFill == null || _bossHpPctLabel == null) return;
+            if (_trackedBoss.IsDead)
+            {
+                _trackedBoss = null;
+                if (_bossHpRoot != null) SetVisible(_bossHpRoot, false);
+                return;
+            }
+            float ratio = _trackedBoss.HpRatio;
+            _bossHpFill.style.width = new Length(ratio * 100f, LengthUnit.Percent);
+            Color fill = ratio > 0.6f
+                ? new Color(0.18f, 0.78f, 0.18f)
+                : ratio > 0.3f
+                    ? new Color(0.9f, 0.55f, 0.1f)
+                    : new Color(0.88f, 0.15f, 0.1f);
+            _bossHpFill.style.backgroundColor = new StyleColor(fill);
+            _bossHpPctLabel.text = $"{Mathf.RoundToInt(ratio * 100f)}%";
         }
 
         private void EnsureSibling<T>() where T : Component
