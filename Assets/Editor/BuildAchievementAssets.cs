@@ -7,7 +7,8 @@ using CrowdDefense.Data;
 
 namespace CrowdDefense.Editor
 {
-    // Seede 51 AchievementDef assets depuis les IDs V5 (SaveSystem.js + LevelRunner.js + RunMode.js).
+    // Seede 57 AchievementDef assets depuis les IDs V5 (SaveSystem.js + LevelRunner.js + RunMode.js)
+    // + 6 hidden_* / wave_5_reached added in cf71283 for V4 parity.
     // Idempotent : met a jour les champs si l'asset existe deja.
     // Menu : Build > Build Achievement Registry
     public static class BuildAchievementAssets
@@ -33,7 +34,7 @@ namespace CrowdDefense.Editor
             }
         }
 
-        // 51 achievements seeded from V5 source + game semantics
+        // 57 achievements seeded from V5 source + game semantics
         // eventKey matches Achievements.TrackEvent("eventKey", delta) call sites
         private static readonly AchData[] k_Defs = new AchData[]
         {
@@ -105,6 +106,14 @@ namespace CrowdDefense.Editor
             new("perk_collector",        20,  false, AchievementPredicateType.Counter, 20,     "perk_collected"),
             new("doctrine_active",       10,  false, AchievementPredicateType.Event,   1),
             new("legendary_skin",        30,  true,  AchievementPredicateType.Event,   1),
+
+            // ── Hidden + wave milestone (V4 parity, cf71283) ─────────────────────
+            new("hidden_bankrupt",       40,  true,  AchievementPredicateType.Event,   1,    "bankrupt_win"),
+            new("hidden_boss_lover",     40,  true,  AchievementPredicateType.Counter, 5,    "boss_killed"),
+            new("hidden_speedrun",       50,  true,  AchievementPredicateType.Event,   1,    "speedrun_win"),
+            new("hidden_pacifist",       50,  true,  AchievementPredicateType.Event,   1,    "pacifist_win"),
+            new("hidden_hoarder",        30,  true,  AchievementPredicateType.Counter, 1000, "gold_snapshot"),
+            new("wave_5_reached",        10,  false, AchievementPredicateType.Event,   1),
         };
 
         [MenuItem("Build/Build Achievement Registry")]
