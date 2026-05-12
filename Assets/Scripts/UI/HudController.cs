@@ -79,6 +79,49 @@ namespace CrowdDefense.UI
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
 
+        // Boss intro banner (bottom-center, 4s then fade)
+        private VisualElement? _bossIntroBanner;
+        private Label?         _bossIntroQuote;
+        private Coroutine?     _bossIntroCoroutine;
+
+        private static readonly System.Collections.Generic.Dictionary<string, string[]> BossQuotes =
+            new System.Collections.Generic.Dictionary<string, string[]>(System.StringComparer.OrdinalIgnoreCase)
+        {
+            ["apocalypse"] = new[]
+            {
+                "Witness the end of all things...",
+                "Your defenses are but dust before me.",
+                "I have destroyed a thousand worlds.",
+                "Even the stars tremble at my approach.",
+                "Kneel... or be unmade.",
+            },
+            ["titan"] = new[]
+            {
+                "Your towers are toys.",
+                "I have walked since before your kind existed.",
+                "Size is power. You have neither.",
+                "Every wall falls. Every time.",
+                "You cannot stop what you cannot understand.",
+            },
+            ["phantom"] = new[]
+            {
+                "You cannot see what you cannot fear.",
+                "I move between your bullets like smoke.",
+                "Death wears many faces. This is mine.",
+                "Your eyes deceive you... as always.",
+                "Shadows do not bleed.",
+            },
+        };
+
+        private static readonly string[] DefaultBossQuotes =
+        {
+            "Behold... the destroyer of worlds!",
+            "Your resistance ends here.",
+            "I have come to collect what is owed.",
+            "Fear is the only weapon you have left.",
+            "Every castle falls in time.",
+        };
+
         // Boss healthbar (top-center, shown while a boss is alive)
         private VisualElement? _bossHpRoot;
         private VisualElement? _bossHpFill;
@@ -211,6 +254,7 @@ namespace CrowdDefense.UI
             _bankTooltip = root.Q<VisualElement>("bank-tooltip");
 
             BuildBossHpBar(root);
+            BuildBossIntroBanner(root);
             BuildWaveCountdownLabel(root);
 
             // Force initial values so top-bar is never blank at runtime
@@ -873,6 +917,85 @@ namespace CrowdDefense.UI
             if (_bossNameLabel != null)
                 _bossNameLabel.text = evt.Enemy.Config.DisplayName ?? evt.Enemy.Config.Id ?? "BOSS";
             if (_bossHpRoot != null) SetVisible(_bossHpRoot, true);
+            ShowBossIntroBanner(evt.Enemy.Config.Id);
+        }
+
+        private void BuildBossIntroBanner(VisualElement root)
+        {
+            _bossIntroBanner = new VisualElement { name = "boss-intro-banner" };
+            _bossIntroBanner.style.position       = Position.Absolute;
+            _bossIntroBanner.style.bottom         = new Length(15f, LengthUnit.Percent);
+            _bossIntroBanner.style.left           = new Length(50f, LengthUnit.Percent);
+            _bossIntroBanner.style.translate      = new Translate(new Length(-50f, LengthUnit.Percent), Length.Auto());
+            _bossIntroBanner.style.paddingTop     = new Length(14f, LengthUnit.Pixel);
+            _bossIntroBanner.style.paddingBottom  = new Length(14f, LengthUnit.Pixel);
+            _bossIntroBanner.style.paddingLeft    = new Length(32f, LengthUnit.Pixel);
+            _bossIntroBanner.style.paddingRight   = new Length(32f, LengthUnit.Pixel);
+            _bossIntroBanner.style.backgroundColor = new StyleColor(new Color(0.04f, 0.02f, 0.02f, 0.88f));
+            _bossIntroBanner.style.borderTopWidth  = _bossIntroBanner.style.borderBottomWidth =
+            _bossIntroBanner.style.borderLeftWidth = _bossIntroBanner.style.borderRightWidth  = 2f;
+            _bossIntroBanner.style.borderTopColor  = _bossIntroBanner.style.borderBottomColor =
+            _bossIntroBanner.style.borderLeftColor = _bossIntroBanner.style.borderRightColor  = new StyleColor(new Color(0.85f, 0.1f, 0.1f));
+            _bossIntroBanner.style.borderTopLeftRadius   = _bossIntroBanner.style.borderTopRightRadius =
+            _bossIntroBanner.style.borderBottomLeftRadius = _bossIntroBanner.style.borderBottomRightRadius = new Length(6f, LengthUnit.Pixel);
+            _bossIntroBanner.style.display        = DisplayStyle.None;
+            _bossIntroBanner.style.alignItems     = Align.Center;
+
+            _bossIntroQuote = new Label { name = "boss-intro-quote", text = "" };
+            _bossIntroQuote.style.color                     = new StyleColor(new Color(1f, 0.84f, 0f));
+            _bossIntroQuote.style.fontSize                  = new Length(22f, LengthUnit.Pixel);
+            _bossIntroQuote.style.unityFontStyleAndWeight   = UnityEngine.FontStyle.BoldAndItalic;
+            _bossIntroQuote.style.unityTextAlign            = TextAnchor.MiddleCenter;
+            _bossIntroQuote.style.textShadow                = new TextShadow
+            {
+                color      = new Color(0.6f, 0f, 0f, 0.9f),
+                offset     = new Vector2(2f, 2f),
+                blurRadius = 6f,
+            };
+            _bossIntroBanner.Add(_bossIntroQuote);
+            root.Add(_bossIntroBanner);
+        }
+
+        private void ShowBossIntroBanner(string? bossId)
+        {
+            if (_bossIntroBanner == null || _bossIntroQuote == null) return;
+
+            string[] pool = DefaultBossQuotes;
+            if (bossId != null)
+            {
+                foreach (var kv in BossQuotes)
+                {
+                    if (bossId.Contains(kv.Key))
+                    {
+                        pool = kv.Value;
+                        break;
+                    }
+                }
+            }
+            _bossIntroQuote.text = pool[Random.Range(0, pool.Length)];
+
+            _bossIntroBanner.style.display = DisplayStyle.Flex;
+            _bossIntroBanner.style.opacity = 1f;
+
+            if (_bossIntroCoroutine != null) StopCoroutine(_bossIntroCoroutine);
+            _bossIntroCoroutine = StartCoroutine(FadeBossIntroBanner());
+        }
+
+        private System.Collections.IEnumerator FadeBossIntroBanner()
+        {
+            yield return new WaitForSecondsRealtime(3f);
+            if (_bossIntroBanner == null) yield break;
+            // 1s fade-out
+            _bossIntroBanner.style.transitionProperty = new StyleList<StylePropertyName>(
+                new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("opacity") });
+            _bossIntroBanner.style.transitionDuration = new StyleList<TimeValue>(
+                new System.Collections.Generic.List<TimeValue> { new TimeValue(1f, TimeUnit.Second) });
+            _bossIntroBanner.style.transitionTimingFunction = new StyleList<EasingFunction>(
+                new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseIn) });
+            _bossIntroBanner.style.opacity = 0f;
+            yield return new WaitForSecondsRealtime(1f);
+            if (_bossIntroBanner != null) _bossIntroBanner.style.display = DisplayStyle.None;
+            _bossIntroCoroutine = null;
         }
 
         private void HandleEnemyDeath(Enemy enemy, bool isBoss)
