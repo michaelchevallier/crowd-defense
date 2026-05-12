@@ -93,8 +93,6 @@ namespace CrowdDefense.Entities
         // Hero aura buff — applied by Synergies.cs or directly by Hero tick
         private float _heroBuffDmgMul = 1f;
 
-        // Selection ring — cyan LineRenderer circle at base, shown when tower is selected
-        private LineRenderer? _selectionRing;
         private bool _isSelected;
 
         // Range ring + synergy halo GameObjects
@@ -132,19 +130,11 @@ namespace CrowdDefense.Entities
         private MaterialPropertyBlock? _affordMpb;
         private float _affordCheckTimer;
 
-        // Upgrade arrow — gold arrow floating/bobbing above tower head when player can afford upgrade
-        private GameObject? _upgradeArrow;
-        private Renderer? _upgradeArrowRenderer;
-        private MaterialPropertyBlock? _upgradeArrowMpb;
-        private float _upgradeArrowCheckTimer;
-        private Vector3 _upgradeArrowBaseLocalPos;
-
         // Tier pip GameObjects (L2 = 2 pips, L3 = 3 pips)
         private readonly List<GameObject> _tierPips = new();
 
         // Idle animation phase (random offset per tower) + base world Y for root bob
         private float _idlePhase;
-        private float _breathOffset;
         private Vector3 _basePos;
         private float _lastFireAt;
 
@@ -234,18 +224,6 @@ namespace CrowdDefense.Entities
         private GameObject? _glowRing;
         private Coroutine? _glowPulseRoutine;
 
-        // Star row — 3 quads above tower indicating upgrade level (L1=silver, L2=gold, L3=rainbow)
-        private GameObject? _starRow;
-        private readonly Renderer?[] _starRenderers = new Renderer?[3];
-        private readonly Material?[] _starMaterials = new Material?[3];
-        private static readonly Color StarSilver  = new(0.8f, 0.8f, 0.85f, 1f);
-        private static readonly Color StarGold    = new(1f, 0.85f, 0.2f, 1f);
-        private const float StarDimAlpha = 0.15f;
-
-        // Idle shimmer — subtle white tint pulse every 3 s over 0.4 s
-        private Coroutine? _shimmerRoutine;
-        private MaterialPropertyBlock? _shimmerMpb;
-        private static readonly int _shimmerColorId   = Shader.PropertyToID("_BaseColor");
         private static readonly int _emissionColorId  = Shader.PropertyToID("_EmissionColor");
 
         // Hit-confirmation flash — white emission burst 0.08 s peak, 0.12 s decay (total 0.2 s)
@@ -415,7 +393,6 @@ namespace CrowdDefense.Entities
             _slowTickTimer = 0f;
             _heroBuffDmgMul = 1f;
             _idlePhase = Random.value * Mathf.PI * 2f;
-            _breathOffset = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
             _basePos = transform.position;
             _lastFireAt = 0f;
             UpgradeLevel = 1;
@@ -462,9 +439,6 @@ namespace CrowdDefense.Entities
             // Outline silhouette — applied after toon so outline mat is not overwritten
             Outline.ApplyToHierarchy(toonRoot.transform);
 
-            // Elemental emission tint — set once, no Update overhead
-            ApplyElementalTint(toonRoot);
-
             // AssetVariants palette swap post-toon
             if (activeSkin != null && activeSkin.ThemeIndex >= 0)
                 AssetVariants.ApplyThemeIndex(toonRoot, activeSkin.ThemeIndex);
@@ -493,18 +467,12 @@ namespace CrowdDefense.Entities
             BuildSynergyHalo();
             BuildAimLine();
             BuildAffordableHighlight(type.Range);
-            BuildUpgradeArrow();
             BuildClusterHighlight();
             BuildDamageIcon(type.DamageType);
-            BuildSelectionRing();
-            BuildStarRow();
             if (type.Behavior == TowerBehavior.CoinPull)
                 BuildMagnetAuraCircle(BalanceConfig.Get().MagnetSlowRadius);
 
             _projectileTint = ProjectileTintForType(type);
-
-            if (_shimmerRoutine != null) StopCoroutine(_shimmerRoutine);
-            _shimmerRoutine = StartCoroutine(ShimmerRoutine());
         }
 
         private static Color ProjectileTintForType(TowerType t) => t.Id switch
@@ -649,34 +617,6 @@ namespace CrowdDefense.Entities
             return true;
         }
 
-        private void ApplyElementalTint(GameObject root)
-        {
-            if (cfg == null) return;
-            var renderer = root.GetComponentInChildren<Renderer>();
-            if (renderer == null) return;
-
-            Color tint = cfg.Id switch
-            {
-                "frost"    => new Color(0.4f, 0.7f, 1f),
-                "fire"     => new Color(1f, 0.4f, 0.1f),
-                "lava"     => new Color(1f, 0.4f, 0.1f),
-                "lightning"=> new Color(1f, 0.95f, 0.3f),
-                "skyguard" => new Color(1f, 0.95f, 0.3f),
-                "poison"   => new Color(0.4f, 1f, 0.4f),
-                "acid"     => new Color(0.4f, 1f, 0.4f),
-                "mage"     => new Color(0.9f, 0.4f, 1f),
-                "portal"   => new Color(0.9f, 0.4f, 1f),
-                _          => Color.black,
-            };
-
-            if (tint == Color.black) return;
-
-            var mpb = new MaterialPropertyBlock();
-            renderer.GetPropertyBlock(mpb);
-            mpb.SetColor(_emissionColorId, tint * 0.4f);
-            renderer.SetPropertyBlock(mpb);
-        }
-
         /// <summary>
         /// Applique les stats divergentes L3 selon la branche et le type de tour (D1-03).
         /// Tours signature : archer, crossbow, tank, mage.
@@ -792,7 +732,6 @@ namespace CrowdDefense.Entities
         private IEnumerator PlayDestroyAnim()
         {
             _destroyStarted = true;
-            if (_selectionRing != null) _selectionRing.gameObject.SetActive(false);
             Vector3 startScale = transform.localScale;
             float targetRotZ = Random.Range(-45f, 45f);
             float startRotZ = transform.localEulerAngles.z;
@@ -876,7 +815,6 @@ namespace CrowdDefense.Entities
             TickIdleAnim();
             TickHeadAim();
             TickAimLine();
-            TickSelectionRing();
 
             // Reset bulwark protection each frame; re-set by nearby Bulwark towers below.
             _bulwarkProtected = false;
@@ -1355,14 +1293,10 @@ namespace CrowdDefense.Entities
             _aimLine.endColor   = new Color(c.r, c.g, c.b, 0f);
         }
 
-        // ── Selection Ring ────────────────────────────────────────────────────
-
         public void SetSelected(bool selected)
         {
             bool wasSelected = _isSelected;
             _isSelected = selected;
-            if (_selectionRing != null)
-                _selectionRing.gameObject.SetActive(selected && !_destroyStarted);
 
             if (selected && !wasSelected)
             {
@@ -1375,73 +1309,6 @@ namespace CrowdDefense.Entities
             else if (!selected && wasSelected)
             {
                 AudioController.Instance?.Play3D("tower_deselect_click", transform.position, 0.3f);
-            }
-        }
-
-        private void BuildSelectionRing()
-        {
-            if (_selectionRing != null)
-            {
-                Destroy(_selectionRing.gameObject);
-                _selectionRing = null;
-            }
-
-            const int segments = 32;
-            var go = new GameObject("SelectionRing");
-            go.transform.SetParent(transform);
-            go.transform.localPosition = new Vector3(0f, 0.05f, 0f);
-            go.transform.localRotation = Quaternion.identity;
-            go.transform.localScale = Vector3.one;
-
-            var lr = go.AddComponent<LineRenderer>();
-            lr.useWorldSpace = false;
-            lr.loop = true;
-            lr.positionCount = segments;
-            lr.startWidth = 0.07f;
-            lr.endWidth   = 0.07f;
-
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
-            if (mat.HasProperty("_Surface"))
-            {
-                mat.SetFloat("_Surface", 1f);
-                mat.SetFloat("_ZWrite", 0f);
-                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                mat.renderQueue = 3002;
-            }
-            lr.material = mat;
-            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            lr.receiveShadows = false;
-
-            const float baseRadius = 0.8f;
-            float step = 2f * Mathf.PI / segments;
-            for (int i = 0; i < segments; i++)
-            {
-                float angle = i * step;
-                lr.SetPosition(i, new Vector3(Mathf.Cos(angle) * baseRadius, 0f, Mathf.Sin(angle) * baseRadius));
-            }
-
-            go.SetActive(false);
-            _selectionRing = lr;
-        }
-
-        private void TickSelectionRing()
-        {
-            if (_selectionRing == null || !_isSelected || _destroyStarted) return;
-
-            float t = Time.time * 3f;
-            float radius = 0.8f + Mathf.Sin(t) * 0.1f;
-            float alpha  = 0.6f + Mathf.Sin(t) * 0.3f;
-
-            var c = new Color(0.2f, 0.9f, 1f, alpha);
-            _selectionRing.startColor = c;
-            _selectionRing.endColor   = c;
-
-            const int segments = 32;
-            float step = 2f * Mathf.PI / segments;
-            for (int i = 0; i < segments; i++)
-            {
-                float angle = i * step;
-                _selectionRing.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius));
             }
         }
 
@@ -1690,92 +1557,6 @@ namespace CrowdDefense.Entities
             mat.renderQueue = 3000;
         }
 
-        // ── LateUpdate — billboard stars toward camera ────────────────────────
-
-        private void LateUpdate()
-        {
-            var cam = Camera.main;
-            if (cam == null) return;
-
-            if (_starRow != null)
-                _starRow.transform.rotation = cam.transform.rotation;
-
-            // Animate star 3 (index 2) rainbow when L3 active — no alloc, cached material.
-            if (UpgradeLevel >= 3 && _starMaterials[2] != null)
-            {
-                Color rainbow = Color.HSVToRGB(Time.time * 0.5f % 1f, 0.7f, 1f);
-                _starMaterials[2]!.color = rainbow;
-            }
-        }
-
-        // ── Star Row ──────────────────────────────────────────────────────────
-
-        private void BuildStarRow()
-        {
-            if (_starRow != null) Destroy(_starRow);
-
-            _starRow = new GameObject("StarRow");
-            _starRow.transform.SetParent(transform, false);
-            _starRow.transform.localPosition = new Vector3(0f, 2.2f, 0f);
-
-            var spriteMat = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
-
-            float spacing = 0.38f;
-            float startX  = -(spacing);   // -0.38, 0, +0.38
-
-            for (int i = 0; i < 3; i++)
-            {
-                var star = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                star.name = "Star_" + (i + 1);
-                Object.Destroy(star.GetComponent<Collider>());
-                star.transform.SetParent(_starRow.transform, false);
-                star.transform.localPosition = new Vector3(startX + i * spacing, 0f, 0f);
-                star.transform.localScale = Vector3.one * 0.28f;
-
-                var mat = new Material(spriteMat);
-                mat.color = new Color(StarSilver.r, StarSilver.g, StarSilver.b, StarDimAlpha);
-                var rend = star.GetComponent<Renderer>();
-                if (rend != null) rend.material = mat;
-
-                _starRenderers[i] = rend;
-                _starMaterials[i] = mat;
-            }
-
-            // Destroy the shared template material — each star has its own copy above.
-            Object.Destroy(spriteMat);
-            UpdateStarRow();
-        }
-
-        private void UpdateStarRow()
-        {
-            for (int i = 0; i < 3; i++)
-            {
-                var mat = _starMaterials[i];
-                if (mat == null) continue;
-
-                bool lit = UpgradeLevel > i;   // star[0] lit at L1+, star[1] at L2+, star[2] at L3+
-                if (!lit)
-                {
-                    // Colour the dim star its target colour but at low alpha so shape is visible.
-                    Color dimBase = i == 0 ? StarSilver : i == 1 ? StarGold : StarGold;
-                    mat.color = new Color(dimBase.r, dimBase.g, dimBase.b, StarDimAlpha);
-                }
-                else if (i == 0)
-                {
-                    mat.color = StarSilver;
-                }
-                else if (i == 1)
-                {
-                    mat.color = StarGold;
-                }
-                else
-                {
-                    // Star 3 (L3 rainbow): initial colour — will be updated each frame in LateUpdate.
-                    mat.color = StarGold;
-                }
-            }
-        }
-
         // ── Tier Pips ─────────────────────────────────────────────────────────
 
         /// <summary>
@@ -1892,7 +1673,6 @@ namespace CrowdDefense.Entities
         {
             TickSynergyHalo();
             TickAffordableHighlight();
-            TickUpgradeArrow();
             TickHitFlash();
 
             bool isSelected = PlacementController.Instance?.SelectedTower == this;
@@ -1906,8 +1686,6 @@ namespace CrowdDefense.Entities
 
             if (_meshChild == null) return;
 
-            TickBreathing(recentFire);
-
             if (recentFire) return;
 
             float t = Time.time;
@@ -1920,14 +1698,6 @@ namespace CrowdDefense.Entities
                 0f,
                 0f,
                 Mathf.Sin(t * 0.8f + phase) * 1.7f);
-        }
-
-        private void TickBreathing(bool isFiring)
-        {
-            if (_meshChild == null) return;
-            float amp = isFiring ? 0.025f : 0.015f;
-            float s = 1f + Mathf.Sin(Time.time * 1.5f + _breathOffset) * amp;
-            _meshChild.transform.localScale = new Vector3(s, s, s);
         }
 
         // Called each frame from TickIdleAnim; drives hit-confirmation emission flash.
@@ -1963,45 +1733,6 @@ namespace CrowdDefense.Entities
                     r.GetPropertyBlock(_hitFlashMpb);
                     _hitFlashMpb.SetColor(_emissionColorId, Color.black);
                     r.SetPropertyBlock(_hitFlashMpb);
-                }
-            }
-        }
-
-        private IEnumerator ShimmerRoutine()
-        {
-            var wait3 = new WaitForSeconds(3f);
-            while (true)
-            {
-                yield return wait3;
-                var root = _meshChild != null ? _meshChild : gameObject;
-                var renderers = root.GetComponentsInChildren<Renderer>();
-                if (renderers.Length == 0) continue;
-                _shimmerMpb ??= new MaterialPropertyBlock();
-                const float duration = 0.4f;
-                float half = duration * 0.5f;
-                float elapsed = 0f;
-                while (elapsed < duration)
-                {
-                    float alpha = elapsed < half
-                        ? Mathf.Lerp(0f, 0.2f, elapsed / half)
-                        : Mathf.Lerp(0.2f, 0f, (elapsed - half) / half);
-                    var tint = new Color(1f, 1f, 1f, alpha);
-                    foreach (var r in renderers)
-                    {
-                        r.GetPropertyBlock(_shimmerMpb);
-                        _shimmerMpb.SetColor(_shimmerColorId, tint);
-                        r.SetPropertyBlock(_shimmerMpb);
-                    }
-                    elapsed += Time.deltaTime;
-                    yield return null;
-                }
-                // restore original property block state (alpha 0 = invisible tint)
-                var clear = new Color(1f, 1f, 1f, 0f);
-                foreach (var r in renderers)
-                {
-                    r.GetPropertyBlock(_shimmerMpb);
-                    _shimmerMpb.SetColor(_shimmerColorId, clear);
-                    r.SetPropertyBlock(_shimmerMpb);
                 }
             }
         }
@@ -2072,62 +1803,6 @@ namespace CrowdDefense.Entities
             int cost = Mathf.RoundToInt(cfg.Cost * mul);
             bool canAfford = Economy.Instance != null && Economy.Instance.Gold >= cost;
             _affordableHighlight.SetActive(canAfford);
-        }
-
-        private void BuildUpgradeArrow()
-        {
-            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            go.name = "UpgradeArrow";
-            go.transform.SetParent(transform);
-            // Start 2.2 units above tower, faces camera-up (rotated flat then billboarded via Y bob)
-            _upgradeArrowBaseLocalPos = new Vector3(0f, 2.2f, 0f);
-            go.transform.localPosition = _upgradeArrowBaseLocalPos;
-            go.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
-            go.transform.localScale = new Vector3(0.45f, 0.55f, 1f);
-            Object.Destroy(go.GetComponent<Collider>());
-
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
-            // Gold color
-            mat.color = new Color(1f, 0.82f, 0.1f, 1f);
-            if (mat.HasProperty("_Surface"))
-            {
-                mat.SetFloat("_Surface", 1f);
-                mat.SetFloat("_ZWrite", 0f);
-                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-                mat.renderQueue = 3000;
-            }
-            _upgradeArrowRenderer = go.GetComponent<Renderer>();
-            if (_upgradeArrowRenderer != null) _upgradeArrowRenderer.material = mat;
-            _upgradeArrowMpb = new MaterialPropertyBlock();
-            go.SetActive(false);
-            _upgradeArrow = go;
-        }
-
-        private void TickUpgradeArrow()
-        {
-            if (_upgradeArrow == null || cfg == null || UpgradeLevel >= 3) return;
-            _upgradeArrowCheckTimer -= Time.deltaTime;
-            if (_upgradeArrowCheckTimer <= 0f)
-            {
-                _upgradeArrowCheckTimer = 0.5f;
-                int cost = GetUpgradeCost();
-                bool canAfford = cost > 0 && Economy.Instance != null && Economy.Instance.Gold >= cost;
-                _upgradeArrow.SetActive(canAfford);
-            }
-
-            if (!_upgradeArrow.activeSelf) return;
-
-            // Bob up/down at 0.5 Hz (1 full cycle / 2 s), amplitude ±0.15
-            float bobY = Mathf.Sin(Time.time * Mathf.PI) * 0.15f; // 0.5 Hz = PI rad/s
-            _upgradeArrow.transform.localPosition = _upgradeArrowBaseLocalPos + new Vector3(0f, bobY, 0f);
-
-            // Pulse alpha 0.7–1.0 in sync with bob
-            if (_upgradeArrowRenderer != null && _upgradeArrowMpb != null)
-            {
-                float alpha = 0.7f + 0.3f * (0.5f + 0.5f * Mathf.Sin(Time.time * Mathf.PI));
-                _upgradeArrowMpb.SetColor("_BaseColor", new Color(1f, 0.82f, 0.1f, alpha));
-                _upgradeArrowRenderer.SetPropertyBlock(_upgradeArrowMpb);
-            }
         }
 
         // ── Head Aim ──────────────────────────────────────────────────────────
@@ -2299,7 +1974,6 @@ namespace CrowdDefense.Entities
         private void PostUpgradeVisuals(int level)
         {
             DrawTierPips(level);
-            UpdateStarRow();
             if (cfg != null)
             {
                 BuildRangeRing(cfg.Range);
@@ -2554,12 +2228,6 @@ namespace CrowdDefense.Entities
             TowerResearchTree.OnResearchUnlocked -= OnResearchUnlocked;
             if (_glowPulseRoutine != null) StopCoroutine(_glowPulseRoutine);
             if (_glowRing != null) Destroy(_glowRing);
-            if (_starRow != null) Destroy(_starRow);
-            for (int i = 0; i < 3; i++)
-            {
-                if (_starMaterials[i] != null) Object.Destroy(_starMaterials[i]);
-                _starMaterials[i] = null;
-            }
         }
 
 #if UNITY_EDITOR
