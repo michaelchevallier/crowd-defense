@@ -90,9 +90,20 @@ namespace CrowdDefense.Systems
 
         private Vector3 _castleWorldPos;
 
+        // True while an Endless run is active in this session.
+        public bool IsEndlessRun { get; private set; }
+
         protected override void OnAwakeSingleton()
         {
-            if (LevelLoader.NextDailySpec != null)
+            if (LevelLoader.NextEndlessSpec != null)
+            {
+                currentLevel             = LevelLoader.NextEndlessSpec;
+                IsEndlessRun             = true;
+                LevelLoader.NextEndlessSpec = null;
+                LevelLoader.NextLevelId  = null;
+                EndlessMode.Instance?.OnRunStarted();
+            }
+            else if (LevelLoader.NextDailySpec != null)
             {
                 _dailySpec  = LevelLoader.NextDailySpec;
                 IsDailyRun  = true;
@@ -153,6 +164,7 @@ namespace CrowdDefense.Systems
             SpawnPathPreview();
             TryPlayOpeningCutscene();
             UI.TutorialPopupController.TryShow(currentLevel?.Id);
+            UI.TutorialArrowGuide.TryStart(currentLevel?.Id);
             RestoreMidLevelStateIfPending();
 
             var bounds = default(Bounds);
@@ -360,6 +372,9 @@ namespace CrowdDefense.Systems
             OnWaveEnded?.Invoke(waveIdx + 1);
 
             int waveNumber = waveIdx + 1;
+            if (IsEndlessRun)
+                EndlessMode.Instance?.NotifyWaveReached(waveNumber);
+
             if (waveNumber % 5 == 0)
                 Toast.Show($"Vague {waveNumber} franchie !", string.Empty, 3000, null, ToastType.Generic);
 
