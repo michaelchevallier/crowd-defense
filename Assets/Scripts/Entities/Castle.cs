@@ -131,7 +131,103 @@ namespace CrowdDefense.Entities
                 var rend = go.GetComponent<MeshRenderer>();
                 rend.material = BuildUnlitMaterial(new Color(0.55f, 0.38f, 0.22f), transparent: false);
             }
-            // W5+ : pas de décoration supplémentaire
+            else if (worldId >= 5 && worldId <= 6)
+            {
+                // W5-6 ice — 3 cylindres blancs effilés (stalactites de glace)
+                Vector3[] spikePos =
+                {
+                    new Vector3( 0.0f, 1.6f,  0.0f),
+                    new Vector3(-0.3f, 1.4f,  0.2f),
+                    new Vector3( 0.3f, 1.3f, -0.2f),
+                };
+                Vector3[] spikeScale =
+                {
+                    new Vector3(0.12f, 0.55f, 0.12f),
+                    new Vector3(0.09f, 0.40f, 0.09f),
+                    new Vector3(0.08f, 0.32f, 0.08f),
+                };
+                for (int i = 0; i < spikePos.Length; i++)
+                {
+                    var spike = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    spike.name = $"CastleDecor_IceSpike_{i}";
+                    Destroy(spike.GetComponent<CapsuleCollider>());
+                    spike.transform.SetParent(transform, false);
+                    spike.transform.localPosition = spikePos[i];
+                    spike.transform.localScale    = spikeScale[i];
+                    // Lean slightly inward on side spikes
+                    spike.transform.localEulerAngles = i == 0
+                        ? Vector3.zero
+                        : new Vector3(0f, 0f, i == 1 ? -12f : 12f);
+                    var rend = spike.GetComponent<MeshRenderer>();
+                    rend.material = BuildUnlitMaterial(new Color(0.82f, 0.94f, 1f), transparent: false);
+                }
+            }
+            else if (worldId >= 7 && worldId <= 8)
+            {
+                // W7-8 lava — 2 torches (cylinders) + lava flame ParticleSystem inline
+                Vector3[] torchPos =
+                {
+                    new Vector3(-0.55f, 0.3f, 0.55f),
+                    new Vector3( 0.55f, 0.3f, 0.55f),
+                };
+                for (int i = 0; i < torchPos.Length; i++)
+                {
+                    // Stick
+                    var stick = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    stick.name = $"CastleDecor_TorchStick_{i}";
+                    Destroy(stick.GetComponent<CapsuleCollider>());
+                    stick.transform.SetParent(transform, false);
+                    stick.transform.localPosition = torchPos[i];
+                    stick.transform.localScale    = new Vector3(0.07f, 0.45f, 0.07f);
+                    var sr = stick.GetComponent<MeshRenderer>();
+                    sr.material = BuildUnlitMaterial(new Color(0.35f, 0.22f, 0.09f), transparent: false);
+
+                    // Flame head (small sphere)
+                    var head = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    head.name = $"CastleDecor_TorchHead_{i}";
+                    Destroy(head.GetComponent<SphereCollider>());
+                    head.transform.SetParent(transform, false);
+                    head.transform.localPosition = torchPos[i] + new Vector3(0f, 0.5f, 0f);
+                    head.transform.localScale    = new Vector3(0.15f, 0.15f, 0.15f);
+                    var hr = head.GetComponent<MeshRenderer>();
+                    hr.material = BuildUnlitMaterial(new Color(1f, 0.25f, 0f), transparent: false);
+
+                    // Lava flame particle — orange cone, small, always on
+                    var flameGo = new GameObject($"CastleDecor_TorchFlame_{i}");
+                    flameGo.transform.SetParent(transform, false);
+                    flameGo.transform.localPosition = torchPos[i] + new Vector3(0f, 0.58f, 0f);
+                    var ps = flameGo.AddComponent<ParticleSystem>();
+
+                    var main = ps.main;
+                    main.loop            = true;
+                    main.startLifetime   = new ParticleSystem.MinMaxCurve(0.4f, 0.7f);
+                    main.startSpeed      = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
+                    main.startSize       = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
+                    main.startColor      = new ParticleSystem.MinMaxGradient(
+                                               new Color(1f, 0.5f, 0.02f),
+                                               new Color(1f, 0.15f, 0f));
+                    main.gravityModifier = -0.2f;
+                    main.simulationSpace = ParticleSystemSimulationSpace.World;
+
+                    var emission = ps.emission;
+                    emission.rateOverTime = 18f;
+
+                    var shape = ps.shape;
+                    shape.shapeType = ParticleSystemShapeType.Cone;
+                    shape.angle     = 10f;
+                    shape.radius    = 0.04f;
+
+                    var sol = ps.sizeOverLifetime;
+                    sol.enabled = true;
+                    sol.size = new ParticleSystem.MinMaxCurve(1f,
+                        new AnimationCurve(
+                            new Keyframe(0f, 0.6f, 0f, 1f),
+                            new Keyframe(0.5f, 1f, 1f, -1f),
+                            new Keyframe(1f, 0f, -1f, 0f)));
+
+                    ps.Play();
+                }
+            }
         }
 
         // ── HP bar ──────────────────────────────────────────────────────────────
