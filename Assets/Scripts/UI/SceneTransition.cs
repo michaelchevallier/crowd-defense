@@ -19,6 +19,7 @@ namespace CrowdDefense.UI
         CanvasGroup _loadingGroup = null!;
         Image _spinner = null!;
         bool _busy;
+        bool _isLoading;
         int _lastTipIdx = -1;
         AsyncOperation? _loadingOp;
 
@@ -173,7 +174,8 @@ namespace CrowdDefense.UI
 
         public void LoadSceneFade(string sceneName)
         {
-            if (_busy) return;
+            if (_isLoading) return;
+            _isLoading = true;
             StartCoroutine(FadeAndLoad(sceneName));
         }
 
@@ -216,6 +218,7 @@ namespace CrowdDefense.UI
             // Fade out black overlay
             yield return StartCoroutine(Fade(1f, 0f, FadeDuration));
             _busy = false;
+            _isLoading = false;
         }
 
         IEnumerator Fade(float from, float to, float duration)
