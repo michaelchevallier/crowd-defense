@@ -30,7 +30,10 @@ namespace CrowdDefense.UI
         protected override void OnAwakeSingleton()
         {
             var doc = GetComponent<UIDocument>();
-            BuildUI(doc.rootVisualElement);
+            if (doc == null) { Debug.LogError("[WaveCleared] UIDocument null"); return; }
+            var root = doc.rootVisualElement;
+            if (root == null) { Debug.LogError("[WaveCleared] rootVisualElement null"); return; }
+            BuildUI(root);
         }
 
         private void BuildUI(VisualElement root)

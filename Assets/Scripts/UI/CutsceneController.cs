@@ -39,7 +39,9 @@ namespace CrowdDefense.UI
         private void Awake()
         {
             _doc = GetComponent<UIDocument>();
+            if (_doc == null) { Debug.LogError("[Cutscene] UIDocument null"); return; }
             _root = _doc.rootVisualElement;
+            if (_root == null) { Debug.LogError("[Cutscene] rootVisualElement null"); return; }
 
             _panel         = _root.Q<VisualElement>("cutscene-panel");
             _portraitLeft  = _root.Q<VisualElement>("portrait-left");

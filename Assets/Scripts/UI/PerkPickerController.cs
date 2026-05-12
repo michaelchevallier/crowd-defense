@@ -37,11 +37,14 @@ namespace CrowdDefense.UI
         private void Start()
         {
             var doc = GetComponent<UIDocument>();
-            root         = doc.rootVisualElement.Q<VisualElement>("perk-picker-root");
-            titleLabel   = doc.rootVisualElement.Q<Label>("perk-title");
-            subtitleLabel = doc.rootVisualElement.Q<Label>("perk-subtitle");
-            cardsRow     = doc.rootVisualElement.Q<VisualElement>("perk-cards-row");
-            rerollButton = doc.rootVisualElement.Q<Button>("reroll-button");
+            if (doc == null) { Debug.LogError("[PerkPicker] UIDocument null"); return; }
+            var ve = doc.rootVisualElement;
+            if (ve == null) { Debug.LogError("[PerkPicker] rootVisualElement null"); return; }
+            root         = ve.Q<VisualElement>("perk-picker-root");
+            titleLabel   = ve.Q<Label>("perk-title");
+            subtitleLabel = ve.Q<Label>("perk-subtitle");
+            cardsRow     = ve.Q<VisualElement>("perk-cards-row");
+            rerollButton = ve.Q<Button>("reroll-button");
 
             if (root != null) root.AddToClassList("hidden");
 

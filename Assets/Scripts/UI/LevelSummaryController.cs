@@ -31,7 +31,9 @@ namespace CrowdDefense.UI
         private void Start()
         {
             var doc  = GetComponent<UIDocument>();
+            if (doc == null) { Debug.LogError("[LevelSummary] UIDocument null"); return; }
             var root = doc.rootVisualElement;
+            if (root == null) { Debug.LogError("[LevelSummary] rootVisualElement null"); return; }
 
             _root       = root.Q<VisualElement>("summary-root");
             _titleLabel = root.Q<Label>("summary-title");

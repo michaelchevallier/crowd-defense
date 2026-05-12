@@ -44,7 +44,10 @@ namespace CrowdDefense.UI
         {
             var doc = GetComponent<UIDocument>()
                    ?? FindFirstObjectByType<UIDocument>();
-            _root = doc?.rootVisualElement;
+            if (doc == null) { Debug.LogError("[AchievementToast] UIDocument null"); return; }
+            var root = doc.rootVisualElement;
+            if (root == null) { Debug.LogError("[AchievementToast] rootVisualElement null"); return; }
+            _root = root;
 
             if (registry == null)
                 registry = Resources.Load<AchievementRegistry>("AchievementRegistry");
