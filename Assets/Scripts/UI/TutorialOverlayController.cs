@@ -252,6 +252,11 @@ namespace CrowdDefense.UI
                     _arrow.style.left    = new Length(5f,  LengthUnit.Percent);
                     _arrow.style.top     = new Length(10f, LengthUnit.Percent);
                     break;
+                case TutorialStep.Step6_ChoosePerk:
+                    _arrow.style.display = DisplayStyle.Flex;
+                    _arrow.style.left    = new Length(50f, LengthUnit.Percent);
+                    _arrow.style.top     = new Length(40f, LengthUnit.Percent);
+                    break;
                 default:
                     _arrow.style.display = DisplayStyle.None;
                     break;

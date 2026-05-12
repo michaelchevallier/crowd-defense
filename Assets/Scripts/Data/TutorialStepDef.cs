@@ -11,6 +11,7 @@ namespace CrowdDefense.Data
         EnemyKilled,
         HeroPlaced,
         CoinsCollected,
+        Proximity,
     }
 
     [CreateAssetMenu(menuName = "CrowdDefense/TutorialStepDef", fileName = "TutorialStepDef")]

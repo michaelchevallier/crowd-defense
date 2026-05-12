@@ -15,7 +15,8 @@ namespace CrowdDefense.Systems
         Step3_KillEnemy     = 2,
         Step4_PlaceHero     = 3,
         Step5_CollectCoins  = 4,
-        Done                = 5,
+        Step6_ChoosePerk    = 5,
+        Done                = 6,
     }
 
     public class TutorialState : MonoSingleton<TutorialState>
@@ -36,6 +37,7 @@ namespace CrowdDefense.Systems
 
         private TutorialRegistry? _registry;
         private int _coinsAtStep5Entry;
+        private Vector3 _proximityTarget;
 
         public static bool IsCompleted() => SaveSystem.IsTutorialCompleted();
 
@@ -112,6 +114,29 @@ namespace CrowdDefense.Systems
         {
             if (!IsActive || CurrentStep != TutorialStep.Step4_PlaceHero) return;
             AdvanceStep();
+        }
+
+        // Wired externally when a wave-end perk card is chosen
+        public void NotifyPerkChosen()
+        {
+            if (!IsActive || CurrentStep != TutorialStep.Step6_ChoosePerk) return;
+            AdvanceStep();
+        }
+
+        // World-space position the player must approach to auto-advance Step6
+        public void SetProximityTarget(Vector3 worldPos) => _proximityTarget = worldPos;
+
+        // ── Proximity auto-advance ────────────────────────────────────────────────
+
+        private void Update()
+        {
+            if (Hero.Instance != null) CheckProximity(Hero.Instance.transform.position);
+        }
+
+        private void CheckProximity(Vector3 playerPos)
+        {
+            if (CurrentStep != TutorialStep.Step6_ChoosePerk || _proximityTarget == Vector3.zero) return;
+            if (Vector3.Distance(playerPos, _proximityTarget) < 3f) AdvanceStep();
         }
 
         // ── FSM ────────────────────────────────────────────────────────────────────
