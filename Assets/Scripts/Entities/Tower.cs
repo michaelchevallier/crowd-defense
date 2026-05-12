@@ -312,6 +312,8 @@ namespace CrowdDefense.Entities
 
         // AimLine : thin red laser tower → target (togglable via PlayerPrefs "show_aim_lines_v1")
         private LineRenderer? _aimLine;
+        // Prediction line visibility — true when tower is selected or hovered.
+        public bool ShowTargetLine = false;
 
         // Damage type icon — small coloured quad above tower base.
         private GameObject? _damageIconQuad;
@@ -1034,10 +1036,11 @@ namespace CrowdDefense.Entities
             _aimLine = go.AddComponent<LineRenderer>();
             _aimLine.positionCount = 2;
             _aimLine.useWorldSpace = true;
-            _aimLine.startWidth = 0.03f;
-            _aimLine.endWidth   = 0.03f;
+            _aimLine.startWidth = 0.05f;
+            _aimLine.endWidth   = 0.02f;
+            _aimLine.colorMode  = LineRenderer.ColorMode.PerVertex;
             var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
-            mat.color = new Color(1f, 0.2f, 0.2f, 0.3f);
+            mat.color = new Color(1f, 1f, 1f, 0.5f);
             if (mat.HasProperty("_Surface"))
             {
                 mat.SetFloat("_Surface", 1f);
@@ -1091,12 +1094,7 @@ namespace CrowdDefense.Entities
         private void TickAimLine()
         {
             if (_aimLine == null) return;
-            if (PlayerPrefs.GetInt("show_aim_lines_v1", 1) == 0)
-            {
-                if (_aimLine.gameObject.activeSelf) _aimLine.gameObject.SetActive(false);
-                return;
-            }
-            if (target == null || target.IsDead)
+            if (!ShowTargetLine || target == null || target.IsDead)
             {
                 if (_aimLine.gameObject.activeSelf) _aimLine.gameObject.SetActive(false);
                 return;
@@ -1104,9 +1102,12 @@ namespace CrowdDefense.Entities
             if (!_aimLine.gameObject.activeSelf) _aimLine.gameObject.SetActive(true);
             Vector3 start = _barrelTip != null
                 ? _barrelTip.position
-                : transform.position + Vector3.up * 0.5f;
+                : transform.position + Vector3.up * 1f;
             _aimLine.SetPosition(0, start);
-            _aimLine.SetPosition(1, target.transform.position);
+            _aimLine.SetPosition(1, target.transform.position + Vector3.up * 0.5f);
+            Color c = cooldown <= 0.1f ? Color.red : new Color(1f, 1f, 1f, 0.5f);
+            _aimLine.startColor = c;
+            _aimLine.endColor   = new Color(c.r, c.g, c.b, 0f);
         }
 
         // ── Range Ring ────────────────────────────────────────────────────────

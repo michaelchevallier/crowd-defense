@@ -111,10 +111,12 @@ namespace CrowdDefense.UI
             if (currentTower != null && currentTower != tower)
             {
                 currentTower.ShowRangeRing(false);
+                currentTower.ShowTargetLine = false;
                 _rangeVisible = false;
             }
             currentTower = tower;
             if (tower == null) { Hide(); return; }
+            tower.ShowTargetLine = true;
             RefreshMenu(tower);
         }
 
