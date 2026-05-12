@@ -131,6 +131,41 @@ namespace CrowdDefense.Visual
         // Entry point named per brief spec; delegates to ApplyTheme.
         public void SetWeather(LevelTheme theme) => ApplyTheme(theme);
 
+        // worldId-based ambient routing: W1-2 → Pollen, W3-4 → Rain, W5-6 → Snow,
+        // W7-8 → Embers+Ash, W9-10 → Stars+Snow. Falls back to ApplyTheme for
+        // theme-aware callers. Called by LevelVisualBridge or LevelRunner at level start.
+        public void ApplyAmbient(int worldId)
+        {
+            StopAll();
+            var settings = UI.SettingsRegistry.Instance;
+            if (settings != null && !settings.WeatherEnabled) return;
+
+            WeatherType[] types = worldId switch
+            {
+                1 or 2 => new[] { WeatherType.Pollen },
+                3 or 4 => new[] { WeatherType.Rain },
+                5 or 6 => new[] { WeatherType.Snow },
+                7 or 8 => new[] { WeatherType.Embers, WeatherType.Ash },
+                _      => new[] { WeatherType.Stars, WeatherType.Snow },   // W9-10+
+            };
+
+            foreach (var wt in types)
+            {
+                var ps = SpawnEffect(wt);
+                if (ps != null) _active.Add(ps);
+            }
+
+            foreach (var wt in types)
+            {
+                if (AmbientClips.ContainsKey(wt)) { PlayAmbientAudio(wt); break; }
+            }
+
+            foreach (var wt in types)
+            {
+                if (SkyTints.ContainsKey(wt)) { ApplySkyGradient(wt); break; }
+            }
+        }
+
         public void ApplyTheme(LevelTheme theme)
         {
             StopAll();
