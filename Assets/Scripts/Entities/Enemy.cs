@@ -124,6 +124,12 @@ namespace CrowdDefense.Entities
         private float _diffRewardMul    = 1f;   // Difficulty inverse reward mul, cached at Init
         private float _aoePulseTimer    = 0f;   // Phase 4: AOE pulse every 3s
 
+        // ── Phase 4 enrage VFX (aura particles + point light + audio loop) ────
+        private ParticleSystem? _enragePS;
+        private Light?          _enrageLight;
+        private AudioSource?    _enrageAudio;
+        private float           _enrageLightBaseIntensity = 4f;
+
         // ── HP bar (world-space billboard) ────────────────────────────────────
         private Transform?    _hpBarRoot;
         private Transform?    _hpBarFg;
@@ -841,6 +847,7 @@ namespace CrowdDefense.Entities
             TickBossAura();
             TickBossEncounterPublish();
             TickApocalypseBoss();
+            TickEnrageLight();
             UpdateStealth();
             UpdateSummons();
             UpdateAoeBlast();
@@ -1004,11 +1011,84 @@ namespace CrowdDefense.Entities
             _bossAuraMR.SetPropertyBlock(_auraMpb);
         }
 
+        private void TickEnrageLight()
+        {
+            if (_enrageLight == null || !_enrageLight.gameObject.activeSelf) return;
+            _enrageLight.intensity = _enrageLightBaseIntensity + Random.Range(-1.2f, 1.2f);
+        }
+
         private void TickBossEncounterPublish()
         {
             if (_bossEncounteredPublished || cfg == null || !cfg.IsBoss) return;
             _bossEncounteredPublished = true;
             EventManager.Instance?.Publish(new EnemySpawnedEvent(this));
+        }
+
+        private void StartEnrageVFX()
+        {
+            // Particle aura — red/orange flames radius 1.5m, 50/sec
+            if (_enragePS == null)
+            {
+                var psGO = new GameObject("EnrageAura");
+                psGO.transform.SetParent(transform, false);
+                psGO.transform.localPosition = Vector3.up * 0.5f;
+                _enragePS = psGO.AddComponent<ParticleSystem>();
+                var main = _enragePS.main;
+                main.loop           = true;
+                main.startLifetime  = 0.6f;
+                main.startSpeed     = 1.8f;
+                main.startSize      = 0.35f;
+                main.startColor     = new ParticleSystem.MinMaxGradient(
+                    new Color(1f, 0.15f, 0f, 0.9f), new Color(1f, 0.55f, 0.05f, 0.7f));
+                main.simulationSpace = ParticleSystemSimulationSpace.World;
+                var emission = _enragePS.emission;
+                emission.rateOverTime = 50f;
+                var shape = _enragePS.shape;
+                shape.enabled     = true;
+                shape.shapeType   = ParticleSystemShapeType.Sphere;
+                shape.radius      = 1.5f;
+            }
+            _enragePS.gameObject.SetActive(true);
+            if (!_enragePS.isPlaying) _enragePS.Play();
+
+            // Point light — red, intensity 4, range 5m, flicker via Random in Update
+            if (_enrageLight == null)
+            {
+                var lightGO = new GameObject("EnrageLight");
+                lightGO.transform.SetParent(transform, false);
+                lightGO.transform.localPosition = Vector3.up * 1f;
+                _enrageLight = lightGO.AddComponent<Light>();
+                _enrageLight.type      = LightType.Point;
+                _enrageLight.color     = new Color(1f, 0.15f, 0.05f);
+                _enrageLight.range     = 5f;
+                _enrageLight.intensity = _enrageLightBaseIntensity;
+                _enrageLight.shadows   = LightShadows.None;
+            }
+            _enrageLight.gameObject.SetActive(true);
+
+            // Audio loop — child AudioSource playing boss_enrage_loop
+            if (_enrageAudio == null)
+            {
+                var audioGO = new GameObject("EnrageAudio");
+                audioGO.transform.SetParent(transform, false);
+                _enrageAudio             = audioGO.AddComponent<AudioSource>();
+                _enrageAudio.spatialBlend = 1f;
+                _enrageAudio.loop        = true;
+                _enrageAudio.volume      = 0.7f;
+                _enrageAudio.maxDistance = 20f;
+                _enrageAudio.rolloffMode = AudioRolloffMode.Linear;
+                var clip = AudioController.Instance?.GetClip("boss_enrage_loop");
+                if (clip != null) _enrageAudio.clip = clip;
+            }
+            _enrageAudio.gameObject.SetActive(true);
+            if (_enrageAudio.clip != null && !_enrageAudio.isPlaying) _enrageAudio.Play();
+        }
+
+        private void StopEnrageVFX()
+        {
+            if (_enragePS != null)   { _enragePS.Stop(true, ParticleSystemStopBehavior.StopEmitting); _enragePS.gameObject.SetActive(false); }
+            if (_enrageLight != null) _enrageLight.gameObject.SetActive(false);
+            if (_enrageAudio != null) { _enrageAudio.Stop(); _enrageAudio.gameObject.SetActive(false); }
         }
 
         private void TickApocalypseBoss()
@@ -1431,7 +1511,7 @@ namespace CrowdDefense.Entities
                 JuiceFX.Instance?.Shake(0.35f, 500);
                 EventManager.Instance?.Publish(new BossPhaseChangedEvent("L'Apocalypse — Phase 3 : Invocation !", 3));
             }
-            // Phase 4 (HP < 25%): damage ×2 + AOE pulse every 3s
+            // Phase 4 (HP < 25%): damage ×2 + AOE pulse every 3s + enrage VFX
             if (_apocPhase < 4 && ratio <= 0.25f)
             {
                 _apocPhase = 4;
@@ -1440,6 +1520,7 @@ namespace CrowdDefense.Entities
                 VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 1f, 5f);
                 JuiceFX.Instance?.Shake(0.5f, 700);
                 EventManager.Instance?.Publish(new BossPhaseChangedEvent("L'Apocalypse — Phase 4 : ENRAGE FINAL !", 4));
+                StartEnrageVFX();
             }
         }
 
@@ -1554,6 +1635,7 @@ namespace CrowdDefense.Entities
 
             Achievements.Instance?.Unlock("first_blood");
             Achievements.Instance?.TrackEvent("enemy_killed", 1);
+            StopEnrageVFX();
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);
             _lastDamageTower?.RegisterKill();
