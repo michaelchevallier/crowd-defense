@@ -98,9 +98,12 @@ namespace CrowdDefense.Entities
         };
 
         // ── Ground decals (slow cyan / burn orange quads at feet) ────────────
-        private GameObject?  _decalSlow;
-        private GameObject?  _decalBurn;
-        private int          _decalFrame = 0;
+        private GameObject?    _decalSlow;
+        private GameObject?    _decalBurn;
+        private int            _decalFrame = 0;
+        private MeshRenderer?  _decalSlowRend;
+        private MeshRenderer?  _decalBurnRend;
+        private MaterialPropertyBlock _decalMpb = new MaterialPropertyBlock();
 
         // ── Spawn pop-in state ────────────────────────────────────────────────
         private Coroutine?   _popInCoroutine;
@@ -720,8 +723,9 @@ namespace CrowdDefense.Entities
             _hpBarFgMR.SetPropertyBlock(_hpBarMpb);
 
             // Billboard: face camera
-            if (Camera.main != null)
-                _hpBarRoot.rotation = Quaternion.LookRotation(Camera.main.transform.forward);
+            var camFwd = MainCameraCache.Main;
+            if (camFwd != null)
+                _hpBarRoot.rotation = Quaternion.LookRotation(camFwd.transform.forward);
         }
 
         private void BuildShieldHalo()
@@ -1348,20 +1352,20 @@ namespace CrowdDefense.Entities
                     _decalSlow.transform.localPosition = new Vector3(0f, 0.02f, 0f);
                     _decalSlow.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
                     _decalSlow.transform.localScale    = Vector3.one * 1.5f;
-                    var mr = _decalSlow.GetComponent<MeshRenderer>();
+                    _decalSlowRend = _decalSlow.GetComponent<MeshRenderer>();
                     var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
                     mat.color = new Color(0f, 1f, 1f, 0.45f);
                     if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f); // transparent
-                    mr.material = mat;
-                    mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                    mr.receiveShadows = false;
+                    _decalSlowRend.material = mat;
+                    _decalSlowRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    _decalSlowRend.receiveShadows = false;
                 }
                 if (!_decalSlow.activeSelf) _decalSlow.SetActive(true);
                 // alpha pulse 0.3-0.6
-                var rend = _decalSlow.GetComponent<MeshRenderer>();
-                Color c = rend.material.color;
-                c.a = 0.3f + 0.3f * (0.5f + 0.5f * Mathf.Sin(now * 4f));
-                rend.material.color = c;
+                float alpha = 0.3f + 0.3f * (0.5f + 0.5f * Mathf.Sin(now * 4f));
+                _decalMpb.Clear();
+                _decalMpb.SetColor("_BaseColor", new Color(0f, 1f, 1f, alpha));
+                _decalSlowRend!.SetPropertyBlock(_decalMpb);
             }
             else if (_decalSlow != null && _decalSlow.activeSelf)
                 _decalSlow.SetActive(false);
@@ -1378,13 +1382,13 @@ namespace CrowdDefense.Entities
                     _decalBurn.transform.localPosition = new Vector3(0f, 0.03f, 0f);
                     _decalBurn.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
                     _decalBurn.transform.localScale    = Vector3.one * 1.5f;
-                    var mr = _decalBurn.GetComponent<MeshRenderer>();
+                    _decalBurnRend = _decalBurn.GetComponent<MeshRenderer>();
                     var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
                     mat.color = new Color(1f, 0.3f, 0f, 0.4f);
                     if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
-                    mr.material = mat;
-                    mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                    mr.receiveShadows = false;
+                    _decalBurnRend.material = mat;
+                    _decalBurnRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    _decalBurnRend.receiveShadows = false;
                 }
                 if (!_decalBurn.activeSelf) _decalBurn.SetActive(true);
                 // occasional spark at feet
