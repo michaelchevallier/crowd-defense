@@ -137,7 +137,7 @@ namespace CrowdDefense.Systems
 
         private Vector3 HudWorldTarget()
         {
-            var cam = Camera.main;
+            var cam = MainCameraCache.Main;
             if (cam == null) return Vector3.zero;
             return cam.ViewportToWorldPoint(_hudViewportPos);
         }
