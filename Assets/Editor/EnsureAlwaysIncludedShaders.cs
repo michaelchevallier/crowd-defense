@@ -46,10 +46,10 @@ namespace CrowdDefense.Editor
             "Universal Render Pipeline/Particles/Unlit",
             // URP internal shaders (used by render pipeline but not directly referenced)
             // These can be null on some GPU/platform combos if not explicitly included.
-            // WebGL black-screen bug: missing any of these → drawBuffers INVALID_OPERATION spam.
             "Hidden/Universal Render Pipeline/StencilDitherMaskSeed",
             "Hidden/CoreSRP/CoreCopy",
-            "Hidden/Universal/HDRDebugView",
+            // HDRDebugView intentionally omitted : HDR is off (m_SupportsHDR: 0) so this
+            // debug shader is not needed and its subshaders fail GPU compat check on WebGL2.
             // Engine fallbacks (Sprites/Default + UI/Default sont safe).
             // NE PAS ajouter Hidden/InternalErrorShader : HideFlags.DontSave => "An asset
             // is marked with HideFlags.DontSave but is included in the build" => Build Failed.
