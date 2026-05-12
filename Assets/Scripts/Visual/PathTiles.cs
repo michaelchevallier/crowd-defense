@@ -1,6 +1,7 @@
 #nullable enable
+using System.Collections;
 using System.Collections.Generic;
-using CrowdDefense.Common;
+using System.Linq;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using UnityEngine;
@@ -60,6 +61,71 @@ namespace CrowdDefense.Visual
 #if UNITY_EDITOR
             Debug.Log($"[PathTiles] built {_spawnedObjects.Count} objects, {_animatedMats.Count} animated mats, theme={theme}");
 #endif
+        }
+
+        // Progressive reveal: path tiles appear BFS-ordered from spawnPos, 60ms stagger.
+        // Stream layer (water/lava) spawns instantly before the reveal starts.
+        public Coroutine BuildForLevelProgressive(GridData grid, LevelTheme theme, Vector2Int spawnPos)
+        {
+            ClearAll();
+            var config = LevelThemeMaterialConfig.Get();
+            BuildStreamLayer(grid, theme, config);
+            BuildBridgeLayer(grid, theme, config);
+            return StartCoroutine(RevealPathTiles(grid, spawnPos));
+        }
+
+        private IEnumerator RevealPathTiles(GridData grid, Vector2Int spawnPos)
+        {
+            var pathCells = new List<Vector2Int>();
+            for (int r = 0; r < grid.Height; r++)
+                for (int c = 0; c < grid.Width; c++)
+                {
+                    char ch = grid.At(c, r);
+                    if (IsPathLike(ch)) pathCells.Add(new Vector2Int(c, r));
+                }
+
+            var sorted = pathCells
+                .OrderBy(t => Vector2Int.Distance(t, spawnPos))
+                .ToList();
+
+            float cs = grid.CellSize;
+            var mat = MakePathRevealMat();
+            _animatedMats.Add(mat);
+
+            foreach (var t in sorted)
+            {
+                SpawnRevealQuad(grid, t.x, t.y, cs, mat);
+                yield return new WaitForSeconds(0.06f);
+            }
+        }
+
+        private void SpawnRevealQuad(GridData grid, int c, int r, float cs, Material mat)
+        {
+            Vector3 pos = GridCoords.CellToWorld(c, r, grid.Width, grid.Height, cs);
+            pos.y = 0.01f;
+
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = $"RevealPath_{c}_{r}";
+            go.transform.SetParent(transform, false);
+            go.transform.position = pos;
+            go.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            go.transform.localScale = new Vector3(cs * 0.96f, cs * 0.96f, 1f);
+
+            var col = go.GetComponent<Collider>();
+            if (col != null) Destroy(col);
+
+            go.GetComponent<MeshRenderer>().sharedMaterial = mat;
+            _spawnedObjects.Add(go);
+        }
+
+        // Subtle path highlight mat — translucent warm tint so the reveal reads visually
+        // without fighting the MapRenderer slab color beneath.
+        private static Material MakePathRevealMat()
+        {
+            var mat = new Material(ShaderUtil.GetToonShader()) { name = "PathReveal" };
+            mat.SetColor(Shader.PropertyToID("_BaseColor"), new Color(1f, 0.95f, 0.70f, 0.35f));
+            mat.enableInstancing = true;
+            return mat;
         }
 
         public void ClearAll()
