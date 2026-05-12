@@ -2611,6 +2611,7 @@ namespace CrowdDefense.Entities
             ApplyTierSkin(level);
             if (level >= 3) TryApplyEliteL4();
             SpawnUpgradeRing(level);
+            SpawnUpgradeConfetti(level);
         }
 
         private void SpawnUpgradeRing(int newLevel)
@@ -2675,6 +2676,22 @@ namespace CrowdDefense.Entities
                 yield return null;
             }
             if (go != null) Object.Destroy(go);
+        }
+
+        private void SpawnUpgradeConfetti(int newLevel)
+        {
+            var vfx = VfxPool.Instance;
+            if (vfx != null)
+            {
+                vfx.SpawnUpgradeConfetti(transform.position + Vector3.up * 1.5f, newLevel);
+            }
+
+            var ac = AudioController.Instance;
+            if (ac != null)
+            {
+                float pitch = 1f + newLevel * 0.1f;
+                ac.Play3DPitched("tower_upgrade_celebration", transform.position, 0.8f, pitch);
+            }
         }
 
         /// <summary>

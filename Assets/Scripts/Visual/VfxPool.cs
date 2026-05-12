@@ -37,6 +37,7 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? muzzleFlashPrefab;
         [SerializeField] private GameObject? upgradeBurstPrefab;
         [SerializeField] private GameObject? sparkPrefab;
+        [SerializeField] private GameObject? upgradeConfettiPrefab;
 
         private ObjectPool<ParticleSystem>? _impactPool;
         private ObjectPool<ParticleSystem>? _deathPool;
@@ -51,6 +52,7 @@ namespace CrowdDefense.Visual
         private ObjectPool<ParticleSystem>? _muzzleFlashPool;
         private ObjectPool<ParticleSystem>? _upgradeBurstPool;
         private ObjectPool<ParticleSystem>? _sparkPool;
+        private ObjectPool<ParticleSystem>? _upgradeConfettiPool;
 
         private Transform? _root;
         private Material? _additiveMat;
@@ -72,8 +74,9 @@ namespace CrowdDefense.Visual
             portalPrefab    ??= BuildProceduralPrefab("Portal",    BuildPortalModule);
             fireBreathPrefab ??= BuildProceduralPrefab("FireBreath", BuildFireBreathModule);
             muzzleFlashPrefab    ??= BuildProceduralPrefab("MuzzleFlash",    BuildMuzzleFlashModule);
-            upgradeBurstPrefab   ??= BuildProceduralPrefab("UpgradeBurst",   BuildUpgradeBurstModule);
-            sparkPrefab          ??= BuildProceduralPrefab("Spark",          BuildSparkModule);
+            upgradeBurstPrefab    ??= BuildProceduralPrefab("UpgradeBurst",    BuildUpgradeBurstModule);
+            sparkPrefab           ??= BuildProceduralPrefab("Spark",           BuildSparkModule);
+            upgradeConfettiPrefab ??= BuildProceduralPrefab("UpgradeConfetti", BuildUpgradeConfettiModule);
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
@@ -86,8 +89,9 @@ namespace CrowdDefense.Visual
             _portalPool    = BuildPool(portalPrefab,    "Portal",    DefaultCapacity);
             _fireBreathPool  = BuildPool(fireBreathPrefab,  "FireBreath",  DefaultCapacity);
             _muzzleFlashPool  = BuildPool(muzzleFlashPrefab,  "MuzzleFlash",  DefaultCapacity);
-            _upgradeBurstPool = BuildPool(upgradeBurstPrefab, "UpgradeBurst", DefaultCapacity);
-            _sparkPool        = BuildPool(sparkPrefab,        "Spark",        DefaultCapacity);
+            _upgradeBurstPool    = BuildPool(upgradeBurstPrefab,    "UpgradeBurst",    DefaultCapacity);
+            _sparkPool           = BuildPool(sparkPrefab,           "Spark",           DefaultCapacity);
+            _upgradeConfettiPool = BuildPool(upgradeConfettiPrefab, "UpgradeConfetti", DefaultCapacity);
 
             PreWarm();
         }
@@ -344,6 +348,82 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _upgradeBurstPool);
         }
 
+        private static readonly Color[] _confettiPalette =
+        {
+            new(1f,    0.85f, 0.2f),
+            new(0.3f,  0.85f, 1f),
+            new(1f,    0.4f,  0.7f),
+            new(0.3f,  0.95f, 0.5f),
+        };
+
+        // Celebration confetti on tower upgrade. L3 uses rainbow HSV, lower levels use 4-color palette.
+        public void SpawnUpgradeConfetti(Vector3 pos, int level)
+        {
+            if (!IsVfxEnabled() || _upgradeConfettiPool == null) return;
+            var ps = _upgradeConfettiPool.Get();
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+
+            int count = level >= 3 ? 50 : 30;
+            count = Mathf.Max(1, Mathf.RoundToInt(count * _lodMultiplier));
+
+            var main = ps.main;
+            main.maxParticles = count;
+
+            var emission = ps.emission;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, count, count, 1, 0.01f) });
+
+            var col = ps.colorOverLifetime;
+            col.enabled = true;
+            col.color = new ParticleSystem.MinMaxGradient(
+                level >= 3 ? BuildRainbowGradient() : BuildPaletteGradient());
+
+            PlayAndAutoRelease(ps, _upgradeConfettiPool);
+        }
+
+        private static Gradient BuildPaletteGradient()
+        {
+            var g = new Gradient();
+            g.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(_confettiPalette[0], 0f),
+                    new GradientColorKey(_confettiPalette[1], 0.33f),
+                    new GradientColorKey(_confettiPalette[2], 0.66f),
+                    new GradientColorKey(_confettiPalette[3], 1f),
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(0.85f, 0.5f),
+                    new GradientAlphaKey(0f, 1f),
+                }
+            );
+            return g;
+        }
+
+        private static Gradient BuildRainbowGradient()
+        {
+            var g = new Gradient();
+            g.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(Color.HSVToRGB(0f,    0.85f, 1f), 0f),
+                    new GradientColorKey(Color.HSVToRGB(0.2f,  0.85f, 1f), 0.2f),
+                    new GradientColorKey(Color.HSVToRGB(0.4f,  0.85f, 1f), 0.4f),
+                    new GradientColorKey(Color.HSVToRGB(0.6f,  0.85f, 1f), 0.6f),
+                    new GradientColorKey(Color.HSVToRGB(0.8f,  0.85f, 1f), 0.8f),
+                    new GradientColorKey(Color.HSVToRGB(1f,    0.85f, 1f), 1f),
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(0.9f, 0.5f),
+                    new GradientAlphaKey(0f, 1f),
+                }
+            );
+            return g;
+        }
+
         public void SpawnFrost(Vector3 worldPos, float radius)
         {
             if (!IsVfxEnabled() || _frostPool == null) return;
@@ -480,8 +560,9 @@ namespace CrowdDefense.Visual
             PreWarmPool(_portalPool,     DefaultCapacity);
             PreWarmPool(_fireBreathPool,  DefaultCapacity);
             PreWarmPool(_muzzleFlashPool,  DefaultCapacity);
-            PreWarmPool(_upgradeBurstPool, DefaultCapacity);
-            PreWarmPool(_sparkPool,        DefaultCapacity);
+            PreWarmPool(_upgradeBurstPool,    DefaultCapacity);
+            PreWarmPool(_sparkPool,           DefaultCapacity);
+            PreWarmPool(_upgradeConfettiPool, DefaultCapacity);
         }
 
         private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
@@ -880,6 +961,52 @@ namespace CrowdDefense.Visual
             shape.radius    = 0.25f;
 
             SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
+        }
+
+        // Celebration confetti — 30/50 small cubes, upward shoot + gravity fall, lifetime 1.5s.
+        // Color gradient overridden at spawn (palette L1-L2, rainbow L3).
+        private static void BuildUpgradeConfettiModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(1.1f, 1.5f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(2.5f, 4.5f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.07f, 0.16f);
+            main.startColor     = Color.white;
+            main.startRotation  = new ParticleSystem.MinMaxCurve(0f, 360f * Mathf.Deg2Rad);
+            main.startRotation3D = true;
+            main.maxParticles   = 60;
+            main.duration       = 0.1f;
+            main.gravityModifier = 1.0f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 30, 30, 1, 0.01f) });
+
+            // Hemisphere biased upward: shoot up + slight spread
+            var shape = ps.shape;
+            shape.enabled      = true;
+            shape.shapeType    = ParticleSystemShapeType.Cone;
+            shape.angle        = 35f;
+            shape.radius       = 0.15f;
+            shape.radiusThickness = 0.8f;
+
+            // Rotation over lifetime for tumbling effect (separateAxes required for x/y/z)
+            var rotLife = ps.rotationOverLifetime;
+            rotLife.enabled       = true;
+            rotLife.separateAxes  = true;
+            rotLife.x = new ParticleSystem.MinMaxCurve(-180f * Mathf.Deg2Rad, 180f * Mathf.Deg2Rad);
+            rotLife.y = new ParticleSystem.MinMaxCurve(-180f * Mathf.Deg2Rad, 180f * Mathf.Deg2Rad);
+            rotLife.z = new ParticleSystem.MinMaxCurve(-180f * Mathf.Deg2Rad, 180f * Mathf.Deg2Rad);
+
+            // Size fade: 0.4 → 0 over lifetime
+            var sol = ps.sizeOverLifetime;
+            sol.enabled = true;
+            sol.size = new ParticleSystem.MinMaxCurve(1f,
+                new AnimationCurve(
+                    new Keyframe(0f, 0.4f, 0f, -0.5f),
+                    new Keyframe(1f, 0f,   -0.5f, 0f)));
+
             SetColorAlphaFade(ps);
         }
 
