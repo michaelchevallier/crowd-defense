@@ -1,4 +1,5 @@
 #nullable enable
+using TMPro;
 using UnityEngine;
 using CrowdDefense.Common;
 
@@ -14,12 +15,16 @@ namespace CrowdDefense.Systems
         private static readonly Color ColorValid   = new Color(0.20f, 0.85f, 0.20f, 0.45f);
         private static readonly Color ColorInvalid = new Color(0.85f, 0.20f, 0.20f, 0.45f);
 
+        private static readonly Color LabelAfford  = new Color(0.20f, 0.90f, 0.20f, 1.00f);
+        private static readonly Color LabelTooExp  = new Color(0.95f, 0.20f, 0.20f, 1.00f);
+
         private Camera?   cam;
         private GameObject? ghost;
         private MeshRenderer? ghostRenderer;
         private Material?   ghostMat;
         private GameObject? rangeRing;
         private float       lastBuiltRange = -1f;
+        private TextMeshPro? costLabel;
 
         // Cache for raw mouse-tracked world position (used when no valid cell)
         private Vector3 lastMouseWorld;
@@ -69,6 +74,20 @@ namespace CrowdDefense.Systems
 
             if (ghostRenderer != null) ghostRenderer.sharedMaterial = ghostMat;
 
+            // Cost label — world-space TMP, billboarded toward camera in LateUpdate
+            var labelGo = new GameObject("GhostCostLabel");
+            labelGo.transform.SetParent(ghost.transform, false);
+            labelGo.transform.localPosition = new Vector3(0f, 1.4f, 0f);
+            costLabel = labelGo.AddComponent<TextMeshPro>();
+            costLabel.fontSize              = 3.5f;
+            costLabel.fontStyle             = FontStyles.Bold;
+            costLabel.alignment             = TextAlignmentOptions.Center;
+            costLabel.outlineWidth          = 0.25f;
+            costLabel.outlineColor          = new Color32(0, 0, 0, 220);
+            costLabel.enableWordWrapping    = false;
+            costLabel.autoSizeTextContainer = false;
+            costLabel.rectTransform.sizeDelta = new Vector2(4f, 1f);
+
             ghost.SetActive(false);
         }
 
@@ -98,6 +117,23 @@ namespace CrowdDefense.Systems
                 if (groundPlane.Raycast(ray, out float dist))
                     lastMouseWorld = ray.GetPoint(dist);
             }
+
+            // Update cost label color and text each frame
+            if (costLabel != null)
+            {
+                int cost  = pc.SelectedTowerType?.Cost ?? 0;
+                int gold  = Economy.Instance?.Gold ?? 0;
+                bool canAfford = gold >= cost;
+                costLabel.text  = $"Cout: {cost}c";
+                costLabel.color = canAfford ? LabelAfford : LabelTooExp;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (ghost == null || !ghost.activeSelf || costLabel == null || cam == null) return;
+            // Billboard: make the label face the camera
+            costLabel.transform.rotation = cam.transform.rotation;
         }
 
         private void OnHoverCell(Vector2Int? cell)
