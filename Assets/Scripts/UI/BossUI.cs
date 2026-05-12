@@ -10,8 +10,7 @@ namespace CrowdDefense.UI
 {
     // Attach this to the same GameObject as UIDocument (HUD).
     // Reacts to BossSystem events and drives boss-banner, boss-cutscene, danger-vignette elements.
-    [RequireComponent(typeof(UIDocument))]
-    public class BossUI : MonoBehaviour
+    public class BossUI : UIControllerBase
     {
         private const float LineFadeIn    = 0.5f;
         private const float LineDelay     = 0.6f;
@@ -34,20 +33,22 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null) return;
-            var root = uiDoc.rootVisualElement;
-            if (root == null) return;
+            ResolveUI();
+        }
 
-            _banner     = root.Q<VisualElement>("boss-banner");
-            _bannerName = root.Q<Label>("boss-banner-name");
-            _bannerFill = root.Q<VisualElement>("boss-banner-fill");
-            _cutscene   = root.Q<VisualElement>("boss-cutscene");
-            _cutsceneDim = root.Q<VisualElement>("boss-cutscene-dim");
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+
+            _banner     = Root.Q<VisualElement>("boss-banner");
+            _bannerName = Root.Q<Label>("boss-banner-name");
+            _bannerFill = Root.Q<VisualElement>("boss-banner-fill");
+            _cutscene   = Root.Q<VisualElement>("boss-cutscene");
+            _cutsceneDim = Root.Q<VisualElement>("boss-cutscene-dim");
             for (int i = 0; i < 4; i++)
-                _lines[i] = root.Q<Label>($"boss-cutscene-line{i}");
-            _skipBtn    = root.Q<Button>("boss-cutscene-skip");
-            _vignette   = root.Q<VisualElement>("danger-vignette");
+                _lines[i] = Root.Q<Label>($"boss-cutscene-line{i}");
+            _skipBtn    = Root.Q<Button>("boss-cutscene-skip");
+            _vignette   = Root.Q<VisualElement>("danger-vignette");
 
             if (_skipBtn != null) _skipBtn.clicked += SkipCutscene;
 

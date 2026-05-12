@@ -7,13 +7,10 @@ using CrowdDefense.Visual;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class SettingsPanelController : MonoBehaviour
+    public class SettingsPanelController : UIControllerBase
     {
         public static SettingsPanelController? Instance { get; private set; }
         public bool IsOpen => _settingsRoot != null && !_settingsRoot.ClassListContains("hidden");
-
-        private VisualElement? _root;
         private VisualElement? _settingsRoot;
         private Button? _fullscreenBtn;
 
@@ -134,68 +131,63 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null)
-            {
-                Debug.LogError("[SettingsPanelController] UIDocument not found");
-                return;
-            }
-            _root = uiDoc.rootVisualElement;
-            if (_root == null)
-            {
-                Debug.LogError("[SettingsPanelController] rootVisualElement is null — UXML failed to load");
-                return;
-            }
-            _settingsRoot = _root.Q<VisualElement>("settings-root");
+            ResolveUI();
+        }
 
-            _masterSlider = _root.Q<Slider>("master-slider");
-            _sfxSlider = _root.Q<Slider>("sfx-slider");
-            _musicSlider = _root.Q<Slider>("music-slider");
-            _uiSlider = _root.Q<Slider>("ui-slider");
-            _gameSpeedSlider = _root.Q<SliderInt>("game-speed-slider");
-            _masterValue = _root.Q<Label>("master-value");
-            _sfxValue = _root.Q<Label>("sfx-value");
-            _musicValue = _root.Q<Label>("music-value");
-            _uiValue = _root.Q<Label>("ui-value");
-            _gameSpeedValue = _root.Q<Label>("game-speed-value");
-            _muteToggle = _root.Q<Toggle>("mute-toggle");
-            _sfxMuteToggle = _root.Q<Toggle>("sfx-mute-toggle");
-            _musicMuteToggle = _root.Q<Toggle>("music-mute-toggle");
-            _followHeroToggle = _root.Q<Toggle>("follow-hero-toggle");
-            _followHeroLabel  = _root.Q<Label>("follow-hero-label");
-            _joystickToggle   = _root.Q<Toggle>("joystick-toggle");
-            _joystickLabel    = _root.Q<Label>("joystick-label");
-            _heroAutoAttackToggle = _root.Q<Toggle>("hero-auto-attack-toggle");
-            _heroAutoAttackLabel  = _root.Q<Label>("hero-auto-attack-label");
-            _resetCameraBtn      = _root.Q<Button>("settings-reset-camera-btn");
-            _keyResetBtn         = _root.Q<Button>("key-reset-btn");
-            _changeNameBtn       = _root.Q<Button>("settings-change-name-btn");
-            _resetDefaultsBtn    = _root.Q<Button>("settings-reset-defaults-btn");
-            _resetProgressBtn    = _root.Q<Button>("settings-reset-progress-btn");
-            _resetProgressWarnLabel = _root.Q<Label>("reset-progress-warn");
-            _exportSaveBtn       = _root.Q<Button>("settings-export-save-btn");
-            _importSaveBtn       = _root.Q<Button>("settings-import-save-btn");
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
 
-            _diffEasyBtn    = _root.Q<Button>("difficulty-btn-easy");
-            _diffNormalBtn  = _root.Q<Button>("difficulty-btn-normal");
-            _diffHardBtn    = _root.Q<Button>("difficulty-btn-hard");
-            _diffSectionLabel = _root.Q<Label>("difficulty-section-title");
+            _settingsRoot = Root.Q<VisualElement>("settings-root");
 
-            _qualityDropdown = _root.Q<DropdownField>("quality-dropdown");
-            _bloomDropdown   = _root.Q<DropdownField>("bloom-dropdown");
-            _vfxToggle = _root.Q<Toggle>("vfx-toggle");
-            _shakeToggle = _root.Q<Toggle>("shake-toggle");
-            _autoPauseToggle = _root.Q<Toggle>("auto-pause-toggle");
-            _autoPauseLabel  = _root.Q<Label>("auto-pause-label");
+            _masterSlider = Root.Q<Slider>("master-slider");
+            _sfxSlider = Root.Q<Slider>("sfx-slider");
+            _musicSlider = Root.Q<Slider>("music-slider");
+            _uiSlider = Root.Q<Slider>("ui-slider");
+            _gameSpeedSlider = Root.Q<SliderInt>("game-speed-slider");
+            _masterValue = Root.Q<Label>("master-value");
+            _sfxValue = Root.Q<Label>("sfx-value");
+            _musicValue = Root.Q<Label>("music-value");
+            _uiValue = Root.Q<Label>("ui-value");
+            _gameSpeedValue = Root.Q<Label>("game-speed-value");
+            _muteToggle = Root.Q<Toggle>("mute-toggle");
+            _sfxMuteToggle = Root.Q<Toggle>("sfx-mute-toggle");
+            _musicMuteToggle = Root.Q<Toggle>("music-mute-toggle");
+            _followHeroToggle = Root.Q<Toggle>("follow-hero-toggle");
+            _followHeroLabel  = Root.Q<Label>("follow-hero-label");
+            _joystickToggle   = Root.Q<Toggle>("joystick-toggle");
+            _joystickLabel    = Root.Q<Label>("joystick-label");
+            _heroAutoAttackToggle = Root.Q<Toggle>("hero-auto-attack-toggle");
+            _heroAutoAttackLabel  = Root.Q<Label>("hero-auto-attack-label");
+            _resetCameraBtn      = Root.Q<Button>("settings-reset-camera-btn");
+            _keyResetBtn         = Root.Q<Button>("key-reset-btn");
+            _changeNameBtn       = Root.Q<Button>("settings-change-name-btn");
+            _resetDefaultsBtn    = Root.Q<Button>("settings-reset-defaults-btn");
+            _resetProgressBtn    = Root.Q<Button>("settings-reset-progress-btn");
+            _resetProgressWarnLabel = Root.Q<Label>("reset-progress-warn");
+            _exportSaveBtn       = Root.Q<Button>("settings-export-save-btn");
+            _importSaveBtn       = Root.Q<Button>("settings-import-save-btn");
 
-            _musicPulseToggle = _root.Q<Toggle>("music-pulse-toggle");
-            _musicPulseLabel  = _root.Q<Label>("music-pulse-label");
-            _colorblindToggle = _root.Q<Toggle>("colorblind-toggle");
-            _reduceMotionToggle = _root.Q<Toggle>("reduce-motion-toggle");
-            _largeTextToggle = _root.Q<Toggle>("large-text-toggle");
-            _fontSizeSlider = _root.Q<SliderInt>("font-size-slider");
-            _fontSizeValue = _root.Q<Label>("font-size-value");
-            _highContrastToggle = _root.Q<Toggle>("high-contrast-toggle");
+            _diffEasyBtn    = Root.Q<Button>("difficulty-btn-easy");
+            _diffNormalBtn  = Root.Q<Button>("difficulty-btn-normal");
+            _diffHardBtn    = Root.Q<Button>("difficulty-btn-hard");
+            _diffSectionLabel = Root.Q<Label>("difficulty-section-title");
+
+            _qualityDropdown = Root.Q<DropdownField>("quality-dropdown");
+            _bloomDropdown   = Root.Q<DropdownField>("bloom-dropdown");
+            _vfxToggle = Root.Q<Toggle>("vfx-toggle");
+            _shakeToggle = Root.Q<Toggle>("shake-toggle");
+            _autoPauseToggle = Root.Q<Toggle>("auto-pause-toggle");
+            _autoPauseLabel  = Root.Q<Label>("auto-pause-label");
+
+            _musicPulseToggle = Root.Q<Toggle>("music-pulse-toggle");
+            _musicPulseLabel  = Root.Q<Label>("music-pulse-label");
+            _colorblindToggle = Root.Q<Toggle>("colorblind-toggle");
+            _reduceMotionToggle = Root.Q<Toggle>("reduce-motion-toggle");
+            _largeTextToggle = Root.Q<Toggle>("large-text-toggle");
+            _fontSizeSlider = Root.Q<SliderInt>("font-size-slider");
+            _fontSizeValue = Root.Q<Label>("font-size-value");
+            _highContrastToggle = Root.Q<Toggle>("high-contrast-toggle");
 
             if (_fontSizeSlider != null)
             {
@@ -203,44 +195,44 @@ namespace CrowdDefense.UI
                 _fontSizeSlider.highValue = 2;
             }
 
-            _playerNameField = _root.Q<TextField>("player-name-field");
-            _langDropdown = _root.Q<DropdownField>("lang-dropdown");
-            _closeBtn = _root.Q<Button>("settings-close-btn");
-            _fullscreenBtn = _root.Q<Button>("settings-fullscreen-btn");
-            _keybindingsBtn = _root.Q<Button>("settings-keybindings-btn");
+            _playerNameField = Root.Q<TextField>("player-name-field");
+            _langDropdown = Root.Q<DropdownField>("lang-dropdown");
+            _closeBtn = Root.Q<Button>("settings-close-btn");
+            _fullscreenBtn = Root.Q<Button>("settings-fullscreen-btn");
+            _keybindingsBtn = Root.Q<Button>("settings-keybindings-btn");
 
-            _tabAudio    = _root.Q<Button>("tab-audio");
-            _tabVideo    = _root.Q<Button>("tab-video");
-            _tabControls = _root.Q<Button>("tab-controls");
-            _tabGameplay = _root.Q<Button>("tab-gameplay");
-            _panelAudio    = _root.Q<VisualElement>("panel-audio");
-            _panelVideo    = _root.Q<VisualElement>("panel-video");
-            _panelControls = _root.Q<VisualElement>("panel-controls");
-            _panelGameplay = _root.Q<VisualElement>("panel-gameplay");
+            _tabAudio    = Root.Q<Button>("tab-audio");
+            _tabVideo    = Root.Q<Button>("tab-video");
+            _tabControls = Root.Q<Button>("tab-controls");
+            _tabGameplay = Root.Q<Button>("tab-gameplay");
+            _panelAudio    = Root.Q<VisualElement>("panel-audio");
+            _panelVideo    = Root.Q<VisualElement>("panel-video");
+            _panelControls = Root.Q<VisualElement>("panel-controls");
+            _panelGameplay = Root.Q<VisualElement>("panel-gameplay");
 
-            _settingsTitleLabel  = _root.Q<Label>("settings-title");
-            _audioSectionLabel   = _root.Q<Label>("audio-section-title");
-            _masterLabel         = _root.Q<Label>("master-label");
-            _sfxLabel            = _root.Q<Label>("sfx-label");
-            _musicLabel          = _root.Q<Label>("music-label");
-            _uiLabel             = _root.Q<Label>("ui-label");
-            _muteLabel           = _root.Q<Label>("mute-label");
-            _sfxMuteLabel        = _root.Q<Label>("sfx-mute-label");
-            _musicMuteLabel      = _root.Q<Label>("music-mute-label");
-            _gameSpeedLabel      = _root.Q<Label>("game-speed-label");
-            _gfxSectionLabel     = _root.Q<Label>("gfx-section-title");
-            _qualityLabel        = _root.Q<Label>("quality-label");
-            _bloomLabel          = _root.Q<Label>("bloom-label");
-            _vfxLabel            = _root.Q<Label>("vfx-label");
-            _shakeLabel          = _root.Q<Label>("shake-label");
-            _a11ySectionLabel    = _root.Q<Label>("a11y-section-title");
-            _colorblindLabel     = _root.Q<Label>("colorblind-label");
-            _reduceMotionLabel   = _root.Q<Label>("reduce-motion-label");
-            _largeTextLabel      = _root.Q<Label>("large-text-label");
-            _fontSizeLabel       = _root.Q<Label>("font-size-label");
-            _highContrastLabel   = _root.Q<Label>("high-contrast-label");
-            _langSectionLabel    = _root.Q<Label>("lang-section-title");
-            _langLabel           = _root.Q<Label>("lang-label");
+            _settingsTitleLabel  = Root.Q<Label>("settings-title");
+            _audioSectionLabel   = Root.Q<Label>("audio-section-title");
+            _masterLabel         = Root.Q<Label>("master-label");
+            _sfxLabel            = Root.Q<Label>("sfx-label");
+            _musicLabel          = Root.Q<Label>("music-label");
+            _uiLabel             = Root.Q<Label>("ui-label");
+            _muteLabel           = Root.Q<Label>("mute-label");
+            _sfxMuteLabel        = Root.Q<Label>("sfx-mute-label");
+            _musicMuteLabel      = Root.Q<Label>("music-mute-label");
+            _gameSpeedLabel      = Root.Q<Label>("game-speed-label");
+            _gfxSectionLabel     = Root.Q<Label>("gfx-section-title");
+            _qualityLabel        = Root.Q<Label>("quality-label");
+            _bloomLabel          = Root.Q<Label>("bloom-label");
+            _vfxLabel            = Root.Q<Label>("vfx-label");
+            _shakeLabel          = Root.Q<Label>("shake-label");
+            _a11ySectionLabel    = Root.Q<Label>("a11y-section-title");
+            _colorblindLabel     = Root.Q<Label>("colorblind-label");
+            _reduceMotionLabel   = Root.Q<Label>("reduce-motion-label");
+            _largeTextLabel      = Root.Q<Label>("large-text-label");
+            _fontSizeLabel       = Root.Q<Label>("font-size-label");
+            _highContrastLabel   = Root.Q<Label>("high-contrast-label");
+            _langSectionLabel    = Root.Q<Label>("lang-section-title");
+            _langLabel           = Root.Q<Label>("lang-label");
 
             if (_qualityDropdown != null)
             {

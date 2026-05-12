@@ -10,12 +10,10 @@ namespace CrowdDefense.UI
 {
     public enum AchievementFilter { All, Unlocked, Locked }
 
-    [RequireComponent(typeof(UIDocument))]
-    public class AchievementsPanel : MonoBehaviour
+    public class AchievementsPanel : UIControllerBase
     {
         public static AchievementsPanel? Instance { get; private set; }
 
-        private VisualElement? _root;
         private Label?         _scoreLabel;
         private VisualElement? _grid;
         private Button?        _btnAll;
@@ -40,33 +38,32 @@ namespace CrowdDefense.UI
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+        }
 
-            var uiDoc = GetComponent<UIDocument>();
+        private void Start()
+        {
+            ResolveUI();
+        }
 
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+            var _root = Root.Q<VisualElement>("achievements-root");
+            _scoreLabel  = Root.Q<Label>("achievements-score");
+            _grid        = Root.Q<VisualElement>("achievements-grid");
 
-            if (uiDoc == null) return;
+            BuildTopProgressBar(_root);
+            _btnAll      = Root.Q<Button>("btn-filter-all");
+            _btnUnlocked = Root.Q<Button>("btn-filter-unlocked");
+            _btnLocked   = Root.Q<Button>("btn-filter-locked");
 
+            _tabAll         = Root.Q<Button>("tab-all");
+            _tabCombat      = Root.Q<Button>("tab-combat");
+            _tabEconomy     = Root.Q<Button>("tab-economy");
+            _tabProgression = Root.Q<Button>("tab-progression");
+            _tabMisc        = Root.Q<Button>("tab-misc");
 
-            var doc = uiDoc.rootVisualElement;
-
-
-            if (doc == null) return;
-            _root        = doc.Q<VisualElement>("achievements-root");
-            _scoreLabel  = doc.Q<Label>("achievements-score");
-            _grid        = doc.Q<VisualElement>("achievements-grid");
-
-            BuildTopProgressBar();
-            _btnAll      = doc.Q<Button>("btn-filter-all");
-            _btnUnlocked = doc.Q<Button>("btn-filter-unlocked");
-            _btnLocked   = doc.Q<Button>("btn-filter-locked");
-
-            _tabAll         = doc.Q<Button>("tab-all");
-            _tabCombat      = doc.Q<Button>("tab-combat");
-            _tabEconomy     = doc.Q<Button>("tab-economy");
-            _tabProgression = doc.Q<Button>("tab-progression");
-            _tabMisc        = doc.Q<Button>("tab-misc");
-
-            var btnBack = doc.Q<Button>("btn-achievements-back");
+            var btnBack = Root.Q<Button>("btn-achievements-back");
             if (btnBack != null) btnBack.clicked += Hide;
 
             if (_btnAll      != null) _btnAll.clicked      += () => SetFilter(AchievementFilter.All);
@@ -85,20 +82,20 @@ namespace CrowdDefense.UI
             if (Instance == this) Instance = null;
         }
 
-        public bool IsOpen => _root != null && !_root.ClassListContains("hidden");
+        public bool IsOpen => Root != null && !Root.ClassListContains("hidden");
 
         public void Show()
         {
-            if (_root == null) return;
+            if (Root == null) return;
             _filter   = AchievementFilter.All;
             _category = null;
             RefreshFilterButtons();
             RefreshTabs();
             Rebuild();
-            _root.RemoveFromClassList("hidden");
+            Root.RemoveFromClassList("hidden");
         }
 
-        public void Hide() => _root?.AddToClassList("hidden");
+        public void Hide() => Root?.AddToClassList("hidden");
 
         private void SetFilter(AchievementFilter f)
         {
@@ -137,9 +134,9 @@ namespace CrowdDefense.UI
             else        btn.RemoveFromClassList(cssClass);
         }
 
-        private void BuildTopProgressBar()
+        private void BuildTopProgressBar(VisualElement? root)
         {
-            if (_root == null) return;
+            if (root == null) return;
 
             var container = new VisualElement();
             container.AddToClassList("ach-progress-header");
@@ -165,8 +162,8 @@ namespace CrowdDefense.UI
             barBg.Add(_progressFill);
             container.Add(barBg);
 
-            // Insert at top of _root, before other children.
-            _root.Insert(0, container);
+            // Insert at top of root, before other children.
+            root.Insert(0, container);
         }
 
         private void RefreshTopProgressBar(int unlockedCount, int totalCount, int earnedPts, int totalPts)

@@ -10,8 +10,7 @@ using CrowdDefense.Visual;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class HudController : MonoBehaviour
+    public class HudController : UIControllerBase
     {
         private Label? goldLabel;
         private Label? goldValue;
@@ -164,13 +163,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            BindUiRefs();
-            WireCallbacks();
-            SubscribeSystems();
+            ResolveUI();
         }
 
-        private void BindUiRefs()
+        protected override void OnUIReady()
         {
+            if (Root == null) return;
+
             _doctrineCtrl = GetComponent<DoctrineController>();
 
             // Auto-add UI sibling controllers that share the HUD UIDocument (each Qs its own
@@ -193,106 +192,84 @@ namespace CrowdDefense.UI
             EnsureSibling<RuntimeProfilePanel>();
             EnsureSibling<AchievementToastController>();
 
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null)
-            {
-                Debug.LogError("[HudController] UIDocument component not found — HUD will not render");
-                return;
-            }
-            var root = uiDoc.rootVisualElement;
-            if (root == null)
-            {
-                Debug.LogError("[HudController] rootVisualElement is null — HUD UXML failed to load");
-                return;
-            }
-            ApplyDeviceClasses(root);
-            goldLabel = root.Q<Label>("gold-label");
-            goldValue = root.Q<Label>("gold-value");
-            waveLabel = root.Q<Label>("wave-label");
-            waveValue = root.Q<Label>("wave-value");
-            hpLabel = root.Q<Label>("hp-label");
-            hpValue = root.Q<Label>("hp-value");
-            hpBarFill = root.Q<VisualElement>("hp-bar-fill");
-            _castleRegenIcon = root.Q<Label>("castle-regen-icon");
+            ApplyDeviceClasses(Root);
+            goldLabel = Root.Q<Label>("gold-label");
+            goldValue = Root.Q<Label>("gold-value");
+            waveLabel = Root.Q<Label>("wave-label");
+            waveValue = Root.Q<Label>("wave-value");
+            hpLabel = Root.Q<Label>("hp-label");
+            hpValue = Root.Q<Label>("hp-value");
+            hpBarFill = Root.Q<VisualElement>("hp-bar-fill");
+            _castleRegenIcon = Root.Q<Label>("castle-regen-icon");
             if (_castleRegenIcon == null)
             {
                 // Fallback: create the icon element dynamically if not present in UXML
                 _castleRegenIcon = new Label { name = "castle-regen-icon", text = "+" };
                 _castleRegenIcon.AddToClassList("castle-regen-icon");
                 _castleRegenIcon.AddToClassList("hidden");
-                root.Q<VisualElement>("hp-bar-fill")?.parent?.Add(_castleRegenIcon);
+                Root.Q<VisualElement>("hp-bar-fill")?.parent?.Add(_castleRegenIcon);
             }
             else
             {
                 _castleRegenIcon.AddToClassList("hidden");
             }
-            panelGameOver = root.Q<VisualElement>("panel-game-over");
-            panelGameOverTitle = root.Q<Label>("panel-game-over-title");
-            panelGameOverSubtitle = root.Q<Label>("panel-game-over-subtitle");
-            panelVictory = root.Q<VisualElement>("panel-victory");
-            panelVictoryTitle = root.Q<Label>("panel-victory-title");
-            panelVictorySubtitle = root.Q<Label>("panel-victory-subtitle");
-            btnRestartGo = root.Q<Button>("btn-restart-go");
-            btnRestartVictory = root.Q<Button>("btn-restart-victory");
-            btnMenuGo = root.Q<Button>("btn-menu-go");
-            btnMenuVictory = root.Q<Button>("btn-menu-victory");
-            _confirmRestartPanel = root.Q<VisualElement>("confirm-restart-panel");
-            _confirmRestartYes = root.Q<Button>("btn-confirm-restart-yes");
-            _confirmRestartNo = root.Q<Button>("btn-confirm-restart-no");
+            panelGameOver = Root.Q<VisualElement>("panel-game-over");
+            panelGameOverTitle = Root.Q<Label>("panel-game-over-title");
+            panelGameOverSubtitle = Root.Q<Label>("panel-game-over-subtitle");
+            panelVictory = Root.Q<VisualElement>("panel-victory");
+            panelVictoryTitle = Root.Q<Label>("panel-victory-title");
+            panelVictorySubtitle = Root.Q<Label>("panel-victory-subtitle");
+            btnRestartGo = Root.Q<Button>("btn-restart-go");
+            btnRestartVictory = Root.Q<Button>("btn-restart-victory");
+            btnMenuGo = Root.Q<Button>("btn-menu-go");
+            btnMenuVictory = Root.Q<Button>("btn-menu-victory");
+            _confirmRestartPanel = Root.Q<VisualElement>("confirm-restart-panel");
+            _confirmRestartYes = Root.Q<Button>("btn-confirm-restart-yes");
+            _confirmRestartNo = Root.Q<Button>("btn-confirm-restart-no");
 
-            waveLaunchBtn = root.Q<VisualElement>("wave-launch-btn");
-            waveLaunchPill = root.Q<VisualElement>("wave-launch-pill");
-            waveLaunchLabel = root.Q<Label>("wave-launch-label");
-            waveLaunchSub = root.Q<Label>("wave-launch-sub");
-            waveLaunchStreak = root.Q<VisualElement>("wave-launch-streak");
-            waveLaunchStreakText = root.Q<Label>("wave-launch-streak-text");
-            waveLaunchPillText = root.Q<Label>("wave-launch-pill-text");
+            waveLaunchBtn = Root.Q<VisualElement>("wave-launch-btn");
+            waveLaunchPill = Root.Q<VisualElement>("wave-launch-pill");
+            waveLaunchLabel = Root.Q<Label>("wave-launch-label");
+            waveLaunchSub = Root.Q<Label>("wave-launch-sub");
+            waveLaunchStreak = Root.Q<VisualElement>("wave-launch-streak");
+            waveLaunchStreakText = Root.Q<Label>("wave-launch-streak-text");
+            waveLaunchPillText = Root.Q<Label>("wave-launch-pill-text");
 
-            heroPanel = root.Q<VisualElement>("hero-panel");
-            heroHpLabel = root.Q<Label>("hero-hp-label");
-            heroLevelLabel = root.Q<Label>("hero-level");
-            heroXpLabel = root.Q<Label>("hero-xp-label");
-            heroXpBarFill = root.Q<VisualElement>("hero-xp-bar-fill");
-            heroXpValue = root.Q<Label>("hero-xp-value");
-            heroUltLabel = root.Q<Label>("hero-ult-label");
-            ultBtn = root.Q<VisualElement>("ult-btn");
-            ultRingLeft = root.Q<VisualElement>("ult-ring-left");
-            ultRingRight = root.Q<VisualElement>("ult-ring-right");
+            heroPanel = Root.Q<VisualElement>("hero-panel");
+            heroHpLabel = Root.Q<Label>("hero-hp-label");
+            heroLevelLabel = Root.Q<Label>("hero-level");
+            heroXpLabel = Root.Q<Label>("hero-xp-label");
+            heroXpBarFill = Root.Q<VisualElement>("hero-xp-bar-fill");
+            heroXpValue = Root.Q<Label>("hero-xp-value");
+            heroUltLabel = Root.Q<Label>("hero-ult-label");
+            ultBtn = Root.Q<VisualElement>("ult-btn");
+            ultRingLeft = Root.Q<VisualElement>("ult-ring-left");
+            ultRingRight = Root.Q<VisualElement>("ult-ring-right");
 
-            keyboardHintsLabel = root.Q<Label>("keyboard-hints-label");
-            waveKillCounter = root.Q<Label>("wave-kill-counter");
-            waveTimeLabel = root.Q<Label>("wave-time");
-            BuildEnemyCountLabel(root);
-            bluePillBtn = root.Q<Button>("bluepill-btn");
-            _comboMultiplierLabel = root.Q<Label>("combo-multiplier-label");
-            _bankLabel = root.Q<Label>("bank-label");
-            _bankTooltip = root.Q<VisualElement>("bank-tooltip");
+            keyboardHintsLabel = Root.Q<Label>("keyboard-hints-label");
+            waveKillCounter = Root.Q<Label>("wave-kill-counter");
+            waveTimeLabel = Root.Q<Label>("wave-time");
+            BuildEnemyCountLabel(Root);
+            bluePillBtn = Root.Q<Button>("bluepill-btn");
+            _comboMultiplierLabel = Root.Q<Label>("combo-multiplier-label");
+            _bankLabel = Root.Q<Label>("bank-label");
+            _bankTooltip = Root.Q<VisualElement>("bank-tooltip");
 
-            BuildBossHpBar(root);
-            BuildBossIntroBanner(root);
-            BuildWaveProgressDots(root);
-            BindWavePreview(root);
+            BuildBossHpBar(Root);
+            BuildBossIntroBanner(Root);
+            BuildWaveProgressDots(Root);
+            BindWavePreview(Root);
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "$0";
             if (waveValue != null) waveValue.text = "—";
             if (hpValue != null) hpValue.text = "—";
+
+            WireCallbacks();
+            SubscribeSystems();
         }
 
         private void WireCallbacks()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null)
-            {
-                Debug.LogError("[HudController] UIDocument component not found in WireCallbacks");
-                return;
-            }
-            var root = uiDoc.rootVisualElement;
-            if (root == null)
-            {
-                Debug.LogError("[HudController] rootVisualElement is null in WireCallbacks — UXML failed to load");
-                return;
-            }
-
             ultBtn?.RegisterCallback<ClickEvent>(_ => TryCastUlt());
             bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
             btnRestartGo?.RegisterCallback<ClickEvent>(_ => ShowRestartConfirm());
@@ -302,8 +279,8 @@ namespace CrowdDefense.UI
             btnMenuGo?.RegisterCallback<ClickEvent>(_ => GoToMenu());
             btnMenuVictory?.RegisterCallback<ClickEvent>(_ => GoToMenu());
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
-            root.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
-            root.Q<Button>("btn-settings")?.RegisterCallback<ClickEvent>(_ => _settingsCtrl?.Show());
+            Root?.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
+            Root?.Q<Button>("btn-settings")?.RegisterCallback<ClickEvent>(_ => _settingsCtrl?.Show());
 
             _bankLabel?.RegisterCallback<MouseEnterEvent>(_ => ShowBankTooltip());
             _bankLabel?.RegisterCallback<MouseLeaveEvent>(_ => HideBankTooltip());

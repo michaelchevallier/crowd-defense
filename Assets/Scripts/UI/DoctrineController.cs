@@ -7,8 +7,7 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class DoctrineController : MonoBehaviour
+    public class DoctrineController : UIControllerBase
     {
         private VisualElement? _doctrineRoot;
         private Label? _titleLabel;
@@ -21,19 +20,19 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
 
-            var root = uiDoc.rootVisualElement;
-
-            if (root == null) return;
-            _doctrineRoot  = root.Q<VisualElement>("doctrine-root");
-            _titleLabel    = root.Q<Label>("doctrine-title");
-            _activeLabel   = root.Q<Label>("doctrine-active-label");
-            _listContainer = root.Q<VisualElement>("doctrine-list");
-            _gemsLabel     = root.Q<Label>("doctrine-gems-label");
-            _closeBtn      = root.Q<Button>("doctrine-close-btn");
+            _doctrineRoot  = Root.Q<VisualElement>("doctrine-root");
+            _titleLabel    = Root.Q<Label>("doctrine-title");
+            _activeLabel   = Root.Q<Label>("doctrine-active-label");
+            _listContainer = Root.Q<VisualElement>("doctrine-list");
+            _gemsLabel     = Root.Q<Label>("doctrine-gems-label");
+            _closeBtn      = Root.Q<Button>("doctrine-close-btn");
 
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Hide());
 

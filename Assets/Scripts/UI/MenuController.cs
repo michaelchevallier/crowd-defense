@@ -5,8 +5,7 @@ using UnityEngine.UIElements;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class MenuController : MonoBehaviour
+    public class MenuController : UIControllerBase
     {
         public static MenuController? Instance { get; private set; }
 
@@ -15,8 +14,6 @@ namespace CrowdDefense.UI
         private Button? _btnSettings;
         private Button? _btnQuit;
         private Button? _btnTalents;
-
-        private VisualElement? _root;
 
         // ── Demo mode ────────────────────────────────────────────────────────
         private const float IdleTimeoutSeconds = 60f;
@@ -33,24 +30,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null)
-            {
-                Debug.LogError("[MenuController] UIDocument component not found");
-                return;
-            }
-            _root = uiDoc.rootVisualElement;
-            if (_root == null)
-            {
-                Debug.LogError("[MenuController] rootVisualElement is null — Menu UXML failed to load");
-                return;
-            }
+            ResolveUI();
+        }
 
-            _btnContinue = _root.Q<Button>("btn-continue");
-            _btnNewRun   = _root.Q<Button>("btn-newrun");
-            _btnSettings = _root.Q<Button>("btn-settings");
-            _btnQuit     = _root.Q<Button>("btn-quit");
-            _btnTalents  = _root.Q<Button>("btn-talents");
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+
+            _btnContinue = Root.Q<Button>("btn-continue");
+            _btnNewRun   = Root.Q<Button>("btn-newrun");
+            _btnSettings = Root.Q<Button>("btn-settings");
+            _btnQuit     = Root.Q<Button>("btn-quit");
+            _btnTalents  = Root.Q<Button>("btn-talents");
 
             if (_btnContinue != null) _btnContinue.clicked += OnContinue;
             if (_btnNewRun   != null) _btnNewRun.clicked   += OnNewRun;
