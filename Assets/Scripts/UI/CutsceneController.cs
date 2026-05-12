@@ -126,18 +126,31 @@ namespace CrowdDefense.UI
             _typewriteCoroutine = StartCoroutine(TypewriteLine(fullText));
         }
 
+        private IEnumerator FadeIn()
+        {
+            float elapsed = 0f;
+            while (elapsed < FadeInDuration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                if (_panel != null)
+                    _panel.style.opacity = Mathf.Clamp01(elapsed / FadeInDuration);
+                yield return null;
+            }
+            if (_panel != null)
+                _panel.style.opacity = 1f;
+        }
+
         private IEnumerator TypewriteLine(string text)
         {
             _typewriting = true;
             if (_textLabel    != null) _textLabel.text = "";
             if (_continueHint != null) _continueHint.AddToClassList("hidden");
 
-            float delay = 1f / TypewriteSpeed;
             for (int i = 1; i <= text.Length; i++)
             {
                 if (_textLabel != null)
                     _textLabel.text = text.Substring(0, i);
-                yield return new WaitForSecondsRealtime(delay);
+                yield return new WaitForSecondsRealtime(TypewriteDelay);
             }
 
             _typewriting = false;
@@ -150,7 +163,10 @@ namespace CrowdDefense.UI
             if (_currentDef == null || _panel == null) return;
             if (_panel.ClassListContains("hidden")) return;
 
-            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetMouseButtonDown(0)
+                || Input.GetKeyDown(KeyCode.Space)
+                || Input.GetKeyDown(KeyCode.Return)
+                || Input.GetKeyDown(KeyCode.Escape))
                 Advance();
         }
 
