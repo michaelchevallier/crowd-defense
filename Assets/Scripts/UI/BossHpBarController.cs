@@ -191,7 +191,7 @@ namespace CrowdDefense.UI
         [ContextMenu("Test BossHpBar — 75%")]
         private void TestBar()
         {
-            OnEncountered(new BossEncounteredEvent("TITAN INFERNAL", 5000f, Color.red, Vector3.zero));
+            OnEncountered(new BossEncounteredEvent("TITAN INFERNAL", 5000f, Color.red, Vector3.zero, System.Array.Empty<string>()));
             OnHpChanged(new BossHpChangedEvent(0.75f));
         }
 #endif

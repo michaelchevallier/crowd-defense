@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Common;
 using CrowdDefense.Systems;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.UI
 {
@@ -12,11 +13,20 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class BossUI : MonoBehaviour
     {
+        private const float LineFadeIn    = 0.5f;
+        private const float LineDelay     = 0.6f;
+        private const float AutoCloseTime = 5f;
+        private const float FadeOutTime   = 0.35f;
+        private const float BloomPeak     = 3.5f;
+        private const float BloomDecay    = 1.8f;
+
         private VisualElement? _banner;
         private Label? _bannerName;
         private VisualElement? _bannerFill;
         private VisualElement? _cutscene;
-        private Label? _cutsceneText;
+        private VisualElement? _cutsceneDim;
+        private readonly Label?[] _lines = new Label?[4];
+        private Button? _skipBtn;
         private VisualElement? _vignette;
 
         private Coroutine? _cutsceneCo;
@@ -25,21 +35,25 @@ namespace CrowdDefense.UI
         private void Start()
         {
             var uiDoc = GetComponent<UIDocument>();
-
             if (uiDoc == null) return;
-
             var root = uiDoc.rootVisualElement;
-
             if (root == null) return;
-            _banner = root.Q<VisualElement>("boss-banner");
+
+            _banner     = root.Q<VisualElement>("boss-banner");
             _bannerName = root.Q<Label>("boss-banner-name");
             _bannerFill = root.Q<VisualElement>("boss-banner-fill");
-            _cutscene = root.Q<VisualElement>("boss-cutscene");
-            _cutsceneText = root.Q<Label>("boss-cutscene-text");
-            _vignette = root.Q<VisualElement>("danger-vignette");
+            _cutscene   = root.Q<VisualElement>("boss-cutscene");
+            _cutsceneDim = root.Q<VisualElement>("boss-cutscene-dim");
+            for (int i = 0; i < 4; i++)
+                _lines[i] = root.Q<Label>($"boss-cutscene-line{i}");
+            _skipBtn    = root.Q<Button>("boss-cutscene-skip");
+            _vignette   = root.Q<VisualElement>("danger-vignette");
+
+            if (_skipBtn != null) _skipBtn.clicked += SkipCutscene;
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (_banner == null) Debug.LogError("[BossUI] 'boss-banner' not found in UXML — check HUD.uxml");
+            if (_cutscene == null) Debug.LogError("[BossUI] 'boss-cutscene' not found in UXML");
 #endif
 
             var em = EventManager.Instance;
@@ -53,6 +67,7 @@ namespace CrowdDefense.UI
 
         private void OnDestroy()
         {
+            if (_skipBtn != null) _skipBtn.clicked -= SkipCutscene;
             var em = EventManager.Instance;
             if (em == null) return;
             em.Unsubscribe<BossEncounteredEvent>(OnEncountered);
@@ -72,28 +87,144 @@ namespace CrowdDefense.UI
                 _bannerFill.style.width = new Length(100f, LengthUnit.Percent);
                 _bannerFill.style.backgroundColor = e.AuraColor;
             }
-
             SetVisible(_banner, true);
             _banner.AddToClassList("show");
 
-            if (_cutsceneText != null) _cutsceneText.text = $"! {e.DisplayName.ToUpper()} !";
-            if (_cutscene != null) SetVisible(_cutscene, true);
+            if (_cutsceneCo != null) StopCoroutine(_cutsceneCo);
+            _cutsceneCo = StartCoroutine(RunCutscene(e.DisplayName, e.CutsceneLines));
+        }
 
-            // Pause game for cutscene — use timeScale=0 + WaitForSecondsRealtime (R3)
+        // ── Cutscene coroutine ────────────────────────────────────────────────────
+
+        private IEnumerator RunCutscene(string displayName, string[] customLines)
+        {
+            if (_cutscene == null) yield break;
+
+            string[] lines = BuildLines(displayName, customLines);
+
+            // Reset line visibility
+            for (int i = 0; i < 4; i++)
+                ResetLine(i);
+
+            SetVisible(_cutscene, true);
+            if (_skipBtn != null) SetVisible((VisualElement)_skipBtn, true);
+
             Time.timeScale = 0f;
 
-            if (_cutsceneCo != null) StopCoroutine(_cutsceneCo);
-            _cutsceneCo = StartCoroutine(EndCutsceneAfter(2.0f));
-        }
+            // Bloom burst on boss spawn
+            PostProcessController.Instance?.SetBloomIntensity(BloomPeak);
+            StartCoroutine(DecayBloom());
 
-        private IEnumerator EndCutsceneAfter(float realSeconds)
-        {
-            // R3: WaitForSecondsRealtime is unaffected by timeScale=0
-            yield return new WaitForSecondsRealtime(realSeconds);
-            if (_cutscene != null) SetVisible(_cutscene, false);
-            Time.timeScale = 1f;
+            // Fade in lines sequentially
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (_lines[i] != null)
+                {
+                    _lines[i]!.text = lines[i];
+                    SetVisible(_lines[i]!, true);
+                    yield return StartCoroutine(FadeLine(_lines[i]!, 0f, 1f, LineFadeIn, unscaled: true));
+                }
+                yield return new WaitForSecondsRealtime(LineDelay - LineFadeIn);
+            }
+
+            // Hold remaining time up to AutoCloseTime (counted from cutscene start)
+            float elapsed = lines.Length * LineDelay;
+            float remaining = AutoCloseTime - elapsed;
+            if (remaining > 0f) yield return new WaitForSecondsRealtime(remaining);
+
+            yield return StartCoroutine(FadeOutCutscene());
             _cutsceneCo = null;
         }
+
+        private void SkipCutscene()
+        {
+            if (_cutsceneCo != null) { StopCoroutine(_cutsceneCo); _cutsceneCo = null; }
+            StartCoroutine(FadeOutCutscene());
+        }
+
+        private IEnumerator FadeOutCutscene()
+        {
+            if (_cutsceneDim != null)
+                yield return StartCoroutine(FadeElement(_cutsceneDim, 1f, 0f, FadeOutTime, unscaled: true));
+            CloseCutscene();
+        }
+
+        private void CloseCutscene()
+        {
+            if (_cutscene != null) SetVisible(_cutscene, false);
+            if (_skipBtn != null) SetVisible((VisualElement)_skipBtn, false);
+            if (_cutsceneDim != null) _cutsceneDim.style.opacity = 1f;
+            Time.timeScale = 1f;
+        }
+
+        // ── Bloom helpers ─────────────────────────────────────────────────────────
+
+        private IEnumerator DecayBloom()
+        {
+            float t = 0f;
+            while (t < BloomDecay)
+            {
+                t += Time.unscaledDeltaTime;
+                float v = Mathf.Lerp(BloomPeak, 0.5f, t / BloomDecay);
+                PostProcessController.Instance?.SetBloomIntensity(v);
+                yield return null;
+            }
+            PostProcessController.Instance?.SetBloomIntensity(0.5f);
+        }
+
+        // ── Fade helpers ──────────────────────────────────────────────────────────
+
+        private static IEnumerator FadeLine(VisualElement el, float from, float to, float dur, bool unscaled)
+        {
+            el.style.opacity = from;
+            float t = 0f;
+            while (t < dur)
+            {
+                t += unscaled ? Time.unscaledDeltaTime : Time.deltaTime;
+                el.style.opacity = Mathf.Lerp(from, to, Mathf.Clamp01(t / dur));
+                yield return null;
+            }
+            el.style.opacity = to;
+        }
+
+        private static IEnumerator FadeElement(VisualElement el, float from, float to, float dur, bool unscaled)
+        {
+            el.style.opacity = from;
+            float t = 0f;
+            while (t < dur)
+            {
+                t += unscaled ? Time.unscaledDeltaTime : Time.deltaTime;
+                el.style.opacity = Mathf.Lerp(from, to, Mathf.Clamp01(t / dur));
+                yield return null;
+            }
+            el.style.opacity = to;
+        }
+
+        private void ResetLine(int i)
+        {
+            if (_lines[i] == null) return;
+            _lines[i]!.style.opacity = 0f;
+            _lines[i]!.text = "";
+            SetVisible(_lines[i]!, false);
+        }
+
+        // ── Line content ──────────────────────────────────────────────────────────
+
+        private static string[] BuildLines(string displayName, string[] custom)
+        {
+            string name = displayName.ToUpper();
+            if (custom is { Length: > 0 })
+            {
+                // Pad to 4 entries
+                var result = new string[4];
+                for (int i = 0; i < 4; i++)
+                    result[i] = i < custom.Length ? custom[i] : "";
+                return result;
+            }
+            return new[] { "BOSS", name, "Preparez-vous !", "" };
+        }
+
+        // ── Banner / HP / Phase / Charge / Defeated ───────────────────────────────
 
         private void OnHpChanged(BossHpChangedEvent e)
         {
@@ -105,7 +236,6 @@ namespace CrowdDefense.UI
         {
             if (e.PhaseIdx >= 1)
             {
-                // Enraged / desperate: flash danger vignette
                 if (_chargeCo != null) StopCoroutine(_chargeCo);
                 _chargeCo = StartCoroutine(VignetteFlash(0.8f));
             }
@@ -137,11 +267,8 @@ namespace CrowdDefense.UI
 
         private void OnDefeated(BossDefeatedEvent _)
         {
-            // Stop any running coroutines
             if (_cutsceneCo != null) { StopCoroutine(_cutsceneCo); _cutsceneCo = null; }
             if (_chargeCo != null) { StopCoroutine(_chargeCo); _chargeCo = null; }
-
-            // Restore timeScale in case boss died during cutscene
             if (Time.timeScale == 0f) Time.timeScale = 1f;
 
             if (_banner != null)
@@ -163,5 +290,14 @@ namespace CrowdDefense.UI
             if (visible) el.RemoveFromClassList("hidden");
             else el.AddToClassList("hidden");
         }
+
+#if UNITY_EDITOR
+        [ContextMenu("Test Boss Cutscene")]
+        private void TestCutscene()
+        {
+            if (_cutsceneCo != null) StopCoroutine(_cutsceneCo);
+            _cutsceneCo = StartCoroutine(RunCutscene("TITAN INFERNAL", System.Array.Empty<string>()));
+        }
+#endif
     }
 }

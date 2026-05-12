@@ -11,6 +11,7 @@ namespace CrowdDefense.Data
         [SerializeField] private int world = 1;
         [SerializeField] private Color auraColor = Color.red;
         [SerializeField] private string cutsceneSubtitle = "";
+        [SerializeField] private string[] cutsceneLines = System.Array.Empty<string>();
 
         [Header("Phase thresholds (HP ratios)")]
         [SerializeField, Range(0f, 1f)] private float enragedAt = 0.5f;
@@ -25,6 +26,7 @@ namespace CrowdDefense.Data
         public int World => world;
         public Color AuraColor => auraColor;
         public string CutsceneSubtitle => cutsceneSubtitle;
+        public string[] CutsceneLines => cutsceneLines;
         public float EnragedAt => enragedAt;
         public float DesperateAt => desperateAt;
         public float EnragedSpeedMul => enragedSpeedMul;

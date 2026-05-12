@@ -1030,17 +1030,59 @@
 /* === Boss cutscene (fullscreen 2s intro overlay) === */
 .boss-cutscene {
     position: absolute;
+    left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.78);
     align-items: center;
     justify-content: center;
+    flex-direction: column;
 }
 
-.boss-cutscene-text {
-    color: rgb(255, 80, 80);
-    font-size: 56px;
+.boss-cutscene-dim {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.82);
+}
+
+.boss-cutscene-content {
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.boss-cutscene-line {
+    color: rgb(255, 220, 80);
+    font-size: 54px;
     -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    opacity: 0;
+    margin-bottom: 8px;
+}
+
+.boss-cutscene-line--sub {
+    font-size: 34px;
+    color: rgb(220, 180, 140);
+    -unity-font-style: normal;
+}
+
+.boss-cutscene-skip {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 130px;
+    height: 42px;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.35);
+    border-width: 1px;
+    border-radius: 6px;
+    color: rgb(220, 220, 220);
+    font-size: 18px;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     -unity-text-align: middle-center;
 }

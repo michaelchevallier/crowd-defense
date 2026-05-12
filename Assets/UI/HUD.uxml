@@ -139,9 +139,16 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Boss cutscene (fullscreen 2s intro overlay) -->
+        <!-- Boss cutscene (fullscreen intro overlay: 4-line text + skip) -->
         <ui:VisualElement name="boss-cutscene" class="boss-cutscene hidden">
-            <ui:Label text="" name="boss-cutscene-text" class="boss-cutscene-text" />
+            <ui:VisualElement name="boss-cutscene-dim" class="boss-cutscene-dim" />
+            <ui:VisualElement name="boss-cutscene-content" class="boss-cutscene-content">
+                <ui:Label text="" name="boss-cutscene-line0" class="boss-cutscene-line hidden" />
+                <ui:Label text="" name="boss-cutscene-line1" class="boss-cutscene-line hidden" />
+                <ui:Label text="" name="boss-cutscene-line2" class="boss-cutscene-line boss-cutscene-line--sub hidden" />
+                <ui:Label text="" name="boss-cutscene-line3" class="boss-cutscene-line boss-cutscene-line--sub hidden" />
+            </ui:VisualElement>
+            <ui:Button name="boss-cutscene-skip" class="boss-cutscene-skip" text="Passer" />
         </ui:VisualElement>
 
         <!-- Danger vignette (edge flash on enraged / charge) -->

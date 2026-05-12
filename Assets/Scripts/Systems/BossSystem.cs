@@ -84,7 +84,7 @@ namespace CrowdDefense.Systems
             JuiceFX.Instance?.Shake(juice.BossSpawnShakeAmp, Mathf.RoundToInt(juice.BossSpawnShakeDur * 1000f));
             JuiceFX.Instance?.SlowMo(juice.BossSpawnSlowMoScale, juice.BossSpawnSlowMoDurMs);
             EventManager.Instance?.Publish(new BossEncounteredEvent(
-                def.DisplayNameFr, cfg.Hp, def.AuraColor, e.Enemy.transform.position));
+                def.DisplayNameFr, cfg.Hp, def.AuraColor, e.Enemy.transform.position, def.CutsceneLines));
         }
 
         private void LateUpdate()
