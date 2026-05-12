@@ -32,6 +32,7 @@ namespace CrowdDefense.UI
 
         // Tower stats section
         private VisualElement? _towerStatsContainer;
+        private VisualElement? _endlessContainer;
 
         private static readonly string[] AllTowerTypes =
         {
@@ -70,6 +71,7 @@ namespace CrowdDefense.UI
             BuildCareerTotalsSection(ve);
             BuildTowerStatsSection(ve);
             BuildLeaderboardSection(ve);
+            BuildEndlessTop10Section(ve);
         }
 
         private void OnDestroy()
@@ -104,6 +106,7 @@ namespace CrowdDefense.UI
             PopulateRows();
             PopulateTowerStats();
             PopulateLeaderboard();
+            PopulateEndlessTop10();
         }
 
         private void RefreshToday()
@@ -255,6 +258,57 @@ namespace CrowdDefense.UI
                 row.Add(nameLabel);
                 row.Add(valLabel);
                 _towerStatsContainer.Add(row);
+            }
+        }
+
+        private void BuildEndlessTop10Section(VisualElement root)
+        {
+            var anchor = root.Q<VisualElement>("lt-endless-top10") ?? _root ?? root;
+
+            var section = new VisualElement();
+            section.name = "endless-top10-section";
+            section.AddToClassList("lt-section");
+
+            var header = new Label("Endless Top 10");
+            header.AddToClassList("lt-section-header");
+            section.Add(header);
+
+            _endlessContainer = new VisualElement();
+            _endlessContainer.name = "lt-endless-rows";
+            section.Add(_endlessContainer);
+
+            anchor.Add(section);
+        }
+
+        private void PopulateEndlessTop10()
+        {
+            if (_endlessContainer == null) return;
+            _endlessContainer.Clear();
+
+            var em = EndlessMode.Instance;
+            if (em == null)
+            {
+                var empty = new Label("Mode endless non chargé");
+                empty.AddToClassList("lt-lb-empty");
+                _endlessContainer.Add(empty);
+                return;
+            }
+
+            var records = em.GetTopRecords();
+            if (records.Count == 0)
+            {
+                var empty = new Label("Aucune partie endless");
+                empty.AddToClassList("lt-lb-empty");
+                _endlessContainer.Add(empty);
+                return;
+            }
+
+            for (int i = 0; i < records.Count; i++)
+            {
+                var r   = records[i];
+                var lbl = new Label($"{i + 1}. Vague {r.wave}  —  {r.date}");
+                lbl.AddToClassList("lt-lb-entry");
+                _endlessContainer.Add(lbl);
             }
         }
 

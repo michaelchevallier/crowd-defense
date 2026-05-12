@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Common;
@@ -6,9 +7,23 @@ using CrowdDefense.Data;
 
 namespace CrowdDefense.Systems
 {
+    [Serializable]
+    public class EndlessRecord
+    {
+        public int    wave;
+        public string date = "";
+    }
+
+    [Serializable]
+    internal class EndlessRecordStore
+    {
+        public List<EndlessRecord> records = new();
+    }
+
     /// <summary>
     /// Endless mode: generates a procedural LevelData with 40 seed waves, then appends more
     /// on demand. HP and Damage scale *= 1.15^waveIndex. Best wave record saved via HighScores.
+    /// Top-10 wave history saved via PlayerPrefs key cd.endless.records.
     /// </summary>
     public class EndlessMode : MonoSingleton<EndlessMode>
     {
@@ -16,6 +31,8 @@ namespace CrowdDefense.Systems
         private const float ScaleMul = 1.15f;
         private const int SeedWaveCount = 40;
         private const int BaseSpawnRateMs = 900;
+        private const string RecordsKey = "cd.endless.records";
+        private const int MaxRecords = 10;
 
         [SerializeField] private EnemyRegistry? enemyRegistry;
 
@@ -25,12 +42,14 @@ namespace CrowdDefense.Systems
         public bool IsActive { get; private set; }
 
         private int _bestWave;
-        private EnemyType[] _pool = System.Array.Empty<EnemyType>();
+        private EnemyType[] _pool = Array.Empty<EnemyType>();
+        private List<EndlessRecord> _records = new();
 
         protected override void OnAwakeSingleton()
         {
             var hs = HighScores.Instance?.GetHighScore(LevelId);
             _bestWave = hs?.maxWaveReached ?? 0;
+            LoadRecords();
 
             // Consume the pending-run flag set by StartEndless() before the scene transition.
             if (_pendingRun)
@@ -84,6 +103,7 @@ namespace CrowdDefense.Systems
                 _bestWave = waveOneBased;
                 HighScores.Instance?.Record(LevelId, 0f, waveOneBased, 0);
             }
+            AddRecord(waveOneBased);
         }
 
         /// Called by WaveManager.StartNextWave when it reaches the end of the wave list.
@@ -95,6 +115,38 @@ namespace CrowdDefense.Systems
         }
 
         public int BestWave => _bestWave;
+
+        public IReadOnlyList<EndlessRecord> GetTopRecords() => _records;
+
+        // ── Records persistence ───────────────────────────────────────────────────
+
+        private void AddRecord(int wave)
+        {
+            _records.Add(new EndlessRecord
+            {
+                wave = wave,
+                date = DateTime.UtcNow.ToString("yyyy-MM-dd"),
+            });
+            _records.Sort((a, b) => b.wave.CompareTo(a.wave));
+            if (_records.Count > MaxRecords)
+                _records.RemoveRange(MaxRecords, _records.Count - MaxRecords);
+            SaveRecords();
+        }
+
+        private void LoadRecords()
+        {
+            string json = PlayerPrefs.GetString(RecordsKey, "");
+            if (string.IsNullOrEmpty(json)) return;
+            var store = JsonUtility.FromJson<EndlessRecordStore>(json);
+            if (store?.records != null) _records = store.records;
+        }
+
+        private void SaveRecords()
+        {
+            var store = new EndlessRecordStore { records = _records };
+            PlayerPrefs.SetString(RecordsKey, JsonUtility.ToJson(store));
+            PlayerPrefs.Save();
+        }
 
         // ── Wave generation ───────────────────────────────────────────────────────
 
