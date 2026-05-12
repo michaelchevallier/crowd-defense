@@ -282,6 +282,32 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _muzzleFlashPool);
         }
 
+        // Attack stream : 8 sparks distributed along tower → target trajectory, lifetime 0.15s.
+        // Particles spawned at 4 equidistant points (0.2 / 0.4 / 0.6 / 0.8 lerp) + origin, tiny scale.
+        public void SpawnAttackStream(Vector3 from, Vector3 to, Color tint)
+        {
+            if (!IsVfxEnabled() || _sparkPool == null) return;
+            const int Steps = 4;
+            for (int i = 1; i <= Steps; i++)
+            {
+                float t = i / (float)(Steps + 1);
+                var pos = Vector3.Lerp(from, to, t);
+                var ps = _sparkPool.Get();
+                ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+                ps.transform.localScale = Vector3.one * 0.35f; // tiny
+
+                var main = ps.main;
+                main.startLifetime = new ParticleSystem.MinMaxCurve(0.10f, 0.15f);
+                main.startSize     = new ParticleSystem.MinMaxCurve(0.03f, 0.08f);
+
+                var emission = ps.emission;
+                emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 2, 2, 1, 0.01f) });
+
+                ApplyTint(ps, tint);
+                PlayAndAutoRelease(ps, _sparkPool);
+            }
+        }
+
         // Impact spark burst — 8 particles, cone outward 0.5 unit, lifetime 0.2s, tinted by element.
         public void SpawnSpark(Vector3 worldPos, Color tint)
         {

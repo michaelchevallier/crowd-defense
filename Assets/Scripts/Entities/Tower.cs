@@ -1020,6 +1020,7 @@ namespace CrowdDefense.Entities
                     cfg.ProjectileColor);
                 _lastMuzzleFlashAt = Time.time;
             }
+            VfxPool.Instance?.SpawnAttackStream(muzzlePos, t.transform.position, cfg.ProjectileColor);
             if (_animator != null) _animator.SetTrigger("attackTrigger");
             if (!_recoiling) StartCoroutine(RecoilRoutine());
             _lastFireAt = Time.time;
