@@ -62,7 +62,7 @@ namespace CrowdDefense.Visual
 
         private readonly List<MeshRenderer> _waterRenderers = new();
         private readonly List<MeshRenderer> _lavaRenderers  = new();
-        private readonly MaterialPropertyBlock _mpb = new();
+        private MaterialPropertyBlock? _mpb;
 
         private const float FrameInterval = 1f / 8f;  // 125 ms
         private float _frameTimer;
@@ -190,6 +190,7 @@ namespace CrowdDefense.Visual
             foreach (var mr in _waterRenderers)
             {
                 if (mr == null) continue;
+                _mpb ??= new MaterialPropertyBlock();
                 mr.GetPropertyBlock(_mpb);
                 _mpb.SetColor("_BaseColor", color);
                 mr.SetPropertyBlock(_mpb);
@@ -210,6 +211,7 @@ namespace CrowdDefense.Visual
             foreach (var mr in _lavaRenderers)
             {
                 if (mr == null) continue;
+                _mpb ??= new MaterialPropertyBlock();
                 mr.GetPropertyBlock(_mpb);
                 _mpb.SetColor("_BaseColor", baseColor);
                 _mpb.SetColor("_EmissionColor", emissive);
