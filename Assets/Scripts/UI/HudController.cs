@@ -6,6 +6,7 @@ using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 using CrowdDefense.Systems;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.UI
 {
@@ -677,17 +678,19 @@ namespace CrowdDefense.UI
             if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
             if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
 
-            // (step, pitch, volMul)
-            var steps = new (string text, float pitch, float vol)[]
+            // (text, pitch, vol, color)
+            static Color HexColor(float r, float g, float b) => new Color(r, g, b, 1f);
+            var goGold = HexColor(1f, 0.84f, 0f);
+            var steps = new (string text, float pitch, float vol, Color color)[]
             {
-                ("3",   0.8f, 1.0f),
-                ("2",   0.9f, 1.0f),
-                ("1",   1.0f, 1.0f),
-                ("GO!", 1.2f, 1.2f),
+                ("3",   0.70f, 1.0f, Color.white),
+                ("2",   0.85f, 1.0f, Color.white),
+                ("1",   1.00f, 1.0f, Color.white),
+                ("GO!", 1.30f, 1.2f, goGold),
             };
-            foreach (var (text, pitch, vol) in steps)
+            foreach (var (text, pitch, vol, color) in steps)
             {
-                ShowWaveCountdown(text);
+                ShowWaveCountdown(text, color);
                 var ac = AudioController.Instance;
                 if (ac != null)
                 {
@@ -695,6 +698,18 @@ namespace CrowdDefense.UI
                         ac.PlayPitched("countdown_beep", vol, pitch);
                     else
                         ac.PlayPitched("ui_click", vol, pitch);
+                }
+                // On GO! fire a particle burst at screen center (world pos via camera)
+                if (text == "GO!")
+                {
+                    var cam = Camera.main;
+                    var vfx = VfxPool.Instance;
+                    if (cam != null && vfx != null)
+                    {
+                        var screenCenter = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 10f);
+                        var worldCenter  = cam.ScreenToWorldPoint(screenCenter);
+                        vfx.SpawnUpgradeBurst(worldCenter, 3);
+                    }
                 }
                 yield return new WaitForSecondsRealtime(1f);
             }
@@ -840,39 +855,114 @@ namespace CrowdDefense.UI
             _waveCountdownLabel.style.left           = new Length(50f, LengthUnit.Percent);
             _waveCountdownLabel.style.translate      = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
             _waveCountdownLabel.style.fontSize       = new Length(120f, LengthUnit.Pixel);
-            _waveCountdownLabel.style.color          = new StyleColor(new Color(1f, 0.84f, 0f));
+            _waveCountdownLabel.style.color          = new StyleColor(Color.white);
             _waveCountdownLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
             _waveCountdownLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
-            _waveCountdownLabel.style.textShadow     = new TextShadow { color = new Color(0f, 0f, 0f, 0.85f), offset = new Vector2(4f, 4f), blurRadius = 8f };
+            // Thick stroke via layered shadows (black outline 6 px in all 4 diagonal directions)
+            _waveCountdownLabel.style.textShadow     = new TextShadow
+            {
+                color      = new Color(0f, 0f, 0f, 1f),
+                offset     = new Vector2(6f, 6f),
+                blurRadius = 0f
+            };
             _waveCountdownLabel.style.display        = DisplayStyle.None;
-            _waveCountdownLabel.style.alignSelf      = Align.Center;
+            _waveCountdownLabel.style.opacity        = 0f;
+            _waveCountdownLabel.style.scale          = new Scale(new Vector3(0.5f, 0.5f, 1f));
+            // z-order: render above all other HUD elements
+            _waveCountdownLabel.style.zIndex         = 9999;
             root.Add(_waveCountdownLabel);
         }
 
-        private void ShowWaveCountdown(string text)
+        private void ShowWaveCountdown(string text, Color color)
         {
             if (_waveCountdownLabel == null) return;
-            _waveCountdownLabel.text = text;
-            _waveCountdownLabel.style.display  = DisplayStyle.Flex;
-            _waveCountdownLabel.style.opacity  = 1f;
-            _waveCountdownLabel.style.scale    = new Scale(new Vector3(1.3f, 1.3f, 1f));
-            // Trigger scale-down pulse via inline transition over 0.8s
-            _waveCountdownLabel.schedule.Execute(() =>
+
+            // Reset to start state — tiny, transparent, no active transition
+            _waveCountdownLabel.style.transitionProperty  = StyleKeyword.None;
+            _waveCountdownLabel.style.transitionDuration  = StyleKeyword.None;
+            _waveCountdownLabel.style.transitionTimingFunction = StyleKeyword.None;
+            _waveCountdownLabel.text                       = text;
+            _waveCountdownLabel.style.color                = new StyleColor(color);
+            _waveCountdownLabel.style.display              = DisplayStyle.Flex;
+            _waveCountdownLabel.style.opacity              = 0f;
+            _waveCountdownLabel.style.scale                = new Scale(new Vector3(0.5f, 0.5f, 1f));
+
+            var lbl = _waveCountdownLabel;
+
+            // Phase 1 — pop in : scale 0.5→1.3, alpha 0→1 over 100 ms
+            lbl.schedule.Execute(() =>
             {
-                if (_waveCountdownLabel == null) return;
-                _waveCountdownLabel.style.transitionProperty  = new StyleList<StylePropertyName>(new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("scale"), new StylePropertyName("opacity") });
-                _waveCountdownLabel.style.transitionDuration  = new StyleList<TimeValue>(new System.Collections.Generic.List<TimeValue> { new TimeValue(0.8f, TimeUnit.Second), new TimeValue(0.8f, TimeUnit.Second) });
-                _waveCountdownLabel.style.transitionTimingFunction = new StyleList<EasingFunction>(new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseOut), new EasingFunction(EasingMode.EaseIn) });
-                _waveCountdownLabel.style.scale   = new Scale(new Vector3(1f, 1f, 1f));
-                _waveCountdownLabel.style.opacity = 0f;
-            }).ExecuteLater(100);
+                if (lbl == null) return;
+                lbl.style.transitionProperty = new StyleList<StylePropertyName>(
+                    new System.Collections.Generic.List<StylePropertyName>
+                    {
+                        new StylePropertyName("scale"),
+                        new StylePropertyName("opacity")
+                    });
+                lbl.style.transitionDuration = new StyleList<TimeValue>(
+                    new System.Collections.Generic.List<TimeValue>
+                    {
+                        new TimeValue(0.1f, TimeUnit.Second),
+                        new TimeValue(0.1f, TimeUnit.Second)
+                    });
+                lbl.style.transitionTimingFunction = new StyleList<EasingFunction>(
+                    new System.Collections.Generic.List<EasingFunction>
+                    {
+                        new EasingFunction(EasingMode.EaseOut),
+                        new EasingFunction(EasingMode.Linear)
+                    });
+                lbl.style.scale   = new Scale(new Vector3(1.3f, 1.3f, 1f));
+                lbl.style.opacity = 1f;
+            }).ExecuteLater(16); // 1 frame delay so the reset above is committed
+
+            // Phase 2 — settle : scale 1.3→1.0 over 200 ms (starts at 116 ms)
+            lbl.schedule.Execute(() =>
+            {
+                if (lbl == null) return;
+                lbl.style.transitionDuration = new StyleList<TimeValue>(
+                    new System.Collections.Generic.List<TimeValue>
+                    {
+                        new TimeValue(0.2f, TimeUnit.Second),
+                        new TimeValue(0.01f, TimeUnit.Second)
+                    });
+                lbl.style.transitionTimingFunction = new StyleList<EasingFunction>(
+                    new System.Collections.Generic.List<EasingFunction>
+                    {
+                        new EasingFunction(EasingMode.EaseInOut),
+                        new EasingFunction(EasingMode.Linear)
+                    });
+                lbl.style.scale = new Scale(new Vector3(1f, 1f, 1f));
+            }).ExecuteLater(116); // 16 + 100 ms
+
+            // Phase 3 — hold then fade out : alpha 1→0 over 300 ms (starts at 916 ms = 116+200+600 hold)
+            lbl.schedule.Execute(() =>
+            {
+                if (lbl == null) return;
+                lbl.style.transitionDuration = new StyleList<TimeValue>(
+                    new System.Collections.Generic.List<TimeValue>
+                    {
+                        new TimeValue(0.01f, TimeUnit.Second),
+                        new TimeValue(0.3f, TimeUnit.Second)
+                    });
+                lbl.style.transitionTimingFunction = new StyleList<EasingFunction>(
+                    new System.Collections.Generic.List<EasingFunction>
+                    {
+                        new EasingFunction(EasingMode.Linear),
+                        new EasingFunction(EasingMode.EaseIn)
+                    });
+                lbl.style.opacity = 0f;
+            }).ExecuteLater(916);
         }
 
         private void HideWaveCountdown()
         {
             if (_waveCountdownLabel == null) return;
+            _waveCountdownLabel.style.transitionProperty  = StyleKeyword.None;
+            _waveCountdownLabel.style.transitionDuration  = StyleKeyword.None;
+            _waveCountdownLabel.style.transitionTimingFunction = StyleKeyword.None;
             _waveCountdownLabel.style.display = DisplayStyle.None;
-            _waveCountdownLabel.style.opacity = 1f;
+            _waveCountdownLabel.style.opacity = 0f;
+            _waveCountdownLabel.style.scale   = new Scale(new Vector3(0.5f, 0.5f, 1f));
         }
 
         private System.Collections.IEnumerator FlashButtonGreen(VisualElement? btn, float duration)
