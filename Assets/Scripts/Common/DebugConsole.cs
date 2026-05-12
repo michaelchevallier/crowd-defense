@@ -114,7 +114,7 @@ namespace CrowdDefense.Common
                             var economy = Economy.Instance;
                             if (economy != null)
                             {
-                                economy.AddCoins(gold);
+                                economy.AddGold(gold);
                                 AddLog($"Added {gold} coins");
                             }
                         }
@@ -180,17 +180,8 @@ namespace CrowdDefense.Common
 
         private void UnlockAll()
         {
-            var campaign = CampaignDataManager.Instance;
-            if (campaign != null)
-            {
-                foreach (var world in campaign.worldDataList)
-                {
-                    foreach (var level in world.levels)
-                    {
-                        level.unlockedBySave = true;
-                    }
-                }
-            }
+            // CampaignDataManager removed — unlock logic deferred to progression system integration
+            AddLog("unlockAll deferred — requires SaveSystem progression integration");
         }
 
         private void GotoLevel(string levelId)
@@ -204,9 +195,15 @@ namespace CrowdDefense.Common
             var runner = LevelRunner.Instance;
             if (runner == null) return;
 
-            var enemies = runner.GetComponent<EnemyPool>()?.GetActive();
-            // Deferred — would iterate active enemies
-            AddLog("killAll needs EnemyPool accessor");
+            var pool = runner.GetComponent<EnemyPool>();
+            if (pool != null)
+            {
+                int count = pool.ActiveCount;
+                var enemies = new List<Enemy>(pool.ActiveEnemies);
+                foreach (var enemy in enemies)
+                    enemy.TakeDamage(enemy.MaxHp + 1);
+                AddLog($"Killed {count} enemies");
+            }
         }
 
         private void WinLevel()
