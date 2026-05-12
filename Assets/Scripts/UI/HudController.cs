@@ -76,6 +76,10 @@ namespace CrowdDefense.UI
         private Label? _waveCountdownLabel;
         private Coroutine? _countdownCoroutine;
 
+        // Wave progress dots (top-center)
+        private VisualElement? _waveDotsRow;
+        private int _wavesCompleted = 0;
+
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
 
@@ -260,6 +264,7 @@ namespace CrowdDefense.UI
             BuildBossHpBar(root);
             BuildBossIntroBanner(root);
             BuildWaveCountdownLabel(root);
+            BuildWaveProgressDots(root);
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -320,6 +325,7 @@ namespace CrowdDefense.UI
             {
                 _waveManagerSubscribed = true;
                 WaveManager.Instance.OnWaveStart += OnWaveStart;
+                WaveManager.Instance.OnWaveCleared += OnWaveCleared;
                 WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
                 WaveManager.Instance.OnKillCountChanged += OnKillCountChanged;
                 OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
@@ -358,6 +364,7 @@ namespace CrowdDefense.UI
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.OnWaveStart -= OnWaveStart;
+                WaveManager.Instance.OnWaveCleared -= OnWaveCleared;
                 WaveManager.Instance.OnBreakStateChanged -= OnBreakStateChanged;
                 WaveManager.Instance.OnKillCountChanged -= OnKillCountChanged;
             }
@@ -416,6 +423,7 @@ namespace CrowdDefense.UI
             {
                 _waveManagerSubscribed = true;
                 WaveManager.Instance.OnWaveStart += OnWaveStart;
+                WaveManager.Instance.OnWaveCleared += OnWaveCleared;
                 WaveManager.Instance.OnBreakStateChanged += OnBreakStateChanged;
                 WaveManager.Instance.OnKillCountChanged += OnKillCountChanged;
                 OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
@@ -616,6 +624,86 @@ namespace CrowdDefense.UI
             }
         }
 
+        // ── Wave progress dots ────────────────────────────────────────────────
+
+        private void BuildWaveProgressDots(VisualElement root)
+        {
+            _waveDotsRow = new VisualElement { name = "wave-progress-dots" };
+            _waveDotsRow.style.position      = Position.Absolute;
+            _waveDotsRow.style.top           = new Length(6f, LengthUnit.Pixel);
+            _waveDotsRow.style.left          = new Length(50f, LengthUnit.Percent);
+            _waveDotsRow.style.translate     = new Translate(new Length(-50f, LengthUnit.Percent), Length.Auto());
+            _waveDotsRow.style.flexDirection = FlexDirection.Row;
+            _waveDotsRow.style.alignItems    = Align.Center;
+            _waveDotsRow.style.flexWrap      = Wrap.Wrap;
+            _waveDotsRow.style.justifyContent = Justify.Center;
+            _waveDotsRow.style.maxWidth      = new Length(70f, LengthUnit.Percent);
+            root.Add(_waveDotsRow);
+            RefreshWaveDots();
+        }
+
+        private void RefreshWaveDots()
+        {
+            if (_waveDotsRow == null) return;
+            var wm = WaveManager.Instance;
+            int total = wm?.TotalWaves ?? 0;
+            int current = wm?.CurrentWaveIdx ?? 0;
+            int completed = _wavesCompleted;
+
+            _waveDotsRow.Clear();
+            if (total <= 0) return;
+
+            bool endless = LevelRunner.Instance?.IsEndlessRun == true;
+            if (endless) return; // no fixed total in endless mode
+
+            for (int i = 0; i < total; i++)
+            {
+                var dot = new VisualElement();
+                dot.style.width        = new Length(10f, LengthUnit.Pixel);
+                dot.style.height       = new Length(10f, LengthUnit.Pixel);
+                dot.style.marginLeft   = new Length(3f, LengthUnit.Pixel);
+                dot.style.marginRight  = new Length(3f, LengthUnit.Pixel);
+                dot.style.borderTopLeftRadius     = new Length(5f, LengthUnit.Pixel);
+                dot.style.borderTopRightRadius    = new Length(5f, LengthUnit.Pixel);
+                dot.style.borderBottomLeftRadius  = new Length(5f, LengthUnit.Pixel);
+                dot.style.borderBottomRightRadius = new Length(5f, LengthUnit.Pixel);
+                dot.style.borderTopWidth    = dot.style.borderBottomWidth =
+                dot.style.borderLeftWidth   = dot.style.borderRightWidth = 1f;
+
+                if (i < completed)
+                {
+                    // Completed — solid green
+                    dot.style.backgroundColor  = new StyleColor(new Color(0.18f, 0.78f, 0.22f));
+                    dot.style.borderTopColor   = dot.style.borderBottomColor =
+                    dot.style.borderLeftColor  = dot.style.borderRightColor = new StyleColor(new Color(0.1f, 0.55f, 0.15f));
+                    dot.style.opacity = 1f;
+                }
+                else if (i == current)
+                {
+                    // Current wave — pulsing yellow via USS animation class
+                    dot.style.backgroundColor  = new StyleColor(new Color(1f, 0.84f, 0f));
+                    dot.style.borderTopColor   = dot.style.borderBottomColor =
+                    dot.style.borderLeftColor  = dot.style.borderRightColor = new StyleColor(new Color(0.9f, 0.6f, 0f));
+                    dot.AddToClassList("wave-dot-pulse");
+                }
+                else
+                {
+                    // Future — grey
+                    dot.style.backgroundColor  = new StyleColor(new Color(0.35f, 0.35f, 0.35f, 0.75f));
+                    dot.style.borderTopColor   = dot.style.borderBottomColor =
+                    dot.style.borderLeftColor  = dot.style.borderRightColor = new StyleColor(new Color(0.22f, 0.22f, 0.22f, 0.75f));
+                    dot.style.opacity = 0.7f;
+                }
+                _waveDotsRow.Add(dot);
+            }
+        }
+
+        private void OnWaveCleared(int idx)
+        {
+            _wavesCompleted = idx + 1;
+            RefreshWaveDots();
+        }
+
         private void BuildWaveCountdownLabel(VisualElement root)
         {
             _waveCountdownLabel = new Label { name = "wave-countdown-label", text = "" };
@@ -709,6 +797,7 @@ namespace CrowdDefense.UI
 
         private void OnWaveStart(int idx)
         {
+            RefreshWaveDots();
             if (waveValue == null || WaveManager.Instance == null) return;
             bool endless = LevelRunner.Instance?.IsEndlessRun == true;
             waveValue.text = endless

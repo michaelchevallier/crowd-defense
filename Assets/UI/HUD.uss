@@ -1904,3 +1904,16 @@
     border-radius: 3px;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
+
+@keyframes wave-dot-pulse-anim {
+    0%   { scale: 1 1;     opacity: 1; }
+    50%  { scale: 1.35 1.35; opacity: 0.65; }
+    100% { scale: 1 1;     opacity: 1; }
+}
+
+.wave-dot-pulse {
+    animation-name: wave-dot-pulse-anim;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
+}
