@@ -72,6 +72,16 @@ namespace CrowdDefense.Systems
 
             ApplyWorldTheme(world);
 
+            // Overlay topology-aware path tiles on top of the slab floor.
+            var ptc = GetComponentInChildren<PathTilesController>(includeInactive: false);
+            if (ptc == null)
+            {
+                var ptGo = new GameObject("PathTiles");
+                ptGo.transform.SetParent(transform, false);
+                ptc = ptGo.AddComponent<PathTilesController>();
+            }
+            ptc.SpawnPathTiles(grid, _theme);
+
 #if UNITY_EDITOR
             Debug.Log($"[MapRenderer] Spawned slabs for {grid.Width}x{grid.Height} grid, theme={_theme}, world={world}");
 #endif
