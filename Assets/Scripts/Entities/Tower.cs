@@ -130,6 +130,13 @@ namespace CrowdDefense.Entities
         private MaterialPropertyBlock? _affordMpb;
         private float _affordCheckTimer;
 
+        // Upgrade arrow — gold arrow floating/bobbing above tower head when player can afford upgrade
+        private GameObject? _upgradeArrow;
+        private Renderer? _upgradeArrowRenderer;
+        private MaterialPropertyBlock? _upgradeArrowMpb;
+        private float _upgradeArrowCheckTimer;
+        private Vector3 _upgradeArrowBaseLocalPos;
+
         // Tier pip GameObjects (L2 = 2 pips, L3 = 3 pips)
         private readonly List<GameObject> _tierPips = new();
 
@@ -464,6 +471,7 @@ namespace CrowdDefense.Entities
             BuildSynergyHalo();
             BuildAimLine();
             BuildAffordableHighlight(type.Range);
+            BuildUpgradeArrow();
             BuildClusterHighlight();
             BuildDamageIcon(type.DamageType);
             if (type.Behavior == TowerBehavior.CoinPull)
@@ -1636,6 +1644,7 @@ namespace CrowdDefense.Entities
         {
             TickSynergyHalo();
             TickAffordableHighlight();
+            TickUpgradeArrow();
 
             bool isSelected = PlacementController.Instance?.SelectedTower == this;
             bool recentFire = (Time.time - _lastFireAt) < 0.2f;
@@ -1767,6 +1776,62 @@ namespace CrowdDefense.Entities
             int cost = Mathf.RoundToInt(cfg.Cost * mul);
             bool canAfford = Economy.Instance != null && Economy.Instance.Gold >= cost;
             _affordableHighlight.SetActive(canAfford);
+        }
+
+        private void BuildUpgradeArrow()
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "UpgradeArrow";
+            go.transform.SetParent(transform);
+            // Start 2.2 units above tower, faces camera-up (rotated flat then billboarded via Y bob)
+            _upgradeArrowBaseLocalPos = new Vector3(0f, 2.2f, 0f);
+            go.transform.localPosition = _upgradeArrowBaseLocalPos;
+            go.transform.localRotation = Quaternion.Euler(0f, 0f, 0f);
+            go.transform.localScale = new Vector3(0.45f, 0.55f, 1f);
+            Object.Destroy(go.GetComponent<Collider>());
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            // Gold color
+            mat.color = new Color(1f, 0.82f, 0.1f, 1f);
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3000;
+            }
+            _upgradeArrowRenderer = go.GetComponent<Renderer>();
+            if (_upgradeArrowRenderer != null) _upgradeArrowRenderer.material = mat;
+            _upgradeArrowMpb = new MaterialPropertyBlock();
+            go.SetActive(false);
+            _upgradeArrow = go;
+        }
+
+        private void TickUpgradeArrow()
+        {
+            if (_upgradeArrow == null || cfg == null || UpgradeLevel >= 3) return;
+            _upgradeArrowCheckTimer -= Time.deltaTime;
+            if (_upgradeArrowCheckTimer <= 0f)
+            {
+                _upgradeArrowCheckTimer = 0.5f;
+                int cost = GetUpgradeCost();
+                bool canAfford = cost > 0 && Economy.Instance != null && Economy.Instance.Gold >= cost;
+                _upgradeArrow.SetActive(canAfford);
+            }
+
+            if (!_upgradeArrow.activeSelf) return;
+
+            // Bob up/down at 0.5 Hz (1 full cycle / 2 s), amplitude ±0.15
+            float bobY = Mathf.Sin(Time.time * Mathf.PI) * 0.15f; // 0.5 Hz = PI rad/s
+            _upgradeArrow.transform.localPosition = _upgradeArrowBaseLocalPos + new Vector3(0f, bobY, 0f);
+
+            // Pulse alpha 0.7–1.0 in sync with bob
+            if (_upgradeArrowRenderer != null && _upgradeArrowMpb != null)
+            {
+                float alpha = 0.7f + 0.3f * (0.5f + 0.5f * Mathf.Sin(Time.time * Mathf.PI));
+                _upgradeArrowMpb.SetColor("_BaseColor", new Color(1f, 0.82f, 0.1f, alpha));
+                _upgradeArrowRenderer.SetPropertyBlock(_upgradeArrowMpb);
+            }
         }
 
         // ── Head Aim ──────────────────────────────────────────────────────────
