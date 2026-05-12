@@ -353,10 +353,8 @@ namespace CrowdDefense.UI
             float now = Time.unscaledTime;
             if (now - _lastWaveTickTime < 1f) return;
             _lastWaveTickTime = now;
-            int elapsed = Mathf.FloorToInt(now - _waveStartTime);
-            int minutes = elapsed / 60;
-            int seconds = elapsed % 60;
-            waveTimeLabel.text = $"⏱ {minutes}:{seconds:00}";
+            float elapsed = now - _waveStartTime;
+            waveTimeLabel.text = $"⏱ {TimeFormatter.FormatMMSS(elapsed)}";
         }
 
         private void UpdateHeroPanel()

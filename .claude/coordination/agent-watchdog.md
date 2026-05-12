@@ -1,30 +1,32 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 05:35
+## 2026-05-12 05:45
 
 ### Snapshot
 
 - Actifs (<8 min) : 2 (Monitor r19 + current scan)
-- Stalled (8-30 min) : 5 (b* Monitors anciens dead r16/r17/r18 + autres)
+- Stalled (8-30 min) : 5 (b* anciens Monitors r17/r18/r19/r20 dead)
 - Worktrees : 16
-- Unity batch : **YES** PID 9600 (r19 phase CopyFiles 536/571, near WASM compile)
-- Lockfile : assumed present
-- r19 log silence : 2s — HEALTHY
+- Unity batch : **CLEAN** (VBCSCompiler zombies harmless, lockfile stale)
+- Deploy LIVE : `d309eb0` (r19)
 
 ### Killed
 
-0. Aucun. r19 progresse rapidement.
+0. Aucun. Lockfile stale persistera jusqu'au prochain Unity start (auto-cleanup).
 
 ### Sonnet en flight
 
-0. Tous Sonnet polish done (a011/aab8/a58f).
+- ad2fd2428a4de8107 (ParticleSystem cache audit)
+- a4721ed69ab2bb0c8 (BossIntroBanner camera zoom)
 
-### Commits accumulent
+### Commits post-r19 deploy : **3**
 
-- `60d0206` JuiceConfig SO scaffold
-- `4d3cb37` Enemy debug gizmos
-- 7+ commits depuis r18 deploy (98cef7e)
+- `b13849b` Castle damage tiers
+- `3cf24b9` Economy bank tooltip
+- `efa9732` VirtualJoystick deadzone + haptic
+
+Threshold 4+ approche. r20 candidat très prochain.
 
 ### Stdout
 
-`Actifs:2 Stalled:5 Killed:0 Worktrees:16 UnityBatch:YES(PID9600,r19,CopyFiles-536/571) Sonnet:0InFlight`
+`Actifs:2 Stalled:5 Killed:0 Worktrees:16 UnityBatch:CLEAN-stale-lockfile DeployLIVE:d309eb0 CommitsPostR19:3 Sonnet:2InFlight`

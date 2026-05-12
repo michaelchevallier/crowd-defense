@@ -168,7 +168,7 @@ namespace CrowdDefense.UI
                 desc.AddToClassList("ach-desc");
                 card.Add(desc);
             }
-            else if (def.predicateType == AchievementPredicateType.Counter && def.threshold > 1)
+            else if (def.predicateType == AchievementPredicateType.Counter && def.threshold > 0)
             {
                 // Show progress count instead of description.
                 int clamped = Math.Min(counterProgress, def.threshold);
@@ -188,7 +188,11 @@ namespace CrowdDefense.UI
             }
             else
             {
-                var desc = new Label("???");
+                // Predicate (Event) locked: show description if not hidden, else "???".
+                string descText = def.hidden || string.IsNullOrEmpty(def.descKey)
+                    ? "???"
+                    : L.Get(def.descKey);
+                var desc = new Label(descText);
                 desc.AddToClassList("ach-desc");
                 card.Add(desc);
             }
