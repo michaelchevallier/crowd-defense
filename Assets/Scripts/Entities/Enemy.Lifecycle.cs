@@ -1,6 +1,7 @@
 #nullable enable
 using UnityEngine;
 using CrowdDefense.Common;
+using CrowdDefense.Systems;
 
 namespace CrowdDefense.Entities
 {

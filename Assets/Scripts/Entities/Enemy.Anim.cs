@@ -377,6 +377,108 @@ namespace CrowdDefense.Entities
             AnimationController.SetWalking(_animator, false);
         }
 
+        // Stealth ring decal — shown when enemy is stealth/cloaked
+        private void EnsureStealthRing()
+        {
+            if (_stealthRingGO != null) return;
+            _stealthRingGO = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            _stealthRingGO.name = "StealthRing";
+            _stealthRingGO.transform.SetParent(transform, false);
+            _stealthRingGO.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            _stealthRingGO.transform.localPosition = new Vector3(0f, 0.04f, 0f);
+            _stealthRingGO.transform.localScale    = Vector3.one * (StealthRingRadius * 2f);
+            Destroy(_stealthRingGO.GetComponent<Collider>());
+            _stealthRingMR = _stealthRingGO.GetComponent<MeshRenderer>();
+            if (_stealthRingMR != null)
+            {
+                var mat = new Material(ShaderUtil.GetLitShader());
+                mat.SetFloat("_Surface", 1f);
+                mat.renderQueue = 3000;
+                mat.color = new Color(1f, 0.53f, 0.13f, 0.7f);
+                _stealthRingMR.material = mat;
+                _stealthRingMR.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                _stealthRingMR.receiveShadows = false;
+            }
+        }
+
+        // Boss skin phase (apocalypse visual: scale + tint + emission). phase 1=default, 2=darkred, 3=fire.
+        public void ApplyBossPhase(int phase)
+        {
+            if (_cachedRenderers == null || _mpb == null) return;
+            if (_bossPhase == phase) return;
+            _bossPhase = phase;
+
+            float scaleMul;
+            Color tint;
+            Color emission;
+
+            string bossId = cfg?.Id ?? "";
+            if (AssetVariants.BossTints.TryGetValue((bossId, phase), out Color registryTint))
+            {
+                scaleMul = phase switch { 2 => 1.15f, 3 => 1.3f, 4 => 1.4f, _ => 1f };
+                tint     = registryTint;
+                emission = phase >= 2 ? registryTint * 0.35f : Color.black;
+            }
+            else
+            {
+                switch (phase)
+                {
+                    case 2:
+                        scaleMul = 1.15f;
+                        tint     = new Color(0.7f, 0.3f, 0.3f);
+                        emission = new Color(0.3f, 0f, 0f);
+                        break;
+                    case 3:
+                        scaleMul = 1.3f;
+                        tint     = new Color(1f, 0.4f, 0.1f);
+                        emission = new Color(0.8f, 0.24f, 0f);
+                        break;
+                    default:
+                        scaleMul = 1f;
+                        tint     = baseColor;
+                        emission = Color.black;
+                        break;
+                }
+            }
+
+            float eliteMul = _isElite ? (_bossBaseScale > 0f ? transform.localScale.x / _bossBaseScale : 1f) : 1f;
+            transform.localScale = Vector3.one * (_bossBaseScale * scaleMul * eliteMul);
+
+            _bossPhaseEmission = emission;
+            if (_bossTintLerp != null) StopCoroutine(_bossTintLerp);
+            _bossTintLerp = StartCoroutine(LerpBossTint(tint, emission, 0.3f));
+
+            if (phase == 3)
+                VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.8f, 1.8f);
+        }
+
+        private IEnumerator LerpBossTint(Color target, Color emission, float dur)
+        {
+            if (_cachedRenderers == null || _mpb == null) yield break;
+            Color from = _currentBossTint;
+            float t    = 0f;
+            while (t < dur)
+            {
+                t += Time.deltaTime;
+                Color c = Color.Lerp(from, target, t / dur);
+                _mpb.SetColor(_baseColorId, c);
+                _mpb.SetColor(_colorId,     c);
+                if (_hitFlashTimer <= 0f)
+                    _mpb.SetColor(_emissiveId, Color.Lerp(Color.black, emission, t / dur));
+                for (int i = 0; i < _cachedRenderers.Length; i++)
+                    _cachedRenderers[i].SetPropertyBlock(_mpb);
+                yield return null;
+            }
+            _currentBossTint = target;
+            _mpb.SetColor(_baseColorId, target);
+            _mpb.SetColor(_colorId,     target);
+            if (_hitFlashTimer <= 0f)
+                _mpb.SetColor(_emissiveId, emission);
+            for (int i = 0; i < _cachedRenderers.Length; i++)
+                _cachedRenderers[i].SetPropertyBlock(_mpb);
+            _bossTintLerp = null;
+        }
+
         // ── Castle reached ────────────────────────────────────────────────────
 
         private const float AttackTelegraphDuration = 0.5f;

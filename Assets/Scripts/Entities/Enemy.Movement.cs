@@ -57,5 +57,17 @@ namespace CrowdDefense.Entities
                 OnReachedCastle();
         }
 
+        // Used by EnemyPathingSystem batched movement tick
+        public float GetEffectiveSpeed() => ComputeEffectiveSpeed();
+
+        // Used by EnemyPathingSystem — advances waypoint index after position is applied externally
+        public void AdvanceWaypoint()
+        {
+            if (pathManager == null || cfg == null) return;
+            int wpCount = pathManager.WaypointCountOnPath(pathIdx);
+            if (currentWaypoint < wpCount)
+                currentWaypoint++;
+        }
+
     }
 }

@@ -285,5 +285,29 @@ namespace CrowdDefense.Entities
             int steps = Mathf.Max(1, Mathf.RoundToInt(strength));
             currentWaypoint = Mathf.Max(1, currentWaypoint - steps);
         }
+
+        // AoE attack on castle — splash damage to nearby towers within radius
+        private void SplashNearbyTowers(float radius, int splashDmg)
+        {
+            if (PlacementController.Instance == null) return;
+            var towers = PlacementController.Instance.PlacedTowers;
+            float radiusSq = radius * radius;
+            int hit = 0;
+            for (int i = 0; i < towers.Count; i++)
+            {
+                var tower = towers[i];
+                if (tower == null) continue;
+                if ((tower.transform.position - transform.position).sqrMagnitude < radiusSq)
+                {
+                    tower.ReceiveEnemySplash(splashDmg);
+                    hit++;
+                }
+            }
+            VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.4f, radius * 0.5f);
+            AudioController.Instance?.Play3D("boss_roar", transform.position, 0.6f);
+#if UNITY_EDITOR
+            Debug.Log($"[Enemy] AoE attack splash radius={radius} dmg={splashDmg} hit {hit} towers");
+#endif
+        }
     }
 }
