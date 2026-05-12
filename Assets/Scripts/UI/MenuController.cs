@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
@@ -61,6 +62,8 @@ namespace CrowdDefense.UI
             if (_btnTalents  != null) _btnTalents.clicked  += OnTalents;
             if (_btnDaily    != null) _btnDaily.clicked    += OnDaily;
             if (_btnHardcore != null) _btnHardcore.clicked += OnHardcore;
+
+            ApplySeasonalTint();
 
             RefreshHardcoreButton();
 
@@ -242,6 +245,36 @@ namespace CrowdDefense.UI
             }
 
             LevelLoader.GoToMenu();
+        }
+
+        // ── Seasonal tint ────────────────────────────────────────────────────
+
+        private void ApplySeasonalTint()
+        {
+            if (_root == null) return;
+
+            int month = DateTime.Now.Month;
+            Color tint = month switch
+            {
+                12 or 1 or 2 => new Color(0.55f, 0.72f, 0.90f, 0.18f), // winter — cool blue
+                3 or 4 or 5  => new Color(0.45f, 0.78f, 0.40f, 0.15f), // spring — soft green
+                6 or 7 or 8  => new Color(0.95f, 0.70f, 0.22f, 0.15f), // summer — warm orange/yellow
+                _            => new Color(0.80f, 0.48f, 0.15f, 0.16f)  // autumn  — orange/brown
+            };
+
+            var overlay = new VisualElement
+            {
+                name = "seasonal-tint-overlay",
+                pickingMode = PickingMode.Ignore,
+                style =
+                {
+                    position        = Position.Absolute,
+                    left            = 0, right = 0, top = 0, bottom = 0,
+                    backgroundColor = new StyleColor(tint)
+                }
+            };
+
+            _root.Insert(0, overlay);
         }
 
         private void OnDestroy()
