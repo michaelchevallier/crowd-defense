@@ -874,9 +874,8 @@ namespace CrowdDefense.UI
             _waveCountdownLabel.style.display        = DisplayStyle.None;
             _waveCountdownLabel.style.opacity        = 0f;
             _waveCountdownLabel.style.scale          = new Scale(new Vector3(0.5f, 0.5f, 1f));
-            // z-order: render above all other HUD elements
-            _waveCountdownLabel.style.zIndex         = 9999;
             root.Add(_waveCountdownLabel);
+            _waveCountdownLabel.BringToFront();
         }
 
         private void ShowWaveCountdown(string text, Color color)
@@ -1566,7 +1565,6 @@ namespace CrowdDefense.UI
             _waveIntroBanner.style.borderBottomRightRadius = new Length(8f, LengthUnit.Pixel);
             _waveIntroBanner.style.display        = DisplayStyle.None;
             _waveIntroBanner.style.alignItems     = Align.Center;
-            _waveIntroBanner.style.zIndex         = 500;
 
             _waveIntroLabel = new Label { name = "wave-intro-label", text = "" };
             _waveIntroLabel.style.color                   = new StyleColor(Color.white);
