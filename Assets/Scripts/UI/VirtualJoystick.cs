@@ -16,6 +16,7 @@ namespace CrowdDefense.UI
         private const string KJoystickEnabled = "cd.input.joystick";
         private const float  BackgroundRadius  = 40f;   // half of 80px background
         private const float  StickRadius       = 20f;   // half of 40px stick knob
+        private const float  DeadZone          = 0.15f; // ignore input below this threshold
 
         private Canvas?                   _canvas;
         private UnityEngine.UI.Image?     _background;
@@ -114,6 +115,9 @@ namespace CrowdDefense.UI
                     if (!IsTouchOnBackground(t.position)) continue;
                     _touchId  = t.fingerId;
                     _touching = true;
+#if UNITY_ANDROID || UNITY_IOS
+                    Handheld.Vibrate();
+#endif
                     break;
                 }
                 return;
@@ -136,7 +140,8 @@ namespace CrowdDefense.UI
                 float   maxDist  = BackgroundRadius;
                 if (delta.magnitude > maxDist) delta = delta.normalized * maxDist;
 
-                _panDirection = delta / maxDist;           // normalized -1..1
+                Vector2 raw = delta / maxDist;             // normalized -1..1
+                _panDirection = ApplyDeadzoneCurve(raw);
                 if (_stickRect != null)
                     _stickRect.anchoredPosition = delta;
                 return;
@@ -158,6 +163,17 @@ namespace CrowdDefense.UI
             if (_bgRect == null) return Vector2.zero;
             // anchoredPosition is already in screen pixels for ConstantPixelSize scaler at scale 1
             return _bgRect.anchoredPosition;
+        }
+
+        // Dead zone + sub-quadratic smooth curve so small inputs don't move the camera.
+        // Remaps [DeadZone..1] → [0..1] then applies Pow(x, 2) for gentle ramp.
+        private static Vector2 ApplyDeadzoneCurve(Vector2 raw)
+        {
+            float mag = raw.magnitude;
+            if (mag < DeadZone) return Vector2.zero;
+            float remapped = (mag - DeadZone) / (1f - DeadZone); // 0..1
+            float curved   = Mathf.Pow(remapped, 2f);            // sub-quadratic
+            return raw / mag * curved;
         }
 
         private void ResetStick()
