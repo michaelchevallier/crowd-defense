@@ -400,16 +400,21 @@ namespace CrowdDefense.UI
                 }
 
                 // Enemies (red / gold for boss)
-                if (WaveManager.Instance != null)
+                var wm = WaveManager.Instance;
+                if (wm != null)
                 {
-                    foreach (var enemy in WaveManager.Instance.ActiveEnemies)
+                    var enemies = wm.ActiveEnemies;
+                    if (enemies != null)
                     {
-                        if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
-                        bool isBoss = enemy.Config?.IsBoss ?? false;
-                        painter.fillColor = isBoss
-                            ? new Color(1f, 0.82f, 0.25f, 1f)
-                            : new Color(1f, 0.25f, 0.25f, 1f);
-                        DrawDot(painter, W2M(enemy.transform.position, grid, offX, offY, s), isBoss ? 5f : 3f);
+                        foreach (var enemy in enemies)
+                        {
+                            if (enemy == null || !enemy.gameObject.activeInHierarchy) continue;
+                            bool isBoss = enemy.Config?.IsBoss ?? false;
+                            painter.fillColor = isBoss
+                                ? new Color(1f, 0.82f, 0.25f, 1f)
+                                : new Color(1f, 0.25f, 0.25f, 1f);
+                            DrawDot(painter, W2M(enemy.transform.position, grid, offX, offY, s), isBoss ? 5f : 3f);
+                        }
                     }
                 }
 
