@@ -398,70 +398,78 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Help overlay (HelpOverlayController — H or ? key, or btn-help click) -->
-        <ui:Button text="?" name="btn-help" class="help-question-btn" tooltip="Raccourcis [H]" />
+        <!-- Help overlay (HelpOverlayController — F1, H or ? key, or btn-help click) -->
+        <ui:Button text="?" name="btn-help" class="help-question-btn" tooltip="Raccourcis [F1]" />
         <ui:VisualElement name="help-root" class="help-root hidden">
             <ui:VisualElement class="help-panel">
-                <ui:Label text="Raccourcis Clavier" name="help-title" class="help-title" />
+                <ui:Label text="CONTROLES" name="help-title" class="help-title" />
                 <ui:VisualElement class="help-list">
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="ESC" class="help-key" />
-                        <ui:Label text="Pause / Menu" class="help-desc" />
+                        <ui:Label text="Clic case" class="help-key" />
+                        <ui:Label text="Placer une tour" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
                         <ui:Label text="1 - 4" class="help-key" />
                         <ui:Label text="Selectionner type de tour" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
+                        <ui:Label text="N / Espace" class="help-key" />
+                        <ui:Label text="Lancer la vague" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
                         <ui:Label text="Q / W / E" class="help-key" />
                         <ui:Label text="Capacites du heros" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="M" class="help-key" />
-                        <ui:Label text="Couper le son" class="help-desc" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="help-row">
-                        <ui:Label text="Espace" class="help-key" />
-                        <ui:Label text="Controle de vitesse" class="help-desc" />
+                        <ui:Label text="F1 / H / ?" class="help-key" />
+                        <ui:Label text="Cette aide" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
                         <ui:Label text="F3" class="help-key" />
                         <ui:Label text="Overlay debug" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="P" class="help-key" />
-                        <ui:Label text="Afficher chemin ennemis" class="help-desc" />
+                        <ui:Label text="F4" class="help-key" />
+                        <ui:Label text="Couper SFX (dev)" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="H / ?" class="help-key" />
-                        <ui:Label text="Cette aide" class="help-desc" />
+                        <ui:Label text="ESC" class="help-key" />
+                        <ui:Label text="Menu pause" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="P" class="help-key" />
+                        <ui:Label text="Chemin ennemis (debug)" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="M" class="help-key" />
+                        <ui:Label text="Minimap" class="help-desc" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:Label text="Aide-memoire" class="help-title help-memo-title" />
+                <ui:Label text="CONSEILS" class="help-title help-memo-title" />
                 <ui:VisualElement class="help-list">
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="&#127984;" class="help-emoji" />
-                        <ui:Label text="Castle : ton chateau a defendre. HP 0 = defaite." class="help-desc" />
+                        <ui:Label text="&#x1F9F2;" class="help-emoji" />
+                        <ui:Label text="Place une tour Magnet pour aspirer les pieces." class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="&#128284;" class="help-emoji" />
-                        <ui:Label text="Tour : placer cellule vide. Cliquer la tour pour upgrade/vendre." class="help-desc" />
+                        <ui:Label text="&#x2B06;" class="help-emoji" />
+                        <ui:Label text="Au niveau L3, choisis branche DPS ou Utility." class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="&#9876;&#65039;" class="help-emoji" />
-                        <ui:Label text="Vague : lance pour demarrer." class="help-desc" />
+                        <ui:Label text="&#x23E9;" class="help-emoji" />
+                        <ui:Label text="Lancer la vague tot donne +5% or / streak bonus." class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="&#128176;" class="help-emoji" />
-                        <ui:Label text="Or : gagne via kills, depense en tours." class="help-desc" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="help-row">
-                        <ui:Label text="&#10084;&#65039;" class="help-emoji" />
-                        <ui:Label text="Hero : monte de niveau auto." class="help-desc" />
+                        <ui:Label text="&#x1F3E6;" class="help-emoji" />
+                        <ui:Label text="Interet banque +5% par vague si chateau intact." class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
                         <ui:Label text="&#9889;" class="help-emoji" />
-                        <ui:Label text="Synergies : 3 tours meme type = bonus." class="help-desc" />
+                        <ui:Label text="3 tours du meme type = synergie bonus." class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
+                        <ui:Label text="&#x1F4B0;" class="help-emoji" />
+                        <ui:Label text="Vendre une tour rembourse 80% du cout." class="help-desc" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:Button text="Fermer" name="help-close-btn" class="help-close-btn" />

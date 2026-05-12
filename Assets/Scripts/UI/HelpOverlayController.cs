@@ -27,7 +27,7 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyBindings.GetKey("help")) || Input.GetKeyDown(KeyCode.Slash))
+            if (Input.GetKeyDown(KeyBindings.GetKey("help")) || Input.GetKeyDown(KeyCode.Slash) || Input.GetKeyDown(KeyCode.F1))
                 Toggle();
         }
 
