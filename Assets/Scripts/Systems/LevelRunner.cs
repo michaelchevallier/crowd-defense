@@ -250,6 +250,8 @@ namespace CrowdDefense.Systems
             _paused = true;
             ApplyTimeScale();
             OnPauseChanged?.Invoke();
+            int waveIdx = (WaveManager.Instance?.CurrentWaveIdx ?? 1) - 1;
+            if (waveIdx >= 0) SnapshotMidLevel(waveIdx);
         }
 
         public void Resume()
