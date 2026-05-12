@@ -33,6 +33,10 @@ namespace CrowdDefense.Visual
         private float       _baseY;           // Y at scene start — clamp = [baseY*0.5, baseY*2]
         private float       _prevPinchDist;   // touch pinch previous frame distance
         private Vector2     _prevTouchPos;    // 1-finger pan previous frame position
+        private bool        _birdsEye;        // V hotkey overview mode
+        private Vector3     _savedPos;        // position before bird's eye
+        private Quaternion  _savedRot;        // rotation before bird's eye
+        private Coroutine?  _birdsEyeRoutine;
 
         // ── Public API ────────────────────────────────────────────────────────
         public void SetHero(Transform hero)    => _hero   = hero;
@@ -80,6 +84,8 @@ namespace CrowdDefense.Visual
         private void Update()
         {
             if (_zooming) return;
+            if (Input.GetKeyDown(KeyCode.V)) ToggleBirdsEye();
+            if (_birdsEye) return;
             HandleZoom();
             HandlePinchZoom();
             HandleTouchPan();
@@ -262,6 +268,54 @@ namespace CrowdDefense.Visual
                 yield return null;
             }
             transform.position = origin;
+        }
+
+        // ── Bird's eye toggle (V key) ─────────────────────────────────────────
+        private void ToggleBirdsEye()
+        {
+            if (_birdsEyeRoutine != null) StopCoroutine(_birdsEyeRoutine);
+            _birdsEye = !_birdsEye;
+            _birdsEyeRoutine = _birdsEye
+                ? StartCoroutine(BirdsEyeEnter())
+                : StartCoroutine(BirdsEyeExit());
+        }
+
+        private IEnumerator BirdsEyeEnter()
+        {
+            _savedPos = transform.position;
+            _savedRot = transform.rotation;
+
+            float overviewY = Mathf.Max(maxY, _baseY * 2f) * 1.5f;
+            var   targetPos = new Vector3(0f, overviewY, 0f);
+            var   targetRot = Quaternion.Euler(90f, transform.eulerAngles.y, 0f);
+
+            for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.4f)
+            {
+                float s = Mathf.SmoothStep(0f, 1f, t);
+                transform.position = Vector3.Lerp(_savedPos, targetPos, s);
+                transform.rotation = Quaternion.Slerp(_savedRot, targetRot, s);
+                yield return null;
+            }
+            transform.position = targetPos;
+            transform.rotation = targetRot;
+            _birdsEyeRoutine = null;
+        }
+
+        private IEnumerator BirdsEyeExit()
+        {
+            var fromPos = transform.position;
+            var fromRot = transform.rotation;
+
+            for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.4f)
+            {
+                float s = Mathf.SmoothStep(0f, 1f, t);
+                transform.position = Vector3.Lerp(fromPos, _savedPos, s);
+                transform.rotation = Quaternion.Slerp(fromRot, _savedRot, s);
+                yield return null;
+            }
+            transform.position = _savedPos;
+            transform.rotation = _savedRot;
+            _birdsEyeRoutine = null;
         }
 
         // ── Clamp within map bounds ───────────────────────────────────────────
