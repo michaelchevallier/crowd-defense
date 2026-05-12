@@ -909,6 +909,13 @@ namespace CrowdDefense.Entities
             return true;
         }
 
+        private void HandleUltimateInput()
+        {
+            if (KeyBindings.Instance == null) return;
+            if (Input.GetKeyDown(KeyBindings.GetKey("skill_r")))
+                TryUltimate();
+        }
+
         // ── Tower aura query (used by Synergies.cs) ───────────────────────────
         /// <summary>
         /// Returns damage and fire-rate multipliers that the hero aura grants
@@ -942,6 +949,8 @@ namespace CrowdDefense.Entities
             _ultimateCooldown = Mathf.Max(0f, _ultimateCooldown - dt);
             _cooldown         = Mathf.Max(0f, _cooldown - dt);
             if (_invulTimer > 0f) _invulTimer = Mathf.Max(0f, _invulTimer - dt);
+
+            HandleUltimateInput();
 
             UpdateAuraPulse(dt);
             UpdatePerkIconsBillboard();
