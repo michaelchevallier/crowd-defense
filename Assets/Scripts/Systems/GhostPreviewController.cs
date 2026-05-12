@@ -201,8 +201,8 @@ namespace CrowdDefense.Systems
             costLabel.fontSize              = 3.5f;
             costLabel.fontStyle             = FontStyles.Bold;
             costLabel.alignment             = TextAlignmentOptions.Center;
-            costLabel.outlineWidth          = 0.25f;
-            costLabel.outlineColor          = new Color32(0, 0, 0, 220);
+            try { costLabel.outlineWidth = 0.25f; costLabel.outlineColor = new Color32(0, 0, 0, 220); }
+            catch { /* TMPro material/shader missing _OutlineWidth — degrade silently */ }
             costLabel.textWrappingMode      = TMPro.TextWrappingModes.NoWrap;
             costLabel.autoSizeTextContainer = false;
             costLabel.rectTransform.sizeDelta = new Vector2(4f, 1f);

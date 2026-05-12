@@ -34,6 +34,12 @@ namespace CrowdDefense.UI
             if (doc == null) { enabled = false; return; }
 
             var root = doc.rootVisualElement;
+            if (root == null)
+            {
+                Debug.LogWarning("[TowerSelect] rootVisualElement null — UXML failed to load");
+                enabled = false;
+                return;
+            }
             menuRoot = root.Q<VisualElement>("tower-select-menu");
             if (menuRoot == null)
             {
