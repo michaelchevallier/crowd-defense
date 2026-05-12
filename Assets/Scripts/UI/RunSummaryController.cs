@@ -15,6 +15,7 @@ namespace CrowdDefense.UI
         private VisualElement? _panel;
         private Label?         _title;
         private Label?         _stars;
+        private Label?         _score;
         private Label?         _waves;
         private Label?         _kills;
         private Label?         _gold;
@@ -31,6 +32,7 @@ namespace CrowdDefense.UI
             _panel    = root.Q<VisualElement>("run-summary-panel");
             _title    = root.Q<Label>("rs-title");
             _stars    = root.Q<Label>("rs-stars");
+            _score    = root.Q<Label>("rs-score");
             _waves    = root.Q<Label>("rs-waves");
             _kills    = root.Q<Label>("rs-kills");
             _gold     = root.Q<Label>("rs-gold");
@@ -73,6 +75,7 @@ namespace CrowdDefense.UI
                 ? WaveManager.Instance.TotalWaves
                 : r.WaveReached;
 
+            if (_score  != null) _score.text  = r.Score.ToString();
             if (_waves  != null) _waves.text  = $"{r.WaveReached} / {totalWaves}";
             if (_kills  != null) _kills.text  = r.Kills.ToString();
             if (_gold   != null) _gold.text   = $"{r.GoldEarned}c";

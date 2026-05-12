@@ -84,6 +84,7 @@ namespace CrowdDefense.UI
 
             if (_statsLabel != null)
                 _statsLabel.text =
+                    $"{L.Get("summary.stat_score")} : {r.Score}\n" +
                     $"{L.Get("summary.stat_kills")} : {r.Kills}\n" +
                     $"{L.Get("summary.stat_towers")} : {r.TowersPlaced}\n" +
                     $"{L.Get("summary.stat_perks")} : {r.PerksAcquired}\n" +
@@ -145,8 +146,7 @@ namespace CrowdDefense.UI
             }
         }
 
-        private static int ComputeScore(LevelResult r) =>
-            r.Kills * 10 + r.WaveReached * 100;
+        private static int ComputeScore(LevelResult r) => r.Score;
 
         private void OnRetry()
         {
