@@ -290,8 +290,8 @@ namespace CrowdDefense.Systems
         {
             yield return new WaitForSeconds(delaySec);
             if (!waveActive) yield break;
-            var wave = levelData?.Waves[currentWaveIdx];
-            if (wave == null) yield break;
+            if (levelData == null || currentWaveIdx < 0 || currentWaveIdx >= levelData.Waves.Count) yield break;
+            var wave = levelData.Waves[currentWaveIdx];
 
             // Pick a random non-null enemy type from the wave
             EnemyType? pick = null;
