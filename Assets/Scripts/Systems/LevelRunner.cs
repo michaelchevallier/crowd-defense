@@ -180,6 +180,7 @@ namespace CrowdDefense.Systems
             if (gameObject.GetComponent<EnemyAmbientChatter>() == null)
                 gameObject.AddComponent<EnemyAmbientChatter>();
             TryPlayOpeningCutscene();
+            UI.TutorialIntroPanel.TryShow(currentLevel?.Id);
             UI.TutorialPopupController.TryShow(currentLevel?.Id);
             UI.TutorialArrowGuide.TryStart(currentLevel?.Id);
             RestoreMidLevelStateIfPending();
