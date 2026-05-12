@@ -35,6 +35,22 @@ namespace CrowdDefense.UI
         private void OnFirstKill(string id)
         {
             _recentlyUnlockedId = id;
+
+            var registry = Resources.Load<EnemyRegistry>("EnemyRegistry");
+            string displayName = id;
+            if (registry != null)
+            {
+                foreach (var et in registry.Enemies)
+                {
+                    if (et != null && et.Id == id)
+                    {
+                        displayName = string.IsNullOrEmpty(et.DisplayName) ? id : et.DisplayName;
+                        break;
+                    }
+                }
+            }
+
+            Toast.Show("Nouveau bestiaire", displayName, 3500, "📖", ToastType.Achievement);
         }
 
         public bool IsOpen => _root != null && !_root.ClassListContains("hidden");
