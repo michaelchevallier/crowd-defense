@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.Entities;
 
 namespace CrowdDefense.Systems
 {
@@ -23,14 +24,17 @@ namespace CrowdDefense.Systems
 
         private static readonly Color DotColor = new Color(1f, 0.85f, 0f, 0.90f);
 
-        private Camera?     cam;
-        private GameObject? ghost;
-        private GameObject? rangeRing;
-        private float       lastBuiltRange  = -1f;
-        private TowerType?  lastTowerType;
+        private static readonly Color AimLineColor = new Color(1f, 0.25f, 0.25f, 0.90f);
+
+        private Camera?      cam;
+        private GameObject?  ghost;
+        private GameObject?  rangeRing;
+        private float        lastBuiltRange  = -1f;
+        private TowerType?   lastTowerType;
         private TextMeshPro? costLabel;
-        private Material?   ghostMatTransparent;
-        private Material?   dotMaterial;
+        private Material?    ghostMatTransparent;
+        private Material?    dotMaterial;
+        private LineRenderer? aimLine;
 
         // Path indicator dots — shown during placement mode
         private readonly List<GameObject> _pathDots = new();
@@ -47,6 +51,7 @@ namespace CrowdDefense.Systems
             cam = Camera.main;
             ghostMatTransparent = BuildTransparentMaterial();
             dotMaterial         = BuildDotMaterial();
+            BuildAimLine();
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnHoverPlacementCell += OnHoverCell;
         }
@@ -117,6 +122,8 @@ namespace CrowdDefense.Systems
                 costLabel.text  = $"Cout: {cost}c";
                 costLabel.color = canAfford ? LabelAfford : LabelTooExp;
             }
+
+            UpdateAimLine();
         }
 
         private void LateUpdate()
@@ -231,6 +238,7 @@ namespace CrowdDefense.Systems
         {
             if (ghost     != null) ghost.SetActive(false);
             if (rangeRing != null) rangeRing.SetActive(false);
+            if (aimLine   != null) aimLine.enabled = false;
             HidePathDots();
         }
 
@@ -285,6 +293,55 @@ namespace CrowdDefense.Systems
             else if (mat.HasProperty("_Color"))
                 mat.SetColor("_Color", DotColor);
             return mat;
+        }
+
+        private void BuildAimLine()
+        {
+            var go = new GameObject("GhostAimLine");
+            go.transform.SetParent(transform, false);
+            aimLine = go.AddComponent<LineRenderer>();
+            aimLine.positionCount   = 2;
+            aimLine.widthMultiplier = 0.06f;
+            aimLine.useWorldSpace   = true;
+            aimLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            aimLine.receiveShadows  = false;
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            var mat = new Material(shader);
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", AimLineColor);
+            else if (mat.HasProperty("_Color")) mat.SetColor("_Color",    AimLineColor);
+            aimLine.sharedMaterial = mat;
+            aimLine.enabled = false;
+        }
+
+        private void UpdateAimLine()
+        {
+            if (aimLine == null || ghost == null || !ghost.activeSelf) { if (aimLine != null) aimLine.enabled = false; return; }
+
+            float range = PlacementController.Instance?.SelectedTowerType?.Range ?? 0f;
+            if (range <= 0f) { aimLine.enabled = false; return; }
+
+            Vector3 origin = ghost.transform.position;
+            Enemy?  nearest   = null;
+            float   nearestSq = range * range;
+
+            var activeEnemies = WaveManager.Instance?.ActiveEnemies;
+            if (activeEnemies == null) { aimLine.enabled = false; return; }
+
+            foreach (var enemy in activeEnemies)
+            {
+                if (enemy == null) continue;
+                float sq = (enemy.transform.position - origin).sqrMagnitude;
+                if (sq <= nearestSq) { nearestSq = sq; nearest = enemy; }
+            }
+
+            if (nearest == null) { aimLine.enabled = false; return; }
+
+            Vector3 from = new Vector3(origin.x,   0.5f, origin.z);
+            Vector3 to   = new Vector3(nearest.transform.position.x, 0.5f, nearest.transform.position.z);
+            aimLine.SetPosition(0, from);
+            aimLine.SetPosition(1, to);
+            aimLine.enabled = true;
         }
 
         private void BuildRangeRing(float range)
