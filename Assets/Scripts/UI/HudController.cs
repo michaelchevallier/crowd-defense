@@ -140,6 +140,7 @@ namespace CrowdDefense.UI
             EnsureSibling<KeyBindingsPanel>();
             EnsureSibling<CurrentRunPerksPanel>();
             EnsureSibling<RuntimeProfilePanel>();
+            EnsureSibling<AchievementToastController>();
             _perksPanel = GetComponent<CurrentRunPerksPanel>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;
