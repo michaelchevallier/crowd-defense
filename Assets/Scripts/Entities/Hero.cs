@@ -223,21 +223,132 @@ namespace CrowdDefense.Entities
 
         private void RespawnAtCastle()
         {
+            StartCoroutine(RespawnCinematic());
+        }
+
+        // ── Respawn cinematic (1.5s) ──────────────────────────────────────────
+        // Phase 1 (0–0.5s)  : light beam from sky builds in intensity
+        // Phase 2 (0.5–1.0s): hero materializes scale 0→1, alpha 0→1
+        // Phase 3 (1.0–1.5s): beam fades, hero settled
+        // Post (1.5–6.5s)   : gold point-light glow aura fades out
+        private System.Collections.IEnumerator RespawnCinematic()
+        {
             _isDead = false;
             CrowdDefense.UI.HeroPortraitController.Instance?.CleanupUltimateRing();
 
-            // Respawn at castle position or fallback to current position
             var castlePos = Castle.Instance != null
                 ? Castle.Instance.transform.position
                 : transform.position;
-            transform.position = castlePos + Vector3.up * 0.1f;
+            var spawnPos = castlePos + Vector3.up * 0.1f;
+            transform.position = spawnPos;
 
-            _hp = _maxHp * 0.5f;
-            _invulTimer = InvulDuration;
+            _hp           = _maxHp * 0.5f;
+            _invulTimer   = InvulDuration + 1.5f; // cinematic is also invuln
 
+            // Hero hidden until phase 2
             gameObject.SetActive(true);
+            var renderers = GetComponentsInChildren<Renderer>(includeInactive: true);
+            var mpb = new MaterialPropertyBlock();
+            foreach (var r in renderers)
+            {
+                r.GetPropertyBlock(mpb);
+                mpb.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0f));
+                mpb.SetColor("_Color",     new Color(1f, 1f, 1f, 0f));
+                r.SetPropertyBlock(mpb);
+            }
+            transform.localScale = Vector3.zero;
 
-            // Visual feedback
+            // Audio kick-off (skip silently if clip not loaded)
+            AudioController.Instance?.Play("hero_respawn_horn", 1.0f);
+
+            // ── Sky beam setup (LineRenderer, 2 verts, world space) ───────────
+            const float BeamHeight    = 12f;
+            const float BeamWidth     = 0.25f;
+            var beamGo = new GameObject("RespawnBeam_VFX");
+            beamGo.transform.SetParent(null);
+
+            var lr = beamGo.AddComponent<LineRenderer>();
+            lr.positionCount  = 2;
+            lr.useWorldSpace  = true;
+            lr.loop           = false;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+            lr.startWidth     = BeamWidth;
+            lr.endWidth       = BeamWidth;
+            lr.SetPosition(0, spawnPos + Vector3.up * BeamHeight);
+            lr.SetPosition(1, spawnPos);
+
+            var beamMat = new Material(
+                Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                ?? Shader.Find("Sprites/Default")
+                ?? Shader.Find("Standard")!);
+            beamMat.SetFloat("_Surface", 1f);
+            beamMat.SetInt("_ZWrite",   0);
+            beamMat.renderQueue = 3000;
+            lr.material = beamMat;
+
+            // ── Phase 1: beam builds (0–0.5s) ────────────────────────────────
+            const float Phase1 = 0.5f;
+            var beamColorFull  = new Color(1f, 0.95f, 0.6f, 1f);
+            var beamColorClear = new Color(1f, 0.95f, 0.6f, 0f);
+            float t1 = 0f;
+            while (t1 < Phase1)
+            {
+                t1 += Time.deltaTime;
+                float pct = Mathf.Clamp01(t1 / Phase1);
+                lr.startColor = Color.Lerp(beamColorClear, beamColorFull, pct);
+                lr.endColor   = lr.startColor;
+                float w = Mathf.Lerp(0f, BeamWidth, pct);
+                lr.startWidth = w;
+                lr.endWidth   = w;
+                yield return null;
+            }
+
+            // ── Phase 2: hero materializes (0.5–1.0s) ────────────────────────
+            const float Phase2 = 0.5f;
+            var heroColorFull  = new Color(1f, 1f, 1f, 1f);
+            float t2 = 0f;
+            while (t2 < Phase2)
+            {
+                t2 += Time.deltaTime;
+                float pct = Mathf.Clamp01(t2 / Phase2);
+                // scale 0 → 1
+                transform.localScale = Vector3.one * pct;
+                // alpha 0 → 1
+                var col = Color.Lerp(new Color(1f, 1f, 1f, 0f), heroColorFull, pct);
+                foreach (var r in renderers)
+                {
+                    r.GetPropertyBlock(mpb);
+                    mpb.SetColor("_BaseColor", col);
+                    mpb.SetColor("_Color",     col);
+                    r.SetPropertyBlock(mpb);
+                }
+                yield return null;
+            }
+            // Ensure full alpha + scale
+            transform.localScale = Vector3.one;
+            foreach (var r in renderers)
+            {
+                r.GetPropertyBlock(mpb);
+                mpb.SetColor("_BaseColor", heroColorFull);
+                mpb.SetColor("_Color",     heroColorFull);
+                r.SetPropertyBlock(mpb);
+            }
+
+            // ── Phase 3: beam fades (1.0–1.5s) ───────────────────────────────
+            const float Phase3 = 0.5f;
+            float t3 = 0f;
+            while (t3 < Phase3)
+            {
+                t3 += Time.deltaTime;
+                float pct = Mathf.Clamp01(t3 / Phase3);
+                lr.startColor = Color.Lerp(beamColorFull, beamColorClear, pct);
+                lr.endColor   = lr.startColor;
+                yield return null;
+            }
+            Destroy(beamGo);
+
+            // ── Post-cinematic gameplay feedback ──────────────────────────────
             JuiceFX.Instance?.Flash(new Color(0.3f, 1f, 0.4f, 0.35f), 400);
             VfxPool.Instance?.SpawnLevelUp(transform.position + Vector3.up * 1f);
             AudioController.Instance?.Play("hero_levelup", 0.9f);
@@ -246,6 +357,35 @@ namespace CrowdDefense.Entities
                 "RESPAWN!", transform.position + Vector3.up * 2f, Color.green);
             StartCoroutine(InvulFlashRoutine());
             OnHeroRespawned?.Invoke();
+
+            // ── Glow aura: gold point light, 5s fade ─────────────────────────
+            StartCoroutine(RespawnGlowAuraRoutine());
+        }
+
+        private System.Collections.IEnumerator RespawnGlowAuraRoutine()
+        {
+            const float AuraDuration  = 5f;
+            const float AuraIntensity = 2f;
+            const float AuraRange     = 3f;
+
+            var auraGo = new GameObject("RespawnAura_VFX");
+            auraGo.transform.SetParent(transform);
+            auraGo.transform.localPosition = Vector3.up * 0.8f;
+
+            var auraLight = auraGo.AddComponent<Light>();
+            auraLight.type      = LightType.Point;
+            auraLight.color     = new Color(1f, 0.84f, 0.1f);
+            auraLight.intensity = AuraIntensity;
+            auraLight.range     = AuraRange;
+
+            float elapsed = 0f;
+            while (elapsed < AuraDuration)
+            {
+                elapsed += Time.deltaTime;
+                auraLight.intensity = Mathf.Lerp(AuraIntensity, 0f, elapsed / AuraDuration);
+                yield return null;
+            }
+            Destroy(auraGo);
         }
 
         private System.Collections.IEnumerator InvulFlashRoutine()
