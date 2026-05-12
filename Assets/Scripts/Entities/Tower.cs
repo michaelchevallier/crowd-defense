@@ -305,8 +305,12 @@ namespace CrowdDefense.Entities
         public float ResearchFireRateMul => cfg != null ? TowerResearchTree.FireRateIntervalMul(cfg.Id)   : 1f;
 
         // DynamicEventManager hooks (R6-PARITY-012)
-        public float EventRangeMul { get; set; } = 1f;
-        public bool  IsDisabled    { get; set; } = false;
+        public float EventRangeMul       { get; set; } = 1f;
+        public bool  IsDisabled          { get; set; } = false;
+        /// <summary>Hack event: tower re-enables automatically after this Time.time value.</summary>
+        public float TempDisabledUntilTime { get; set; } = 0f;
+        /// <summary>Hack event: next shot deals friendly-fire (hits castle not enemy) once.</summary>
+        public bool  FriendlyFireMode    { get; set; } = false;
 
         /// <summary>
         /// Returns the upgrade cost for the next level, applying a -20% cluster discount
@@ -829,7 +833,15 @@ namespace CrowdDefense.Entities
             // L3 Tank Bulwark aura — protect adjacent towers -20% dmg (D1-03)
             if (L3BulwarkAura) TickBulwarkAura();
 
-            if (IsDisabled) return;
+            if (IsDisabled)
+            {
+                if (TempDisabledUntilTime > 0f && Time.time >= TempDisabledUntilTime)
+                {
+                    IsDisabled = false;
+                    TempDisabledUntilTime = 0f;
+                }
+                return;
+            }
 
             // _buffMul et tous les champs synergy sont reset + recomputed par Synergies.LateUpdate.
             switch (cfg.Behavior)
@@ -1011,6 +1023,15 @@ namespace CrowdDefense.Entities
         private void ExecuteFire(Enemy t)
         {
             if (cfg == null) return;
+
+            // Hack event: one-shot friendly fire → deal 1 dmg to castle instead of enemy.
+            if (FriendlyFireMode)
+            {
+                FriendlyFireMode = false;
+                Castle.Instance?.TakeDamage(1);
+                return;
+            }
+
             if (ProjectilePool.Instance == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

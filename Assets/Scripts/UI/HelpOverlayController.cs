@@ -27,7 +27,9 @@ namespace CrowdDefense.UI
         private void Awake()
         {
             var doc = GetComponent<UIDocument>();
+            if (doc == null) { Debug.LogError("[HelpOverlay] UIDocument null"); return; }
             var ve = doc.rootVisualElement;
+            if (ve == null) { Debug.LogError("[HelpOverlay] rootVisualElement null"); return; }
             _root = ve.Q("help-root");
             _closeBtn = ve.Q<Button>("help-close-btn");
 

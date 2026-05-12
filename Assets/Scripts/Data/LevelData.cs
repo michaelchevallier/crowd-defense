@@ -42,6 +42,9 @@ namespace CrowdDefense.Data
         [Header("Magnet (Q3)")]
         [SerializeField] private bool allowMultiMagnet = false;
 
+        [Header("Dynamic Events (R6-PARITY-012)")]
+        [SerializeField] private List<WaveEvent> waveEvents = new();
+
         [Header("Waves")]
         [SerializeField] private List<WaveDef> waves = new();
 
@@ -62,6 +65,7 @@ namespace CrowdDefense.Data
         public bool IsEndless => isEndless;
         public bool AllowMultiMagnet => allowMultiMagnet;
         public IReadOnlyList<WaveDef> Waves => waves;
+        public IReadOnlyList<WaveEvent> WaveEvents => waveEvents;
 
         public int CastleHP => overrideCastleHP
             ? castleHPOverride

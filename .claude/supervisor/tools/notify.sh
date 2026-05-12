@@ -56,14 +56,37 @@ esac
 
 SOUND="${SOUND_OVERRIDE:-$SOUND_DEFAULT}"
 
-# === Canal 1 : macOS osascript (toujours pour T1/T2) ===
+# === Canal 1 : macOS desktop notif ===
+# Preference order :
+#   1. terminal-notifier (si installé via brew) — supporte -sender pour click → iTerm/Claude
+#   2. osascript fallback — warning : click "Show" ouvre Script Editor (limitation macOS)
 TITLE_ESCAPED="$(echo "$TITLE" | sed 's/"/\\"/g')"
 MESSAGE_ESCAPED="$(echo "$MESSAGE" | sed 's/"/\\"/g')"
 
-if [ -n "$SOUND" ]; then
-  osascript -e "display notification \"$MESSAGE_ESCAPED\" with title \"$TITLE_ESCAPED\" subtitle \"$TIER\" sound name \"$SOUND\"" || true
+if command -v terminal-notifier >/dev/null 2>&1; then
+  # Sender = iTerm (Mike's terminal) so click on notif opens iTerm instead of Script Editor
+  if [ -n "$SOUND" ]; then
+    terminal-notifier \
+      -title "$TITLE" \
+      -subtitle "$TIER" \
+      -message "$MESSAGE" \
+      -sound "$SOUND" \
+      -sender "com.googlecode.iterm2" \
+      -ignoreDnD > /dev/null 2>&1 || true
+  else
+    terminal-notifier \
+      -title "$TITLE" \
+      -subtitle "$TIER" \
+      -message "$MESSAGE" \
+      -sender "com.googlecode.iterm2" > /dev/null 2>&1 || true
+  fi
 else
-  osascript -e "display notification \"$MESSAGE_ESCAPED\" with title \"$TITLE_ESCAPED\" subtitle \"$TIER\"" || true
+  # Fallback osascript — note : click "Show" ouvre Script Editor (limitation macOS, pas fixable sans tool externe)
+  if [ -n "$SOUND" ]; then
+    osascript -e "display notification \"$MESSAGE_ESCAPED\" with title \"$TITLE_ESCAPED\" subtitle \"$TIER (don't click Show)\" sound name \"$SOUND\"" || true
+  else
+    osascript -e "display notification \"$MESSAGE_ESCAPED\" with title \"$TITLE_ESCAPED\" subtitle \"$TIER (don't click Show)\"" || true
+  fi
 fi
 
 # === Canal 2 : ntfy.sh (si NTFY_TOPIC env var set) ===

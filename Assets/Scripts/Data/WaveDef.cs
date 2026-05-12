@@ -5,6 +5,19 @@ using UnityEngine;
 
 namespace CrowdDefense.Data
 {
+    [Serializable]
+    public struct WaveEvent
+    {
+        /// <summary>1-based wave index when this event fires.</summary>
+        public int waveIndex;
+        /// <summary>Event type string matching DynamicEventManager enum names (snake_case).</summary>
+        public string eventType;
+        /// <summary>Duration in seconds (clamped 3..60 by DynamicEventManager).</summary>
+        public float duration;
+        /// <summary>Optional float param (e.g. radius for void_pulse, count for hack).</summary>
+        public float param;
+    }
+
     public enum SpawnPattern
     {
         Linear,
