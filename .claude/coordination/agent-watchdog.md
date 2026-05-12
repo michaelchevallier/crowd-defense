@@ -1,33 +1,30 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 06:35
+## 2026-05-12 10:20
 
 ### Snapshot
 
-- Actifs (<8 min) : 1 (current scan)
-- Stalled (8-30 min) : 2 (b* Monitors dead r24/r25)
+- Actifs (<8 min) : 3 Sonnet polish in flight (Wave skip bonus, Tower path cursor, Achievement showcase anim)
+- Stalled (8-30 min) : 0
 - Worktrees : 16
-- Unity batch : **YES** PID 15424 (r26 Link_WebGL_wasm phase BUSY 6s)
-- r26 log silence : 10s — HEALTHY
+- Unity batch : NO (idle)
+- r43 LIVE : 5f2a605 (3 commits buffered)
 
 ### Killed
 
-0. Aucun. r26 in linking phase.
+0. Aucun.
 
 ### Sonnet en flight
 
-- a258d993c837581b5 (Tower target prediction line)
-
-### Recent commits
-
-- `8a2c829` MusicManager.DuckMusic 70%/1.5s/0.5s recover
-- `92742c7` EnemyAnim guard _static SetWalking
-- `32da28b` BalanceConfig wave variance + seed
+- aaa19e9d42646082c (HUD wave-skip bonus +30g popup)
+- a581e23e249351940 (Tower placement path indicator yellow dots)
+- a260b813eba4f242f (Achievement showcase icons rotate+scale hover)
 
 ### Notes
 
-Build cycle stable. Cycle this hour : r19→r26 (~25 builds, ~6 deploys live). Parity 96-97% hold.
+🔥 V4 PARITY HOLDS 100% confirmed at 10:17 eval (16 commits clean).
+13 deploys r28→r43 (~3h15). Cycle stable.
 
 ### Stdout
 
-`Actifs:1 Stalled:2 Killed:0 Worktrees:16 UnityBatch:YES(PID15424,r26,Link_WASM) Sonnet:1InFlight`
+`Actifs:3 Stalled:0 Killed:0 Worktrees:16 UnityBatch:NO r43=LIVE(5f2a605) V4_PARITY=100%`

@@ -9,7 +9,7 @@ namespace CrowdDefense.Systems
     /// Toggle via PlayerPrefs key "cd.cam.follow_hero" (1 = on, 0 = off).
     /// </summary>
     [RequireComponent(typeof(Camera))]
-    public class CameraController : MonoBehaviour
+    public class HeroFollowCameraController : MonoBehaviour
     {
         private const string PrefKey = "cd.cam.follow_hero";
 
