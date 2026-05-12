@@ -41,10 +41,7 @@ namespace CrowdDefense.Entities
 
         // Death / dying
         private bool  _dying      = false;
-        private float _dyingTimer = 0f;
 
-        // Ragdoll
-        private const float RagdollFadeDuration = 3f;
         private Vector3 _lastDamageDirection = Vector3.back;
         private Tower?  _lastDamageTower;
 
@@ -604,7 +601,6 @@ namespace CrowdDefense.Entities
             HideReticle();
             IsDead       = false;
             _dying       = false;
-            _dyingTimer  = 0f;
             currentSpeedMul   = 1f;
             StealthAlpha      = 1f;
             summonTimer       = 0f;
@@ -651,9 +647,6 @@ namespace CrowdDefense.Entities
             if (_eliteGlowLight != null) { Destroy(_eliteGlowLight.gameObject); _eliteGlowLight = null; }
             _chaseHero = !type.IsBoss && Random.value < 0.1f;
             if (_popInCoroutine != null) { StopCoroutine(_popInCoroutine); _popInCoroutine = null; }
-
-            // Clean up any Rigidbodies/CapsuleColliders added by ragdoll on previous life
-            CleanupRagdoll();
 
             // D1-04 mob pressure: scale HP and speed by world pressure
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
@@ -926,32 +919,6 @@ namespace CrowdDefense.Entities
             _popInCoroutine = null;
         }
 
-        // ── Ragdoll cleanup (pool reuse) ──────────────────────────────────────
-
-        private void CleanupRagdoll()
-        {
-            // Re-enable root CapsuleCollider that was disabled for ragdoll
-            var rootCol = GetComponent<CapsuleCollider>();
-            if (rootCol != null)
-                rootCol.enabled = true;
-
-            // Re-enable Animator (will be reconfigured by AnimationController.SetupAnimator in Init)
-            if (_animator != null)
-                _animator.enabled = true;
-
-            // Remove Rigidbody + dynamic CapsuleColliders from bones added during ragdoll
-            // Only touch _meshChild subtree — root GO keeps its permanent CapsuleCollider
-            if (_meshChild == null) return;
-            var bones = _meshChild.GetComponentsInChildren<Rigidbody>(includeInactive: true);
-            foreach (var rb in bones)
-            {
-                // Remove the companion CapsuleCollider we added (bones have no static collider originally)
-                var bc = rb.GetComponent<CapsuleCollider>();
-                if (bc != null)
-                    Destroy(bc);
-                Destroy(rb);
-            }
-        }
 
         // ── Spawn GLTF child ──────────────────────────────────────────────────
 
@@ -1278,13 +1245,7 @@ namespace CrowdDefense.Entities
             UpdateDebuffIcons();
             UpdateGroundDecals();
 
-            if (_dying)
-            {
-                _dyingTimer -= Time.deltaTime;
-                if (_dyingTimer <= 0f)
-                    IsDead = true;
-                return;
-            }
+            if (_dying) return;
 
             if (_regenPerSec > 0f)
                 hp = Mathf.Min(hp + _regenPerSec * Time.deltaTime, maxHp);
@@ -2117,7 +2078,6 @@ namespace CrowdDefense.Entities
         private void HandleDeath()
         {
             _dying = true;
-            _dyingTimer = RagdollFadeDuration + 0.1f;
 
             bool isBoss   = cfg != null && (cfg.IsBoss || cfg.IsApocalypseBoss);
             bool isMedium = cfg != null && cfg.IsMidBoss;
@@ -2179,19 +2139,7 @@ namespace CrowdDefense.Entities
             OnDeathStatic?.Invoke(this, isBoss);
 
             if (this != null && gameObject != null)
-            {
-                if (!isBoss && _meshChild == null)
-                {
-                    // Capsule fallback — no GLTF bones, use procedural collapse instead of physics ragdoll
-                    SpawnDeathDustPuff();
-                    StartCoroutine(CollapseAndRelease());
-                }
-                else
-                {
-                    if (!isBoss) SpawnDeathDustPuff();
-                    StartCoroutine(RagdollThenRelease(_lastDamageDirection));
-                }
-            }
+                ReleaseToPool();
             else
                 ReleaseToPool();
         }
@@ -2230,145 +2178,6 @@ namespace CrowdDefense.Entities
             // SlowMo via JuiceFX (handles ramp-down safely; unscaled wait keeps coroutine alive)
             JuiceFX.Instance?.SlowMo(0.4f, (int)(CinematicDuration * 1000f));
             yield return new WaitForSecondsRealtime(CinematicDuration);
-        }
-
-        // ── Ragdoll ───────────────────────────────────────────────────────────
-
-        private System.Collections.IEnumerator RagdollThenRelease(Vector3 hitDir)
-        {
-            var meshRoot = _meshChild != null ? _meshChild : gameObject;
-
-            // Disable Animator so physics drives the bones
-            if (_animator != null)
-                _animator.enabled = false;
-
-            // Disable root CapsuleCollider (was isTrigger) so it doesn't interfere with ragdoll
-            var rootCol = GetComponent<CapsuleCollider>();
-            if (rootCol != null)
-                rootCol.enabled = false;
-
-            // Add Rigidbodies + colliders to all sub-bones that have a Transform (skip root)
-            var bones = meshRoot.GetComponentsInChildren<Transform>(includeInactive: true);
-            float impulseStrength = 4.5f;
-            bool firstBone = true;
-            foreach (var bone in bones)
-            {
-                // Skip the meshRoot itself and bones without a visible renderer (attach anyway for structure)
-                if (bone == meshRoot.transform) continue;
-
-                var rb = bone.gameObject.GetComponent<Rigidbody>();
-                if (rb == null)
-                    rb = bone.gameObject.AddComponent<Rigidbody>();
-                rb.mass = 0.2f;
-                rb.linearDamping = 0.5f;
-                rb.angularDamping = 0.8f;
-                rb.interpolation = RigidbodyInterpolation.Interpolate;
-
-                // Add a small capsule collider per bone to prevent floor clipping
-                if (bone.gameObject.GetComponent<Collider>() == null)
-                {
-                    var bc = bone.gameObject.AddComponent<CapsuleCollider>();
-                    bc.radius = 0.08f;
-                    bc.height = 0.22f;
-                }
-
-                // Primary impulse on the first (topmost) bone — others get a lesser scatter
-                Vector3 scatter = new Vector3(
-                    UnityEngine.Random.Range(-0.4f, 0.4f),
-                    UnityEngine.Random.Range(0.6f, 1.4f),
-                    UnityEngine.Random.Range(-0.4f, 0.4f));
-                float scale = firstBone ? 1f : 0.45f;
-                rb.AddForce((hitDir * 0.7f + scatter) * impulseStrength * scale, ForceMode.Impulse);
-
-                firstBone = false;
-            }
-
-            // Fade all renderers over RagdollFadeDuration
-            float elapsed = 0f;
-            while (elapsed < RagdollFadeDuration)
-            {
-                elapsed += Time.deltaTime;
-                float alpha = 1f - Mathf.Clamp01(elapsed / RagdollFadeDuration);
-                if (_cachedRenderers != null && _mpb != null)
-                {
-                    Color faded = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
-                    _mpb.SetColor(_baseColorId, faded);
-                    _mpb.SetColor(_colorId, faded);
-                    for (int i = 0; i < _cachedRenderers.Length; i++)
-                        _cachedRenderers[i].SetPropertyBlock(_mpb);
-                }
-                yield return null;
-            }
-
-            ReleaseToPool();
-        }
-
-        // ── Collapse ragdoll (capsule fallback — no GLTF bones) ──────────────
-
-        private const float CollapseDuration = 0.4f;
-        private const float CollapseFadeStart = 0.25f;  // alpha fade begins at 62.5% of duration
-        private static readonly Color DustGrey = new Color(0.55f, 0.50f, 0.45f);
-
-        private void SpawnDeathDustPuff()
-        {
-            var dustPos = transform.position + Vector3.up * 0.2f;
-            VfxPool.Instance?.SpawnSpark(dustPos, DustGrey);
-            VfxPool.Instance?.SpawnSpark(dustPos + Vector3.right  * 0.15f, DustGrey);
-            VfxPool.Instance?.SpawnSpark(dustPos + Vector3.forward * 0.15f, DustGrey);
-            VfxPool.Instance?.SpawnSpark(dustPos - Vector3.right  * 0.15f, DustGrey);
-        }
-
-        private System.Collections.IEnumerator CollapseAndRelease()
-        {
-            // Disable collider so dead body doesn't block gameplay
-            var col = GetComponent<CapsuleCollider>();
-            if (col != null) col.enabled = false;
-
-            // Disable Animator to stop walk cycle during collapse
-            if (_animator != null) _animator.enabled = false;
-
-            var startPos   = transform.position;
-            var groundPos  = new Vector3(startPos.x, startPos.y - 0.5f, startPos.z);
-            var startScale = transform.localScale;
-            // Random tilt axis perpendicular to up
-            var fallAxis   = Vector3.Cross(Vector3.up, new Vector3(
-                UnityEngine.Random.Range(-1f, 1f), 0f, UnityEngine.Random.Range(-1f, 1f)).normalized);
-            if (fallAxis == Vector3.zero) fallAxis = Vector3.right;
-
-            float elapsed = 0f;
-            while (elapsed < CollapseDuration)
-            {
-                elapsed += Time.deltaTime;
-                float t  = Mathf.Clamp01(elapsed / CollapseDuration);
-                float tE = t * t; // ease-in
-
-                // Rotate on random axis up to ~80°
-                transform.rotation = Quaternion.AngleAxis(80f * tE, fallAxis);
-
-                // Scale Y collapse 1→0.2, XZ expand slightly for squash feel
-                float scaleY = Mathf.Lerp(startScale.y, startScale.y * 0.2f, tE);
-                float scaleXZ = Mathf.Lerp(startScale.x, startScale.x * 1.15f, tE);
-                transform.localScale = new Vector3(scaleXZ, scaleY, scaleXZ);
-
-                // Sink Y toward ground
-                transform.position = Vector3.Lerp(startPos, groundPos, tE);
-
-                // Alpha fade in final portion
-                if (elapsed > CollapseFadeStart && _cachedRenderers != null && _mpb != null)
-                {
-                    float fadeT = Mathf.Clamp01((elapsed - CollapseFadeStart) / (CollapseDuration - CollapseFadeStart));
-                    float alpha = 1f - fadeT;
-                    Color faded = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
-                    _mpb.SetColor(_baseColorId, faded);
-                    _mpb.SetColor(_colorId, faded);
-                    for (int i = 0; i < _cachedRenderers.Length; i++)
-                        _cachedRenderers[i].SetPropertyBlock(_mpb);
-                }
-
-                yield return null;
-            }
-
-            ReleaseToPool();
         }
 
         // ── Tint helpers ──────────────────────────────────────────────────────
