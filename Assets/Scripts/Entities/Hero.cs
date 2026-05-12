@@ -173,6 +173,15 @@ namespace CrowdDefense.Entities
             if (_isDead) return;
             _isDead = true;
 
+            // Zero out weapon glow on death to avoid stale emission when re-enabling
+            if (_weaponRenderer != null && _weaponMpb != null)
+            {
+                _weaponGlowIntensity = 0f;
+                _weaponRenderer.GetPropertyBlock(_weaponMpb);
+                _weaponMpb.SetColor(EmissionColorId, Color.black);
+                _weaponRenderer.SetPropertyBlock(_weaponMpb);
+            }
+
             gameObject.SetActive(false);
             JuiceFX.Instance?.Flash(new Color(1f, 0f, 0f, 0.45f), 600);
             AudioController.Instance?.Play("hero_death", 1.2f);
@@ -288,6 +297,12 @@ namespace CrowdDefense.Entities
         private Renderer? _auraRenderer;
         private Renderer? _haloRenderer;
 
+        // ── Weapon idle glow pulse ────────────────────────────────────────────
+        private Renderer?            _weaponRenderer;
+        private MaterialPropertyBlock? _weaponMpb;
+        private static readonly int  EmissionColorId = Shader.PropertyToID("_EmissionColor");
+        private float                _weaponGlowIntensity;
+
         // ── Animator ──────────────────────────────────────────────────────────
         private Animator? _animator;
 
@@ -358,6 +373,62 @@ namespace CrowdDefense.Entities
             BuildAuraDecals();
             BuildPerkIcons();
             BuildCrownQuad();
+            CacheWeaponRenderer();
+        }
+
+        // ── Weapon renderer cache (called after mesh spawn in Init) ──────────
+        private void CacheWeaponRenderer()
+        {
+            _weaponRenderer = null;
+            _weaponMpb ??= new MaterialPropertyBlock();
+            _weaponGlowIntensity = 0f;
+
+            // Priority: named weapon/sword/blade child
+            foreach (var r in GetComponentsInChildren<Renderer>(includeInactive: true))
+            {
+                string n = r.gameObject.name.ToLowerInvariant();
+                if (n.Contains("sword") || n.Contains("weapon") || n.Contains("blade")
+                    || n.Contains("staff") || n.Contains("wand") || n.Contains("bow"))
+                {
+                    _weaponRenderer = r;
+                    return;
+                }
+            }
+
+            // Fallback: first MeshRenderer/SkinnedMeshRenderer that isn't a known overlay
+            foreach (var r in GetComponentsInChildren<Renderer>(includeInactive: true))
+            {
+                string n = r.gameObject.name.ToLowerInvariant();
+                if (n.StartsWith("heroarea") || n.StartsWith("herohalo")
+                    || n.StartsWith("perkicon") || n.StartsWith("crown")
+                    || n.StartsWith("capecollidr") || n.StartsWith("outline"))
+                    continue;
+                if (r is MeshRenderer or SkinnedMeshRenderer)
+                {
+                    _weaponRenderer = r;
+                    return;
+                }
+            }
+        }
+
+        // ── Weapon idle glow tick (called from Update) ────────────────────────
+        private void TickWeaponGlow()
+        {
+            if (_weaponRenderer == null || _weaponMpb == null) return;
+
+            bool inCombat = _attackAnimTimer > 0f;
+            float targetIntensity = inCombat
+                ? 0f
+                : 0.3f + Mathf.Sin(Time.time * 1.5f) * 0.2f;   // 1.5 Hz pulse, range [0.1, 0.5]
+
+            // Smooth transition in/out (0→idle over ~0.4s, idle→0 immediately)
+            _weaponGlowIntensity = inCombat
+                ? Mathf.MoveTowards(_weaponGlowIntensity, 0f, Time.deltaTime * 4f)
+                : targetIntensity;
+
+            _weaponRenderer.GetPropertyBlock(_weaponMpb);
+            _weaponMpb.SetColor(EmissionColorId, Color.white * _weaponGlowIntensity);
+            _weaponRenderer.SetPropertyBlock(_weaponMpb);
         }
 
         // ── Mesh spawn (mirrors Tower.SpawnMeshChild) ─────────────────────────
@@ -1258,6 +1329,7 @@ namespace CrowdDefense.Entities
             UpdateFootstepDust();
             UpdateCombat();
             UpdateProjectiles(dt);
+            if (!_isDead) TickWeaponGlow();
         }
 
         // ── Aura pulse ────────────────────────────────────────────────────────
@@ -2033,6 +2105,7 @@ namespace CrowdDefense.Entities
             MaterialController.ApplyToon(toonRoot, cfg?.BodyColor ?? Color.white);
             Outline.ApplyToHierarchy(toonRoot.transform);
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", "Walk");
+            CacheWeaponRenderer();
         }
 
 #if UNITY_EDITOR
