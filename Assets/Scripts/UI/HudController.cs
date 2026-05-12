@@ -84,6 +84,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
+            BindUiRefs();
+            WireCallbacks();
+            SubscribeSystems();
+        }
+
+        private void BindUiRefs()
+        {
             _doctrineCtrl = GetComponent<DoctrineController>();
             _perkBadges = GetComponent<HudPerkBadges>();
 
@@ -146,28 +153,36 @@ namespace CrowdDefense.UI
             ultBtn = root.Q<VisualElement>("ult-btn");
             ultRingLeft = root.Q<VisualElement>("ult-ring-left");
             ultRingRight = root.Q<VisualElement>("ult-ring-right");
-            ultBtn?.RegisterCallback<ClickEvent>(_ => TryCastUlt());
 
             keyboardHintsLabel = root.Q<Label>("keyboard-hints-label");
             waveKillCounter = root.Q<Label>("wave-kill-counter");
             waveTimeLabel = root.Q<Label>("wave-time");
             bluePillBtn = root.Q<Button>("bluepill-btn");
-            bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
-
-            btnRestartGo?.RegisterCallback<ClickEvent>(_ => Restart());
-            btnRestartVictory?.RegisterCallback<ClickEvent>(_ => Restart());
-            btnMenuGo?.RegisterCallback<ClickEvent>(_ => GoToMenu());
-            btnMenuVictory?.RegisterCallback<ClickEvent>(_ => GoToMenu());
-
-            waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
-
-            root.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
-            root.Q<Button>("btn-settings")?.RegisterCallback<ClickEvent>(_ => _settingsCtrl?.Show());
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
             if (waveValue != null) waveValue.text = "—";
             if (hpValue != null) hpValue.text = "—";
+        }
+
+        private void WireCallbacks()
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+
+            ultBtn?.RegisterCallback<ClickEvent>(_ => TryCastUlt());
+            bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
+            btnRestartGo?.RegisterCallback<ClickEvent>(_ => Restart());
+            btnRestartVictory?.RegisterCallback<ClickEvent>(_ => Restart());
+            btnMenuGo?.RegisterCallback<ClickEvent>(_ => GoToMenu());
+            btnMenuVictory?.RegisterCallback<ClickEvent>(_ => GoToMenu());
+            waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
+            root.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
+            root.Q<Button>("btn-settings")?.RegisterCallback<ClickEvent>(_ => _settingsCtrl?.Show());
+        }
+
+        private void SubscribeSystems()
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
 
             ApplyLocalizedTexts();
             L.OnLocaleChanged += ApplyLocalizedTexts;

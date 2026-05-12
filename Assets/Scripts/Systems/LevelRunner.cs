@@ -28,6 +28,7 @@ namespace CrowdDefense.Systems
     {
         public bool IsVictory;
         public int StarsEarned;          // 1-3
+        public int Score;                // composite score from ScoreCalc
         public int GoldEarned;           // lifetime gold this run level
         public int PerksAcquired;
         public int Kills;
@@ -39,6 +40,18 @@ namespace CrowdDefense.Systems
         public string LevelId = "";
         public bool IsFirstClear;
         public int GemsRewarded;
+    }
+
+    // Stateless score formula — deterministic, callable from UI, tests, leaderboards.
+    public static class ScoreCalc
+    {
+        public static int ComputeScore(int wavesCleared, int totalWaves, float castleHpPct, float timeSec)
+        {
+            int baseScore     = wavesCleared * 100;
+            float hpBonus     = castleHpPct * 50f;
+            float timePenalty = Mathf.Max(0, timeSec - 120) * 0.5f;
+            return Mathf.Max(0, (int)(baseScore + hpBonus - timePenalty));
+        }
     }
 
     [DefaultExecutionOrder(-50)]
@@ -547,10 +560,16 @@ namespace CrowdDefense.Systems
 
             var rs = SaveSystem.GetRunState();
 
+            int wavesCleared = isVictory
+                ? (WaveManager.Instance?.TotalWaves ?? 0)
+                : Mathf.Max(0, (WaveManager.Instance?.WaveDisplayNumber ?? 1) - 1);
+            int totalWaves = WaveManager.Instance?.TotalWaves is > 0 ? WaveManager.Instance.TotalWaves : 10;
+
             return new LevelResult
             {
                 IsVictory         = isVictory,
                 StarsEarned       = stars,
+                Score             = ScoreCalc.ComputeScore(wavesCleared, totalWaves, hpRatio, _playtimeAccum),
                 GoldEarned        = _goldEarned,
                 PerksAcquired     = _perksThisLevel + (rs?.runPerksAcquired ?? 0),
                 Kills             = _killsThisLevel,
