@@ -1394,3 +1394,65 @@ Time cap : soft 2h (jusqu'à ~22h00). Sprint R6-PARITY-V4 déjà ✅ complete 85
 ## Status
 
 ⏳ pending exec ack + dispatch slots 1-3 parallèles
+
+---
+
+# 🟢 TASK D — DEPRECATED API SWEEP (low priority, non-blocking) — 19h57
+
+**Context** : Post-`a57e396` compile clean attendu, restent ~30 warnings deprecated API non-bloquants. Batch fix dans une seule passe propre.
+
+## Sites à patcher
+
+**TMPro API change (3 sites)** — `enableWordWrapping` deprecated → `textWrappingMode`
+- `Assets/Scripts/Entities/Castle.cs:85`
+- `Assets/Scripts/Systems/GhostPreviewController.cs:202`
+- `Assets/Scripts/UI/FloatingPopupController.cs:252`
+
+Replace pattern :
+```csharp
+// AVANT
+text.enableWordWrapping = true; // ou false
+// APRÈS
+text.textWrappingMode = TextWrappingModes.Normal; // ou .NoWrap
+```
+
+**UI Toolkit API change (~15 sites)** — `VisualElement.transform` ITransform deprecated → `style.translate/rotate/scale` + `resolvedStyle.translate/rotate/scale`
+- `Assets/Scripts/UI/ComboHudController.cs:121,129,132,140,143,170,181,189,192,208,215,216`
+- `Assets/Scripts/UI/HeroSkillBarController.cs:230,239`
+
+Replace patterns :
+```csharp
+// AVANT (write)
+elem.transform.scale = new Vector3(s, s, 1f);
+elem.transform.position = new Vector3(x, y, 0f);
+// APRÈS (write)
+elem.style.scale = new Scale(new Vector3(s, s, 1f));
+elem.style.translate = new Translate(x, y);
+
+// AVANT (read)
+var s = elem.transform.scale;
+// APRÈS (read)
+var s = elem.resolvedStyle.scale.value;
+```
+
+**Nullable warnings (5 sites)** — CS8602 dereference of possibly null + CS8601 possible null assignment
+- `Assets/Scripts/Entities/Enemy.Behaviors.cs:163-166` — add `?` or null-check before deref
+- `Assets/Scripts/Entities/Enemy.Update.cs:122` — same
+- `Assets/Scripts/Systems/GhostPreviewController.cs:186` — explicit null-coalesce
+
+## Action
+
+1. Single quality-maintainer subagent passe (background, ~30 min)
+2. Test compile + zéro warning (sauf si dependency genuine warning)
+3. Commit : `chore(api-update): TMPro + UIToolkit + nullable deprecated APIs (30 warnings → 0)`
+4. Push
+
+## Constraints
+
+- **Aucune logique runtime modifiée** — juste API surface mapping
+- Verify aucun `var` qui infère un type changeant (Vector3 → Scale wrapper)
+- Cap LOC delta : +/-50 LOC max attendu
+
+## Status
+
+⏳ pending exec dispatch slot libre
