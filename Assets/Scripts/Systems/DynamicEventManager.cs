@@ -21,8 +21,8 @@ namespace CrowdDefense.Systems
         private ParticleSystem? _sandStormVfx;
         private readonly List<Tower> _disabledTowers = new();
         private Coroutine? _castleDmgCoroutine;
-        private float _prevRangeMul = 1f;
-        private float _prevSpeedMul = 1f;
+        private readonly Dictionary<Tower, float> _prevRangeMul = new();
+        private readonly Dictionary<Enemy, float> _prevSpeedMul = new();
 
         protected override void OnAwakeSingleton() { }
 
@@ -80,22 +80,22 @@ namespace CrowdDefense.Systems
                 _sandStormVfx = weather.SpawnPreset(WeatherType.Dust);
 
             var towers = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
-            _prevRangeMul = 1f;
+            _prevRangeMul.Clear();
             foreach (var t in towers)
             {
-                _prevRangeMul = t.EventRangeMul;
+                _prevRangeMul[t] = t.EventRangeMul;
                 t.EventRangeMul *= 0.75f;
             }
 
             var enemies = EnemyPool.Instance?.ActiveEnemies;
             if (enemies != null)
             {
-                _prevSpeedMul = 1f;
+                _prevSpeedMul.Clear();
                 for (int i = 0; i < enemies.Count; i++)
                 {
                     var e = enemies[i];
                     if (e == null || e.IsDead) continue;
-                    _prevSpeedMul = e.currentSpeedMul;
+                    _prevSpeedMul[e] = e.currentSpeedMul;
                     e.currentSpeedMul *= 1.15f;
                 }
             }
@@ -112,7 +112,9 @@ namespace CrowdDefense.Systems
 
             var towers = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
             foreach (var t in towers)
-                t.EventRangeMul = _prevRangeMul;
+                if (_prevRangeMul.TryGetValue(t, out float prev))
+                    t.EventRangeMul = prev;
+            _prevRangeMul.Clear();
 
             var enemies = EnemyPool.Instance?.ActiveEnemies;
             if (enemies != null)
@@ -121,9 +123,11 @@ namespace CrowdDefense.Systems
                 {
                     var e = enemies[i];
                     if (e == null || e.IsDead) continue;
-                    e.currentSpeedMul = Mathf.Max(e.currentSpeedMul / 1.15f, 0f);
+                    if (_prevSpeedMul.TryGetValue(e, out float prev))
+                        e.currentSpeedMul = prev;
                 }
             }
+            _prevSpeedMul.Clear();
         }
 
         // ── LavaSurge ────────────────────────────────────────────────────────────
