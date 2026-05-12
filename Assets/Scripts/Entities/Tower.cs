@@ -95,6 +95,10 @@ namespace CrowdDefense.Entities
         // Hero aura buff — applied by Synergies.cs or directly by Hero tick
         private float _heroBuffDmgMul = 1f;
 
+        // Selection ring — cyan LineRenderer circle at base, shown when tower is selected
+        private LineRenderer? _selectionRing;
+        private bool _isSelected;
+
         // Range ring + synergy halo GameObjects
         private GameObject? _rangeRing;
         private LineRenderer? _rangeCircle;
@@ -480,6 +484,7 @@ namespace CrowdDefense.Entities
             BuildUpgradeArrow();
             BuildClusterHighlight();
             BuildDamageIcon(type.DamageType);
+            BuildSelectionRing();
             if (type.Behavior == TowerBehavior.CoinPull)
                 BuildMagnetAuraCircle(BalanceConfig.Get().MagnetSlowRadius);
 
@@ -756,6 +761,7 @@ namespace CrowdDefense.Entities
         private IEnumerator PlayDestroyAnim()
         {
             _destroyStarted = true;
+            if (_selectionRing != null) _selectionRing.gameObject.SetActive(false);
             Vector3 startScale = transform.localScale;
             float targetRotZ = Random.Range(-45f, 45f);
             float startRotZ = transform.localEulerAngles.z;
@@ -839,6 +845,7 @@ namespace CrowdDefense.Entities
             TickIdleAnim();
             TickHeadAim();
             TickAimLine();
+            TickSelectionRing();
 
             // Reset bulwark protection each frame; re-set by nearby Bulwark towers below.
             _bulwarkProtected = false;
@@ -1313,6 +1320,82 @@ namespace CrowdDefense.Entities
             Color c = cooldown <= 0.1f ? Color.red : new Color(1f, 1f, 1f, 0.5f);
             _aimLine.startColor = c;
             _aimLine.endColor   = new Color(c.r, c.g, c.b, 0f);
+        }
+
+        // ── Selection Ring ────────────────────────────────────────────────────
+
+        public void SetSelected(bool selected)
+        {
+            _isSelected = selected;
+            if (_selectionRing != null)
+                _selectionRing.gameObject.SetActive(selected && !_destroyStarted);
+        }
+
+        private void BuildSelectionRing()
+        {
+            if (_selectionRing != null)
+            {
+                Destroy(_selectionRing.gameObject);
+                _selectionRing = null;
+            }
+
+            const int segments = 32;
+            var go = new GameObject("SelectionRing");
+            go.transform.SetParent(transform);
+            go.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;
+            lr.loop = true;
+            lr.positionCount = segments;
+            lr.startWidth = 0.07f;
+            lr.endWidth   = 0.07f;
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3002;
+            }
+            lr.material = mat;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
+            const float baseRadius = 0.8f;
+            float step = 2f * Mathf.PI / segments;
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = i * step;
+                lr.SetPosition(i, new Vector3(Mathf.Cos(angle) * baseRadius, 0f, Mathf.Sin(angle) * baseRadius));
+            }
+
+            go.SetActive(false);
+            _selectionRing = lr;
+        }
+
+        private void TickSelectionRing()
+        {
+            if (_selectionRing == null || !_isSelected || _destroyStarted) return;
+
+            float t = Time.time * 3f;
+            float radius = 0.8f + Mathf.Sin(t) * 0.1f;
+            float alpha  = 0.6f + Mathf.Sin(t) * 0.3f;
+
+            var c = new Color(0.2f, 0.9f, 1f, alpha);
+            _selectionRing.startColor = c;
+            _selectionRing.endColor   = c;
+
+            const int segments = 32;
+            float step = 2f * Mathf.PI / segments;
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = i * step;
+                _selectionRing.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius));
+            }
         }
 
         // ── Range Ring ────────────────────────────────────────────────────────

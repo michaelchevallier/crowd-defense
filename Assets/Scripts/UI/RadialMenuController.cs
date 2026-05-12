@@ -122,11 +122,13 @@ namespace CrowdDefense.UI
             {
                 currentTower.ShowRangeRing(false);
                 currentTower.ShowTargetLine = false;
+                currentTower.SetSelected(false);
                 _rangeVisible = false;
             }
             currentTower = tower;
             if (tower == null) { Hide(); return; }
             tower.ShowTargetLine = true;
+            tower.SetSelected(true);
             RefreshMenu(tower);
         }
 
@@ -459,6 +461,7 @@ namespace CrowdDefense.UI
         private void ExecuteSell(Tower tower, int refund)
         {
             tower.ShowRangeRing(false);
+            tower.SetSelected(false);
             _rangeVisible = false;
             currentTower = null;
             Hide();
