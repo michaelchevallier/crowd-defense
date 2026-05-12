@@ -8,6 +8,9 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class PauseMenuController : MonoBehaviour
     {
+        public static PauseMenuController? Instance { get; private set; }
+        public bool IsMenuOpen { get; private set; }
+
         private VisualElement? _root;
         private Button? _btnResume;
         private Button? _btnRestart;
@@ -15,6 +18,7 @@ namespace CrowdDefense.UI
 
         private void Awake()
         {
+            Instance = this;
             var doc = GetComponent<UIDocument>();
             _root = doc.rootVisualElement.Q("pause-root");
             _btnResume  = _root?.Q<Button>("btn-resume");
@@ -38,12 +42,18 @@ namespace CrowdDefense.UI
                 LevelRunner.Instance.OnPauseChanged -= Sync;
         }
 
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
+
         private void Sync()
         {
             bool paused = LevelRunner.Instance?.IsPaused ?? false;
             if (_root == null) return;
             if (paused) _root.RemoveFromClassList("hidden");
             else        _root.AddToClassList("hidden");
+            IsMenuOpen = paused;
         }
 
         private void OnResumeClicked()  => LevelRunner.Instance?.Resume();
