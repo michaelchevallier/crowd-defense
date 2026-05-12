@@ -71,6 +71,10 @@ namespace CrowdDefense.Visual
         // ── Lifecycle ─────────────────────────────────────────────────────────
         private void Start()
         {
+            // V4-parity: position (0, 30, 21), rotation ~47° elevation to match Phaser setup
+            transform.position = new Vector3(0f, 30f, 21f);
+            transform.rotation = Quaternion.Euler(47f, 0f, 0f);
+
             _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
             _defaultPosition = transform.position;
             _defaultRotation = transform.rotation;
@@ -141,6 +145,9 @@ namespace CrowdDefense.Visual
         private void Update()
         {
             if (_zooming) return;
+            // Shift+R restart (V4 parity)
+            if (Input.GetKeyDown(KeyCode.R) && Input.GetKey(KeyCode.LeftShift))
+                LevelRunner.Instance?.RestartLevel();
             if (Input.GetKeyDown(KeyBindings.GetKey("birdseye"))) ToggleBirdsEye();
             if (_birdsEye) return;
             if (Input.GetKeyDown(KeyBindings.GetKey("reset"))) ResetToDefault();

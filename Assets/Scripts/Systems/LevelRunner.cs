@@ -222,7 +222,7 @@ namespace CrowdDefense.Systems
 #endif
             }
 
-            if (Input.GetKeyDown(KeyBindings.GetKey("pause")))
+            if (Input.GetKeyDown(KeyBindings.GetKey("pause")) || Input.GetKeyDown(KeyBindings.GetKey("pause_alt")))
             {
                 if (IsAnyModalOpen())
                     CloseTopModal();

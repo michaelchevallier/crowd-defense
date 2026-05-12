@@ -1,0 +1,69 @@
+.main-menu-root {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 15, 25, 1);
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-container {
+    width: 400px;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.menu-title {
+    font-size: 60px;
+    color: rgb(255, 200, 100);
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255, 200, 100, 0.4);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.button-group {
+    width: 100%;
+    flex-direction: column;
+    gap: 15px;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.menu-btn {
+    height: 60px;
+    font-size: 24px;
+    background-color: rgba(40, 60, 100, 0.8);
+    border-width: 2px;
+    border-color: rgba(100, 150, 255, 0.6);
+    color: rgb(200, 220, 255);
+    -unity-font-style: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-btn:hover {
+    background-color: rgba(60, 100, 150, 1);
+    border-color: rgba(150, 200, 255, 1);
+    color: rgb(255, 255, 255);
+}
+
+.menu-btn:active {
+    background-color: rgba(100, 150, 200, 1);
+    border-color: rgb(200, 220, 255);
+    scale: 0.98 0.98;
+}
+
+.menu-btn-disabled {
+    background-color: rgba(40, 40, 60, 0.6);
+    border-color: rgba(80, 80, 120, 0.4);
+    color: rgb(120, 120, 150);
+    cursor: default;
+}
+
+.menu-btn-disabled:hover {
+    background-color: rgba(40, 40, 60, 0.6);
+    border-color: rgba(80, 80, 120, 0.4);
+    color: rgb(120, 120, 150);
+}

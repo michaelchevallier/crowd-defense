@@ -10,6 +10,7 @@ namespace CrowdDefense.Systems
         private static readonly Dictionary<string, KeyCode> Defaults = new()
         {
             { "pause",            KeyCode.Escape },
+            { "pause_alt",        KeyCode.P },
             { "speed",            KeyCode.Space },
             { "mute",             KeyCode.M },
             { "debug",            KeyCode.F3 },
@@ -20,14 +21,22 @@ namespace CrowdDefense.Systems
             { "save",             KeyCode.F5 },
             { "load",             KeyCode.F9 },
             { "reset",            KeyCode.R },
+            { "restart_fast",     KeyCode.None }, // Shift+R handled in CameraController
             { "tower_select_1",   KeyCode.Alpha1 },
             { "tower_select_2",   KeyCode.Alpha2 },
             { "tower_select_3",   KeyCode.Alpha3 },
             { "tower_select_4",   KeyCode.Alpha4 },
+            { "tower_select_5",   KeyCode.Alpha5 },
+            { "tower_select_6",   KeyCode.Alpha6 },
+            { "tower_select_7",   KeyCode.Alpha7 },
+            { "tower_select_8",   KeyCode.Alpha8 },
+            { "tower_select_9",   KeyCode.Alpha9 },
+            { "tower_select_0",   KeyCode.Alpha0 },
             { "skill_q",          KeyCode.Q },
             { "skill_w",          KeyCode.W },
             { "skill_e",          KeyCode.E },
             { "skill_r",          KeyCode.R },
+            { "launch_wave",      KeyCode.N },
             { "speed_adjust_up",  KeyCode.Equals },
             { "speed_adjust_down", KeyCode.Minus },
         };

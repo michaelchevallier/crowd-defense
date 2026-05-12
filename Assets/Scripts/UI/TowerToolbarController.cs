@@ -31,7 +31,7 @@ namespace CrowdDefense.UI
         {
             KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3, KeyCode.Alpha4,
             KeyCode.Alpha5, KeyCode.Alpha6, KeyCode.Alpha7, KeyCode.Alpha8,
-            KeyCode.Alpha9, KeyCode.Alpha0, KeyCode.Minus, KeyCode.Equals,
+            KeyCode.Alpha9, KeyCode.Alpha0,
         };
 
         private void Start()
