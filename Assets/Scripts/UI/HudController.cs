@@ -76,6 +76,14 @@ namespace CrowdDefense.UI
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
 
+        // Gold rolling animation state
+        private float _displayedGold = 0f;
+        private int   _targetGold    = 0;
+        private Coroutine? _goldFlashCoroutine;
+        private int   _lastTickedGoldMultiple = 0;
+        private static readonly Color _goldFlashColor    = new Color(1f, 0.92f, 0.2f);
+        private static readonly Color _goldDefaultColor  = new Color(0.95f, 0.95f, 0.95f);
+
         // Wave countdown overlay (3-2-1-GO)
         private Label? _waveCountdownLabel;
         private Coroutine? _countdownCoroutine;
@@ -452,6 +460,7 @@ namespace CrowdDefense.UI
             TickWaveTime();
             UpdateHeroPanel();
             TickBossHpBar();
+            TickGoldRoll();
         }
 
         // Per-frame smooth countdown on the pill badge and main label during the skip bonus window
@@ -857,7 +866,80 @@ namespace CrowdDefense.UI
 
         private void OnGoldChanged(int gold)
         {
-            if (goldValue != null) goldValue.text = gold.ToString();
+            int delta = gold - _targetGold;
+            _targetGold = gold;
+
+            if (delta < 0)
+            {
+                // Loss — update display instantly so the player sees the deduction right away
+                _displayedGold = gold;
+                _lastTickedGoldMultiple = (gold / 50) * 50;
+                if (goldValue != null) goldValue.text = gold.ToString();
+                return;
+            }
+
+            if (delta < 5)
+            {
+                // Micro-change — skip rolling, instant update
+                _displayedGold = gold;
+                _lastTickedGoldMultiple = (gold / 50) * 50;
+                if (goldValue != null) goldValue.text = gold.ToString();
+                return;
+            }
+
+            // Gold gain >= 5: rolling animation + flash
+            if (goldValue != null)
+            {
+                if (_goldFlashCoroutine != null) StopCoroutine(_goldFlashCoroutine);
+                _goldFlashCoroutine = StartCoroutine(FlashGoldLabel());
+            }
+        }
+
+        private void TickGoldRoll()
+        {
+            if (goldValue == null) return;
+            if (_displayedGold == _targetGold) return;
+
+            float prevDisplayed = _displayedGold;
+            float speed = Mathf.Max(50f, Mathf.Abs(_targetGold - _displayedGold) * 5f);
+            _displayedGold = Mathf.MoveTowards(_displayedGold, _targetGold, speed * Time.deltaTime);
+
+            int displayInt = (int)_displayedGold;
+            goldValue.text = displayInt.ToString();
+
+            // Coin tick every time we cross a multiple of 50 during upward roll
+            if (_displayedGold > prevDisplayed)
+            {
+                int prevMultiple = ((int)prevDisplayed / 50) * 50;
+                int currMultiple = (displayInt / 50) * 50;
+                if (currMultiple > prevMultiple && currMultiple > _lastTickedGoldMultiple)
+                {
+                    _lastTickedGoldMultiple = currMultiple;
+                    PlayCoinTick();
+                }
+            }
+        }
+
+        private static void PlayCoinTick()
+        {
+            var ac = AudioController.Instance;
+            if (ac == null) return;
+            try
+            {
+                if (ac.GetClip("coin_tick") != null)
+                    ac.PlayPitched("coin_tick", 0.3f, UnityEngine.Random.Range(0.95f, 1.05f));
+            }
+            catch { /* clip absent — skip silently */ }
+        }
+
+        private System.Collections.IEnumerator FlashGoldLabel()
+        {
+            if (goldValue == null) yield break;
+            goldValue.style.color = new StyleColor(_goldFlashColor);
+            yield return new WaitForSecondsRealtime(0.2f);
+            if (goldValue != null)
+                goldValue.style.color = new StyleColor(_goldDefaultColor);
+            _goldFlashCoroutine = null;
         }
 
         // gain=0 means bank reset (castle damaged); gain>0 means interest ticked
