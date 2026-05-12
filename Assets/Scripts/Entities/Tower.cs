@@ -617,6 +617,7 @@ namespace CrowdDefense.Entities
             int refund = Mathf.RoundToInt(CumulativeCost * bal.SellRefundRatio);
             Economy.Instance?.AddGold(refund);
             PlacementController.Instance?.UnregisterTower(this);
+            Synergies.Instance?.MarkDirty();
 #if UNITY_EDITOR
             Debug.Log($"[Tower] Sell cumul={CumulativeCost} refund={refund} ratio={bal.SellRefundRatio:F2}");
 #endif
