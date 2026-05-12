@@ -108,6 +108,30 @@ namespace CrowdDefense.Systems
 
         private static Material BuildPathMat(LevelTheme theme)
         {
+            // Try to load theme-specific textured path material first
+            string themeName = theme switch
+            {
+                LevelTheme.Plaine => "plaine",
+                LevelTheme.Foret => "foret",
+                LevelTheme.Desert => "desert",
+                LevelTheme.Volcan => "volcan",
+                LevelTheme.Apocalypse => "apocalypse",
+                LevelTheme.Espace => "espace",
+                LevelTheme.Submarin => "submarin",
+                LevelTheme.Medieval => "medieval",
+                LevelTheme.Cyberpunk => "cyberpunk",
+                LevelTheme.Foire => "foire",
+                _ => "plaine",
+            };
+            var pathMat = Resources.Load<Material>("Materials/path_" + themeName);
+            if (pathMat != null)
+            {
+                var cloned = new Material(pathMat);
+                cloned.enableInstancing = true;
+                return cloned;
+            }
+
+            // Fallback to color-based material
             var baseMat = Resources.Load<Material>("Materials/Toon_Default");
             var mat = baseMat != null ? new Material(baseMat) : new Material(ShaderUtil.GetToonShader());
             var color = _themePathColor.TryGetValue(theme, out var c) ? c : new Color(0.75f, 0.65f, 0.45f);

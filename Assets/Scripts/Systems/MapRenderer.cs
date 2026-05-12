@@ -164,6 +164,32 @@ namespace CrowdDefense.Systems
                 }
             }
 
+            // Try to load theme-specific textured material for ground cells (GRASS, GRASS_BLOCK, TREE, BUSH, DECOR, ROCK)
+            if (ch == GridCoords.GRASS || ch == GridCoords.GRASS_BLOCK || ch == GridCoords.TREE || ch == GridCoords.BUSH || ch == GridCoords.DECOR || ch == GridCoords.ROCK)
+            {
+                string themeName = theme switch
+                {
+                    LevelTheme.Plaine => "plaine",
+                    LevelTheme.Foret => "foret",
+                    LevelTheme.Desert => "desert",
+                    LevelTheme.Volcan => "volcan",
+                    LevelTheme.Apocalypse => "apocalypse",
+                    LevelTheme.Espace => "espace",
+                    LevelTheme.Submarin => "submarin",
+                    LevelTheme.Medieval => "medieval",
+                    LevelTheme.Cyberpunk => "cyberpunk",
+                    LevelTheme.Foire => "foire",
+                    _ => "plaine",
+                };
+                var groundMat = Resources.Load<Material>("Materials/ground_" + themeName);
+                if (groundMat != null)
+                {
+                    var cloned = new Material(groundMat);
+                    cloned.enableInstancing = true;
+                    return cloned;
+                }
+            }
+
             // Snow theme — static cells get snow material
             if (theme == LevelTheme.Espace || theme == LevelTheme.Medieval)
             {
