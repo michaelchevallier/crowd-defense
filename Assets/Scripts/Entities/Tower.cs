@@ -74,6 +74,12 @@ namespace CrowdDefense.Entities
         private MaterialPropertyBlock? _haloMpb;
         private static readonly int _haloColorId = Shader.PropertyToID("_BaseColor");
 
+        // Affordable upgrade highlight ring (gold pulsing quad when player can afford next level)
+        private GameObject? _affordableHighlight;
+        private Renderer? _affordHighlightRenderer;
+        private MaterialPropertyBlock? _affordMpb;
+        private float _affordCheckTimer;
+
         // Tier pip GameObjects (L2 = 2 pips, L3 = 3 pips)
         private readonly List<GameObject> _tierPips = new();
 
@@ -274,6 +280,7 @@ namespace CrowdDefense.Entities
             BuildRangeRing(type.Range);
             BuildSynergyHalo();
             BuildAimLine();
+            BuildAffordableHighlight(type.Range);
         }
 
         /// <summary>
@@ -1061,6 +1068,7 @@ namespace CrowdDefense.Entities
         private void TickIdleAnim()
         {
             TickSynergyHalo();
+            TickAffordableHighlight();
 
             if (_meshChild == null) return;
 
@@ -1092,6 +1100,59 @@ namespace CrowdDefense.Entities
             var baseColor = new Color(1f, 0.82f, 0.15f, nextAlpha);
             _haloMpb.SetColor(_haloColorId, baseColor);
             _synergyHaloRenderer.SetPropertyBlock(_haloMpb);
+        }
+
+        // ── Affordable Upgrade Highlight ──────────────────────────────────────
+
+        private void BuildAffordableHighlight(float range)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "AffordableHighlight";
+            go.transform.SetParent(transform);
+            go.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            float size = range * 0.3f;
+            go.transform.localScale = new Vector3(size, size, 1f);
+            Object.Destroy(go.GetComponent<Collider>());
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.color = new Color(1f, 0.85f, 0.3f, 0f);
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3000;
+            }
+            _affordHighlightRenderer = go.GetComponent<Renderer>();
+            if (_affordHighlightRenderer != null) _affordHighlightRenderer.material = mat;
+            _affordMpb = new MaterialPropertyBlock();
+            go.SetActive(false);
+            _affordableHighlight = go;
+        }
+
+        private void TickAffordableHighlight()
+        {
+            if (_affordableHighlight == null || cfg == null || UpgradeLevel >= 3) return;
+            _affordCheckTimer -= Time.deltaTime;
+            if (_affordCheckTimer > 0f)
+            {
+                // Still animate alpha when visible
+                if (_affordableHighlight.activeSelf && _affordHighlightRenderer != null && _affordMpb != null)
+                {
+                    float alpha = 0.2f + 0.3f * (0.5f + 0.5f * Mathf.Sin(Time.time * 3.5f));
+                    _affordMpb.SetColor("_BaseColor", new Color(1f, 0.85f, 0.3f, alpha));
+                    _affordHighlightRenderer.SetPropertyBlock(_affordMpb);
+                }
+                return;
+            }
+            _affordCheckTimer = 0.5f;
+
+            var bal = BalanceConfig.Get();
+            float mul = UpgradeLevel == 1 ? bal.UpgradeMulL2 : bal.UpgradeMulL3;
+            int cost = Mathf.RoundToInt(cfg.Cost * mul);
+            bool canAfford = Economy.Instance != null && Economy.Instance.Gold >= cost;
+            _affordableHighlight.SetActive(canAfford);
         }
 
         // ── Head Aim ──────────────────────────────────────────────────────────
