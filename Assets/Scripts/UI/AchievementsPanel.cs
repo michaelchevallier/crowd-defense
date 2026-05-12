@@ -22,6 +22,11 @@ namespace CrowdDefense.UI
         private Button?        _btnUnlocked;
         private Button?        _btnLocked;
 
+        // Top progress bar
+        private Label?         _progressLabel;
+        private VisualElement? _progressFill;
+        private Label?         _pointsLabel;
+
         private Button?        _tabAll;
         private Button?        _tabCombat;
         private Button?        _tabEconomy;
@@ -40,6 +45,8 @@ namespace CrowdDefense.UI
             _root        = doc.Q<VisualElement>("achievements-root");
             _scoreLabel  = doc.Q<Label>("achievements-score");
             _grid        = doc.Q<VisualElement>("achievements-grid");
+
+            BuildTopProgressBar();
             _btnAll      = doc.Q<Button>("btn-filter-all");
             _btnUnlocked = doc.Q<Button>("btn-filter-unlocked");
             _btnLocked   = doc.Q<Button>("btn-filter-locked");
@@ -121,6 +128,53 @@ namespace CrowdDefense.UI
             else        btn.RemoveFromClassList(cssClass);
         }
 
+        private void BuildTopProgressBar()
+        {
+            if (_root == null) return;
+
+            var container = new VisualElement();
+            container.AddToClassList("ach-progress-header");
+
+            var row = new VisualElement();
+            row.AddToClassList("ach-progress-header-row");
+
+            _progressLabel = new Label("Unlocked: 0 / 0");
+            _progressLabel.AddToClassList("ach-progress-label");
+            row.Add(_progressLabel);
+
+            _pointsLabel = new Label("0 / 0 pts");
+            _pointsLabel.AddToClassList("ach-points-label");
+            row.Add(_pointsLabel);
+
+            container.Add(row);
+
+            var barBg = new VisualElement();
+            barBg.AddToClassList("ach-global-bar-bg");
+            _progressFill = new VisualElement();
+            _progressFill.AddToClassList("ach-global-bar-fill");
+            _progressFill.style.width = Length.Percent(0f);
+            barBg.Add(_progressFill);
+            container.Add(barBg);
+
+            // Insert at top of _root, before other children.
+            _root.Insert(0, container);
+        }
+
+        private void RefreshTopProgressBar(int unlockedCount, int totalCount, int earnedPts, int totalPts)
+        {
+            if (_progressLabel != null)
+                _progressLabel.text = $"Unlocked: {unlockedCount} / {totalCount}";
+
+            if (_pointsLabel != null)
+                _pointsLabel.text = $"{earnedPts} / {totalPts} pts";
+
+            if (_progressFill != null)
+            {
+                float ratio = totalCount > 0 ? (float)unlockedCount / totalCount : 0f;
+                _progressFill.style.width = Length.Percent(ratio * 100f);
+            }
+        }
+
         private void Rebuild()
         {
             if (_grid == null) return;
@@ -137,8 +191,9 @@ namespace CrowdDefense.UI
                 return;
             }
 
-            int earned = 0;
-            int total  = 0;
+            int earned        = 0;
+            int total         = 0;
+            int unlockedCount = 0;
 
             // Collect and sort: unlocked first, then locked, stable by index.
             var defs = registry.All;
@@ -151,9 +206,11 @@ namespace CrowdDefense.UI
                 if (def == null) continue;
                 bool unlocked = ach != null && ach.IsUnlocked(def.id);
                 total  += def.points;
-                if (unlocked) earned += def.points;
+                if (unlocked) { earned += def.points; unlockedCount++; }
                 sorted[count++] = (def, unlocked, count);
             }
+
+            RefreshTopProgressBar(unlockedCount, count, earned, total);
 
             // Sort: unlocked first (false > true inverted), then original order.
             Array.Sort(sorted, 0, count, Comparer<(AchievementDef, bool unlocked, int idx)>.Create(
