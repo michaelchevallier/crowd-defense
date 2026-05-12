@@ -270,23 +270,17 @@ namespace CrowdDefense.UI
         private IEnumerator FadeOutArrow()
         {
             if (_arrow == null) yield break;
-            var cg = _arrow.GetComponent<CanvasGroup>();
-            if (cg == null)
-            {
-                _arrow.style.display = DisplayStyle.None;
-                yield break;
-            }
 
             float t = 0f;
             while (t < 0.2f)
             {
                 t += Time.unscaledDeltaTime;
                 float k = 1f - Mathf.Clamp01(t / 0.2f);
-                cg.alpha = k;
-                _arrow.transform.scale = new Vector3(0.5f + 0.5f * k, 0.5f + 0.5f * k, 1f);
+                _arrow.style.opacity = k;
+                _arrow.style.scale = new StyleScale(new Scale(Vector2.one * (0.5f + 0.5f * k)));
                 yield return null;
             }
-            cg.alpha = 0f;
+            _arrow.style.opacity = 0f;
             _arrow.style.display = DisplayStyle.None;
         }
 
@@ -310,23 +304,20 @@ namespace CrowdDefense.UI
             if (_arrow == null) yield break;
             _arrow.style.display = DisplayStyle.Flex;
 
-            var cg = _arrow.GetComponent<CanvasGroup>();
-            if (cg == null) cg = _arrow.AddComponent<CanvasGroup>();
-
-            cg.alpha = 0f;
-            _arrow.transform.scale = Vector3.one * 0.5f;
+            _arrow.style.opacity = 0f;
+            _arrow.style.scale = new StyleScale(new Scale(Vector2.one * 0.5f));
 
             float t = 0f;
             while (t < 0.3f)
             {
                 t += Time.unscaledDeltaTime;
                 float k = Mathf.Clamp01(t / 0.3f);
-                cg.alpha = k;
-                _arrow.transform.scale = Vector3.one * (0.5f + 0.5f * k);
+                _arrow.style.opacity = k;
+                _arrow.style.scale = new StyleScale(new Scale(Vector2.one * (0.5f + 0.5f * k)));
                 yield return null;
             }
-            cg.alpha = 1f;
-            _arrow.transform.scale = Vector3.one;
+            _arrow.style.opacity = 1f;
+            _arrow.style.scale = new StyleScale(new Scale(Vector2.one));
         }
 
         // ── Helpers ────────────────────────────────────────────────────────────
