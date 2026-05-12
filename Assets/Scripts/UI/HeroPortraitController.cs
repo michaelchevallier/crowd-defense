@@ -28,20 +28,51 @@ namespace CrowdDefense.UI
         private float _tickTimer;
         private VisualElement? _xpFlashOverlay;
         private VisualElement? _damageFlashOverlay;
+        private VisualElement? _flameRing;
 
         protected override void OnAwakeSingleton()
         {
             // Defer full init to Wire() so PanelSettings from other UIDocuments are ready.
         }
 
-        private void OnEnable()  => EventManager.Instance?.Subscribe<HeroDamagedEvent>(OnHeroDamaged);
-        private void OnDisable() => EventManager.Instance?.Unsubscribe<HeroDamagedEvent>(OnHeroDamaged);
+        private void OnEnable()
+        {
+            EventManager.Instance?.Subscribe<HeroDamagedEvent>(OnHeroDamaged);
+            StartCoroutine(FlameRingRoutine());
+        }
+
+        private void OnDisable()
+        {
+            EventManager.Instance?.Unsubscribe<HeroDamagedEvent>(OnHeroDamaged);
+            StopCoroutine(nameof(FlameRingRoutine));
+        }
 
         private void OnHeroDamaged(HeroDamagedEvent _)
         {
             if (_damageFlashOverlay == null) return;
             StopCoroutine(nameof(DamageFlashRoutine));
             StartCoroutine(DamageFlashRoutine());
+        }
+
+        // Flame ring: outer border pulse orange alpha 0.3→0.6→0.3 at 1Hz via sin wave.
+        private IEnumerator FlameRingRoutine()
+        {
+            float t = 0f;
+            while (true)
+            {
+                t += Time.unscaledDeltaTime;
+                // sin oscillates -1..1 at 1Hz; remap to 0.3..0.6
+                float alpha = 0.45f + 0.15f * Mathf.Sin(t * Mathf.PI * 2f);
+                if (_flameRing != null)
+                {
+                    var c = new Color(1f, 0.5f, 0f, alpha);
+                    _flameRing.style.borderTopColor    = new StyleColor(c);
+                    _flameRing.style.borderRightColor  = new StyleColor(c);
+                    _flameRing.style.borderBottomColor = new StyleColor(c);
+                    _flameRing.style.borderLeftColor   = new StyleColor(c);
+                }
+                yield return null;
+            }
         }
 
         private IEnumerator DamageFlashRoutine()
@@ -178,6 +209,25 @@ namespace CrowdDefense.UI
             var root = new VisualElement();
             root.AddToClassList("hero-portrait-root");
             if (sheet != null) root.styleSheets.Add(sheet);
+
+            // Flame ring sits behind the portrait as an absolute overlay on root.
+            _flameRing = new VisualElement();
+            _flameRing.style.position              = Position.Absolute;
+            _flameRing.style.top                   = new StyleLength(-4f);
+            _flameRing.style.left                  = new StyleLength(-4f);
+            _flameRing.style.right                 = new StyleLength(-4f);
+            _flameRing.style.bottom                = new StyleLength(-4f);
+            _flameRing.style.borderTopWidth        = 3f;
+            _flameRing.style.borderRightWidth      = 3f;
+            _flameRing.style.borderBottomWidth     = 3f;
+            _flameRing.style.borderLeftWidth       = 3f;
+            _flameRing.style.borderTopLeftRadius     = new StyleLength(54f);
+            _flameRing.style.borderTopRightRadius    = new StyleLength(54f);
+            _flameRing.style.borderBottomLeftRadius  = new StyleLength(54f);
+            _flameRing.style.borderBottomRightRadius = new StyleLength(54f);
+            _flameRing.style.backgroundColor  = new StyleColor(Color.clear);
+            _flameRing.pickingMode            = PickingMode.Ignore;
+            root.Add(_flameRing);
 
             _portrait = new VisualElement();
             _portrait.AddToClassList("portrait");
