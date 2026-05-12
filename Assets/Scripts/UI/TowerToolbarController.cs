@@ -46,6 +46,13 @@ namespace CrowdDefense.UI
             }
 
             var root = doc.rootVisualElement;
+            if (root == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("[TowerToolbar] rootVisualElement is null");
+#endif
+                return;
+            }
             toolbarRoot = root.Q<VisualElement>("tower-toolbar");
 
             if (towerRegistry == null || toolbarRoot == null)
