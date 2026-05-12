@@ -104,6 +104,14 @@ namespace CrowdDefense.UI
         private Coroutine?     _perfectStreakCoroutine;
         private int            _perfectWaveStreak = 0;
 
+        // Wave clear summary popup (center-screen, shown at end of each wave)
+        private VisualElement? _waveSummaryPanel;
+        private Label?         _waveSummaryTitle;
+        private Label?         _waveSummaryGold;
+        private Label?         _waveSummaryKills;
+        private Label?         _waveSummaryTime;
+        private Coroutine?     _waveSummaryCoroutine;
+
         // Wave intro banner (left side, slide-in "Wave N - {enemy}" at wave start)
         private VisualElement? _waveIntroBanner;
         private Label?         _waveIntroLabel;
@@ -298,6 +306,7 @@ namespace CrowdDefense.UI
             BuildWaveCountdownLabel(root);
             BuildWaveProgressDots(root);
             BuildWaveIntroBanner(root);
+            BuildWaveSummaryPanel(root);
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -851,6 +860,18 @@ namespace CrowdDefense.UI
 
             if (_perfectWaveStreak >= 2)
                 ShowPerfectStreakBanner(_perfectWaveStreak);
+
+            // Skip summary for lobby wave (idx 0 is real Wave 1 — show it) and terminal states
+            var state = LevelRunner.Instance?.State ?? GameState.Lobby;
+            bool isTerminal = state == GameState.Lost || state == GameState.LevelComplete || state == GameState.Summary;
+            if (!isTerminal)
+            {
+                var wm = WaveManager.Instance;
+                int gold  = wm?.LastWaveGoldEarned ?? 0;
+                int kills = wm?.LastWaveKillCount  ?? 0;
+                float elapsed = wm?.LastWaveElapsedSeconds ?? 0f;
+                ShowWaveSummaryPopup(idx + 1, gold, kills, elapsed);
+            }
         }
 
         private void BuildWaveCountdownLabel(VisualElement root)
@@ -1677,6 +1698,146 @@ namespace CrowdDefense.UI
         {
             Time.timeScale = 1f;
             Systems.LevelLoader.GoToMenu();
+        }
+
+        // ── Wave clear summary popup ──────────────────────────────────────────
+
+        private static readonly Color _summaryGoldColor = new Color(1f, 0.85f, 0.2f);
+        private static readonly Color _summaryCyanColor = new Color(0.3f, 0.9f, 1f);
+        private static readonly Color _summaryWhite     = Color.white;
+
+        private void BuildWaveSummaryPanel(VisualElement root)
+        {
+            _waveSummaryPanel = new VisualElement { name = "wave-summary-panel" };
+            _waveSummaryPanel.style.position       = Position.Absolute;
+            _waveSummaryPanel.style.top            = new Length(50f, LengthUnit.Percent);
+            _waveSummaryPanel.style.left           = new Length(50f, LengthUnit.Percent);
+            _waveSummaryPanel.style.translate      = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
+            _waveSummaryPanel.style.width          = new Length(400f, LengthUnit.Pixel);
+            _waveSummaryPanel.style.height         = new Length(200f, LengthUnit.Pixel);
+            _waveSummaryPanel.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.85f));
+            _waveSummaryPanel.style.borderTopWidth    = _waveSummaryPanel.style.borderBottomWidth =
+            _waveSummaryPanel.style.borderLeftWidth   = _waveSummaryPanel.style.borderRightWidth  = 3f;
+            var goldBorder = new StyleColor(_summaryGoldColor);
+            _waveSummaryPanel.style.borderTopColor    = _waveSummaryPanel.style.borderBottomColor =
+            _waveSummaryPanel.style.borderLeftColor   = _waveSummaryPanel.style.borderRightColor  = goldBorder;
+            _waveSummaryPanel.style.borderTopLeftRadius    = _waveSummaryPanel.style.borderTopRightRadius =
+            _waveSummaryPanel.style.borderBottomLeftRadius = _waveSummaryPanel.style.borderBottomRightRadius = new Length(12f, LengthUnit.Pixel);
+            _waveSummaryPanel.style.paddingTop    = new Length(16f, LengthUnit.Pixel);
+            _waveSummaryPanel.style.paddingBottom = new Length(16f, LengthUnit.Pixel);
+            _waveSummaryPanel.style.paddingLeft   = new Length(24f, LengthUnit.Pixel);
+            _waveSummaryPanel.style.paddingRight  = new Length(24f, LengthUnit.Pixel);
+            _waveSummaryPanel.style.alignItems    = Align.Center;
+            _waveSummaryPanel.style.justifyContent = Justify.SpaceAround;
+            _waveSummaryPanel.style.display        = DisplayStyle.None;
+            _waveSummaryPanel.style.opacity        = 0f;
+            _waveSummaryPanel.style.scale          = new Scale(new Vector3(0f, 0f, 1f));
+
+            _waveSummaryTitle = new Label { name = "wave-summary-title", text = "" };
+            _waveSummaryTitle.style.color                   = new StyleColor(_summaryGoldColor);
+            _waveSummaryTitle.style.fontSize                = new Length(32f, LengthUnit.Pixel);
+            _waveSummaryTitle.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            _waveSummaryTitle.style.unityTextAlign          = TextAnchor.MiddleCenter;
+            _waveSummaryTitle.style.textShadow              = new TextShadow
+            {
+                color      = new Color(0.4f, 0.25f, 0f, 0.9f),
+                offset     = new Vector2(2f, 2f),
+                blurRadius = 4f,
+            };
+            _waveSummaryPanel.Add(_waveSummaryTitle);
+
+            _waveSummaryGold = new Label { name = "wave-summary-gold", text = "" };
+            _waveSummaryGold.style.color     = new StyleColor(_summaryWhite);
+            _waveSummaryGold.style.fontSize  = new Length(18f, LengthUnit.Pixel);
+            _waveSummaryGold.style.unityTextAlign = TextAnchor.MiddleCenter;
+            _waveSummaryPanel.Add(_waveSummaryGold);
+
+            _waveSummaryKills = new Label { name = "wave-summary-kills", text = "" };
+            _waveSummaryKills.style.color    = new StyleColor(_summaryWhite);
+            _waveSummaryKills.style.fontSize = new Length(18f, LengthUnit.Pixel);
+            _waveSummaryKills.style.unityTextAlign = TextAnchor.MiddleCenter;
+            _waveSummaryPanel.Add(_waveSummaryKills);
+
+            _waveSummaryTime = new Label { name = "wave-summary-time", text = "" };
+            _waveSummaryTime.style.color     = new StyleColor(_summaryCyanColor);
+            _waveSummaryTime.style.fontSize  = new Length(18f, LengthUnit.Pixel);
+            _waveSummaryTime.style.unityTextAlign = TextAnchor.MiddleCenter;
+            _waveSummaryPanel.Add(_waveSummaryTime);
+
+            root.Add(_waveSummaryPanel);
+        }
+
+        private void ShowWaveSummaryPopup(int waveNum, int goldEarned, int killCount, float elapsedSeconds)
+        {
+            if (_waveSummaryPanel == null) return;
+
+            if (_waveSummaryCoroutine != null)
+            {
+                StopCoroutine(_waveSummaryCoroutine);
+                _waveSummaryCoroutine = null;
+            }
+
+            if (_waveSummaryTitle  != null) _waveSummaryTitle.text  = $"WAVE {waveNum} CLEAR";
+            if (_waveSummaryGold   != null) _waveSummaryGold.text   = $"Or gagné : +{goldEarned}";
+            if (_waveSummaryKills  != null) _waveSummaryKills.text  = $"Ennemis : {killCount}";
+            if (_waveSummaryTime   != null) _waveSummaryTime.text   = $"Temps : {TimeFormatter.FormatMMSS(elapsedSeconds)}";
+
+            _waveSummaryPanel.style.display = DisplayStyle.Flex;
+            _waveSummaryPanel.style.opacity = 0f;
+            _waveSummaryPanel.style.scale   = new Scale(new Vector3(0f, 0f, 1f));
+
+            _waveSummaryCoroutine = StartCoroutine(WaveSummaryCoroutine());
+        }
+
+        private System.Collections.IEnumerator WaveSummaryCoroutine()
+        {
+            if (_waveSummaryPanel == null) yield break;
+
+            var ac = AudioController.Instance;
+            if (ac != null)
+            {
+                try
+                {
+                    if (ac.GetClip("wave_clear_fanfare") != null)
+                        ac.Play("wave_clear_fanfare", 0.8f);
+                }
+                catch { /* clip absent — skip silently */ }
+            }
+
+            // Phase 1 — scale 0 → 1.1 → 1.0 + fade-in over 0.4s ease-out
+            const float punchDur = 0.4f;
+            float t = 0f;
+            while (t < punchDur)
+            {
+                t += Time.unscaledDeltaTime;
+                float frac = Mathf.Clamp01(t / punchDur);
+                _waveSummaryPanel.style.opacity = Mathf.Clamp01(frac * 2.5f);
+                float s = frac < 0.7f
+                    ? Mathf.Lerp(0f, 1.1f, frac / 0.7f)
+                    : Mathf.Lerp(1.1f, 1.0f, (frac - 0.7f) / 0.3f);
+                _waveSummaryPanel.style.scale = new Scale(new Vector3(s, s, 1f));
+                yield return null;
+            }
+            _waveSummaryPanel.style.opacity = 1f;
+            _waveSummaryPanel.style.scale   = new Scale(new Vector3(1f, 1f, 1f));
+
+            // Phase 2 — hold 2.5s
+            yield return new WaitForSecondsRealtime(2.5f);
+            if (_waveSummaryPanel == null) yield break;
+
+            // Phase 3 — fade-out 0.4s
+            const float fadeOutDur = 0.4f;
+            t = 0f;
+            while (t < fadeOutDur)
+            {
+                t += Time.unscaledDeltaTime;
+                float frac = Mathf.Clamp01(t / fadeOutDur);
+                _waveSummaryPanel.style.opacity = 1f - frac;
+                yield return null;
+            }
+
+            if (_waveSummaryPanel != null) _waveSummaryPanel.style.display = DisplayStyle.None;
+            _waveSummaryCoroutine = null;
         }
 
         // ── Perfect wave streak banner ────────────────────────────────────────

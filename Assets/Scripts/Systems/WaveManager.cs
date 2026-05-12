@@ -70,6 +70,13 @@ namespace CrowdDefense.Systems
         public int WaveKillCount => _waveKillCount;
         public int WaveTotalSpawned => _waveTotalSpawned;
 
+        // Stats snapshotted at the moment OnWaveCleared fires (read by HUD summary popup)
+        private int   _goldAtWaveStart        = 0;
+        private float _waveStartTimeUnscaled   = 0f;
+        public  int   LastWaveGoldEarned       { get; private set; }
+        public  int   LastWaveKillCount        { get; private set; }
+        public  float LastWaveElapsedSeconds   { get; private set; }
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private bool _debugPause = false;
 #endif
@@ -163,6 +170,8 @@ namespace CrowdDefense.Systems
             spawnCounter = 0;
             _waveKillCount = 0;
             _waveTotalSpawned = 0;
+            _goldAtWaveStart      = Economy.Instance?.Gold ?? 0;
+            _waveStartTimeUnscaled = Time.unscaledTime;
             _specialSpawnRateMul = 1f;
             _specialCountMul = 1f;
             _varSpawnRateMul = 1f;
@@ -280,6 +289,10 @@ namespace CrowdDefense.Systems
                     JuiceFX.Instance?.Flash(new Color(0.4f, 1f, 0.4f, 0.25f), 300);
 
                     Achievements.Instance?.TrackEvent("wave_cleared", 1);
+                    // Snapshot per-wave stats before listeners read them
+                    LastWaveKillCount      = _waveKillCount;
+                    LastWaveElapsedSeconds = Time.unscaledTime - _waveStartTimeUnscaled;
+                    LastWaveGoldEarned     = Mathf.Max(0, (Economy.Instance?.Gold ?? 0) - _goldAtWaveStart);
                     OnWaveCleared?.Invoke(currentWaveIdx);
 #if UNITY_EDITOR
                     Debug.Log($"[WaveManager] Wave {currentWaveIdx + 1} cleared — awaiting player start");
