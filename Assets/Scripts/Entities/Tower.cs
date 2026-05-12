@@ -436,6 +436,9 @@ namespace CrowdDefense.Entities
         // Per-tower muzzle flash throttle — skip if same tower fired within 50 ms.
         private float _lastMuzzleFlashAt = -1f;
 
+        // Lightning beam VFX — unlit material created once, reused each beam.
+        private Material? _lightningBeamMat;
+
         // AimLine : thin red laser tower → target (togglable via PlayerPrefs "show_aim_lines_v1")
         private LineRenderer? _aimLine;
         // Prediction line visibility — true when tower is selected or hovered.
@@ -1287,44 +1290,52 @@ namespace CrowdDefense.Entities
             // AoE : L3Aoe > 0 overrides cfg.Aoe
             float effectiveAoe = L3Aoe > 0f ? L3Aoe : cfg.Aoe;
 
-            // Parabolic arc parameters (Cannon)
-            float dist = (t.transform.position - (transform.position + Vector3.up * 1.0f)).magnitude;
-            float flightDur = cfg.Parabolic ? dist / Mathf.Max(cfg.ProjectileSpeed, 1f) : 0f;
-            float arcH = cfg.Parabolic ? dist / 3f : 0f;
-
-            var proj = ProjectilePool.Instance.Get();
-            if (proj == null)
+            // Mage uses lightning beam instead of projectile
+            if (cfg.Id == "mage")
             {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogError("[Tower] ProjectilePool.Get() returned null — skipping fire");
-#endif
-                return;
+                FireLightningBeam(t, dmg);
             }
-            proj.transform.position = transform.position + Vector3.up * 1.0f;
-            proj.transform.rotation = Quaternion.identity;
-            proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
-                effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
-            proj.SetElementTint(_projectileTint);
-
-            // Extra projectiles : synergy _multiShotBonus + L3MultiShot (cumulatifs)
-            // Archer Master Hunter (L3 DPS) uses 15 degree spread; others default 12 degrees (D1-03)
-            int extraShots = _multiShotBonus + L3MultiShot;
-            if (extraShots > 0)
+            else
             {
-                float spreadStep = (cfg.Id == "archer" && UpgradeBranch == TowerBranch.Dps) ? 15f : 12f;
-                Vector3 baseDir = (t.transform.position - transform.position).normalized;
-                for (int i = 0; i < extraShots; i++)
+                // Parabolic arc parameters (Cannon)
+                float dist = (t.transform.position - (transform.position + Vector3.up * 1.0f)).magnitude;
+                float flightDur = cfg.Parabolic ? dist / Mathf.Max(cfg.ProjectileSpeed, 1f) : 0f;
+                float arcH = cfg.Parabolic ? dist / 3f : 0f;
+
+                var proj = ProjectilePool.Instance.Get();
+                if (proj == null)
                 {
-                    float spreadAngle = (i + 1) * spreadStep;
-                    float sign = (i % 2 == 0) ? 1f : -1f;
-                    Vector3 spread = Quaternion.Euler(0f, spreadAngle * sign, 0f) * baseDir;
-                    var proj2 = ProjectilePool.Instance.Get();
-                    if (proj2 == null) continue;
-                    proj2.transform.position = transform.position + Vector3.up * 1.0f;
-                    proj2.transform.rotation = Quaternion.LookRotation(spread);
-                    proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
-                        effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
-                    proj2.SetElementTint(_projectileTint);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                    Debug.LogError("[Tower] ProjectilePool.Get() returned null — skipping fire");
+#endif
+                    return;
+                }
+                proj.transform.position = transform.position + Vector3.up * 1.0f;
+                proj.transform.rotation = Quaternion.identity;
+                proj.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
+                    effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
+                proj.SetElementTint(_projectileTint);
+
+                // Extra projectiles : synergy _multiShotBonus + L3MultiShot (cumulatifs)
+                // Archer Master Hunter (L3 DPS) uses 15 degree spread; others default 12 degrees (D1-03)
+                int extraShots = _multiShotBonus + L3MultiShot;
+                if (extraShots > 0)
+                {
+                    float spreadStep = (cfg.Id == "archer" && UpgradeBranch == TowerBranch.Dps) ? 15f : 12f;
+                    Vector3 baseDir = (t.transform.position - transform.position).normalized;
+                    for (int i = 0; i < extraShots; i++)
+                    {
+                        float spreadAngle = (i + 1) * spreadStep;
+                        float sign = (i % 2 == 0) ? 1f : -1f;
+                        Vector3 spread = Quaternion.Euler(0f, spreadAngle * sign, 0f) * baseDir;
+                        var proj2 = ProjectilePool.Instance.Get();
+                        if (proj2 == null) continue;
+                        proj2.transform.position = transform.position + Vector3.up * 1.0f;
+                        proj2.transform.rotation = Quaternion.LookRotation(spread);
+                        proj2.Init(t, dmg, cfg.ProjectileSpeed, cfg.ProjectileColor,
+                            effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
+                        proj2.SetElementTint(_projectileTint);
+                    }
                 }
             }
 
@@ -1957,6 +1968,120 @@ namespace CrowdDefense.Entities
                 current = next;
                 dmg *= 0.8f; // each jump loses 20% dmg
             }
+        }
+
+        // ── Mage Lightning Beam VFX ───────────────────────────────────────────
+        // Zig-zag LineRenderer flash from tower to primary + chain to 2 nearest in range/1.5.
+        // No per-frame allocation: beam GOs destroyed after 0.15 s via coroutine.
+        private void FireLightningBeam(Enemy primary, float dmg)
+        {
+            if (cfg == null) return;
+
+            primary.TakeDamage(dmg);
+
+            Vector3 origin = transform.position + Vector3.up * 1.5f;
+            SpawnBeamSegment(origin, primary.transform.position + Vector3.up * 0.5f);
+
+            // Chain to 2 nearest enemies within range / 1.5 (excluding primary)
+            float chainRangeSq = (cfg.Range / 1.5f) * (cfg.Range / 1.5f);
+            _chainHitBuffer.Clear();
+            _chainHitBuffer.Add(primary);
+            Enemy? chainSrc = primary;
+            for (int chain = 0; chain < 2; chain++)
+            {
+                Enemy? next = null;
+                float bestSq = chainRangeSq;
+                if (WaveManager.Instance == null) break;
+                var enemies = WaveManager.Instance.ActiveEnemies;
+                for (int i = 0; i < enemies.Count; i++)
+                {
+                    var e = enemies[i];
+                    if (e == null || e.IsDead || _chainHitBuffer.Contains(e)) continue;
+                    float dSq = (e.transform.position - chainSrc!.transform.position).sqrMagnitude;
+                    if (dSq < bestSq) { bestSq = dSq; next = e; }
+                }
+                if (next == null) break;
+                next.TakeDamage(dmg * 0.5f);
+                SpawnBeamSegment(chainSrc!.transform.position + Vector3.up * 0.5f,
+                                 next.transform.position + Vector3.up * 0.5f);
+                _chainHitBuffer.Add(next);
+                chainSrc = next;
+            }
+
+            // Audio
+            var acInst = AudioController.Instance;
+            if (acInst != null)
+            {
+                bool hasCrack = acInst.GetClip("lightning_crack") != null;
+                if (hasCrack)
+                    acInst.Play3DPitched("lightning_crack", transform.position, 0.8f, 1.0f);
+                else
+                    acInst.Play3DPitched("tower_fire", transform.position, 0.5f, 1.4f);
+            }
+        }
+
+        private void SpawnBeamSegment(Vector3 from, Vector3 to)
+        {
+            const int Points = 16;
+            var go = new GameObject("LightningBeam");
+            go.transform.SetParent(null);
+            var lr = go.AddComponent<LineRenderer>();
+            lr.useWorldSpace = true;
+            lr.positionCount = Points;
+            lr.startWidth = 0.12f;
+            lr.endWidth   = 0.04f;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
+            // Lazy-init material (once per tower lifetime)
+            if (_lightningBeamMat == null)
+            {
+                var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                          ?? Shader.Find("Unlit/Color");
+                _lightningBeamMat = new Material(shader);
+                if (_lightningBeamMat.HasProperty("_Surface"))
+                    _lightningBeamMat.SetFloat("_Surface", 0);
+            }
+            lr.material = _lightningBeamMat;
+
+            // White-yellow gradient
+            var grad = new Gradient();
+            grad.SetKeys(
+                new GradientColorKey[] {
+                    new(Color.white,                   0f),
+                    new(new Color(1f, 0.95f, 0.3f),   0.5f),
+                    new(new Color(0.9f, 0.8f, 0.1f),  1f)
+                },
+                new GradientAlphaKey[] {
+                    new(1f, 0f), new(0.8f, 0.5f), new(0f, 1f)
+                }
+            );
+            lr.colorGradient = grad;
+
+            // Zig-zag points — sideways offsets perpendicular to beam axis
+            Vector3 dir    = (to - from);
+            Vector3 right  = Vector3.Cross(dir.normalized, Vector3.up).normalized;
+            if (right.sqrMagnitude < 0.01f) right = Vector3.right;
+            for (int i = 0; i < Points; i++)
+            {
+                float t01  = (float)i / (Points - 1);
+                Vector3 pt = Vector3.Lerp(from, to, t01);
+                if (i > 0 && i < Points - 1)
+                {
+                    float sideways = Random.Range(-0.15f, 0.15f);
+                    float vertical = Random.Range(-0.15f, 0.15f);
+                    pt += right * sideways + Vector3.up * vertical;
+                }
+                lr.SetPosition(i, pt);
+            }
+
+            StartCoroutine(DestroyAfter(go, 0.15f));
+        }
+
+        private static IEnumerator DestroyAfter(GameObject go, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (go != null) Destroy(go);
         }
 
         // ── L3 Tank Bulwark Aura ──────────────────────────────────────────────
