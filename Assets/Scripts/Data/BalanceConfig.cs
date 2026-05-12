@@ -65,6 +65,10 @@ namespace CrowdDefense.Data
         // Index 0 = no combo, index 1 = x2 kills, index 2 = x3 kills, …
         public float[] ComboMultipliers = { 1f, 1.5f, 2f, 2.5f, 3f };
 
+        [Header("Perk system")]
+        public float ForteresseCastleHpMul = 1.5f;
+        public float DefaultTowerAuraRange = 8f;
+
         // --- Helpers ---
 
         private const string DifficultyPrefKey = "difficulty_v1";

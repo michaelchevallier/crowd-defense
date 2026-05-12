@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
@@ -13,9 +12,6 @@ namespace CrowdDefense.Systems
 {
     public class PerkSystem : MonoSingleton<PerkSystem>
     {
-        private const float ForteresseHPMul     = 1.5f;
-        private const float DefaultTowerAuraRange = 8f;
-
         // Legendary perk — runtime-only instance, never stored as SO asset.
         private PerkDef? _legendaryPerk;
 
@@ -218,14 +214,15 @@ namespace CrowdDefense.Systems
             if (def.towerFireRateAura != 1f)
             {
                 hero.TowerFireRateAuraMul = def.towerFireRateAura;
-                hero.TowerAuraRange = def.towerAuraRange > 0f ? def.towerAuraRange : DefaultTowerAuraRange;
+                var cfg = BalanceConfig.Get();
+                hero.TowerAuraRange = def.towerAuraRange > 0f ? def.towerAuraRange : cfg.DefaultTowerAuraRange;
             }
             if (def.combustion)     hero.Combustion     = true;
             if (def.pyromancie)     hero.Pyromancie     = true;
             if (def.glaciation)     hero.Glaciation     = true;
             if (def.cristalGlace)   hero.CristalGlace   = true;
             if (def.mursPierre)     hero.MursPierre     = true;
-            if (def.forteressePerk) { hero.ForteressePerk = true; hero.CastleHPMaxMul *= ForteresseHPMul; }
+            if (def.forteressePerk) { hero.ForteressePerk = true; hero.CastleHPMaxMul *= BalanceConfig.Get().ForteresseCastleHpMul; }
 
             // Magnet perk (D1-01 Q3): boosts coin pull range + fly speed via CoinPullManager
             if (def.magnetRangeMul  > 1f) CoinPullManager.Instance?.ApplyMagnetRangeMul(def.magnetRangeMul);
