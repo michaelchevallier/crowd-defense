@@ -43,6 +43,10 @@ namespace CrowdDefense.UI
         private RectTransform? _chartArea;
         private readonly System.Collections.Generic.List<(Image bar, Text label)> _chartBars = new();
 
+        // Trophy / medal icon (victory only)
+        private Text?          _trophyText;
+        private RectTransform? _trophyRect;
+
         private bool _isVictory;
 
         // ── Colours ─────────────────────────────────────────────────────────────
@@ -110,6 +114,21 @@ namespace CrowdDefense.UI
                 _titleText.color = isVictory ? VictoryTitleColor : DefeatTitleColor;
             }
 
+            if (_trophyText != null)
+            {
+                if (isVictory && r != null)
+                {
+                    _trophyText.text = r.StarsEarned >= 3 ? "\U0001F947"
+                                     : r.StarsEarned == 2 ? "\U0001F948"
+                                     :                      "\U0001F949";
+                    _trophyText.gameObject.SetActive(true);
+                }
+                else
+                {
+                    _trophyText.gameObject.SetActive(false);
+                }
+            }
+
             if (_subtitleText != null && r != null)
             {
                 if (isVictory)
@@ -144,6 +163,8 @@ namespace CrowdDefense.UI
             _panel.SetActive(true);
             Time.timeScale = 0f;
             StartCoroutine(FadeInPanel());
+            if (_isVictory && _trophyRect != null)
+                StartCoroutine(AnimateTrophy());
         }
 
         private IEnumerator FadeInPanel()
@@ -225,6 +246,60 @@ namespace CrowdDefense.UI
                 if (sl == null) continue;
                 var c = sl.color;
                 sl.color = new Color(c.r, c.g, c.b, 1f);
+            }
+        }
+
+        // Trophy: scale 0→1.3→1 (0.8s) + rotate Z 360° (1.5s) + gold glow pulse (loop)
+        private IEnumerator AnimateTrophy()
+        {
+            if (_trophyRect == null || _trophyText == null) yield break;
+
+            const float scaleDur  = 0.8f;
+            const float rotateDur = 1.5f;
+            const float totalDur  = rotateDur;
+
+            _trophyRect.localScale    = Vector3.zero;
+            _trophyRect.localRotation = Quaternion.identity;
+
+            float elapsed = 0f;
+            while (elapsed < totalDur)
+            {
+                float t = elapsed / totalDur;
+                float unscaled = Time.unscaledDeltaTime;
+
+                // Scale: 0 → 1.3 → 1 over scaleDur
+                if (elapsed < scaleDur)
+                {
+                    float st = elapsed / scaleDur;
+                    float scale = st < 0.75f
+                        ? Mathf.Lerp(0f, 1.3f, st / 0.75f)
+                        : Mathf.Lerp(1.3f, 1.0f, (st - 0.75f) / 0.25f);
+                    _trophyRect.localScale = new Vector3(scale, scale, 1f);
+                }
+                else
+                {
+                    _trophyRect.localScale = Vector3.one;
+                }
+
+                // Rotate Z: 0 → 360° over rotateDur
+                float angle = Mathf.Lerp(0f, 360f, t);
+                _trophyRect.localRotation = Quaternion.Euler(0f, 0f, angle);
+
+                elapsed += unscaled;
+                yield return null;
+            }
+
+            _trophyRect.localScale    = Vector3.one;
+            _trophyRect.localRotation = Quaternion.identity;
+
+            // Gold glow pulse loop (alpha 1 → 0.55 → 1, 1.2s period)
+            var baseColor = new Color(1.00f, 0.84f, 0.00f, 1.00f);
+            var dimColor  = new Color(1.00f, 0.84f, 0.00f, 0.55f);
+            while (_trophyText != null && _trophyText.gameObject.activeInHierarchy)
+            {
+                float phase = Mathf.PingPong(Time.unscaledTime, 0.6f) / 0.6f;
+                _trophyText.color = Color.Lerp(baseColor, dimColor, phase);
+                yield return null;
             }
         }
 
@@ -459,6 +534,14 @@ namespace CrowdDefense.UI
             _panel = panelGo;
 
             var statColor = new Color(0.85f, 0.85f, 0.85f, 1f);
+
+            // Trophy / medal icon — left of title, victory only
+            _trophyText = CreateLabel(panelGo.transform, "TrophyIcon",
+                anchorMin: new Vector2(0.01f, 0.88f),
+                anchorMax: new Vector2(0.22f, 1.00f),
+                fontSize: 52, color: new Color(1.00f, 0.84f, 0.00f, 1.00f));
+            _trophyRect = _trophyText.GetComponent<RectTransform>();
+            _trophyText.gameObject.SetActive(false);
 
             // Title
             _titleText = CreateLabel(panelGo.transform, "TitleLabel",
