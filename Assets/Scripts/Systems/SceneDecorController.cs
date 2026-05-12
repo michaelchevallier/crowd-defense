@@ -101,11 +101,17 @@ namespace CrowdDefense.Systems
             [LevelTheme.Submarin] = new ThemePalette(
                 new[] { new PropDef(PropShape.Capsule,  C(0.15f,0.55f,0.72f), new Vector3(0.35f,1.20f,0.35f)),
                         new PropDef(PropShape.Sphere,   C(0.10f,0.45f,0.65f), new Vector3(0.65f,0.55f,0.65f)),
-                        new PropDef(PropShape.Cylinder, C(0.20f,0.60f,0.70f), new Vector3(0.25f,1.10f,0.25f)) },
+                        new PropDef(PropShape.Cylinder, C(0.20f,0.60f,0.70f), new Vector3(0.25f,1.10f,0.25f)),
+                        new PropDef(PropShape.Sphere,   C(0.08f,0.35f,0.55f), new Vector3(0.50f,0.95f,0.50f)),
+                        new PropDef(PropShape.Capsule,  C(0.12f,0.48f,0.68f), new Vector3(0.28f,1.35f,0.28f)) },
                 new[] { new PropDef(PropShape.Sphere,   C(0.55f,0.25f,0.55f), new Vector3(0.35f,0.28f,0.35f)),
-                        new PropDef(PropShape.Capsule,  C(0.18f,0.70f,0.60f), new Vector3(0.18f,0.60f,0.18f)) },
+                        new PropDef(PropShape.Capsule,  C(0.18f,0.70f,0.60f), new Vector3(0.18f,0.60f,0.18f)),
+                        new PropDef(PropShape.Cube,     C(0.25f,0.65f,0.75f), new Vector3(0.32f,0.40f,0.32f)),
+                        new PropDef(PropShape.Cylinder, C(0.10f,0.62f,0.72f), new Vector3(0.15f,0.70f,0.15f)) },
                 new[] { new PropDef(PropShape.Sphere,   C(0.90f,0.60f,0.20f), new Vector3(0.20f,0.16f,0.20f)),
-                        new PropDef(PropShape.Sphere,   C(0.20f,0.80f,0.70f), new Vector3(0.16f,0.14f,0.16f)) }),
+                        new PropDef(PropShape.Sphere,   C(0.20f,0.80f,0.70f), new Vector3(0.16f,0.14f,0.16f)),
+                        new PropDef(PropShape.Cube,     C(0.18f,0.55f,0.68f), new Vector3(0.14f,0.18f,0.14f)),
+                        new PropDef(PropShape.Sphere,   C(0.22f,0.68f,0.78f), new Vector3(0.12f,0.12f,0.12f)) }),
 
             [LevelTheme.Medieval] = new ThemePalette(
                 new[] { new PropDef(PropShape.Cube,     C(0.60f,0.55f,0.45f), new Vector3(0.40f,1.20f,0.40f)),
@@ -128,11 +134,17 @@ namespace CrowdDefense.Systems
             [LevelTheme.Foire] = new ThemePalette(
                 new[] { new PropDef(PropShape.Cylinder, C(0.90f,0.20f,0.20f), new Vector3(0.28f,1.00f,0.28f)),
                         new PropDef(PropShape.Sphere,   C(0.20f,0.60f,0.90f), new Vector3(0.55f,0.55f,0.55f)),
-                        new PropDef(PropShape.Cylinder, C(0.20f,0.80f,0.25f), new Vector3(0.25f,0.90f,0.25f)) },
+                        new PropDef(PropShape.Cylinder, C(0.20f,0.80f,0.25f), new Vector3(0.25f,0.90f,0.25f)),
+                        new PropDef(PropShape.Cube,     C(0.95f,0.15f,0.60f), new Vector3(0.50f,0.75f,0.50f)),
+                        new PropDef(PropShape.Sphere,   C(0.85f,0.55f,0.15f), new Vector3(0.60f,0.60f,0.60f)) },
                 new[] { new PropDef(PropShape.Sphere,   C(0.95f,0.75f,0.15f), new Vector3(0.35f,0.28f,0.35f)),
-                        new PropDef(PropShape.Capsule,  C(0.90f,0.30f,0.70f), new Vector3(0.18f,0.65f,0.18f)) },
+                        new PropDef(PropShape.Capsule,  C(0.90f,0.30f,0.70f), new Vector3(0.18f,0.65f,0.18f)),
+                        new PropDef(PropShape.Cube,     C(0.92f,0.20f,0.40f), new Vector3(0.40f,0.50f,0.40f)),
+                        new PropDef(PropShape.Cylinder, C(0.95f,0.65f,0.15f), new Vector3(0.20f,0.55f,0.20f)) },
                 new[] { new PropDef(PropShape.Sphere,   C(0.95f,0.40f,0.15f), new Vector3(0.18f,0.18f,0.18f)),
-                        new PropDef(PropShape.Sphere,   C(0.80f,0.15f,0.80f), new Vector3(0.14f,0.14f,0.14f)) }),
+                        new PropDef(PropShape.Sphere,   C(0.80f,0.15f,0.80f), new Vector3(0.14f,0.14f,0.14f)),
+                        new PropDef(PropShape.Cube,     C(0.88f,0.25f,0.55f), new Vector3(0.16f,0.20f,0.16f)),
+                        new PropDef(PropShape.Sphere,   C(0.90f,0.70f,0.10f), new Vector3(0.12f,0.12f,0.12f)) }),
         };
 
         // -------------------------------------------------------------------------
