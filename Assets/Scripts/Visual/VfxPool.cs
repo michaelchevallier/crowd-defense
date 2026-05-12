@@ -125,8 +125,8 @@ namespace CrowdDefense.Visual
             main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(280 * intensityMul));
             var emission = ps.emission;
             emission.SetBursts(new[] { new ParticleSystem.Burst(0f,
-                Mathf.RoundToInt(16 * intensityMul),
-                Mathf.RoundToInt(28 * intensityMul), 1, 0.01f) });
+                (short)Mathf.RoundToInt(16 * intensityMul),
+                (short)Mathf.RoundToInt(28 * intensityMul), 1, 0.01f) });
 
             ApplyTint(ps, tint);
             PlayAndAutoRelease(ps, _deathPool);
