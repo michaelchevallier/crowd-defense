@@ -204,3 +204,52 @@
 .stats-close-btn:hover {
     background-color: rgba(255, 255, 255, 0.18);
 }
+
+.stats-section-title {
+    color: rgba(200, 210, 240, 0.55);
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-left;
+    margin-top: 14px;
+    margin-bottom: 4px;
+    padding: 0 4px;
+}
+
+.lt-world-rows {
+    flex-direction: column;
+}
+
+.lt-world-row {
+    flex-direction: row;
+    align-items: center;
+    padding: 6px 4px;
+    border-bottom-color: rgba(160, 180, 220, 0.08);
+    border-bottom-width: 1px;
+}
+
+.lt-world-name {
+    flex: 1;
+    color: rgba(200, 210, 240, 0.85);
+    font-size: 13px;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-left;
+}
+
+.lt-world-stars {
+    width: 48px;
+    color: rgb(255, 210, 63);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-center;
+}
+
+.lt-world-score {
+    width: 72px;
+    color: rgb(255, 255, 255);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
+    -unity-text-align: middle-right;
+}

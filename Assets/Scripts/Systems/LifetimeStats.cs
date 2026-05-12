@@ -12,6 +12,22 @@ namespace CrowdDefense.Systems
         private const string KeyTime    = "total_time_played_seconds_v1";
         private const string KeyWins    = "levels_won_lifetime_v1";
 
+        // Per-world storage — world ids 1..10
+        private static string StarKey(int world)  => $"world_{world}_best_stars_v1";
+        private static string ScoreKey(int world) => $"world_{world}_best_score_v1";
+
+        public static int GetWorldStars(int world)     => PlayerPrefs.GetInt(StarKey(world), 0);
+        public static int GetWorldHighScore(int world) => PlayerPrefs.GetInt(ScoreKey(world), 0);
+
+        public static void SetWorldResult(int world, int stars, int score)
+        {
+            if (stars > GetWorldStars(world))
+                PlayerPrefs.SetInt(StarKey(world), Mathf.Clamp(stars, 0, 3));
+            if (score > GetWorldHighScore(world))
+                PlayerPrefs.SetInt(ScoreKey(world), score);
+            PlayerPrefs.Save();
+        }
+
         public int   TotalKills       => PlayerPrefs.GetInt(KeyKills, 0);
         public int   TotalGold        => PlayerPrefs.GetInt(KeyGold, 0);
         public float TotalTimePlayed  => PlayerPrefs.GetFloat(KeyTime, 0f);

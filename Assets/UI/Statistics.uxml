@@ -81,6 +81,10 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
 
+                <!-- Per-world score + stars table (populated at runtime by StatsLifetimePanel) -->
+                <ui:Label text="Stats by World" name="lt-world-title" class="stats-section-title" />
+                <ui:VisualElement name="lt-world-rows" class="lt-world-rows" />
+
                 <ui:Button text="Reset Statistics" name="stats-reset-btn" class="stats-reset-btn" />
             </ui:VisualElement>
 
