@@ -96,6 +96,7 @@ namespace CrowdDefense.Entities
 
         // Range ring + synergy halo GameObjects
         private GameObject? _rangeRing;
+        private LineRenderer? _rangeCircle;
         private GameObject? _clusterHighlight;
         private Renderer? _synergyHaloRenderer;
         private MaterialPropertyBlock? _haloMpb;
@@ -392,6 +393,7 @@ namespace CrowdDefense.Entities
                 : (_meshChild != null ? FindChildNamed(_meshChild.transform, "BarrelTip")?.transform : null);
 
             BuildRangeRing(type.Range);
+            BuildRangeCircle(type.Range);
             BuildSynergyHalo();
             BuildAimLine();
             BuildAffordableHighlight(type.Range);
@@ -1124,6 +1126,8 @@ namespace CrowdDefense.Entities
         {
             if (_rangeRing != null)
                 _rangeRing.SetActive(visible);
+            if (_rangeCircle != null)
+                _rangeCircle.enabled = visible;
         }
 
         private void BuildRangeRing(float range)
@@ -1173,6 +1177,54 @@ namespace CrowdDefense.Entities
 
             go.SetActive(false);
             _rangeRing = go;
+        }
+
+        private void BuildRangeCircle(float range)
+        {
+            if (_rangeCircle != null)
+            {
+                Destroy(_rangeCircle.gameObject);
+                _rangeCircle = null;
+            }
+
+            var go = new GameObject("RangeCircle");
+            go.transform.SetParent(transform);
+            go.transform.localPosition = new Vector3(0f, 0.01f, 0f);
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;
+            lr.loop = true;
+            lr.positionCount = 64;
+            lr.startWidth = 0.06f;
+            lr.endWidth   = 0.06f;
+            lr.startColor = new Color(1f, 1f, 1f, 0.4f);
+            lr.endColor   = new Color(1f, 1f, 1f, 0.4f);
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3001;
+            }
+            mat.color = new Color(1f, 1f, 1f, 0.4f);
+            lr.material = mat;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
+            const int segments = 64;
+            float step = 2f * Mathf.PI / segments;
+            for (int i = 0; i < segments; i++)
+            {
+                float angle = i * step;
+                lr.SetPosition(i, new Vector3(Mathf.Cos(angle) * range, 0f, Mathf.Sin(angle) * range));
+            }
+
+            lr.enabled = false;
+            _rangeCircle = lr;
         }
 
         // ── Cluster Highlight ─────────────────────────────────────────────────
@@ -1603,7 +1655,11 @@ namespace CrowdDefense.Entities
         private void PostUpgradeVisuals(int level)
         {
             DrawTierPips(level);
-            if (cfg != null) BuildRangeRing(cfg.Range);
+            if (cfg != null)
+            {
+                BuildRangeRing(cfg.Range);
+                BuildRangeCircle(cfg.Range);
+            }
             ApplyTierSkin(level);
         }
 
