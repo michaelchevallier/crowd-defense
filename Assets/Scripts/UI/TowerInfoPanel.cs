@@ -186,11 +186,15 @@ namespace CrowdDefense.UI
             string id = tower.Config.Id;
             Vector3 pos = tower.transform.position;
             int count = 0;
-            foreach (var t in PlacementController.Instance.PlacedTowers)
+            var pc = PlacementController.Instance;
+            if (pc != null)
             {
-                if (t == null) continue;
-                if (t.Config?.Id != id) continue;
-                if ((t.transform.position - pos).sqrMagnitude <= radiusSq) count++;
+                foreach (var t in pc.PlacedTowers)
+                {
+                    if (t == null) continue;
+                    if (t.Config?.Id != id) continue;
+                    if ((t.transform.position - pos).sqrMagnitude <= radiusSq) count++;
+                }
             }
             return count >= 3;
         }
