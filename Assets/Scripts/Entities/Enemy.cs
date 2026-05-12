@@ -180,6 +180,11 @@ namespace CrowdDefense.Entities
         private float _apocImpSummonTimer = 0f;
         private float _apocImpSummonEndTime = 0f;
 
+        // ── Boss special behavior timers (EnemyBossBehaviors.cs) ──────────────
+        internal float _teleportTimer     = 0f;
+        internal float _burstSummonTimer  = 0f;
+        internal float _tentacleSlamTimer = 0f;
+
         // ── Static mode (decoration preview) ─────────────────────────────────
         private bool  _static     = false;
         private float _staticRotY = 0f;
@@ -691,6 +696,7 @@ namespace CrowdDefense.Entities
                     BuildShieldHalo();
                 else
                     shieldHalo.SetActive(true);
+                VfxPool.Instance?.SpawnShieldAura(transform.position);
             }
 
             // Boss aura ring
@@ -1192,6 +1198,10 @@ namespace CrowdDefense.Entities
             UpdateAoeBlast();
             UpdateCharge();
             UpdateFireBreath();
+            EnemyBossBehaviors.TickWizardKing(this);
+            EnemyBossBehaviors.TickWarlordCharge(this);
+            EnemyBossBehaviors.TickAiHubBurst(this);
+            EnemyBossBehaviors.TickKrakenTentacles(this);
             UpdateFreeze();
             UpdateDebuffIcons();
             UpdateGroundDecals();
@@ -1949,9 +1959,8 @@ namespace CrowdDefense.Entities
             WaveManager.Instance?.RegisterSpawnedEnemy(minion);
         }
 
-        // Spawns a skeleton minion at worldPos for phase 3.
-        // Uses cfg.SummonType (configured on the apocalypse boss SO as mob_skeleton).
-        private void SpawnMinionAt(Vector3 worldPos)
+        // Spawns a minion at worldPos. Used by phase 3 and EnemyBossBehaviors burst patterns.
+        internal void SpawnMinionAt(Vector3 worldPos)
         {
             if (EnemyPool.Instance == null) return;
             var spawnType = cfg?.SummonType;

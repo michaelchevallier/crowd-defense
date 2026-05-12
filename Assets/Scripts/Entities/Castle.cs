@@ -263,6 +263,7 @@ namespace CrowdDefense.Entities
             RefreshHpBar();
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnHeal(
                 amount, transform.position + Vector3.up * 2f);
+            VfxPool.Instance?.SpawnHealAura(transform.position);
         }
 
         // Increase max HP (forteresse_perk / set bonus "pierre") — also heals by the delta.

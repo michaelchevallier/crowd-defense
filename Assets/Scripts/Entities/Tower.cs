@@ -913,8 +913,13 @@ namespace CrowdDefense.Entities
             }
 
             bool isFrost = cfg.Id == "frost" || cfg.Id.Contains("ice");
-            if (isFrost && hitAny)
-                VfxPool.Instance?.SpawnFrost(transform.position, cfg.Range * 0.5f);
+            if (hitAny)
+            {
+                if (isFrost)
+                    VfxPool.Instance?.SpawnFrost(transform.position, cfg.Range * 0.5f);
+                else
+                    VfxPool.Instance?.SpawnSlowField(transform.position, cfg.Range * 0.5f);
+            }
         }
 
         // ── CoinPull (Magnet) ────────────────────────────────────────────────
@@ -1612,7 +1617,7 @@ namespace CrowdDefense.Entities
             var hit = new HashSet<Enemy> { origin };
             Enemy? current = origin;
 
-            VfxPool.Instance?.SpawnImpact(origin.transform.position, new Color(0.4f, 0.7f, 1f));
+            VfxPool.Instance?.SpawnLightningChain(origin.transform.position);
 
             for (int j = 0; j < jumps; j++)
             {
@@ -1628,7 +1633,7 @@ namespace CrowdDefense.Entities
                 }
                 if (next == null) break;
                 next.TakeDamage(dmg);
-                VfxPool.Instance?.SpawnImpact(next.transform.position, new Color(0.4f, 0.7f, 1f));
+                VfxPool.Instance?.SpawnLightningChain(next.transform.position);
                 hit.Add(next);
                 current = next;
                 dmg *= 0.8f; // each jump loses 20% dmg

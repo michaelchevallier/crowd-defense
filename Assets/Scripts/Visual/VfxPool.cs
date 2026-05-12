@@ -10,7 +10,7 @@ namespace CrowdDefense.Visual
 {
     // Port de Particles.js → Unity ObjectPool<ParticleSystem>.
     // Procedural builders + texture wiring in VfxPoolBindings.cs.
-    public class VfxPool : MonoSingleton<VfxPool>
+    public partial class VfxPool : MonoSingleton<VfxPool>
     {
         private static readonly Dictionary<float, WaitForSeconds> _waitCache = new();
         private const int DefaultCapacity = 24;
@@ -95,6 +95,7 @@ namespace CrowdDefense.Visual
             _sparkPool          = MakePool(sparkPrefab,          "Spark");
             _upgradeConfettiPool = MakePool(upgradeConfettiPrefab, "UpgradeConfetti");
 
+            InitExtra();
             PreWarm();
         }
 
@@ -261,6 +262,32 @@ namespace CrowdDefense.Visual
             PlayRelease(ps, _upgradeConfettiPool);
         }
 
+        // ── New VFX spawn methods (R6-PARITY-004-IMPL) ───────────────────────────
+
+        public void SpawnElectricImpact(Vector3 pos)
+            => SpawnFrom(_electricCloudPool, pos, new Color(0.5f, 0.85f, 1f));
+
+        public void SpawnImpactSmall(Vector3 pos, Color tint)
+            => SpawnFrom(_explosionSmallPool, pos, tint);
+
+        public void SpawnGlyph(Vector3 pos, Color tint)
+            => SpawnFrom(_glyphDarkPool, pos, tint);
+
+        public void SpawnHealAura(Vector3 pos, float radius = 1f)
+            => SpawnFromRadius(_healAuraPool, pos, new Color(0.2f, 1f, 0.4f), radius);
+
+        public void SpawnLightningChain(Vector3 pos)
+            => SpawnFrom(_lightningBoltPool, pos, new Color(0.7f, 0.9f, 1f));
+
+        public void SpawnPoisonField(Vector3 pos, float radius = 1f)
+            => SpawnFromRadius(_poisonCloudPool, pos, new Color(0.3f, 0.85f, 0.2f), radius);
+
+        public void SpawnShieldAura(Vector3 pos)
+            => SpawnFrom(_shieldAuraPool, pos, new Color(1f, 0.85f, 0.15f));
+
+        public void SpawnSlowField(Vector3 pos, float radius = 1f)
+            => SpawnFromRadius(_slowAuraPool, pos, new Color(0.4f, 0.6f, 1f), radius);
+
         public void SpawnFrost(Vector3 pos, float radius)
         {
             if (!IsVfxEnabled() || _frostPool == null) return;
@@ -364,6 +391,17 @@ namespace CrowdDefense.Visual
             if (!IsVfxEnabled() || pool == null) return;
             var ps = pool.Get();
             ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+            ApplyTint(ps, tint);
+            PlayRelease(ps, pool);
+        }
+
+        private void SpawnFromRadius(ObjectPool<ParticleSystem>? pool, Vector3 pos, Color tint, float radius)
+        {
+            if (!IsVfxEnabled() || pool == null) return;
+            var ps = pool.Get();
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+            var sh = ps.shape;
+            sh.radius = Mathf.Max(0.3f, radius);
             ApplyTint(ps, tint);
             PlayRelease(ps, pool);
         }

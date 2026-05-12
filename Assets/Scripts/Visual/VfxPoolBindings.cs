@@ -40,6 +40,17 @@ namespace CrowdDefense.Visual
         internal static void BuildSparkModule(ParticleSystem ps, Material? mat) => VfxPoolBuilders.BuildSparkModule(ps, mat);
         internal static void BuildUpgradeConfettiModule(ParticleSystem ps, Material? mat) => VfxPoolBuilders.BuildUpgradeConfettiModule(ps, mat);
 
+        // New VFX builders (R6-PARITY-004-IMPL)
+        internal static void BuildElectricCloudModule(ParticleSystem ps, Material? mat)  => VfxPoolBuilders2.BuildElectricCloudModule(ps, mat);
+        internal static void BuildExplosionSmallModule(ParticleSystem ps, Material? mat) => VfxPoolBuilders2.BuildExplosionSmallModule(ps, mat);
+        internal static void BuildGlyphDarkModule(ParticleSystem ps, Material? mat)      => VfxPoolBuilders2.BuildGlyphDarkModule(ps, mat);
+        internal static void BuildHealAuraModule(ParticleSystem ps, Material? mat)       => VfxPoolBuilders2.BuildHealAuraModule(ps, mat);
+        internal static void BuildLightningBoltModule(ParticleSystem ps, Material? mat)  => VfxPoolBuilders2.BuildLightningBoltModule(ps, mat);
+        internal static void BuildPoisonCloudModule(ParticleSystem ps, Material? mat)    => VfxPoolBuilders2.BuildPoisonCloudModule(ps, mat);
+        internal static void BuildShieldAuraModule(ParticleSystem ps, Material? mat)     => VfxPoolBuilders2.BuildShieldAuraModule(ps, mat);
+        internal static void BuildSlowAuraModule(ParticleSystem ps, Material? mat)       => VfxPoolBuilders2.BuildSlowAuraModule(ps, mat);
+        internal static void BuildSmokeGrayModule(ParticleSystem ps, Material? mat)      => VfxPoolBuilders2.BuildSmokeGrayModule(ps, mat);
+
         // Gradients
         internal static Gradient BuildConfettiGradient() => SharedCurves.BuildConfettiGradient();
         internal static Gradient BuildRainbowGradient() => SharedCurves.BuildRainbowGradient();
