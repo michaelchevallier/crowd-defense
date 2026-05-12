@@ -5,6 +5,7 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.UI;
 using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
@@ -12,6 +13,7 @@ namespace CrowdDefense.Systems
     public class PlacementController : MonoSingleton<PlacementController>
     {
         [SerializeField] private TowerType? selectedTowerType;
+        [SerializeField] private TowerRegistry? towerRegistry;
         [SerializeField] private GameObject? towerPrefab;
         [SerializeField] private GameObject? projectilePrefab;
 
@@ -59,6 +61,12 @@ namespace CrowdDefense.Systems
                 SetSelectedTower(null);
                 return;
             }
+
+            // Hotkeys 1/2/3/4 — quick select tower type for placement
+            if (Input.GetKeyDown(KeyCode.Alpha1)) { SelectTowerType("archer"); return; }
+            if (Input.GetKeyDown(KeyCode.Alpha2)) { SelectTowerType("mage");   return; }
+            if (Input.GetKeyDown(KeyCode.Alpha3)) { SelectTowerType("cannon"); return; }
+            if (Input.GetKeyDown(KeyCode.Alpha4)) { SelectTowerType("frost");  return; }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             // Hotkey S : sell la tour sélectionnée (debug, UI radial menu = CORE-20)
@@ -318,6 +326,26 @@ namespace CrowdDefense.Systems
             if (selectedTower == tower) return;
             selectedTower = tower;
             OnTowerSelected?.Invoke(tower);
+        }
+
+        private void SelectTowerType(string id)
+        {
+            TowerType? type = null;
+            if (towerRegistry != null)
+                foreach (var t in towerRegistry.Towers)
+                    if (t != null && t.Id == id) { type = t; break; }
+
+            selectedTowerType = type;
+
+            string label = id switch
+            {
+                "archer" => "Archer",
+                "mage"   => "Mage",
+                "cannon" => "Canon",
+                "frost"  => "Givre",
+                _        => id
+            };
+            Toast.Show("Tour selectionnee", label, durationMs: 1500);
         }
 
         public void SelectTowerForPlacement(TowerType? type)
