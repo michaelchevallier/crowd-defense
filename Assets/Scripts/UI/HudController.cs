@@ -198,9 +198,23 @@ namespace CrowdDefense.UI
         // Boss healthbar (top-center, shown while a boss is alive)
         private VisualElement? _bossHpRoot;
         private VisualElement? _bossHpFill;
-        private Label? _bossNameLabel;
-        private Label? _bossHpPctLabel;
-        private Enemy? _trackedBoss;
+        private Label?         _bossNameLabel;
+        private Label?         _bossHpPctLabel;
+        private Enemy?         _trackedBoss;
+        // Smooth fill lerp — no alloc per frame
+        private float          _bossHpFillCurrent   = 1f;
+        private float          _bossHpFillTarget    = 1f;
+        // Phase markers (25 / 50 / 75 %) — built once, stored for show/hide
+        private VisualElement? _bossPhaseMarker25;
+        private VisualElement? _bossPhaseMarker50;
+        private VisualElement? _bossPhaseMarker75;
+        // Phase toast ("PHASE 2" flash label)
+        private Label?         _bossPhaseToastLabel;
+        private Coroutine?     _bossPhaseToastCoroutine;
+        // Track last phase crossed to avoid re-triggering
+        private int            _bossLastPhaseCrossed = 0; // 0=none, 1=75%, 2=50%, 3=25%
+        // Slide-out coroutine on boss death
+        private Coroutine?     _bossHpSlideOutCoroutine;
 
         // Keyboard hints footer label
         private Label? keyboardHintsLabel;
@@ -1492,52 +1506,129 @@ namespace CrowdDefense.UI
 
         private void BuildBossHpBar(VisualElement root)
         {
+            // Outer container — top-center, 600 px wide, column layout
             _bossHpRoot = new VisualElement { name = "boss-hp-root" };
             _bossHpRoot.style.position         = Position.Absolute;
-            _bossHpRoot.style.top              = new Length(8f,  LengthUnit.Pixel);
-            _bossHpRoot.style.left             = new Length(20f, LengthUnit.Percent);
-            _bossHpRoot.style.width            = new Length(60f, LengthUnit.Percent);
+            _bossHpRoot.style.top              = new Length(80f, LengthUnit.Pixel);
+            _bossHpRoot.style.left             = new Length(0f,  LengthUnit.Pixel);
+            _bossHpRoot.style.right            = new Length(0f,  LengthUnit.Pixel);
             _bossHpRoot.style.flexDirection    = FlexDirection.Column;
             _bossHpRoot.style.alignItems       = Align.Center;
+            _bossHpRoot.style.width            = new Length(100f, LengthUnit.Percent);
             _bossHpRoot.AddToClassList("hidden");
 
+            // Boss name — gold, 24 px, bold
             _bossNameLabel = new Label { name = "boss-name-label", text = "" };
             _bossNameLabel.style.color         = new StyleColor(new Color(1f, 0.84f, 0f));
-            _bossNameLabel.style.fontSize      = new Length(14f, LengthUnit.Pixel);
+            _bossNameLabel.style.fontSize      = new Length(24f, LengthUnit.Pixel);
             _bossNameLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
-            _bossNameLabel.style.marginBottom  = new Length(3f, LengthUnit.Pixel);
+            _bossNameLabel.style.unityTextAlign = TextAnchor.UpperCenter;
+            _bossNameLabel.style.marginBottom  = new Length(4f, LengthUnit.Pixel);
+            _bossNameLabel.style.textShadow    = new TextShadow
+            {
+                color      = new Color(0f, 0f, 0f, 0.9f),
+                offset     = new Vector2(1f, 2f),
+                blurRadius = 5f,
+            };
             _bossHpRoot.Add(_bossNameLabel);
 
+            // Track wrapper — 600 px × 50 px, dark bg + gold border
+            var trackWrapper = new VisualElement { name = "boss-hp-track-wrapper" };
+            trackWrapper.style.width            = new Length(600f, LengthUnit.Pixel);
+            trackWrapper.style.height           = new Length(50f,  LengthUnit.Pixel);
+            _bossHpRoot.Add(trackWrapper);
+
             var track = new VisualElement { name = "boss-hp-track" };
-            track.style.width           = new Length(100f, LengthUnit.Percent);
-            track.style.height          = new Length(30f, LengthUnit.Pixel);
-            track.style.backgroundColor = new StyleColor(new Color(0.08f, 0.08f, 0.08f, 0.88f));
+            track.style.position        = Position.Absolute;
+            track.style.left            = 0f;
+            track.style.top             = 0f;
+            track.style.right           = 0f;
+            track.style.bottom          = 0f;
+            track.style.backgroundColor = new StyleColor(new Color(0.05f, 0.05f, 0.05f, 0.92f));
             track.style.borderTopWidth  = track.style.borderBottomWidth =
             track.style.borderLeftWidth = track.style.borderRightWidth = 2f;
             track.style.borderTopColor  = track.style.borderBottomColor =
             track.style.borderLeftColor = track.style.borderRightColor = new StyleColor(new Color(0.85f, 0.65f, 0.1f));
-            track.style.borderTopLeftRadius  = track.style.borderTopRightRadius =
-            track.style.borderBottomLeftRadius = track.style.borderBottomRightRadius = new Length(4f, LengthUnit.Pixel);
+            track.style.borderTopLeftRadius    = track.style.borderTopRightRadius    =
+            track.style.borderBottomLeftRadius = track.style.borderBottomRightRadius = new Length(5f, LengthUnit.Pixel);
             track.style.overflow        = Overflow.Hidden;
-            _bossHpRoot.Add(track);
+            trackWrapper.Add(track);
 
+            // Red gradient fill — width driven each frame by TickBossHpBar
             _bossHpFill = new VisualElement { name = "boss-hp-fill" };
-            _bossHpFill.style.height        = new Length(100f, LengthUnit.Percent);
-            _bossHpFill.style.width         = new Length(100f, LengthUnit.Percent);
             _bossHpFill.style.position      = Position.Absolute;
             _bossHpFill.style.left          = 0f;
             _bossHpFill.style.top           = 0f;
+            _bossHpFill.style.bottom        = 0f;
+            _bossHpFill.style.width         = new Length(100f, LengthUnit.Percent);
+            // Deep red to bright red gradient effect via pseudo-overlay on top
+            _bossHpFill.style.backgroundColor = new StyleColor(new Color(0.78f, 0.08f, 0.06f));
             track.Add(_bossHpFill);
 
+            // Lighter red highlight strip (top 40%) for gradient illusion — no alloc
+            var fillHighlight = new VisualElement { name = "boss-hp-fill-highlight" };
+            fillHighlight.style.position        = Position.Absolute;
+            fillHighlight.style.left            = 0f;
+            fillHighlight.style.top             = 0f;
+            fillHighlight.style.right           = 0f;
+            fillHighlight.style.height          = new Length(40f, LengthUnit.Percent);
+            fillHighlight.style.backgroundColor = new StyleColor(new Color(1f, 0.22f, 0.18f, 0.35f));
+            _bossHpFill.Add(fillHighlight);
+
+            // HP percentage label — centered on track
             _bossHpPctLabel = new Label { name = "boss-hp-pct", text = "100%" };
-            _bossHpPctLabel.style.position  = Position.Absolute;
-            _bossHpPctLabel.style.left      = new Length(50f, LengthUnit.Percent);
-            _bossHpPctLabel.style.top       = new Length(50f, LengthUnit.Percent);
-            _bossHpPctLabel.style.translate = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
-            _bossHpPctLabel.style.color     = new StyleColor(Color.white);
-            _bossHpPctLabel.style.fontSize  = new Length(12f, LengthUnit.Pixel);
+            _bossHpPctLabel.style.position          = Position.Absolute;
+            _bossHpPctLabel.style.left              = new Length(50f, LengthUnit.Percent);
+            _bossHpPctLabel.style.top               = new Length(50f, LengthUnit.Percent);
+            _bossHpPctLabel.style.translate         = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
+            _bossHpPctLabel.style.color             = new StyleColor(Color.white);
+            _bossHpPctLabel.style.fontSize          = new Length(15f, LengthUnit.Pixel);
             _bossHpPctLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            _bossHpPctLabel.style.textShadow        = new TextShadow
+            {
+                color      = new Color(0f, 0f, 0f, 0.85f),
+                offset     = new Vector2(0f, 1f),
+                blurRadius = 3f,
+            };
             track.Add(_bossHpPctLabel);
+
+            // Phase marker helper — builds a white vertical line at x%
+            VisualElement MakeMarker(string name, float xPct)
+            {
+                var m = new VisualElement { name = name };
+                m.style.position  = Position.Absolute;
+                m.style.top       = 0f;
+                m.style.bottom    = 0f;
+                m.style.width     = new Length(2f, LengthUnit.Pixel);
+                m.style.left      = new Length(xPct, LengthUnit.Percent);
+                m.style.backgroundColor = new StyleColor(new Color(1f, 1f, 1f, 0.6f));
+                return m;
+            }
+            _bossPhaseMarker75 = MakeMarker("boss-phase-75", 75f);
+            _bossPhaseMarker50 = MakeMarker("boss-phase-50", 50f);
+            _bossPhaseMarker25 = MakeMarker("boss-phase-25", 25f);
+            track.Add(_bossPhaseMarker75);
+            track.Add(_bossPhaseMarker50);
+            track.Add(_bossPhaseMarker25);
+
+            // Phase toast label — top of bar, hidden until phase crossed
+            _bossPhaseToastLabel = new Label { name = "boss-phase-toast", text = "" };
+            _bossPhaseToastLabel.style.position           = Position.Absolute;
+            _bossPhaseToastLabel.style.left               = new Length(50f, LengthUnit.Percent);
+            _bossPhaseToastLabel.style.top                = new Length(-32f, LengthUnit.Pixel);
+            _bossPhaseToastLabel.style.translate          = new Translate(new Length(-50f, LengthUnit.Percent), Length.Auto());
+            _bossPhaseToastLabel.style.color              = new StyleColor(new Color(1f, 0.84f, 0f));
+            _bossPhaseToastLabel.style.fontSize           = new Length(20f, LengthUnit.Pixel);
+            _bossPhaseToastLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            _bossPhaseToastLabel.style.unityTextAlign     = TextAnchor.MiddleCenter;
+            _bossPhaseToastLabel.style.textShadow         = new TextShadow
+            {
+                color      = new Color(0.6f, 0f, 0f, 0.9f),
+                offset     = new Vector2(1f, 2f),
+                blurRadius = 6f,
+            };
+            _bossPhaseToastLabel.style.opacity = 0f;
+            trackWrapper.Add(_bossPhaseToastLabel);
 
             root.Add(_bossHpRoot);
         }
@@ -1546,10 +1637,23 @@ namespace CrowdDefense.UI
         {
             if (evt.Enemy == null) return;
             if (evt.Enemy.Config == null || !evt.Enemy.Config.IsBoss) return;
-            _trackedBoss = evt.Enemy;
+            _trackedBoss         = evt.Enemy;
+            _bossHpFillCurrent   = 1f;
+            _bossHpFillTarget    = 1f;
+            _bossLastPhaseCrossed = 0;
+            if (_bossHpSlideOutCoroutine != null)
+            {
+                StopCoroutine(_bossHpSlideOutCoroutine);
+                _bossHpSlideOutCoroutine = null;
+            }
             if (_bossNameLabel != null)
-                _bossNameLabel.text = evt.Enemy.Config.DisplayName ?? evt.Enemy.Config.Id ?? "BOSS";
-            if (_bossHpRoot != null) SetVisible(_bossHpRoot, true);
+                _bossNameLabel.text = (evt.Enemy.Config.DisplayName ?? evt.Enemy.Config.Id ?? "BOSS").ToUpper();
+            if (_bossHpRoot != null)
+            {
+                _bossHpRoot.style.top     = new Length(80f, LengthUnit.Pixel);
+                _bossHpRoot.style.opacity = 1f;
+                SetVisible(_bossHpRoot, true);
+            }
             ShowBossIntroBanner(evt.Enemy.Config.Id);
         }
 
@@ -1635,7 +1739,7 @@ namespace CrowdDefense.UI
         {
             if (!isBoss || enemy != _trackedBoss) return;
             _trackedBoss = null;
-            if (_bossHpRoot != null) SetVisible(_bossHpRoot, false);
+            StartBossHpSlideOut();
         }
 
         private void TickBossHpBar()
@@ -1644,18 +1748,112 @@ namespace CrowdDefense.UI
             if (_trackedBoss.IsDead)
             {
                 _trackedBoss = null;
-                if (_bossHpRoot != null) SetVisible(_bossHpRoot, false);
+                StartBossHpSlideOut();
                 return;
             }
+
             float ratio = _trackedBoss.HpRatio;
-            _bossHpFill.style.width = new Length(ratio * 100f, LengthUnit.Percent);
-            Color fill = ratio > 0.6f
-                ? new Color(0.18f, 0.78f, 0.18f)
-                : ratio > 0.3f
-                    ? new Color(0.9f, 0.55f, 0.1f)
-                    : new Color(0.88f, 0.15f, 0.1f);
-            _bossHpFill.style.backgroundColor = new StyleColor(fill);
+            _bossHpFillTarget = ratio;
+
+            // Smooth lerp — ~0.2s settle (12× per frame at 60 fps ≈ 5 frames)
+            _bossHpFillCurrent = Mathf.Lerp(_bossHpFillCurrent, _bossHpFillTarget, Time.deltaTime * 12f);
+
+            _bossHpFill.style.width = new Length(_bossHpFillCurrent * 100f, LengthUnit.Percent);
             _bossHpPctLabel.text = $"{Mathf.RoundToInt(ratio * 100f)}%";
+
+            // Dim phase markers when fill passes them
+            if (_bossPhaseMarker75 != null)
+                _bossPhaseMarker75.style.opacity = ratio < 0.75f ? 0.25f : 0.6f;
+            if (_bossPhaseMarker50 != null)
+                _bossPhaseMarker50.style.opacity = ratio < 0.50f ? 0.25f : 0.6f;
+            if (_bossPhaseMarker25 != null)
+                _bossPhaseMarker25.style.opacity = ratio < 0.25f ? 0.25f : 0.6f;
+
+            // Phase crossing detection — each threshold triggers once
+            // Phase 1 → 2 : cross 75%
+            if (_bossLastPhaseCrossed < 1 && ratio < 0.75f)
+            {
+                _bossLastPhaseCrossed = 1;
+                TriggerBossPhaseToast("PHASE 2");
+            }
+            // Phase 2 → 3 : cross 50%
+            else if (_bossLastPhaseCrossed < 2 && ratio < 0.50f)
+            {
+                _bossLastPhaseCrossed = 2;
+                TriggerBossPhaseToast("PHASE 3");
+            }
+            // Phase 3 → 4 : cross 25%
+            else if (_bossLastPhaseCrossed < 3 && ratio < 0.25f)
+            {
+                _bossLastPhaseCrossed = 3;
+                TriggerBossPhaseToast("PHASE 4 - ENRAGE");
+            }
+        }
+
+        private void StartBossHpSlideOut()
+        {
+            if (_bossHpSlideOutCoroutine != null) StopCoroutine(_bossHpSlideOutCoroutine);
+            _bossHpSlideOutCoroutine = StartCoroutine(BossHpSlideOutCoroutine());
+        }
+
+        private System.Collections.IEnumerator BossHpSlideOutCoroutine()
+        {
+            if (_bossHpRoot == null) yield break;
+            // Slide up + fade over 0.4 s
+            const float dur = 0.4f;
+            float elapsed = 0f;
+            float startTop = 80f;
+            float endTop   = -80f;
+            while (elapsed < dur)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, elapsed / dur);
+                float topPx = Mathf.Lerp(startTop, endTop, t);
+                _bossHpRoot.style.top     = new Length(topPx, LengthUnit.Pixel);
+                _bossHpRoot.style.opacity = 1f - t;
+                yield return null;
+            }
+            SetVisible(_bossHpRoot, false);
+            _bossHpRoot.style.top     = new Length(80f, LengthUnit.Pixel);
+            _bossHpRoot.style.opacity = 1f;
+            _bossLastPhaseCrossed = 0;
+            _bossHpFillCurrent    = 1f;
+            _bossHpSlideOutCoroutine = null;
+        }
+
+        private void TriggerBossPhaseToast(string text)
+        {
+            if (_bossPhaseToastLabel == null) return;
+            if (_bossPhaseToastCoroutine != null) StopCoroutine(_bossPhaseToastCoroutine);
+            _bossPhaseToastLabel.text = text;
+            _bossPhaseToastCoroutine = StartCoroutine(BossPhaseToastCoroutine());
+        }
+
+        private System.Collections.IEnumerator BossPhaseToastCoroutine()
+        {
+            if (_bossPhaseToastLabel == null) yield break;
+            // Fade in 0.15 s
+            const float fadeIn  = 0.15f;
+            const float hold    = 1.2f;
+            const float fadeOut = 0.5f;
+            float elapsed = 0f;
+            while (elapsed < fadeIn)
+            {
+                elapsed += Time.deltaTime;
+                _bossPhaseToastLabel.style.opacity = elapsed / fadeIn;
+                yield return null;
+            }
+            _bossPhaseToastLabel.style.opacity = 1f;
+            yield return new WaitForSeconds(hold);
+            elapsed = 0f;
+            while (elapsed < fadeOut)
+            {
+                elapsed += Time.deltaTime;
+                _bossPhaseToastLabel.style.opacity = 1f - elapsed / fadeOut;
+                yield return null;
+            }
+            _bossPhaseToastLabel.style.opacity = 0f;
+            _bossPhaseToastCoroutine = null;
         }
 
         private void BuildEnemyCountLabel(VisualElement root)
