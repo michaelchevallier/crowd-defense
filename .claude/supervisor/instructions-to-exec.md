@@ -1120,6 +1120,182 @@ Tu restes libre de gérer ton backlog wiring + cascade dispatch + parallélisme 
 
 ## Status
 
-⏳ pending qa-tester audit visual diff /v4/ vs /v6/
+✅ DONE — qa-tester audit livré + bug-fixer 3 YAML edit shipped commit `4288157` + V6 attendu jump 65→85% parité
+
+---
+
+### 2026-05-12 18h05 — 🟢 LIFT-PAUSE + BACKLOG-WAVE-2 (post-wiring success)
+
+**Type** : GO-SPRINT + BACKLOG-CONTINU
+**From** : Opus superviseur — wiring critique shipped, exec autonome reprend
+**Drift** : 0/12, deploy R1803 live attendu @ 85% parité
+
+## Lift PAUSE-PORT-PIVOT-WIRING
+
+PAUSE levée. Tu peux reprendre dispatch P1 + P3 backlog. **MAIS** nouveau critère done = wire + visible + diff /v4/ confirmé (cf feedback_wire_as_you_go.md).
+
+Aussi : **vérification qa-tester R1803 en cours** (ID `ae24dd2a2d95a4112`, ETA 20-30 min) — verify les 3 GameObjects wired sont visibles live. Tu peux continuer dispatch en parallèle, les findings qa-tester guideront re-prioritisation si besoin.
+
+## Mike's directive critique : PARALLEL/SERIAL Unity
+
+**Règle** : "parallelization is king. mais pour certaines choses tu as peut-être envie de sérialiser et c'est ok. Notamment si les fichiers Unity sont comme les scenes Xcode il faut faire attention".
+
+### 🟢 PARALLELIZABLE — dispatch en masse OK (différents fichiers .cs)
+- C# scripts dans différents fichiers
+- Audit / docs / markdown
+
+### 🟡 PARALLELIZABLE si fichiers différents (1 agent par fichier max)
+- 1 prefab par agent
+- 1 material par agent
+- 1 ScriptableObject par agent
+- 1 .anim par agent
+
+### 🔴 SERIAL OBLIGATOIRE — 1 agent à la fois
+- `Assets/Scenes/Main.unity` — SÉRIALISER tous les GameObject add/modify
+- `Assets/Scenes/*.unity` autres
+- `ProjectSettings/GraphicsSettings.asset` — shaders shared global
+- `ProjectSettings/QualitySettings.asset`
+- `ProjectSettings/TagManager.asset`
+- `Packages/manifest.json` + `packages-lock.json`
+
+**Si 2 tickets touchent Main.unity** : dispatch séquentiel (B après A push), JAMAIS en parallèle. Risque YAML corruption analogue Xcode .xib/.storyboard.
+
+## Backlog WAVE-2 (ordre suggéré, exec libre de re-prioriser)
+
+### 🟢 P1.5 — R6-PARITY-016-LIGHTING-AMBIENT (PARALLELIZABLE, feature-dev Sonnet, 1-2h)
+
+`ThemeAmbientConfig.cs` + `Assets/Editor/CreateThemeAmbientAssets.cs` + `Assets/Resources/PerformanceTestRunInfo.json` semblent déjà commitées (via mon git add -A accident commit `14fa54b`).
+
+**Action** :
+1. Audit le code existant : `ThemeAmbientConfig` SO + Editor menu auto-create ?
+2. Verify les 10 `ThemeAmbient_<Theme>.asset` existent dans `Assets/Resources/Lighting/` (sinon Editor menu generate)
+3. Wire dans `LevelLoader.cs` (ou équivalent) → à `OnLevelStart` apply RenderSettings.ambient* per theme
+4. Live test : sky/equator/ground ambient colors changent per niveau
+
+**Files touchés** : `ThemeAmbientConfig.cs` + `LevelLoader.cs` (ou `LevelVisualBridge.cs`) — PARALLEL OK avec autres tickets pas même fichier.
+
+### 🟢 P1.6 — R6-PARITY-017-WATER-LAVA-ANIM (PARALLELIZABLE, feature-dev Sonnet, 2h)
+
+`WaterLavaAnimController.cs` semble déjà commited via mon accident. Verify wiring.
+
+**Action** :
+1. Read `WaterLavaAnimController.cs` actuel
+2. Verify il y a (a) controller component sur water/lava tiles ou (b) frame swap par Material.SetTexture
+3. Si pas wired : ajouter dans `PathTilesController.cs` pour instantier l'anim controller sur chaque water/lava tile
+4. Verify Assets/Textures/Tiles/water_01..water_08 + lava_01..lava_08 existent (sinon flag asset gap)
+5. Live test : water tiles flow animé + lava tiles bubble animé
+
+**Files touchés** : `WaterLavaAnimController.cs` + `PathTilesController.cs` — PARALLEL OK.
+
+### 🟢 P1.1b — R6-FIX-LINQ-NULL-CHECK (PARALLELIZABLE, bug-fixer Sonnet, 30 min-1h)
+
+Trace + fix `ArgumentNullException Parameter name: collection` observé console retest 17h47.
+
+**Action** :
+1. `grep -rn "\.Sum(\|\.Average(\|\.Min(\|\.Max(\|\.OrderBy(\|\.Where(\|\.Select(\|\.Aggregate(\|\.Count(\|\.First(\|\.Last(" Assets/Scripts/UI/ Assets/Scripts/Systems/ Assets/Scripts/Data/`
+2. Filter pour callers in stats/score/leaderboard/run summary aggregation (UI panels)
+3. Pour chaque match : null-check ou null-coalesce avant LINQ call (`collection ?? Array.Empty<T>()`)
+4. Commit `fix(runtime-crash-3b): null-check collections avant LINQ aggregation (N call sites)`
+
+**Files touchés** : multiples `.cs` UI/Systems/Data — PARALLEL OK avec autres tickets.
+
+### 🟢 P3.1 — R6-REFACTO-ENEMY (PARALLELIZABLE seul, bug-fixer Sonnet, 6-8h)
+
+`Assets/Scripts/Entities/Enemy.cs` 2051 LOC → split partial classes.
+
+**Plan split** :
+- `Enemy.cs` core (300 LOC)
+- `Enemy.Movement.cs` (400 LOC)
+- `Enemy.Combat.cs` (400 LOC)
+- `Enemy.Behaviors.cs` (400 LOC)
+- `Enemy.Stats.cs` (200 LOC)
+- `Enemy.Anim.cs` (300 LOC)
+
+**Files touchés** : Enemy.cs + plusieurs Enemy.*.cs nouveaux — seul cet agent travaille sur Enemy*, PARALLEL OK avec autres tickets.
+
+### 🟢 P3.2 — R6-REFACTO-TOWER (PARALLELIZABLE seul, bug-fixer Sonnet, 6-8h)
+
+`Tower.cs` 2254 LOC → split. Plan identique P3.1.
+
+**Files touchés** : Tower.* — PARALLEL OK avec autres.
+
+### 🟢 P3.3 — R6-REFACTO-CASTLE (PARALLELIZABLE seul, bug-fixer Sonnet, 2h)
+
+`Castle.cs` 762 LOC → split en partial.
+
+**Files touchés** : Castle.* — PARALLEL OK.
+
+### 🟡 R6-PARITY-004-FLUX-REGEN (OPTIONAL longue, feature-dev Sonnet, 6-8h)
+
+Regen 22 VFX textures Flux Schnell pour V6 visual variety vs procédural ParticleSystem.
+
+**Action** :
+1. Start ComfyUI:8188 local si pas tournant (cf memory `reference_flux_local`)
+2. Use `tools/gen_textures.py` (path : `/Users/mike/Work/milan project/tools/gen_textures.py`) avec prompts spécifiques :
+   - sparkle_gold, explosion_big, blood_splat, glyph_dark, heal_aura, lightning_bolt, poison_cloud, shield_aura, slow_aura, smoke_gray, etc. (22 total)
+3. Import PNG → `Assets/Textures/VFX/` + Unity import settings (sRGB, mipmaps, alpha is transparency)
+4. Wire dans VfxPool texture sheets (per VFX type)
+5. Live test : sparkle gold pickup, explosion big enemy death, etc.
+
+**Files touchés** : 22 PNG + VfxPool*.cs — PARALLEL OK mais long, dispatch en background pendant que d'autres tickets parallèles tournent.
+
+## 🔴 SERIAL queue (pas dispatcher en parallèle entre eux ni avec P3.x si touche Main.unity)
+
+### P2.2 — R6-PARITY-FLOATING-POPUP-SCENE-FIX (SERIAL Main.unity, exec direct OR bug-fixer)
+
+Remove ghost UIDocument component `&228555130` from FloatingPopupController GameObject dans Main.unity.
+
+**Action** :
+1. Backup `Main.unity.bak`
+2. YAML edit : supprimer le block component vide
+3. Verify parse OK
+4. Commit + push
+
+**Files touchés** : Main.unity — DOIT être SERIAL (jamais 2 agents simul sur Main.unity).
+
+## Cascade dispatch suggérée (exec libre de re-prioriser)
+
+**Wave 2 Slot 1-4 parallel (différents fichiers, PARALLELIZABLE)** :
+- P1.5 ambient lighting
+- P1.6 water/lava anim
+- P1.1b LINQ null-check
+- P3.3 refacto Castle.cs (court, 2h)
+
+**Wave 3 dispatch après slot libère (différents fichiers, PARALLELIZABLE seul)** :
+- P3.1 refacto Enemy.cs (~6-8h, long)
+- P3.2 refacto Tower.cs (~6-8h, long)
+- R6-PARITY-004-FLUX-REGEN (~6-8h, background si Flux dispo)
+
+**Serial après tout autre work done** :
+- P2.2 FloatingPopup scene fix (Main.unity SERIAL)
+
+## Time cap
+
+Soft cap autonomous mode. Sprint R6-PARITY-V4 effective complete = P1.5/P1.6/P1.1b done (le reste = P3 dette technique, hors sprint). Estimation ~3-4h pour wave 2 parallel.
+
+## Verification post-deploy attendue
+
+Une fois nouveau deploy gh-pages avec wave 2 commits :
+- qa-tester ré-audit live `/v6/` (ou Mike retest)
+- Target V6 @ **90-95% parité V4**
+
+## Constraints rappel charter §1 + nouvelles règles
+
+- Cap 500 LOC strict (sauf legacy >500 hors scope)
+- No Sub-Opus spawn (Sonnet feature-dev/bug-fixer)
+- **NEW** : feature done = wire + live test + diff /v4/ confirmé
+- **NEW** : Parallel-safe = différents fichiers .cs ; Serial = Main.unity + ProjectSettings shared
+- Self-report 100 mots max
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-lift-pause-backlog-wave-2-ack.md` :
+- Confirmation lift PAUSE-PORT-PIVOT-WIRING
+- Batch wave 2 dispatched (4 worktrees parallèles + IDs)
+- Parallel/serial classification understood
+
+## Status
+
+⏳ pending exec ack + dispatch wave 2 + qa-tester R1803 verification
 
 

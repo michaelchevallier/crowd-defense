@@ -2359,7 +2359,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ef61924db7b39d6b60c0b42264c719db, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Visual.SkyboxController
   skyboxPlaine: {fileID: 2100000, guid: 3a4c0e00f165085d1192ab5ff0f9c96b, type: 2}
   skyboxForet: {fileID: 2100000, guid: 6361012ada938e1ca055928b39ed2d1c, type: 2}
@@ -2413,7 +2413,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ec5c73fc2ba9340ec87dc369553d7257, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Visual.CastleSkinController
 --- !u!1 &2000000007
 GameObject:
@@ -2457,7 +2457,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 80070ecc80b42456f8dc7dff07c990fa, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.SceneDecorController
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
