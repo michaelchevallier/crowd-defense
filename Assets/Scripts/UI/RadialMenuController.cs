@@ -37,7 +37,6 @@ namespace CrowdDefense.UI
         private Button? btnSell;
         private Button? btnCancel;
         private Button? btnRange;
-        private Button? btnTarget;
         private Button? btnGuard;
         private Button? btnResearch;
         private VisualElement? radialTooltip;
@@ -79,7 +78,6 @@ namespace CrowdDefense.UI
             btnSell           = root.Q<Button>("btn-sell");
             btnCancel         = root.Q<Button>("btn-cancel");
             btnRange          = root.Q<Button>("btn-range");
-            btnTarget         = root.Q<Button>("btn-target");
             radialTooltip     = root.Q<VisualElement>("radial-tooltip");
             radialTooltipText = root.Q<Label>("radial-tooltip-text");
             btnGuard          = root.Q<Button>("btn-guard");
@@ -106,7 +104,6 @@ namespace CrowdDefense.UI
             btnSell?.RegisterCallback<ClickEvent>(_ => OnSellClicked());
             btnCancel?.RegisterCallback<ClickEvent>(_ => OnCancelClicked());
             btnRange?.RegisterCallback<ClickEvent>(_ => OnRangeClicked());
-            btnTarget?.RegisterCallback<ClickEvent>(_ => OnTargetClicked());
             btnGuard?.RegisterCallback<ClickEvent>(_ => OnGuardClicked());
             btnResearch?.RegisterCallback<ClickEvent>(_ => OnResearchClicked());
 
@@ -217,7 +214,6 @@ namespace CrowdDefense.UI
                 btnSellLabel.text = L.Get("hud.radial_sell", refund);
 
             RefreshRepairButton(tower);
-            RefreshTargetButton(tower);
             RefreshGuardButton(tower);
             RefreshResearchButton(tower);
 
@@ -356,29 +352,6 @@ namespace CrowdDefense.UI
             Debug.Log($"[RadialMenu] Repair tour {tower.Config?.Id} ok");
 #endif
             RefreshMenu(tower);
-        }
-
-        private void RefreshTargetButton(Tower tower)
-        {
-            if (btnTarget == null) return;
-            string label = tower.CurrentTargetPriority switch
-            {
-                TargetPriority.First     => "Cible: 1er",
-                TargetPriority.Last      => "Cible: Dernier",
-                TargetPriority.Strongest => "Cible: Fort",
-                TargetPriority.Weakest   => "Cible: Faible",
-                TargetPriority.Closest   => "Cible: Proche",
-                _                         => "Cible: 1er",
-            };
-            btnTarget.text = label;
-        }
-
-        private void OnTargetClicked()
-        {
-            if (currentTower == null) return;
-            var next = (TargetPriority)(((int)currentTower.CurrentTargetPriority + 1) % 5);
-            currentTower.SetTargetPriority(next);
-            RefreshTargetButton(currentTower);
         }
 
         private void RefreshGuardButton(Tower tower)

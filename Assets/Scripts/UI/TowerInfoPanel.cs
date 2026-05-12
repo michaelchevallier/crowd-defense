@@ -141,8 +141,6 @@ namespace CrowdDefense.UI
                 _sb.Append("Cadence : ");
                 _sb.Append(rps.ToString("F2"));
                 _sb.Append("/s\n");
-                _sb.Append("Cible : ");
-                _sb.Append(tower.CurrentTargetPriority.ToString());
                 _statsLabel.text = _sb.ToString();
             }
 

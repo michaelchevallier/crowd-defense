@@ -146,10 +146,6 @@ namespace CrowdDefense.UI
             }
             _sb.Append('\n');
 
-            _sb.Append("Cible: ");
-            _sb.Append(tower.CurrentTargetPriority.ToString());
-            _sb.Append('\n');
-
             float liveDps = tower.GetLiveDps();
             _sb.Append("DPS Live: ");
             _sb.Append(liveDps.ToString("F1"));
