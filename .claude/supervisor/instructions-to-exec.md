@@ -1507,3 +1507,94 @@ Status V6 : ~95% parité V4 (HUD wired, VfxPool fonctionnel, gameplay loop OK). 
 - T1 notify si tout fini → notif Mike "PARITY 100% COMPLETE"
 - Auto-test via UnityMCP refresh+play+read_console après chaque commit
 
+
+---
+
+## 2026-05-12 23h15 — MASSIVE BACKLOG (Mike directive : tu ne dois jamais être idle)
+
+Mike feedback critique 23h15 : "l'autre session est en attente de travail c'est pas normal. SAUF si tu as atteint ton objectif final."
+
+État sprint : V6 effectif à **96-97% parité V4** (audit `ad3804d` `.claude/audit/2026-05-12-23h00-v4-v6-parity-gap.md`). 4 bug-fixers tournent en parallèle sur top 10 audit. **Toi tu prends ce qui RESTE + complètes le sprint sur d'autres axes**.
+
+### Backlog massif parallel-friendly (pioche dans l'ordre)
+
+#### Track A — Wizard King + AI Hub + Kraken (audit P2/P3 #3,#6,#7)
+
+**TASK A1 — wizard_king teleport+rain** (audit #3, P2 non-régressif)
+- V4 doc intent : wizard téléporte aléatoirement + rain de projectiles
+- V6 effectif : ne l'implémente pas (V4 source ne l'implémente pas non plus, donc non-régressif strict)
+- **Action** : implémenter quand même pour "richer V6 than V4". 40-60 LOC dans `Enemy.Behaviors.cs` partial. Pattern : timer cooldown teleport (5s), spawn 8 projectiles en cercle après teleport.
+- Commit : `feat(parity++): wizard_king teleport+rain attack (V4 doc intent)`
+
+**TASK A2 — ai_hub drone swarm pattern** (audit #6, P2)
+- V4 had drone swarm with formation. V6 currently simpler.
+- 40 LOC dans `EnemyBossBehaviorsStatic.TickAiHubBurst` ou similar
+- Spawn 4-6 mini drones en formation (square, line, triangle), follow boss
+- Commit : `feat(parity++): ai_hub drone swarm formation (audit P2 #6)`
+
+**TASK A3 — kraken tentacle slam** (audit #7, P3 backlog)
+- V4 had tentacle slam pattern différencié. V6 has basic tentacles.
+- 40 LOC : add tentacle slam telegraph (1s yellow flash) + damage cone
+- Commit : `feat(parity++): kraken tentacle slam pattern (audit P3 #7)`
+
+#### Track B — VfxPool wire 20 unassigned prefabs (audit bug-fixer #2)
+
+**TASK B1 — Find/Create VFX prefabs + wire VfxPool**
+- bug-fixer #2 audit dit : VfxPool a 20 prefabs unassigned. Code fallbacks expected mais ideal serait wire vrais prefabs.
+- Find Assets pour `*Impact*.prefab`, `*Death*.prefab`, etc. (les 22 VFX types)
+- Si pas trouvés : créer placeholder prefabs minimal (GameObject + ParticleSystem)
+- Wire dans VfxPool component sur Main.unity ou VfxPool prefab
+- Commit : `fix(parity): VfxPool wire 20 prefabs (audit cleanup)`
+
+#### Track C — Sprint-gate auto-QA (audit #8, P1)
+
+**TASK C1 — auto-qa-runner sprint-gate run**
+- Mike avait setup `.claude/qa/scenarios/*.mjs` pour test scenarios Chrome MCP
+- Run l'auto-qa-runner agent type sur le V6 effectif (build local Unity ou via UnityMCP screenshot)
+- Output : `.claude/qa/reports/sprint-R6-PARITY-V4-final.md`
+- Commit : `chore(qa): sprint-R6-PARITY-V4-final auto-QA gate report`
+
+#### Track D — Performance + polish
+
+**TASK D1 — UnityMCP gameplay 10-wave run**
+- Via UnityMCP `http://127.0.0.1:8080/mcp` session `1bc3a4c5aca949308c2567683326142d`
+- Run 10 waves consecutive via execute_code + StartNextWave loop
+- Record : FPS minimum, GC alloc, draw calls
+- Output : `.claude/audit/2026-05-12-23h30-perf-10waves.md`
+- Commit : `chore(perf): 10-wave gameplay perf audit (FPS, GC, drawcalls)`
+
+**TASK D2 — Code dedup audit**
+- Run quality-maintainer agent sur `Assets/Scripts/` 
+- Find duplicate patterns, dead code, TODO debt
+- Output : `.claude/audit/2026-05-12-23h30-code-dedup-audit.md`
+- Commit : `chore(maintenance): code dedup + dead code audit`
+
+#### Track E — Documentation
+
+**TASK E1 — Update CLAUDE.md crowd-defense**
+- Vérifier que CLAUDE.md root reflète l'état V6 actuel post-refonte stratégique
+- Update sections : workflow, debug API, current backlog, references
+- Commit : `docs(claude.md): update post-PARITY-V4-final state`
+
+**TASK E2 — STATUS.md update**
+- `.claude/status/STATUS.md` doit refléter sprint complete @ 99%+
+- Mark active sprints done, next sprint preparation
+- Commit : `docs(status): mark sprint R6-PARITY-V4 complete + V6-POLISH sprint setup`
+
+### Process
+
+- **PIOCHE TOUJOURS du track le plus prioritaire (A1 → A2 → A3 → B1 → C1 → D1 → D2 → E1 → E2)**
+- 4 slots simultanés (lance 4 agents Sonnet feature-dev en parallèle, worktree si conflicts attendus)
+- Push autonome chaque commit
+- Si conflict avec wave-2 bug-fixers tournant en parallèle : git pull --rebase, re-apply, push
+- Si backlog vidé : **lance ton propre audit** "où sont les gaps restants V4→V6?" + viens push more tickets
+
+### Coordination
+
+- 4 bug-fixers Opus tournent en parallèle wave-1 + wave-2 (PF1-5 + SR1-2 + B1-2 + H1). Toi tu prends les tracks A/B/C/D/E ci-dessus.
+- Si tu vois un commit conflict prévisible (ex: même partial Enemy.cs), serialize par track.
+
+### Time cap
+
+Pas de time cap — tu pioches tant qu'il y a du travail. **Tu ne dois JAMAIS être idle.**
+
