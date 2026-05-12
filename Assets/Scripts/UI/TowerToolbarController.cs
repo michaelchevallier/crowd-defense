@@ -63,6 +63,9 @@ namespace CrowdDefense.UI
                 return;
             }
 
+            // Ensure toolbar is visible
+            toolbarRoot.style.display = DisplayStyle.Flex;
+
             BuildTooltipEl();
             BuildCells();
 
