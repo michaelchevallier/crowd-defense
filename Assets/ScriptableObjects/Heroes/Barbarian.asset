@@ -21,10 +21,10 @@ MonoBehaviour:
   projectileSpeed: 20
   moveSpeed: 8
   modelScale: 0.65
-  ultCooldownMs: 25000
-  ultAoeRadius: 7
-  ultAoeDamage: 30
-  ultFanShotCount: 6
+  ultCooldownMs: 30000
+  ultAoeRadius: 6.5
+  ultAoeDamage: 15
+  ultFanShotCount: 8
   ultFanPierceBonus: 5
   ultFanDamageMul: 2.0
   xpCurve:
