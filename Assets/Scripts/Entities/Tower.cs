@@ -97,6 +97,7 @@ namespace CrowdDefense.Entities
         // Range ring + synergy halo GameObjects
         private GameObject? _rangeRing;
         private LineRenderer? _rangeCircle;
+        private LineRenderer? _magnetAuraCircle;
         private GameObject? _clusterHighlight;
         private Renderer? _synergyHaloRenderer;
         private MaterialPropertyBlock? _haloMpb;
@@ -399,6 +400,8 @@ namespace CrowdDefense.Entities
             BuildAffordableHighlight(type.Range);
             BuildClusterHighlight();
             BuildDamageIcon(type.DamageType);
+            if (type.Behavior == TowerBehavior.CoinPull)
+                BuildMagnetAuraCircle(BalanceConfig.Get().MagnetSlowRadius);
         }
 
         /// <summary>
@@ -797,8 +800,10 @@ namespace CrowdDefense.Entities
                 cfg.Range,
                 cfg.CoinMul > 0f ? cfg.CoinMul : BalanceConfig.Get().MagnetCoinMul);
 
-            if (!_pullActive || SlowEffectManager.Instance == null || WaveManager.Instance == null) return;
-            float slowR2 = BalanceConfig.Get().MagnetSlowRadius * BalanceConfig.Get().MagnetSlowRadius;
+            // Slow aura 0.7× (V4 synergy) — always active, independent of magnet+tank synergy
+            if (SlowEffectManager.Instance == null || WaveManager.Instance == null) return;
+            float slowR = BalanceConfig.Get().MagnetSlowRadius;
+            float slowR2 = slowR * slowR;
             var myPos = transform.position;
             var active = WaveManager.Instance.ActiveEnemies;
             for (int i = 0; i < active.Count; i++)
@@ -806,7 +811,7 @@ namespace CrowdDefense.Entities
                 var e = active[i];
                 if (e == null || e.IsDead) continue;
                 if ((e.transform.position - myPos).sqrMagnitude <= slowR2)
-                    SlowEffectManager.Instance.ApplySlow(e, 0.7f, 200);
+                    SlowEffectManager.Instance.ApplySlow(e, 0.7f, 500);
             }
         }
 
@@ -1282,6 +1287,57 @@ namespace CrowdDefense.Entities
 
             go.SetActive(false);
             _clusterHighlight = go;
+        }
+
+        // ── Magnet Slow Aura Circle ───────────────────────────────────────────
+
+        private void BuildMagnetAuraCircle(float radius)
+        {
+            if (_magnetAuraCircle != null)
+            {
+                Destroy(_magnetAuraCircle.gameObject);
+                _magnetAuraCircle = null;
+            }
+
+            var go = new GameObject("MagnetAuraCircle");
+            go.transform.SetParent(transform);
+            go.transform.localPosition = new Vector3(0f, 0.02f, 0f);
+            go.transform.localRotation = Quaternion.identity;
+            go.transform.localScale = Vector3.one;
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;
+            lr.loop = true;
+            lr.positionCount = 48;
+            lr.startWidth = 0.08f;
+            lr.endWidth   = 0.08f;
+            var auColor = new Color(0.55f, 0.2f, 0.9f, 0.55f);  // violet translucide
+            lr.startColor = auColor;
+            lr.endColor   = auColor;
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.color = auColor;
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3001;
+            }
+            lr.material = mat;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
+            const int segs = 48;
+            float step = 2f * Mathf.PI / segs;
+            for (int i = 0; i < segs; i++)
+            {
+                float a = i * step;
+                lr.SetPosition(i, new Vector3(Mathf.Cos(a) * radius, 0f, Mathf.Sin(a) * radius));
+            }
+
+            lr.enabled = true;
+            _magnetAuraCircle = lr;
         }
 
         // ── Synergy Halo ──────────────────────────────────────────────────────
