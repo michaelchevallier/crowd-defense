@@ -69,6 +69,11 @@ namespace CrowdDefense.UI
                     ["hud.radial_branch_dps"] = "DPS",
                     ["hud.radial_branch_utility"] = "Utility",
 
+                    // ── L3 branch choice modal ─────────────────────────────────────
+                    ["hud.l3_choice_title"] = "Choose L3 Branch",
+                    ["hud.l3_choice_sub"] = "{0} — irreversible choice",
+                    ["hud.l3_choice_cancel"] = "Cancel",
+
                     // DPS branch names per tower
                     ["hud.radial_dps.archer"] = "Volley",
                     ["hud.radial_dps.mage"] = "Arcane",
@@ -380,6 +385,11 @@ namespace CrowdDefense.UI
                     ["hud.radial_branch_dps"] = "DPS",
                     ["hud.radial_branch_utility"] = "Utilitaire",
 
+                    // ── L3 branch choice modal ─────────────────────────────────────
+                    ["hud.l3_choice_title"] = "Choisir branche L3",
+                    ["hud.l3_choice_sub"] = "{0} — choix irréversible",
+                    ["hud.l3_choice_cancel"] = "Annuler",
+
                     // DPS branch names per tower
                     ["hud.radial_dps.archer"] = "Volée",
                     ["hud.radial_dps.mage"] = "Arcane",
@@ -690,6 +700,11 @@ namespace CrowdDefense.UI
                     ["hud.radial_upgrade_l3"] = "Mejorar L3",
                     ["hud.radial_branch_dps"] = "DPS",
                     ["hud.radial_branch_utility"] = "Utilidad",
+
+                    // ── L3 branch choice modal ─────────────────────────────────────
+                    ["hud.l3_choice_title"] = "Elegir rama L3",
+                    ["hud.l3_choice_sub"] = "{0} — elección irreversible",
+                    ["hud.l3_choice_cancel"] = "Cancelar",
 
                     // DPS branch names per tower
                     ["hud.radial_dps.archer"] = "Andanada",

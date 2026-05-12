@@ -172,15 +172,9 @@ namespace CrowdDefense.UI
                     break;
 
                 case 2 when isSignature:
-                    if (radialTitle != null)
-                        radialTitle.text = L.Get("hud.radial_title", displayName);
-                    bool canAffordL3 = gold >= l3Cost;
-                    var tid = TowerIdExtensions.FromKey(cfg.Id);
-                    PopulateDpsButton(tid, l3Cost, canAffordL3);
-                    PopulateUtilityButton(tid, l3Cost, canAffordL3);
-                    SetVisible(btnDps, true);
-                    SetVisible(btnUtility, true);
-                    break;
+                    Hide();
+                    UpgradeMenuController.Instance?.ShowL3Choice(tower);
+                    return;
 
                 case 2:
                     if (radialTitle != null) radialTitle.text = displayName;
@@ -388,6 +382,12 @@ namespace CrowdDefense.UI
 
         // Called by TowerInfoPanel sell button as well as internal btn-sell click
         public void TrySellCurrentTower() => OnSellClicked();
+
+        // Called by UpgradeMenuController after L3 branch applied
+        public void RefreshCurrentTower()
+        {
+            if (currentTower != null) RefreshMenu(currentTower);
+        }
 
         private void OnSellClicked()
         {

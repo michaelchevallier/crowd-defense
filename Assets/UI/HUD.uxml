@@ -321,6 +321,27 @@
 
         <ui:VisualElement name="popup-overlay" class="popup-overlay" picking-mode="Ignore" />
 
+        <!-- L3 Branch Choice modal (UpgradeMenuController — signature towers only) -->
+        <ui:VisualElement name="l3-choice-panel" class="l3-choice-panel hidden">
+            <ui:VisualElement class="l3-choice-box">
+                <ui:Label name="l3-choice-title" text="Choisir branche L3" class="l3-choice-title" />
+                <ui:Label name="l3-choice-sub" text="" class="l3-choice-sub" />
+                <ui:VisualElement class="l3-cards-row">
+                    <ui:Button name="l3-dps-card" class="l3-card l3-card-dps">
+                        <ui:Label name="l3-dps-label" text="DPS" class="l3-card-name" />
+                        <ui:Label name="l3-dps-stats" text="" class="l3-card-stats" />
+                        <ui:Label name="l3-dps-cost" text="" class="l3-card-cost" />
+                    </ui:Button>
+                    <ui:Button name="l3-utility-card" class="l3-card l3-card-utility">
+                        <ui:Label name="l3-utility-label" text="Utility" class="l3-card-name" />
+                        <ui:Label name="l3-utility-stats" text="" class="l3-card-stats" />
+                        <ui:Label name="l3-utility-cost" text="" class="l3-card-cost" />
+                    </ui:Button>
+                </ui:VisualElement>
+                <ui:Button name="l3-cancel-btn" class="l3-cancel-btn" text="Annuler" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+
         <!-- Run summary modal (victory/defeat end-of-run stats, RunSummaryController) -->
         <ui:VisualElement name="run-summary-panel" class="run-summary-panel hidden">
             <ui:VisualElement class="run-summary-box">
