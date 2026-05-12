@@ -61,6 +61,9 @@ namespace CrowdDefense.UI
         private Toggle? _colorblindToggle;
         private Toggle? _reduceMotionToggle;
         private Toggle? _largeTextToggle;
+        private SliderInt? _fontSizeSlider;
+        private Label?     _fontSizeValue;
+        private Toggle?    _highContrastToggle;
 
         private DropdownField? _langDropdown;
         private Button? _closeBtn;
@@ -96,6 +99,8 @@ namespace CrowdDefense.UI
         private Label? _colorblindLabel;
         private Label? _reduceMotionLabel;
         private Label? _largeTextLabel;
+        private Label? _fontSizeLabel;
+        private Label? _highContrastLabel;
         private Label? _langSectionLabel;
         private Label? _langLabel;
 
@@ -174,6 +179,15 @@ namespace CrowdDefense.UI
             _colorblindToggle = _root.Q<Toggle>("colorblind-toggle");
             _reduceMotionToggle = _root.Q<Toggle>("reduce-motion-toggle");
             _largeTextToggle = _root.Q<Toggle>("large-text-toggle");
+            _fontSizeSlider = _root.Q<SliderInt>("font-size-slider");
+            _fontSizeValue = _root.Q<Label>("font-size-value");
+            _highContrastToggle = _root.Q<Toggle>("high-contrast-toggle");
+
+            if (_fontSizeSlider != null)
+            {
+                _fontSizeSlider.lowValue = 0;
+                _fontSizeSlider.highValue = 2;
+            }
 
             _langDropdown = _root.Q<DropdownField>("lang-dropdown");
             _closeBtn = _root.Q<Button>("settings-close-btn");
@@ -208,6 +222,8 @@ namespace CrowdDefense.UI
             _colorblindLabel     = _root.Q<Label>("colorblind-label");
             _reduceMotionLabel   = _root.Q<Label>("reduce-motion-label");
             _largeTextLabel      = _root.Q<Label>("large-text-label");
+            _fontSizeLabel       = _root.Q<Label>("font-size-label");
+            _highContrastLabel   = _root.Q<Label>("high-contrast-label");
             _langSectionLabel    = _root.Q<Label>("lang-section-title");
             _langLabel           = _root.Q<Label>("lang-label");
 
@@ -296,6 +312,14 @@ namespace CrowdDefense.UI
             if (_colorblindLabel != null)     _colorblindLabel.text     = L.Get("settings.colorblind");
             if (_reduceMotionLabel != null)   _reduceMotionLabel.text   = L.Get("settings.reduce_motion");
             if (_largeTextLabel != null)      _largeTextLabel.text      = L.Get("settings.large_text");
+            if (_fontSizeLabel != null)
+                _fontSizeLabel.text = L.CurrentLocale == "fr" ? "Taille du texte (S/M/L)"
+                    : L.CurrentLocale == "es" ? "Tamaño de texto (S/M/L)"
+                    : "Font size (S/M/L)";
+            if (_highContrastLabel != null)
+                _highContrastLabel.text = L.CurrentLocale == "fr" ? "Contraste élevé"
+                    : L.CurrentLocale == "es" ? "Alto contraste"
+                    : "High contrast";
             if (_langSectionLabel != null)    _langSectionLabel.text    = L.Get("settings.lang_section");
             if (_langLabel != null)           _langLabel.text           = L.Get("settings.lang_label");
             if (_closeBtn != null)            _closeBtn.text            = L.Get("settings.close");
@@ -464,6 +488,20 @@ namespace CrowdDefense.UI
                 SettingsRegistry.Instance.LargeText = evt.newValue;
             });
 
+            _fontSizeSlider?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.FontSize = evt.newValue;
+                if (_fontSizeValue != null)
+                    _fontSizeValue.text = evt.newValue == 0 ? "S" : evt.newValue == 2 ? "L" : "M";
+            });
+
+            _highContrastToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.HighContrast = evt.newValue;
+            });
+
             _langDropdown?.RegisterValueChangedCallback(evt =>
             {
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
@@ -585,6 +623,9 @@ namespace CrowdDefense.UI
                 if (_colorblindToggle != null) _colorblindToggle.value = reg.ColorblindMode;
                 if (_reduceMotionToggle != null) _reduceMotionToggle.value = reg.ReduceMotion;
                 if (_largeTextToggle != null) _largeTextToggle.value = reg.LargeText;
+                if (_fontSizeSlider != null) _fontSizeSlider.value = reg.FontSize;
+                if (_fontSizeValue != null) _fontSizeValue.text = reg.FontSize == 0 ? "S" : reg.FontSize == 2 ? "L" : "M";
+                if (_highContrastToggle != null) _highContrastToggle.value = reg.HighContrast;
 
                 if (_langDropdown != null)
                 {

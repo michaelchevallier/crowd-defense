@@ -21,6 +21,8 @@ namespace CrowdDefense.UI
         private const string KColorblind = "cd.a11y.colorblind";
         private const string KReduceMotion = "cd.a11y.reduce_motion";
         private const string KLargeText = "cd.a11y.large_text";
+        private const string KFontSize = "cd.a11y.font_size";
+        private const string KHighContrast = "cd.a11y.high_contrast";
         private const string KLocale = "cd.locale";
         private const string KGameSpeed = "cd.gameplay.speed";
         private const string KDifficulty = "cd.difficulty";
@@ -45,6 +47,8 @@ namespace CrowdDefense.UI
         private bool _colorblindMode;
         private bool _reduceMotion;
         private bool _largeText;
+        private int _fontSize = 1; // 0=S 1=M 2=L
+        private bool _highContrast;
         private string _locale = "en";
         private int _gameSpeed = 1;
         private int _difficulty = 1; // 0=Easy 1=Normal 2=Hard
@@ -134,6 +138,19 @@ namespace CrowdDefense.UI
             set { if (_largeText == value) return; _largeText = value; QueueSave(); Notify(); }
         }
 
+        // 0=Small 1=Medium 2=Large — drives UI panel font scale at startup
+        public int FontSize
+        {
+            get => _fontSize;
+            set { value = Mathf.Clamp(value, 0, 2); if (_fontSize == value) return; _fontSize = value; ApplyA11y(); QueueSave(); Notify(); }
+        }
+
+        public bool HighContrast
+        {
+            get => _highContrast;
+            set { if (_highContrast == value) return; _highContrast = value; ApplyA11y(); QueueSave(); Notify(); }
+        }
+
         public string Locale
         {
             get => _locale;
@@ -198,6 +215,7 @@ namespace CrowdDefense.UI
             ApplyAudio();
             ApplyQuality();
             ApplyBloom();
+            ApplyA11y();
         }
 
         public void Save()
@@ -215,6 +233,8 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetInt(KColorblind, _colorblindMode ? 1 : 0);
             PlayerPrefs.SetInt(KReduceMotion, _reduceMotion ? 1 : 0);
             PlayerPrefs.SetInt(KLargeText, _largeText ? 1 : 0);
+            PlayerPrefs.SetInt(KFontSize, _fontSize);
+            PlayerPrefs.SetInt(KHighContrast, _highContrast ? 1 : 0);
             PlayerPrefs.SetString(KLocale, _locale);
             PlayerPrefs.SetInt(KGameSpeed, _gameSpeed);
             PlayerPrefs.SetInt(KDifficulty, _difficulty);
@@ -242,6 +262,8 @@ namespace CrowdDefense.UI
             _colorblindMode = PlayerPrefs.GetInt(KColorblind, 0) == 1;
             _reduceMotion = PlayerPrefs.GetInt(KReduceMotion, 0) == 1;
             _largeText = PlayerPrefs.GetInt(KLargeText, 0) == 1;
+            _fontSize = PlayerPrefs.GetInt(KFontSize, 1);
+            _highContrast = PlayerPrefs.GetInt(KHighContrast, 0) == 1;
             _locale = PlayerPrefs.GetString(KLocale, "en");
             _gameSpeed = PlayerPrefs.GetInt(KGameSpeed, 1);
             _difficulty = PlayerPrefs.GetInt(KDifficulty, PlayerPrefs.GetInt("difficulty_v1", 1));
@@ -307,6 +329,27 @@ namespace CrowdDefense.UI
         {
             float intensity = BloomIntensities[Mathf.Clamp(_bloomLevel, 0, 2)];
             Visual.PostProcessController.Instance?.SetBloomIntensity(intensity);
+        }
+
+        // Font scale steps: 0=0.85x 1=1.0x 2=1.2x
+        public static readonly float[] FontScales = { 0.85f, 1.0f, 1.2f };
+
+        // Applies a11y settings. UIToolkit consumers read FontSize/HighContrast directly from registry.
+        // Canvas scaleFactor is adjusted for legacy UGUI panels.
+        public void ApplyA11y()
+        {
+            float scale = FontScales[Mathf.Clamp(_fontSize, 0, 2)];
+
+            foreach (var canvas in UnityEngine.Object.FindObjectsByType<UnityEngine.Canvas>(
+                         UnityEngine.FindObjectsSortMode.None))
+            {
+                if (canvas.isRootCanvas) canvas.scaleFactor = scale;
+            }
+
+            // High-contrast: boost ambient for legibility; game-specific contrast shader
+            // toggling is handled by PostProcessController when it reads HighContrast from registry.
+            if (_highContrast)
+                UnityEngine.RenderSettings.ambientLight = new Color(1f, 1f, 1f, 1f);
         }
 
         private void Notify() => OnSettingsChanged?.Invoke();
