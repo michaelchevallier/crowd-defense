@@ -101,6 +101,9 @@ namespace CrowdDefense.Entities
         private GameObject?  _decalBurn;
         private int          _decalFrame = 0;
 
+        // ── Spawn pop-in state ────────────────────────────────────────────────
+        private Coroutine?   _popInCoroutine;
+
         // ── Boss aura (pulsing ring child GO) ─────────────────────────────────
         private GameObject?  _bossAuraGO;
         private MeshRenderer? _bossAuraMR;
@@ -197,7 +200,17 @@ namespace CrowdDefense.Entities
         public void ApplyElite()
         {
             _isElite = true;
-            transform.localScale *= 1.3f;
+            // If pop-in is running, restart it with the elite-scaled target instead of multiplying transitional scale
+            float eliteScale = _bossBaseScale * 1.3f;
+            if (_popInCoroutine != null)
+            {
+                StopCoroutine(_popInCoroutine);
+                _popInCoroutine = StartCoroutine(SpawnPopIn(eliteScale, cfg?.IsBoss ?? false));
+            }
+            else
+            {
+                transform.localScale = Vector3.one * eliteScale;
+            }
             hp    *= 2.5f;
             maxHp *= 2.5f;
             // Gold tint via MPB — reuses the already-allocated _mpb from Init
@@ -345,6 +358,7 @@ namespace CrowdDefense.Entities
             _wasWalking       = false;
             _lastDamageDirection = Vector3.back;
             _isElite = false;
+            if (_popInCoroutine != null) { StopCoroutine(_popInCoroutine); _popInCoroutine = null; }
 
             // Clean up any Rigidbodies/CapsuleColliders added by ragdoll on previous life
             CleanupRagdoll();
@@ -361,8 +375,10 @@ namespace CrowdDefense.Entities
             _diffRewardMul = BalanceConfig.DifficultyRewardMul();
             pathIdx  = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
-            transform.localScale = Vector3.one * type.Scale;
-            _bossBaseScale = type.Scale;
+            float typeScale  = type.Scale;
+            _bossBaseScale   = typeScale;
+            transform.localScale = Vector3.zero;
+            _popInCoroutine  = StartCoroutine(SpawnPopIn(typeScale, type.IsBoss));
 
             rend      = GetComponent<MeshRenderer>();
             baseColor = type.BodyColor;
@@ -471,6 +487,27 @@ namespace CrowdDefense.Entities
                 return;
             }
             transform.position = pathManager.GetWaypointOnPath(pathIdx, 0) + Vector3.up * 0.5f;
+        }
+
+        // ── Spawn pop-in animation ────────────────────────────────────────────
+        private System.Collections.IEnumerator SpawnPopIn(float targetScale, bool isBoss)
+        {
+            float duration  = isBoss ? 0.6f : 0.3f;
+            float overshoot = isBoss ? 1.3f : 1.1f;
+            float elapsed   = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t  = Mathf.Clamp01(elapsed / duration);
+                // EaseOutBack: cubic overshoot then settle to targetScale
+                float c1 = overshoot - 1f;
+                float c3 = c1 + 1f;
+                float s  = c3 * t * t * t - c1 * t * t;
+                transform.localScale = Vector3.one * (targetScale * Mathf.Max(0f, s));
+                yield return null;
+            }
+            transform.localScale = Vector3.one * targetScale;
+            _popInCoroutine = null;
         }
 
         // ── Ragdoll cleanup (pool reuse) ──────────────────────────────────────
