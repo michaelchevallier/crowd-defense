@@ -66,6 +66,11 @@ namespace CrowdDefense.Entities
         private ParticleSystem? _firePs;
         private bool            _firePsSpawned;
 
+        // Blood splatter decals — max 10 concurrent, FIFO eviction
+        private const int MaxSplatters = 10;
+        private readonly System.Collections.Generic.Queue<GameObject> _splatters = new();
+        private static Material? _splatterMat;
+
         // Ambient candle flames — 4 corner PS, always on while alive
         private readonly ParticleSystem?[] _candlePs = new ParticleSystem?[4];
 
@@ -370,6 +375,9 @@ namespace CrowdDefense.Entities
             // Siege debris — brown chunks burst when HP < 30 % and hit is significant
             if (actualDmg > 5 && HPMax > 0 && (float)HP / HPMax < 0.3f)
                 SpawnSiegeDebris();
+
+            if (actualDmg >= 5)
+                SpawnBloodSplatter();
 
             // Screen shake — tiered by damage magnitude, throttled to once every 100 ms
             if (Time.timeScale > 0f && Time.unscaledTime - _lastShakeTime > 0.1f)
@@ -713,6 +721,60 @@ namespace CrowdDefense.Entities
                 yield return wait;
             }
             _sparksCoroutine = null;
+        }
+
+        private void SpawnBloodSplatter()
+        {
+            // FIFO eviction — destroy oldest when pool full
+            while (_splatters.Count >= MaxSplatters)
+            {
+                var old = _splatters.Dequeue();
+                if (old != null) Destroy(old);
+            }
+
+            _splatterMat ??= BuildUnlitMaterial(new Color(0.5f, 0.05f, 0.05f, 0.8f), transparent: true);
+
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "BloodSplatter";
+            Destroy(go.GetComponent<MeshCollider>());
+
+            float scale = UnityEngine.Random.Range(0.3f, 0.8f);
+            var wallFront = transform.position
+                + transform.forward * 0.5f
+                + UnityEngine.Random.insideUnitSphere * 0.8f;
+            go.transform.position    = wallFront;
+            go.transform.localScale  = new Vector3(scale, scale, scale);
+            go.transform.eulerAngles = new Vector3(0f, UnityEngine.Random.Range(0f, 360f), 0f);
+
+            // Instance material per splatter so each can fade independently
+            var rend = go.GetComponent<MeshRenderer>();
+            rend.material = new Material(_splatterMat);
+            rend.sortingOrder = 3;
+
+            _splatters.Enqueue(go);
+            StartCoroutine(FadeSplatter(go, rend.material, 8f));
+        }
+
+        private IEnumerator FadeSplatter(GameObject go, Material mat, float dur)
+        {
+            const float startAlpha = 0.8f;
+            float elapsed = 0f;
+            while (elapsed < dur && go != null)
+            {
+                elapsed += Time.deltaTime;
+                float a = Mathf.Lerp(startAlpha, 0f, elapsed / dur);
+                var c = mat.color;
+                c.a = a;
+                mat.color = c;
+                yield return null;
+            }
+            if (go != null)
+            {
+                // Remove from queue if still present (may have been evicted by FIFO already)
+                if (_splatters.Count > 0 && _splatters.Peek() == go)
+                    _splatters.Dequeue();
+                Destroy(go);
+            }
         }
 
         // 5 brown debris chunks burst outward — HP < 30 %, damage > 5
