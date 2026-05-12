@@ -516,11 +516,18 @@ namespace CrowdDefense.UI
             if (gain <= 0)
             {
                 _bankLabel.AddToClassList("hidden");
+                HideBankTooltip();
                 return;
             }
             _bankLabel.RemoveFromClassList("hidden");
             _bankLabel.text = $"\U0001F3E6 {totalAccumulated}¢ (+5%)";
+            // Update dynamic title with live amount
+            var titleLabel = _bankTooltip?.Q<Label>("bank-tooltip-title");
+            if (titleLabel != null) titleLabel.text = $"Banque : {totalAccumulated}¢";
         }
+
+        private void ShowBankTooltip() => _bankTooltip?.RemoveFromClassList("hidden");
+        private void HideBankTooltip() => _bankTooltip?.AddToClassList("hidden");
 
         private void OnHPChanged(int hp, int hpMax)
         {
