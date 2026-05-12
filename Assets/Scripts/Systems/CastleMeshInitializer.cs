@@ -30,8 +30,8 @@ namespace CrowdDefense.Systems
                 return;
             }
 
-            // Generate them automatically
-            Editor.BuildCastleProceduralMeshes.BuildAllCastleMeshes();
+            // Generate them automatically (explicit fully-qualified name to avoid ambiguity with UnityEditor.Editor)
+            CrowdDefense.Editor.BuildCastleProceduralMeshes.BuildAllCastleMeshes();
         }
 #endif
     }
