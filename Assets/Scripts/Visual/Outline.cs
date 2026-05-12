@@ -54,11 +54,9 @@ namespace CrowdDefense.Visual
 
         private static Material? GetOrCreateMaterial(Color outlineColor)
         {
-            if (_outlineMat != null)
-            {
-                _outlineMat.SetColor("_OutlineColor", outlineColor);
-                return _outlineMat;
-            }
+            // Check cache first (per-color materials)
+            if (_outlineMatCache.TryGetValue(outlineColor, out var cached))
+                return cached;
 
             var shader = Shader.Find("CrowdDefense/OutlineInvertedHull");
             if (shader == null)
@@ -69,10 +67,11 @@ namespace CrowdDefense.Visual
                 return null;
             }
 
-            _outlineMat = new Material(shader);
-            _outlineMat.SetColor("_OutlineColor", outlineColor);
-            _outlineMat.SetFloat("_OutlineWidth", 0.02f);
-            return _outlineMat;
+            var mat = new Material(shader);
+            mat.SetColor("_OutlineColor", outlineColor);
+            mat.SetFloat("_OutlineWidth", 0.02f);
+            _outlineMatCache[outlineColor] = mat;
+            return mat;
         }
     }
 }
