@@ -18,6 +18,8 @@ namespace CrowdDefense.Systems
         private GameObject? ghost;
         private MeshRenderer? ghostRenderer;
         private Material?   ghostMat;
+        private GameObject? rangeRing;
+        private float       lastBuiltRange = -1f;
 
         // Cache for raw mouse-tracked world position (used when no valid cell)
         private Vector3 lastMouseWorld;
@@ -84,6 +86,11 @@ namespace CrowdDefense.Systems
             float s = cellSize * 0.85f * sizeMul;
             ghost.transform.localScale = new Vector3(s, s * 0.6f, s);
 
+            // Rebuild range ring when selected tower changes (after scale is current)
+            float range = pc.SelectedTowerType?.Range ?? 0f;
+            if (!Mathf.Approximately(range, lastBuiltRange))
+                BuildRangeRing(range);
+
             // Track raw mouse world for fallback positioning (when hovering non-buildable)
             if (cam != null)
             {
@@ -119,11 +126,64 @@ namespace CrowdDefense.Systems
             }
 
             ghost.SetActive(true);
+            if (rangeRing != null) rangeRing.SetActive(true);
         }
 
         private void HideGhost()
         {
-            if (ghost != null) ghost.SetActive(false);
+            if (ghost != null)     ghost.SetActive(false);
+            if (rangeRing != null) rangeRing.SetActive(false);
+        }
+
+        private void BuildRangeRing(float range)
+        {
+            if (rangeRing != null) Object.Destroy(rangeRing);
+            lastBuiltRange = range;
+            if (range <= 0f) return;
+
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "GhostRangeRing";
+            go.transform.SetParent(ghost!.transform, false);
+            go.transform.localPosition = new Vector3(0f, 0.04f, 0f);
+            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            // Compensate parent scale so world diameter = range*2
+            float parentScale = ghost!.transform.localScale.x;
+            float diameter = parentScale > 0f ? (range * 2f) / parentScale : range * 2f;
+            go.transform.localScale = new Vector3(diameter, diameter, 1f);
+            Object.Destroy(go.GetComponent<Collider>());
+
+            const int texSize = 64;
+            var tex = new Texture2D(texSize, texSize, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color32[texSize * texSize];
+            float half = texSize * 0.5f;
+            for (int y = 0; y < texSize; y++)
+            for (int x = 0; x < texSize; x++)
+            {
+                float dx = (x - half) / half;
+                float dy = (y - half) / half;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                float alpha = Mathf.SmoothStep(1f, 0f, dist) * 0.4f;
+                byte a = (byte)Mathf.RoundToInt(Mathf.Clamp01(alpha) * 255f);
+                pixels[y * texSize + x] = new Color32(102, 222, 255, a);
+            }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.mainTexture = tex;
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3000;
+            }
+            var rend = go.GetComponent<Renderer>();
+            if (rend != null) rend.material = mat;
+
+            go.SetActive(false);
+            rangeRing = go;
         }
     }
 }
