@@ -418,6 +418,9 @@ namespace CrowdDefense.Entities
         // Recoil state — prevents TickIdleAnim from overriding during recoil.
         private bool _recoiling;
 
+        // Per-tower Perlin seed — desync wobble between instances.
+        private float _wobbleSeed;
+
         // Global throttle — skip cam shake if another tower shook within 50 ms (multi-cannon spam guard).
         private static float _lastCamShakeAt = -1f;
 
@@ -442,6 +445,7 @@ namespace CrowdDefense.Entities
             _heroBuffDmgMul = 1f;
             _idlePhase = Random.value * Mathf.PI * 2f;
             _breathOffset = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+            _wobbleSeed   = UnityEngine.Random.Range(0f, 1000f);
             _basePos = transform.position;
             _lastFireAt = 0f;
             UpgradeLevel = 1;
@@ -2169,9 +2173,18 @@ namespace CrowdDefense.Entities
         // Smoothly rotates _meshHead toward the current target each frame (Y-axis only).
         // On target switch : snaps instantly for quick reaction.
         // Boss towers (L3) rotate at 12 deg/sec ; others at 8 deg/sec.
+        // Passive towers (frost/magnet/portal) skip aim entirely.
         private void TickHeadAim()
         {
             if (_meshHead == null || target == null || target.IsDead) return;
+            if (cfg == null) return;
+
+            // Passive towers have no aim — skip wobble too.
+            bool isPassive = cfg.Id == "frost" || cfg.Id.Contains("ice")
+                          || cfg.Id == "magnet"
+                          || cfg.Id == "portal";
+            if (isPassive) return;
+
             Vector3 dir = target.transform.position - _meshHead.transform.position;
             dir.y = 0f;
             if (dir.sqrMagnitude < 0.001f) return;
@@ -2187,8 +2200,16 @@ namespace CrowdDefense.Entities
             }
 
             float degsPerSec = UpgradeLevel >= 3 ? 12f : 8f;
-            _meshHead.transform.rotation = Quaternion.RotateTowards(
+            Quaternion tracked = Quaternion.RotateTowards(
                 _meshHead.transform.rotation, desired, degsPerSec * Time.deltaTime);
+
+            // Visual-only wobble — does NOT affect projectile direction (callers use `desired`).
+            // ±1° idle, ±2° in the 0.6 s window after a shot (residual recoil tremor).
+            float amp   = (Time.time - _lastFireAt) < 0.6f ? 2f : 1f;
+            float speed = 0.8f;
+            float wx = (Mathf.PerlinNoise(Time.time * speed + _wobbleSeed,        0f) * 2f - 1f) * amp;
+            float wy = (Mathf.PerlinNoise(0f, Time.time * speed + _wobbleSeed + 3.7f) * 2f - 1f) * amp;
+            _meshHead.transform.rotation = Quaternion.Euler(wx, 0f, 0f) * tracked * Quaternion.Euler(0f, wy, 0f);
         }
 
         // Lerp head -0.5 local-Z then back to 0 for a snap recoil feel.
