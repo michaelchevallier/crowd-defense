@@ -47,11 +47,15 @@ namespace CrowdDefense.Systems
         private readonly Dictionary<string, float> _stingDuckMs = new();
         private readonly Dictionary<string, AudioSource> _stingSources = new();
 
+        private const float IntensityVolMax   = 1.15f;
+        private const float IntensityPitchMax = 1.05f;
+
         private string? _currentTrack;
         private string? _activeSting;
         private float _duckUntilTime;
         private Coroutine? _duckCo;
         private bool _muted;
+        private float _waveIntensity = 0f;   // 0..1, drives volume/pitch swell
 
         protected override void OnAwakeSingleton()
         {
@@ -364,6 +368,33 @@ namespace CrowdDefense.Systems
             }
         }
 
+        /// <summary>
+        /// Drive music urgency from wave progress (0 = wave start, 1 = wave cleared).
+        /// Volume ramps 1.0 → 1.15 and pitch 1.0 → 1.05 on the active track source.
+        /// Call each frame while a wave is active, or pass 0 to reset.
+        /// </summary>
+        public void UpdateWaveIntensity(float progress)
+        {
+            _waveIntensity = Mathf.Clamp01(progress);
+            if (_currentTrack == null || !_sources.TryGetValue(_currentTrack, out var src)) return;
+            if (_muted) return;
+
+            float baseVol  = Mathf.Min(1f, musicVolume * (_trackVolMul.TryGetValue(_currentTrack, out var m) ? m : 1f));
+            float duck     = Time.unscaledTime < _duckUntilTime ? DuckMultiplier : 1f;
+            src.volume = baseVol * duck * Mathf.Lerp(1f, IntensityVolMax,   _waveIntensity);
+            src.pitch  =                             Mathf.Lerp(1f, IntensityPitchMax, _waveIntensity);
+        }
+
+        private void Update()
+        {
+            var wm = WaveManager.Instance;
+            if (wm == null || !wm.IsWaveActive) return;
+            int total = wm.WaveTotalSpawned;
+            if (total <= 0) return;
+            float progress = (float)wm.WaveKillCount / total;
+            UpdateWaveIntensity(progress);
+        }
+
         public string? GetCurrentTrack() => _currentTrack;
 
         public AudioSource? ActiveAudioSource =>
@@ -563,7 +594,11 @@ namespace CrowdDefense.Systems
         // ── EventManager subscriptions ───────────────────────────────────────
 
         private void OnWaveStarted(int _)  => SetCombatLayer(true);
-        private void OnWaveCleared(int _)   => SetCombatLayer(false);
+        private void OnWaveCleared(int _)
+        {
+            SetCombatLayer(false);
+            UpdateWaveIntensity(0f);
+        }
 
         private void OnLevelStart(CrowdDefense.Data.LevelData level, Bounds __) => PlayWorldTheme(level.World);
 
