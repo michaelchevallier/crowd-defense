@@ -242,9 +242,6 @@ namespace CrowdDefense.Entities
         private static readonly Color StarGold    = new(1f, 0.85f, 0.2f, 1f);
         private const float StarDimAlpha = 0.15f;
 
-        // Windup animation coroutine — cancelled on sell/destroy mid-windup.
-        private Coroutine? _windupRoutine;
-
         // Idle shimmer — subtle white tint pulse every 3 s over 0.4 s
         private Coroutine? _shimmerRoutine;
         private MaterialPropertyBlock? _shimmerMpb;
@@ -395,9 +392,6 @@ namespace CrowdDefense.Entities
         // Recoil state — prevents TickIdleAnim from overriding during recoil.
         private bool _recoiling;
 
-        // Per-tower Perlin seed — desync wobble between instances.
-        private float _wobbleSeed;
-
         // Global throttle — skip cam shake if another tower shook within 50 ms (multi-cannon spam guard).
         private static float _lastCamShakeAt = -1f;
 
@@ -422,7 +416,6 @@ namespace CrowdDefense.Entities
             _heroBuffDmgMul = 1f;
             _idlePhase = Random.value * Mathf.PI * 2f;
             _breathOffset = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
-            _wobbleSeed   = UnityEngine.Random.Range(0f, 1000f);
             _basePos = transform.position;
             _lastFireAt = 0f;
             UpgradeLevel = 1;
@@ -799,7 +792,6 @@ namespace CrowdDefense.Entities
         private IEnumerator PlayDestroyAnim()
         {
             _destroyStarted = true;
-            if (_windupRoutine != null) { StopCoroutine(_windupRoutine); _windupRoutine = null; }
             if (_selectionRing != null) _selectionRing.gameObject.SetActive(false);
             Vector3 startScale = transform.localScale;
             float targetRotZ = Random.Range(-45f, 45f);
@@ -920,8 +912,7 @@ namespace CrowdDefense.Entities
 
             if (target != null && cooldown <= 0f)
             {
-                if (_windupRoutine != null) StopCoroutine(_windupRoutine);
-                _windupRoutine = StartCoroutine(WindupFire(target));
+                ExecuteFire(target);
                 // L3FireRateMul >1 ralentit la cadence (sniper L3-DPS archer = x2)
                 float rateMs = cfg!.FireRateMs * L3FireRateMul * ResearchFireRateMul;
                 cooldown = rateMs / 1000f;
@@ -1065,67 +1056,6 @@ namespace CrowdDefense.Entities
                 }
             }
             return best;
-        }
-
-        // ── Windup animation (squash + twitch 0.1 s before firing) ──────────────
-        private IEnumerator WindupFire(Enemy t)
-        {
-            if (_meshChild != null && !_destroyStarted)
-            {
-                var visual = _meshChild.transform;
-                Vector3 baseScale = visual.localScale;
-                float twitch = Random.value > 0.5f ? 5f : -5f;
-
-                // Phase 1 (0–0.05 s): squash Y 1→0.85, tilt +5°
-                float elapsed = 0f;
-                while (elapsed < 0.05f)
-                {
-                    if (_destroyStarted) { visual.localScale = baseScale; yield break; }
-                    elapsed += Time.deltaTime;
-                    float t01 = Mathf.Clamp01(elapsed / 0.05f);
-                    float sy = Mathf.Lerp(1f, 0.85f, t01);
-                    visual.localScale = new Vector3(baseScale.x, baseScale.y * sy, baseScale.z);
-                    visual.localRotation = Quaternion.Euler(0f, twitch * t01, 0f);
-                    yield return null;
-                }
-
-                // Phase 2 (0.05–0.10 s): stretch Y 0.85→1.05, rotation back
-                elapsed = 0f;
-                while (elapsed < 0.05f)
-                {
-                    if (_destroyStarted) { visual.localScale = baseScale; yield break; }
-                    elapsed += Time.deltaTime;
-                    float t01 = Mathf.Clamp01(elapsed / 0.05f);
-                    float sy = Mathf.Lerp(0.85f, 1.05f, t01);
-                    visual.localScale = new Vector3(baseScale.x, baseScale.y * sy, baseScale.z);
-                    visual.localRotation = Quaternion.Euler(0f, twitch * (1f - t01), 0f);
-                    yield return null;
-                }
-                visual.localRotation = Quaternion.identity;
-            }
-
-            // Phase 3 (0.10 s): actual shot
-            if (!_destroyStarted) ExecuteFire(t);
-
-            // Phase 4 (0.10–0.15 s): settle 1.05→1.0
-            if (_meshChild != null && !_destroyStarted)
-            {
-                var visual = _meshChild.transform;
-                Vector3 baseScale = visual.localScale;
-                float elapsed = 0f;
-                while (elapsed < 0.05f)
-                {
-                    if (_destroyStarted) { visual.localScale = baseScale; yield break; }
-                    elapsed += Time.deltaTime;
-                    float t01 = Mathf.Clamp01(elapsed / 0.05f);
-                    float sy = Mathf.Lerp(1.05f, 1f, t01);
-                    visual.localScale = new Vector3(baseScale.x, baseScale.y * sy, baseScale.z);
-                    yield return null;
-                }
-                visual.localScale = baseScale;
-            }
-
-            _windupRoutine = null;
         }
 
         private void ExecuteFire(Enemy t)
@@ -2211,7 +2141,7 @@ namespace CrowdDefense.Entities
             if (_meshHead == null || target == null || target.IsDead) return;
             if (cfg == null) return;
 
-            // Passive towers have no aim — skip wobble too.
+            // Passive towers have no aim.
             bool isPassive = cfg.Id == "frost" || cfg.Id.Contains("ice")
                           || cfg.Id == "magnet"
                           || cfg.Id == "portal";
@@ -2232,16 +2162,8 @@ namespace CrowdDefense.Entities
             }
 
             float degsPerSec = UpgradeLevel >= 3 ? 12f : 8f;
-            Quaternion tracked = Quaternion.RotateTowards(
+            _meshHead.transform.rotation = Quaternion.RotateTowards(
                 _meshHead.transform.rotation, desired, degsPerSec * Time.deltaTime);
-
-            // Visual-only wobble — does NOT affect projectile direction (callers use `desired`).
-            // ±1° idle, ±2° in the 0.6 s window after a shot (residual recoil tremor).
-            float amp   = (Time.time - _lastFireAt) < 0.6f ? 2f : 1f;
-            float speed = 0.8f;
-            float wx = (Mathf.PerlinNoise(Time.time * speed + _wobbleSeed,        0f) * 2f - 1f) * amp;
-            float wy = (Mathf.PerlinNoise(0f, Time.time * speed + _wobbleSeed + 3.7f) * 2f - 1f) * amp;
-            _meshHead.transform.rotation = Quaternion.Euler(wx, 0f, 0f) * tracked * Quaternion.Euler(0f, wy, 0f);
         }
 
         // Lerp head -0.5 local-Z then back to 0 for a snap recoil feel.
