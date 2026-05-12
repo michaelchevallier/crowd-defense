@@ -281,6 +281,10 @@ namespace CrowdDefense.Entities
         // Cached projectile trail tint — computed once in Init, applied each fire.
         private Color _projectileTint = Color.white;
 
+        // Floating world-space label above tower — shows current target priority when selected.
+        private GameObject? _priorityLabelGo;
+        private TextMesh?   _priorityLabelTm;
+
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
         public Enemy? CurrentTarget => target;
@@ -541,6 +545,7 @@ namespace CrowdDefense.Entities
             BuildDamageIcon(type.DamageType);
             BuildSelectionRing();
             BuildStarRow();
+            BuildPriorityLabel(type);
             if (type.Behavior == TowerBehavior.CoinPull)
                 BuildMagnetAuraCircle(BalanceConfig.Get().MagnetSlowRadius);
 
@@ -1390,6 +1395,7 @@ namespace CrowdDefense.Entities
         public void SetTargetPriority(TargetPriority priority)
         {
             _targetPriority = priority;
+            UpdatePriorityLabel();
             target?.SetTargetedBy(false);
             target = null; // force re-acquire with new priority
         }
@@ -1492,6 +1498,8 @@ namespace CrowdDefense.Entities
             _isSelected = selected;
             if (_selectionRing != null)
                 _selectionRing.gameObject.SetActive(selected && !_destroyStarted);
+            if (_priorityLabelGo != null)
+                _priorityLabelGo.SetActive(selected && !_destroyStarted);
 
             if (selected && !wasSelected)
             {
@@ -1823,17 +1831,60 @@ namespace CrowdDefense.Entities
 
         private void LateUpdate()
         {
-            if (_starRow == null) return;
             var cam = Camera.main;
             if (cam == null) return;
-            // Billboard: rotate star row to face the camera each frame.
-            _starRow.transform.rotation = cam.transform.rotation;
+
+            if (_starRow != null)
+                _starRow.transform.rotation = cam.transform.rotation;
+
+            if (_priorityLabelGo != null && _priorityLabelGo.activeSelf)
+                _priorityLabelGo.transform.rotation = cam.transform.rotation;
+
             // Animate star 3 (index 2) rainbow when L3 active — no alloc, cached material.
             if (UpgradeLevel >= 3 && _starMaterials[2] != null)
             {
                 Color rainbow = Color.HSVToRGB(Time.time * 0.5f % 1f, 0.7f, 1f);
                 _starMaterials[2]!.color = rainbow;
             }
+        }
+
+        // ── Priority Label ────────────────────────────────────────────────────
+
+        private static bool IsPassiveTower(TowerType t) =>
+            t.Id == "frost" || t.Id.Contains("ice") || t.Id == "magnet" || t.Id == "portal";
+
+        private void BuildPriorityLabel(TowerType type)
+        {
+            if (_priorityLabelGo != null) { Destroy(_priorityLabelGo); _priorityLabelGo = null; }
+            if (IsPassiveTower(type)) return;
+
+            _priorityLabelGo = new GameObject("PriorityLabel");
+            _priorityLabelGo.transform.SetParent(transform, false);
+            _priorityLabelGo.transform.localPosition = new Vector3(0f, 2.6f, 0f);
+
+            _priorityLabelTm = _priorityLabelGo.AddComponent<TextMesh>();
+            _priorityLabelTm.anchor     = TextAnchor.MiddleCenter;
+            _priorityLabelTm.alignment  = TextAlignment.Center;
+            _priorityLabelTm.fontSize   = 20;
+            _priorityLabelTm.characterSize = 0.10f;
+            _priorityLabelTm.color      = new Color(1f, 0.9f, 0.4f, 1f);
+
+            UpdatePriorityLabel();
+            _priorityLabelGo.SetActive(false); // hidden until selected
+        }
+
+        private void UpdatePriorityLabel()
+        {
+            if (_priorityLabelTm == null) return;
+            _priorityLabelTm.text = _targetPriority switch
+            {
+                TargetPriority.First     => "Cible: 1er",
+                TargetPriority.Last      => "Cible: Dernier",
+                TargetPriority.Strongest => "Cible: Fort",
+                TargetPriority.Weakest   => "Cible: Faible",
+                TargetPriority.Closest   => "Cible: Proche",
+                _                        => "Cible: 1er",
+            };
         }
 
         // ── Star Row ──────────────────────────────────────────────────────────
@@ -2882,6 +2933,7 @@ namespace CrowdDefense.Entities
             if (_glowRing != null) Destroy(_glowRing);
             if (_sparkleRoutine != null) StopCoroutine(_sparkleRoutine);
             if (_starRow != null) Destroy(_starRow);
+            if (_priorityLabelGo != null) { Destroy(_priorityLabelGo); _priorityLabelGo = null; }
             for (int i = 0; i < 3; i++)
             {
                 if (_starMaterials[i] != null) Object.Destroy(_starMaterials[i]);
