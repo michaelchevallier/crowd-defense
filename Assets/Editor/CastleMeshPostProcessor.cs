@@ -1,6 +1,5 @@
 #nullable enable
 using UnityEditor;
-using UnityEditor.SceneHierarchy;
 using UnityEngine;
 using System.IO;
 
