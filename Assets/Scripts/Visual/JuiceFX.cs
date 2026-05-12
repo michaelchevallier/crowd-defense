@@ -48,6 +48,10 @@ namespace CrowdDefense.Visual
             em.Unsubscribe<EnemyKilledEvent>(OnEnemyKilled);
             em.Unsubscribe<BossDefeatedEvent>(OnBossDefeated);
             em.Unsubscribe<LevelEndedEvent>(OnLevelEnded);
+
+            StopAllCoroutines();
+            if (_cam != null)
+                _cam.transform.position = _baseCamPos;
         }
 
         // ── Event handlers ────────────────────────────────────────────────────
