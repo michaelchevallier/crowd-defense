@@ -677,6 +677,7 @@ namespace CrowdDefense.Systems
         {
             PlayerPrefs.SetString(MidLevelKey(CurrentSlot), JsonUtility.ToJson(data));
             PlayerPrefs.Save();
+            CrowdDefense.UI.AutoSaveIndicator.Instance?.Pulse();
         }
 
         public static MidLevelStateData? LoadRunState()
