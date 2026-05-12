@@ -329,6 +329,10 @@ namespace CrowdDefense.Entities
             Visual.ColorblindPalette.ApplyToGameObject(toonRoot);
 
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", null);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (_animator != null && !AnimationController.ValidateAnimatorSetup(_animator, $"Tower_{cfg?.Id}"))
+                Debug.LogWarning($"[Tower.Init] {cfg?.Id} animator validation failed.");
+#endif
 
             if (_meshHead == null && _meshChild != null)
             {

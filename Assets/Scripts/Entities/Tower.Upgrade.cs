@@ -412,6 +412,10 @@ namespace CrowdDefense.Entities
             Outline.ApplyToHierarchy(_meshChild.transform);
 
             _animator = AnimationController.SetupAnimator(_meshChild, "Idle", null);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (_animator != null && !AnimationController.ValidateAnimatorSetup(_animator, $"Tower_Upgrade_{cfg?.Id}"))
+                Debug.LogWarning($"[Tower.Upgrade] {cfg?.Id} animator validation failed.");
+#endif
 
             _meshHead = FindChildNamed(_meshChild.transform, "Head")
                      ?? FindChildNamed(_meshChild.transform, "Turret");

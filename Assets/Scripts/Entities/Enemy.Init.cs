@@ -142,6 +142,17 @@ namespace CrowdDefense.Entities
 
             // Animations Mechanim: Idle + Walk via bool isWalking
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", type.WalkAnim);
+            _hasSpeedParam = false;
+            if (_animator != null)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                // Runtime validation: ensure animator is properly configured (controller loaded, state set, etc.)
+                if (!AnimationController.ValidateAnimatorSetup(_animator, $"Enemy_{type.Id}"))
+                    Debug.LogWarning($"[Enemy.Init] {type.Id} animator validation failed — may show T-pose or stuck animation.");
+#endif
+                foreach (var p in _animator.parameters)
+                    if (p.name == "Speed") { _hasSpeedParam = true; break; }
+            }
 
             var col = GetComponent<CapsuleCollider>();
             if (col != null)

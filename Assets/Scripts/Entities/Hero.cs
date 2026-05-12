@@ -316,6 +316,11 @@ namespace CrowdDefense.Entities
             ApplyTintFromPrefs(type.Id);
 
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", "Walk");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            // Runtime validation: ensure animator is properly configured (controller loaded, state set, etc.)
+            if (_animator != null && !AnimationController.ValidateAnimatorSetup(_animator, "Hero"))
+                Debug.LogWarning("[Hero.Init] Animator validation failed — may show T-pose or stuck animation.");
+#endif
 
             BuildAuraDecals();
             BuildPerkIcons();
@@ -1516,6 +1521,10 @@ namespace CrowdDefense.Entities
             MaterialController.ApplyToon(toonRoot, cfg?.BodyColor ?? Color.white);
             Outline.ApplyToHierarchy(toonRoot.transform);
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", "Walk");
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (_animator != null && !AnimationController.ValidateAnimatorSetup(_animator, "Hero_Respec"))
+                Debug.LogWarning("[Hero.Respec] Animator validation failed.");
+#endif
         }
 
 #if UNITY_EDITOR

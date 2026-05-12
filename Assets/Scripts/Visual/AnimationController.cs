@@ -88,5 +88,39 @@ namespace CrowdDefense.Visual
             anim.ResetTrigger("attackTrigger");
         }
 
+        /// <summary>
+        /// Runtime validation : vérifier que l'Animator est correctement configuré.
+        /// Retourne true si validation réussie, false et log détaillé sinon.
+        /// Permet d'identifier les causes T-pose : controller absent, state par défaut non-configuré, clips cassés, etc.
+        /// </summary>
+        public static bool ValidateAnimatorSetup(Animator? anim, string? entityName = null)
+        {
+            if (anim == null)
+            {
+                Debug.LogError($"[AnimationController] {entityName ?? "Entity"}: Animator is null — cannot validate.");
+                return false;
+            }
+
+            var controller = anim.runtimeAnimatorController;
+            if (controller == null)
+            {
+                Debug.LogError($"[AnimationController] {entityName ?? "Entity"}: runtimeAnimatorController is null — controller not assigned.");
+                return false;
+            }
+
+            var stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+            if (stateInfo.fullPathHash == 0)
+            {
+                Debug.LogError($"[AnimationController] {entityName ?? "Entity"}: current state hash is 0 — animator not initialized or no default state set.");
+                return false;
+            }
+
+            // Log the current state for diagnostics
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[AnimationController] {entityName ?? "Entity"} OK: state='{stateInfo.shortNameHash}' controller='{controller.name}'");
+#endif
+            return true;
+        }
+
     }
 }
