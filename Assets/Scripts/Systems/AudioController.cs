@@ -133,6 +133,12 @@ namespace CrowdDefense.Systems
             AudioSource.PlayClipAtPoint(clip, worldPos, Mathf.Clamp01(volMul));
         }
 
+        public AudioClip? GetClip(string clipKey)
+        {
+            if (registry == null) LoadAudioRegistry();
+            return registry?.Get(clipKey);
+        }
+
         public void PlayRandom(string[] keys, float volMul = 1f)
         {
             if (keys == null || keys.Length == 0) return;

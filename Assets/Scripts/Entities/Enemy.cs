@@ -350,6 +350,7 @@ namespace CrowdDefense.Entities
             _bossPhase        = 0;
             _bossPhaseEmission = Color.black;
             _apocPhase        = 0;
+            StopEnrageVFX();
             _invulUntilTime   = 0f;
             _summonHordePending = false;
             _summonHordeTime  = 0f;
