@@ -20,10 +20,17 @@ namespace CrowdDefense.UI
         private static readonly string[] SlotNames  = { "skill-slot-q", "skill-slot-w", "skill-slot-e" };
         private static readonly string[] KeyLabels  = { "Q", "W", "E" };
 
-        private VisualElement?[] _slots      = new VisualElement?[3];
-        private VisualElement?[] _overlays   = new VisualElement?[3];
-        private Label?[]         _keyLabels  = new Label?[3];
-        private Label?[]         _cdLabels   = new Label?[3];
+        // Pulse animation constants (golden glow when skill is ready)
+        private const float PulseScalePeak  = 1.10f;
+        private const int   PulsePeriodMs   = 700;   // full oscillation period in ms
+        private const int   PulseTickMs     = 16;    // ~60 Hz tick
+
+        private VisualElement?[]              _slots      = new VisualElement?[3];
+        private VisualElement?[]              _overlays   = new VisualElement?[3];
+        private Label?[]                      _keyLabels  = new Label?[3];
+        private Label?[]                      _cdLabels   = new Label?[3];
+        private IVisualElementScheduledItem?[] _pulseItems = new IVisualElementScheduledItem?[3];
+        private bool[]                        _wasReady   = new bool[3];
 
         private Hero? _hero;
 
@@ -100,14 +107,48 @@ namespace CrowdDefense.UI
                 _cdLabels[index]!.style.display = DisplayStyle.None;
             }
 
-            // Ready glow class toggle
+            // Ready glow class toggle + pulse animation
             if (_slots[index] != null)
             {
+                bool nowReady = !onCooldown;
                 if (onCooldown)
+                {
                     _slots[index]!.RemoveFromClassList("skill-slot-ready");
+                    if (_wasReady[index])
+                        StopPulse(index);
+                }
                 else
+                {
                     _slots[index]!.AddToClassList("skill-slot-ready");
+                    if (!_wasReady[index])
+                        StartPulse(index);
+                }
+                _wasReady[index] = nowReady;
             }
+        }
+
+        private void StartPulse(int index)
+        {
+            StopPulse(index);
+            if (_slots[index] == null) return;
+
+            long elapsed = 0;
+            _pulseItems[index] = _slots[index]!.schedule.Execute(() =>
+            {
+                elapsed += PulseTickMs;
+                float t = (elapsed % PulsePeriodMs) / (float)PulsePeriodMs;
+                // Sine wave: 0→1→0 over one period
+                float s = 1f + (PulseScalePeak - 1f) * Mathf.Sin(t * Mathf.PI);
+                _slots[index]!.transform.scale = new Vector3(s, s, 1f);
+            }).Every(PulseTickMs);
+        }
+
+        private void StopPulse(int index)
+        {
+            _pulseItems[index]?.Pause();
+            _pulseItems[index] = null;
+            if (_slots[index] != null)
+                _slots[index]!.transform.scale = Vector3.one;
         }
     }
 }

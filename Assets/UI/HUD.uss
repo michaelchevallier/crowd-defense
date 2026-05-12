@@ -1180,8 +1180,9 @@
 }
 
 .skill-slot-ready {
-    border-color: rgba(120, 230, 160, 0.75);
-    background-color: rgba(20, 28, 20, 0.82);
+    border-color: rgb(255, 210, 63);
+    background-color: rgba(28, 24, 8, 0.88);
+    transform-origin: center;
 }
 
 .skill-slot:hover {
