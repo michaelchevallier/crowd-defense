@@ -363,7 +363,9 @@ namespace CrowdDefense.Entities
         public void GainXp(float amount)
         {
             if (Level >= MaxLevel) return;
-            Xp += Mathf.Max(1, Mathf.RoundToInt(amount * XpMul));
+            int earned = Mathf.Max(1, Mathf.RoundToInt(amount * XpMul));
+            Xp += earned;
+            CrowdDefense.UI.HeroPortraitController.Instance?.AnimateXpGain(earned);
             while (Xp >= XpToNext && Level < MaxLevel)
             {
                 Xp -= XpToNext;
