@@ -47,6 +47,34 @@ namespace CrowdDefense.UI
         };
         private Color _seasonalTint;
 
+        // ── Seasonal accent particles ────────────────────────────────────────
+        private const int SeasonalPoolSize = 20;
+        private readonly VisualElement[] _seasonPool    = new VisualElement[SeasonalPoolSize];
+        private readonly bool[]          _seasonInUse   = new bool[SeasonalPoolSize];
+        private VisualElement? _seasonContainer;
+        private Coroutine?     _seasonEmitCo;
+
+        private static readonly int[] _accentSizes   = { 12, 10, 8, 14 }; // W S Su A
+        private static readonly Color[] _accentColors =
+        {
+            new Color(0.95f, 0.97f, 1.00f, 0.80f), // winter — snowflake white-blue
+            new Color(1.00f, 0.70f, 0.85f, 0.80f), // spring — petal pink
+            new Color(1.00f, 0.90f, 0.30f, 0.70f), // summer — sun spark yellow
+            new Color(0.85f, 0.50f, 0.20f, 0.85f), // autumn — leaf orange-brown
+        };
+
+        // Returns 0-winter 1-spring 2-summer 3-autumn
+        private static int CurrentSeasonIndex()
+        {
+            return DateTime.Now.Month switch
+            {
+                12 or 1 or 2 => 0,
+                3  or 4 or 5 => 1,
+                6  or 7 or 8 => 2,
+                _            => 3
+            };
+        }
+
         // ── Demo mode ────────────────────────────────────────────────────────
         private const float IdleTimeoutSeconds = 60f;
         private const string DemoLevelId = "L1-1";
@@ -83,6 +111,7 @@ namespace CrowdDefense.UI
             if (_btnHardcore != null) _btnHardcore.clicked += OnHardcore;
 
             InitHoverParticles();
+            InitSeasonalParticles();
             if (_btnNewRun != null)
             {
                 _btnNewRun.RegisterCallback<MouseEnterEvent>(OnPlayButtonHoverEnter);
@@ -207,6 +236,8 @@ namespace CrowdDefense.UI
             // Only restart if StopAllCoroutines was called (skip path)
             if (restartGradient)
                 StartCoroutine(AnimateBackgroundGradient());
+
+            StartSeasonalEmission();
         }
 
         private void Update()
@@ -232,6 +263,7 @@ namespace CrowdDefense.UI
         private void StartDemoMode()
         {
             _demoActive = true;
+            StopSeasonalEmission();
 
             // Build fullscreen overlay "DEMO MODE — click to exit"
             _demoOverlay = new VisualElement
@@ -282,6 +314,7 @@ namespace CrowdDefense.UI
                 _demoOverlay = null;
             }
 
+            StartSeasonalEmission();
             LevelLoader.GoToMenu();
         }
 
@@ -487,6 +520,188 @@ namespace CrowdDefense.UI
         {
             for (int i = 0; i < ParticlePoolSize; i++)
                 ReturnParticle(i);
+        }
+
+        // ── Seasonal accent particles implementation ─────────────────────────
+
+        private void InitSeasonalParticles()
+        {
+            if (_root == null) return;
+
+            _seasonContainer = new VisualElement
+            {
+                name        = "seasonal-particle-container",
+                pickingMode = PickingMode.Ignore,
+                style       =
+                {
+                    position = Position.Absolute,
+                    left = 0, right = 0, top = 0, bottom = 0,
+                    overflow = Overflow.Hidden
+                }
+            };
+            _root.Add(_seasonContainer);
+
+            int season = CurrentSeasonIndex();
+            int   sz   = _accentSizes[season];
+            Color col  = _accentColors[season];
+
+            for (int i = 0; i < SeasonalPoolSize; i++)
+            {
+                float radius = sz * 0.5f;
+                var p = new VisualElement
+                {
+                    name        = $"season-particle-{i}",
+                    pickingMode = PickingMode.Ignore,
+                    style       =
+                    {
+                        position                = Position.Absolute,
+                        width                   = sz,
+                        height                  = sz,
+                        borderTopLeftRadius     = radius,
+                        borderTopRightRadius    = radius,
+                        borderBottomLeftRadius  = radius,
+                        borderBottomRightRadius = radius,
+                        backgroundColor         = new StyleColor(col),
+                        display                 = DisplayStyle.None
+                    }
+                };
+                _seasonContainer.Add(p);
+                _seasonPool[i]   = p;
+                _seasonInUse[i]  = false;
+            }
+        }
+
+        private void StartSeasonalEmission()
+        {
+            if (_seasonEmitCo != null) return;
+            _seasonEmitCo = StartCoroutine(SeasonalEmitLoop());
+        }
+
+        private void StopSeasonalEmission()
+        {
+            if (_seasonEmitCo != null)
+            {
+                StopCoroutine(_seasonEmitCo);
+                _seasonEmitCo = null;
+            }
+            ReturnAllSeasonalParticles();
+        }
+
+        private IEnumerator SeasonalEmitLoop()
+        {
+            var wait = new WaitForSecondsRealtime(0.4f);
+            while (gameObject.activeInHierarchy)
+            {
+                SpawnSeasonalAccent();
+                yield return wait;
+            }
+        }
+
+        private void SpawnSeasonalAccent()
+        {
+            if (_seasonContainer == null) return;
+
+            int slot = -1;
+            for (int i = 0; i < SeasonalPoolSize; i++)
+            {
+                if (!_seasonInUse[i]) { slot = i; break; }
+            }
+            if (slot < 0) return;
+
+            _seasonInUse[slot] = true;
+            var p = _seasonPool[slot];
+
+            float containerW = _seasonContainer.worldBound.width;
+            if (containerW <= 0f) containerW = Screen.width;
+
+            int sz      = _accentSizes[CurrentSeasonIndex()];
+            float startX = UnityEngine.Random.Range(0f, containerW - sz);
+
+            p.style.left    = startX;
+            p.style.top     = -50f;
+            p.style.opacity = _accentColors[CurrentSeasonIndex()].a;
+            p.style.display = DisplayStyle.Flex;
+
+            StartCoroutine(AnimateSeasonalParticle(slot, startX));
+        }
+
+        private IEnumerator AnimateSeasonalParticle(int slot, float startX)
+        {
+            var p         = _seasonPool[slot];
+            int season    = CurrentSeasonIndex();
+            const float lifetime = 8f;
+            float elapsed = 0f;
+
+            while (elapsed < lifetime)
+            {
+                if (p == null) yield break;
+                elapsed += Time.unscaledDeltaTime;
+
+                float newTop = -50f + elapsed * GetDropSpeed(season);
+                p.style.top = newTop;
+
+                // Season-specific horizontal sway / rotate
+                switch (season)
+                {
+                    case 0: // Winter: slight sway using sin
+                    {
+                        float sway = Mathf.Sin(elapsed * 1.2f) * 18f;
+                        p.style.left = startX + sway;
+                        break;
+                    }
+                    case 1: // Spring: gentle rotate via translate-X drift
+                    {
+                        float drift = Mathf.Sin(elapsed * 0.8f) * 12f;
+                        p.style.left = startX + drift;
+                        p.style.rotate = new StyleRotate(new Rotate(
+                            new Angle(elapsed * 45f % 360f, AngleUnit.Degree)));
+                        break;
+                    }
+                    case 2: // Summer: fade pulse, static X
+                    {
+                        float pulse = 0.5f + 0.5f * Mathf.Sin(elapsed * 3f);
+                        p.style.opacity = Mathf.Lerp(0.2f, _accentColors[2].a, pulse);
+                        break;
+                    }
+                    case 3: // Autumn: spiral + rotate
+                    {
+                        float spiral = Mathf.Sin(elapsed * 1.5f) * 30f;
+                        p.style.left = startX + spiral;
+                        p.style.rotate = new StyleRotate(new Rotate(
+                            new Angle(elapsed * 90f % 360f, AngleUnit.Degree)));
+                        break;
+                    }
+                }
+
+                // Fade out last 2 seconds
+                if (elapsed > lifetime - 2f)
+                    p.style.opacity = Mathf.Lerp(0f, _accentColors[season].a,
+                        (lifetime - elapsed) / 2f);
+
+                yield return null;
+            }
+
+            ReturnSeasonalParticle(slot);
+        }
+
+        private static float GetDropSpeed(int season) => season switch
+        {
+            0 => 40f, // winter: normal drift
+            1 => 28f, // spring: slow drift
+            2 =>  0f, // summer: static (pulse only)
+            _ => 55f  // autumn: faster fall
+        };
+
+        private void ReturnSeasonalParticle(int slot)
+        {
+            _seasonPool[slot].style.display = DisplayStyle.None;
+            _seasonInUse[slot] = false;
+        }
+
+        private void ReturnAllSeasonalParticles()
+        {
+            for (int i = 0; i < SeasonalPoolSize; i++)
+                ReturnSeasonalParticle(i);
         }
 
         private void OnDestroy()
