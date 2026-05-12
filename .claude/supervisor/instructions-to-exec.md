@@ -1456,3 +1456,54 @@ var s = elem.resolvedStyle.scale.value;
 ## Status
 
 ⏳ pending exec dispatch slot libre
+
+---
+
+## 2026-05-12 22h50 — URGENT PARITY-FINISH BACKLOG (Mike demande arrêt impossible avant 100%)
+
+Mike feedback critique 22h50 : "tant que t'es pas a parité interdiction de t'arreter c'est pas possible ça tu dois etre en train de faire des choses ou de faire faire des chsoes a l'aurtre agents ACTIVE nom de zeus".
+
+Status V6 : ~95% parité V4 (HUD wired, VfxPool fonctionnel, gameplay loop OK). Reste 5% pour atteindre 100%.
+
+### Backlog parallel-friendly (lance autant que tu peux)
+
+**TASK PF1** (P0) — ProjectilePool prefab assignment ou warn-once
+- Fichier : `Assets/Scripts/Systems/ProjectilePool.cs:48`
+- Problème : 40x spam "[ProjectilePool] projectilePrefab is null — creating primitive sphere fallback" à chaque démarrage
+- Option A (préférée) : Inspector wire un Projectile prefab dans `ProjectilePool` GameObject (Main.unity YAML edit Inspector)
+- Option B (fallback) : warn-once pattern — bool `_warnedNullPrefab`, log seulement la 1ère fois
+- Commit : `fix(runtime-pool): ProjectilePool warn-once OR Inspector wire prefab`
+
+**TASK PF2** (P1) — AudioMixerController auto-load fallback
+- Fichier : `Assets/Scripts/Systems/AudioMixerController.cs`
+- Problème : 4x warnings "AudioMixer not assigned — cannot set Master_Volume/SFX/Music/UI_Volume"
+- Fix : dans `OnAwakeSingleton()`, si `mixer == null` essayer `Resources.Load<AudioMixer>("Audio/MainAudioMixer")` ou autre path. Warn-once si vraiment introuvable.
+- Commit : `fix(runtime-pool): AudioMixerController Resources.Load fallback`
+
+**TASK PF3** (P1) — WorldMapController null-guard worldmap-level-grid
+- Fichier : `Assets/Scripts/UI/WorldMapController.cs:120`
+- Problème : `[WorldMapController] worldmap-level-grid not found in UXML` — error log 1x au Start
+- Cause : WorldMapController est sur HUD GameObject mais cherche element de WorldMap.uxml séparé
+- Fix : `Debug.LogError` → `Debug.LogWarning` (just downgrade) + early return graceful. Architectural fix séparé.
+- Commit : `fix(runtime-pool): WorldMapController downgrade error to warning (UXML separation TODO)`
+
+**TASK PF4** (P2) — MonoSingleton OnDestroy cascade auto-create suppression
+- Fichier : `Assets/Scripts/Common/MonoSingleton.cs`
+- Problème : OnDestroy → OnDestroySingleton → accède à MonoSingleton<X>.Instance qui auto-créé un GameObject pendant scene close → cascade 7+ warnings au stop play mode
+- Fix : MonoSingleton.Instance check `Application.isPlaying` + return null pendant destroy si scene unloading. Ou pattern `_destroying` flag.
+- Commit : `fix(runtime-pool): MonoSingleton skip auto-create during scene unload (OnDestroy cascade)`
+
+**TASK PF5** (P2) — ProjectilePool Inspector wire (proper fix complement de PF1B)
+- Editor scene YAML edit Main.unity GameObject `ProjectilePool` (find via find_gameobjects component "CrowdDefense.Systems.ProjectilePool")
+- SerializeField `projectilePrefab` → assign un GameObject prefab Projectile depuis Assets (find Projectile.prefab if exists)
+- Tester via UnityMCP refresh+play → confirm 0 ProjectilePool warning
+- Commit : `fix(scene): wire ProjectilePool projectilePrefab in Main.unity`
+
+### Process
+
+- Lance MAX parallel (4 slots min)
+- Push autonome chaque commit
+- Sprint complete = console 0 warning + 0 error
+- T1 notify si tout fini → notif Mike "PARITY 100% COMPLETE"
+- Auto-test via UnityMCP refresh+play+read_console après chaque commit
+
