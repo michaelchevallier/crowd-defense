@@ -25,6 +25,7 @@ namespace CrowdDefense.Visual
         private Transform?  _hero;
         private Transform?  _castle;
         private bool        _followHero;
+        private Vector2     _externalPan;   // injected by VirtualJoystick each frame
         private float       _followDisabledTimer; // seconds remaining before follow re-engages after manual pan
         private bool        _orbitDrag;       // space + left-drag
         private bool        _rightDrag;       // right-click orbit around castle
@@ -59,6 +60,9 @@ namespace CrowdDefense.Visual
         public void SetHero(Transform hero)    => _hero   = hero;
         public void SetCastle(Transform castle) => _castle = castle;
         public void SetMapBounds(float halfX, float halfZ) { mapHalfX = halfX; mapHalfZ = halfZ; }
+
+        // Called every frame by VirtualJoystick with a -1..1 direction, or Vector2.zero to stop.
+        public void SetPan(Vector2 direction) => _externalPan = direction;
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
         private void Start()
@@ -188,11 +192,15 @@ namespace CrowdDefense.Visual
                 FollowHero = !_followHero;
         }
 
-        // ── WASD / Arrow keys pan ─────────────────────────────────────────────
+        // ── WASD / Arrow keys pan + VirtualJoystick external pan ──────────────
         private void HandlePan()
         {
             float h = Input.GetAxisRaw("Horizontal");   // A/D + Left/Right
             float v = Input.GetAxisRaw("Vertical");     // W/S + Up/Down
+
+            // Merge keyboard axes with virtual joystick (clamped to -1..1)
+            h = Mathf.Clamp(h + _externalPan.x, -1f, 1f);
+            v = Mathf.Clamp(v + _externalPan.y, -1f, 1f);
 
             if (Mathf.Abs(h) < 0.001f && Mathf.Abs(v) < 0.001f) return;
 

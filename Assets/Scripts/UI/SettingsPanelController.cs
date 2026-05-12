@@ -29,6 +29,8 @@ namespace CrowdDefense.UI
         private Toggle? _musicMuteToggle;
         private Toggle? _followHeroToggle;
         private Label?  _followHeroLabel;
+        private Toggle? _joystickToggle;
+        private Label?  _joystickLabel;
         private Button? _resetCameraBtn;
         private Button? _changeNameBtn;
         private Button? _resetProgressBtn;
@@ -107,6 +109,8 @@ namespace CrowdDefense.UI
             _musicMuteToggle = _root.Q<Toggle>("music-mute-toggle");
             _followHeroToggle = _root.Q<Toggle>("follow-hero-toggle");
             _followHeroLabel  = _root.Q<Label>("follow-hero-label");
+            _joystickToggle   = _root.Q<Toggle>("joystick-toggle");
+            _joystickLabel    = _root.Q<Label>("joystick-label");
             _resetCameraBtn      = _root.Q<Button>("settings-reset-camera-btn");
             _changeNameBtn       = _root.Q<Button>("settings-change-name-btn");
             _resetProgressBtn    = _root.Q<Button>("settings-reset-progress-btn");
@@ -167,6 +171,7 @@ namespace CrowdDefense.UI
             BindCallbacks();
             SyncFromRegistry();
             SyncFollowHero();
+            SyncJoystick();
         }
 
         private void OnEnable()
@@ -217,6 +222,10 @@ namespace CrowdDefense.UI
                 _followHeroLabel.text = L.CurrentLocale == "fr" ? "Caméra suit le Hero"
                     : L.CurrentLocale == "es" ? "Cámara sigue al Héroe"
                     : "Camera follows Hero";
+            if (_joystickLabel != null)
+                _joystickLabel.text = L.CurrentLocale == "fr" ? "Joystick virtuel"
+                    : L.CurrentLocale == "es" ? "Joystick virtual"
+                    : "Virtual joystick";
 
             if (_qualityDropdown != null) _qualityDropdown.choices = QualityChoices;
             if (_langDropdown != null)    _langDropdown.choices    = LangChoices;
@@ -284,6 +293,13 @@ namespace CrowdDefense.UI
                 if (cam != null) cam.FollowHero = evt.newValue;
             });
 
+            _joystickToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents) return;
+                var joystick = VirtualJoystick.Instance;
+                if (joystick != null) joystick.Enabled = evt.newValue;
+            });
+
             _qualityDropdown?.RegisterValueChangedCallback(evt =>
             {
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
@@ -348,6 +364,7 @@ namespace CrowdDefense.UI
         {
             SyncFromRegistry();
             SyncFollowHero();
+            SyncJoystick();
             UpdateFullscreenLabel();
             _settingsRoot?.RemoveFromClassList("hidden");
         }
@@ -425,6 +442,15 @@ namespace CrowdDefense.UI
             var cam = CameraController.Instance;
             _suppressEvents = true;
             _followHeroToggle.value = cam != null && cam.FollowHero;
+            _suppressEvents = false;
+        }
+
+        private void SyncJoystick()
+        {
+            if (_joystickToggle == null) return;
+            var joystick = VirtualJoystick.Instance;
+            _suppressEvents = true;
+            _joystickToggle.value = joystick != null && joystick.Enabled;
             _suppressEvents = false;
         }
 
