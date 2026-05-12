@@ -8,11 +8,14 @@ namespace CrowdDefense.UI
     // 5-step intro panel shown once before L1 starts for first-time players.
     // Steps: Welcome → Place tower → Defend castle → Earn gold → Perks.
     // Gated on PlayerPrefs "cd.tutorial_done" == 0. Next/Skip buttons. Self-destructs.
+    // On 2nd+ run shows 3 advanced tips banners (top-right, 5 s each, no modal).
     public class TutorialIntroPanel : MonoBehaviour
     {
-        private const string PrefKey  = "cd.tutorial_done";
-        private const string LevelId  = "W1-1";
-        private const float  FadeSecs = 0.35f;
+        private const string PrefKey      = "cd.tutorial_done";
+        private const string RunCountKey  = "cd.run.count";
+        private const string LevelId      = "W1-1";
+        private const float  FadeSecs     = 0.35f;
+        private const float  TipDisplaySecs = 5f;
 
         private static readonly string[] Titles =
         {
@@ -32,6 +35,7 @@ namespace CrowdDefense.UI
             "When your hero levels up, choose 1 of 3 perks to enhance your build.",
         };
 
+        private bool         _showTipsOnStart;
         private int          _step;
         private CanvasGroup? _cg;
         private Text?        _titleText;
@@ -40,14 +44,111 @@ namespace CrowdDefense.UI
         private Button?      _nextBtn;
         private Text?        _nextBtnLabel;
 
+        private void Start()
+        {
+            if (_showTipsOnStart) StartCoroutine(ShowAdvancedTips());
+        }
+
+        private static readonly string[] AdvancedTips =
+        {
+            "Vends tes tours L1 pour L2 si elles sont en cluster",
+            "La tour Aimant applique une aura de ralentissement",
+            "Le boss enrage sous 30% PV",
+        };
+
         // Called from LevelRunner.Start — no-ops silently if conditions not met.
         public static void TryShow(string? currentLevelId)
         {
-            if (PlayerPrefs.GetInt(PrefKey, 0) == 1) return;
+            int runCount = PlayerPrefs.GetInt(RunCountKey, 0) + 1;
+            PlayerPrefs.SetInt(RunCountKey, runCount);
+            PlayerPrefs.Save();
+
+            if (PlayerPrefs.GetInt(PrefKey, 0) == 1)
+            {
+                if (runCount >= 2 && currentLevelId == LevelId)
+                {
+                    var tipGo = new GameObject("[AdvancedTipsBanner]");
+                    tipGo.AddComponent<TutorialIntroPanel>()._showTipsOnStart = true;
+                }
+                return;
+            }
             if (currentLevelId != LevelId) return;
 
             var go = new GameObject("[TutorialIntroPanel]");
             go.AddComponent<TutorialIntroPanel>().Build();
+        }
+
+        // Top-right banner, no modal — cycles through AdvancedTips one by one.
+        private IEnumerator ShowAdvancedTips()
+        {
+            var canvas          = gameObject.AddComponent<Canvas>();
+            canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 990;
+            var scaler                 = gameObject.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight  = 0.5f;
+            gameObject.AddComponent<GraphicRaycaster>();
+
+            var cg       = gameObject.AddComponent<CanvasGroup>();
+            cg.alpha     = 0f;
+            cg.blocksRaycasts = false;
+
+            var bannerGo  = new GameObject("AdvancedBanner");
+            bannerGo.transform.SetParent(transform, false);
+            var bannerImg = bannerGo.AddComponent<Image>();
+            bannerImg.color = new Color(0.09f, 0.10f, 0.16f, 0.93f);
+            var bannerRect  = bannerGo.GetComponent<RectTransform>();
+            bannerRect.anchorMin = new Vector2(1f, 1f);
+            bannerRect.anchorMax = new Vector2(1f, 1f);
+            bannerRect.pivot     = new Vector2(1f, 1f);
+            bannerRect.sizeDelta = new Vector2(340f, 52f);
+            bannerRect.anchoredPosition = new Vector2(-20f, -20f);
+
+            var font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var labelGo   = new GameObject("Label");
+            labelGo.transform.SetParent(bannerGo.transform, false);
+            var label     = labelGo.AddComponent<Text>();
+            label.font      = font;
+            label.fontSize  = 13;
+            label.color     = new Color(0.95f, 0.85f, 0.40f, 1f);
+            label.alignment = TextAnchor.MiddleCenter;
+            var labelRect   = labelGo.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = new Vector2(10f, 4f);
+            labelRect.offsetMax = new Vector2(-10f, -4f);
+
+            yield return new WaitForSecondsRealtime(1.5f);
+
+            foreach (var tip in AdvancedTips)
+            {
+                label.text = tip;
+
+                float elapsed = 0f;
+                while (elapsed < FadeSecs)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    cg.alpha = Mathf.Clamp01(elapsed / FadeSecs);
+                    yield return null;
+                }
+                cg.alpha = 1f;
+
+                yield return new WaitForSecondsRealtime(TipDisplaySecs);
+
+                elapsed = 0f;
+                while (elapsed < FadeSecs)
+                {
+                    elapsed += Time.unscaledDeltaTime;
+                    cg.alpha = Mathf.Lerp(1f, 0f, elapsed / FadeSecs);
+                    yield return null;
+                }
+                cg.alpha = 0f;
+
+                yield return new WaitForSecondsRealtime(0.4f);
+            }
+
+            Destroy(gameObject);
         }
 
         private void Build()
