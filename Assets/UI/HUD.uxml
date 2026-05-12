@@ -450,24 +450,16 @@
                         <ui:Label text="Cette aide" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="F3" class="help-key" />
-                        <ui:Label text="Overlay debug" class="help-desc" />
+                        <ui:Label text="M" class="help-key" />
+                        <ui:Label text="Mute audio" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
-                        <ui:Label text="F4" class="help-key" />
-                        <ui:Label text="Couper SFX (dev)" class="help-desc" />
+                        <ui:Label text="F3" class="help-key" />
+                        <ui:Label text="Compteur FPS / Profil" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
                         <ui:Label text="ESC" class="help-key" />
                         <ui:Label text="Menu pause" class="help-desc" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="help-row">
-                        <ui:Label text="P" class="help-key" />
-                        <ui:Label text="Chemin ennemis (debug)" class="help-desc" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="help-row">
-                        <ui:Label text="M" class="help-key" />
-                        <ui:Label text="Minimap" class="help-desc" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:Label text="CONSEILS" class="help-title help-memo-title" />
