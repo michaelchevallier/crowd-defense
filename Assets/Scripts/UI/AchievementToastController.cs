@@ -20,6 +20,7 @@ namespace CrowdDefense.UI
         private const float StaggerDelay = 0.5f;
         private const float SlideInDuration = 0.25f;
         private const float FadeOutDuration = 0.3f;
+        private const int MaxQueueSize = 5;
 
         [SerializeField] private AchievementRegistry? registry;
 
@@ -51,6 +52,8 @@ namespace CrowdDefense.UI
         private void Enqueue(string id)
         {
             _pendingIds.Enqueue(id);
+            if (_pendingIds.Count > MaxQueueSize)
+                _pendingIds.Dequeue();
             if (!_draining)
                 StartCoroutine(DrainQueue());
         }
