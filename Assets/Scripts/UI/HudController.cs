@@ -63,6 +63,11 @@ namespace CrowdDefense.UI
         // Sidebar showing all active perks of the current run
         private CurrentRunPerksPanel? _perksPanel;
 
+        // Castle HP regen icon — flashes 200 ms on +HP
+        private Label? _castleRegenIcon;
+        private int    _lastKnownCastleHP = -1;
+        private Coroutine? _regenIconCoroutine;
+
         // Bank pill (D1-01 §3.5)
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
@@ -139,6 +144,19 @@ namespace CrowdDefense.UI
             hpLabel = root.Q<Label>("hp-label");
             hpValue = root.Q<Label>("hp-value");
             hpBarFill = root.Q<VisualElement>("hp-bar-fill");
+            _castleRegenIcon = root.Q<Label>("castle-regen-icon");
+            if (_castleRegenIcon == null)
+            {
+                // Fallback: create the icon element dynamically if not present in UXML
+                _castleRegenIcon = new Label { name = "castle-regen-icon", text = "+" };
+                _castleRegenIcon.AddToClassList("castle-regen-icon");
+                _castleRegenIcon.AddToClassList("hidden");
+                root.Q<VisualElement>("hp-bar-fill")?.parent?.Add(_castleRegenIcon);
+            }
+            else
+            {
+                _castleRegenIcon.AddToClassList("hidden");
+            }
             panelGameOver = root.Q<VisualElement>("panel-game-over");
             panelGameOverTitle = root.Q<Label>("panel-game-over-title");
             panelGameOverSubtitle = root.Q<Label>("panel-game-over-subtitle");
@@ -228,6 +246,13 @@ namespace CrowdDefense.UI
                 OnStateChanged(LevelRunner.Instance.State);
             }
 
+            // Subscribe Castle regen detection (HP gain triggers icon flash)
+            if (Castle.Instance != null)
+            {
+                _lastKnownCastleHP = Castle.Instance.HP;
+                Castle.Instance.OnHPChanged += OnCastleHPChanged;
+            }
+
             if (WaveManager.Instance != null)
             {
                 _waveManagerSubscribed = true;
@@ -263,6 +288,8 @@ namespace CrowdDefense.UI
                 LevelRunner.Instance.OnTotalHPChanged -= OnHPChanged;
                 LevelRunner.Instance.OnStateChanged -= OnStateChanged;
             }
+            if (Castle.Instance != null)
+                Castle.Instance.OnHPChanged -= OnCastleHPChanged;
             if (WaveManager.Instance != null)
             {
                 WaveManager.Instance.OnWaveStart -= OnWaveStart;
@@ -650,6 +677,28 @@ namespace CrowdDefense.UI
                 if (waveLaunchBtn != null)  SetVisible(waveLaunchBtn,  false);
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
             }
+        }
+
+        // Castle regen icon — fires when HP increases (Regen / GrantBonusHP)
+        private void OnCastleHPChanged(int hp, int hpMax)
+        {
+            if (_lastKnownCastleHP >= 0 && hp > _lastKnownCastleHP && _castleRegenIcon != null)
+            {
+                if (_regenIconCoroutine != null) StopCoroutine(_regenIconCoroutine);
+                _regenIconCoroutine = StartCoroutine(FlashRegenIcon());
+            }
+            _lastKnownCastleHP = hp;
+        }
+
+        private System.Collections.IEnumerator FlashRegenIcon()
+        {
+            if (_castleRegenIcon == null) yield break;
+            _castleRegenIcon.RemoveFromClassList("hidden");
+            _castleRegenIcon.AddToClassList("castle-regen-pulse");
+            yield return new WaitForSecondsRealtime(0.2f);
+            _castleRegenIcon.AddToClassList("hidden");
+            _castleRegenIcon.RemoveFromClassList("castle-regen-pulse");
+            _regenIconCoroutine = null;
         }
 
         private void ApplyResponsiveClass()
