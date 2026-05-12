@@ -20,6 +20,9 @@ namespace CrowdDefense.Systems
         // Theme resolved from LevelRunner at Start — default Plaine if not available.
         private LevelTheme _theme = LevelTheme.Plaine;
 
+        // Spawned slab renderers kept for ApplyWorldTheme.
+        private readonly List<MeshRenderer> _slabRenderers = new();
+
         private void Start()
         {
             var pm = PathManager.Instance;
@@ -31,10 +34,14 @@ namespace CrowdDefense.Systems
                 return;
             }
 
-            // Resolve current theme from active LevelRunner if available
+            // Resolve current theme and world from active LevelRunner if available
             var lr = LevelRunner.Instance;
+            int world = 1;
             if (lr?.CurrentLevel != null)
+            {
                 _theme = lr.CurrentLevel.LevelTheme;
+                world = lr.CurrentLevel.World;
+            }
 
             var grid = pm.Grid;
             for (int r = 0; r < grid.Height; r++)
@@ -57,14 +64,41 @@ namespace CrowdDefense.Systems
                     var col = slab.GetComponent<Collider>();
                     if (col != null) Destroy(col);
 
-                    slab.GetComponent<MeshRenderer>().sharedMaterial = GetMat(ch, _theme);
+                    var mr = slab.GetComponent<MeshRenderer>();
+                    mr.sharedMaterial = GetMat(ch, _theme);
+                    _slabRenderers.Add(mr);
                 }
             }
 
+            ApplyWorldTheme(world);
+
 #if UNITY_EDITOR
-            Debug.Log($"[MapRenderer] Spawned slabs for {grid.Width}x{grid.Height} grid, theme={_theme}");
+            Debug.Log($"[MapRenderer] Spawned slabs for {grid.Width}x{grid.Height} grid, theme={_theme}, world={world}");
 #endif
         }
+
+        // Applies a world-based colour tint to all floor slabs via MaterialPropertyBlock (zero-alloc per-instance override).
+        // W1-2: grass green, W3-4: sand desert, W5-6: snow ice, W7-8: volcanic rock, W9+: void dark.
+        public void ApplyWorldTheme(int worldId)
+        {
+            var tint = WorldThemeTint(worldId);
+            var mpb = new MaterialPropertyBlock();
+            foreach (var mr in _slabRenderers)
+            {
+                mr.GetPropertyBlock(mpb);
+                mpb.SetColor("_BaseColor", tint);
+                mr.SetPropertyBlock(mpb);
+            }
+        }
+
+        private static Color WorldThemeTint(int worldId) => worldId switch
+        {
+            1 or 2 => new Color(0.40f, 0.80f, 0.30f),  // grass green
+            3 or 4 => new Color(0.90f, 0.80f, 0.50f),  // sand desert
+            5 or 6 => new Color(0.85f, 0.92f, 1.00f),  // snow ice
+            7 or 8 => new Color(0.70f, 0.40f, 0.20f),  // volcanic rock
+            _      => new Color(0.20f, 0.15f, 0.40f),  // void dark (W9+)
+        };
 
         private static Material GetMat(char ch, LevelTheme theme)
         {
