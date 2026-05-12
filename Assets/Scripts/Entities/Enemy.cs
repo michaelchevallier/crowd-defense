@@ -160,6 +160,11 @@ namespace CrowdDefense.Entities
         private GameObject?  _stealthRingGO;
         private MeshRenderer? _stealthRingMR;
 
+        // ── Elite star marker + glow (spawned by ApplyElite) ─────────────────
+        private GameObject? _eliteStarGO;
+        private Light?      _eliteGlowLight;
+        private float       _eliteStarBaseY;  // world Y at spawn, used for sin float
+
         // ── Dust trail ────────────────────────────────────────────────────────
         private float _dustTimer = 0f;
 
@@ -417,6 +422,7 @@ namespace CrowdDefense.Entities
             // Yellow scintillating trail particle
             SpawnEliteTrail();
             StartCoroutine(SpawnGroundCrack(isBoss: false));
+            SpawnEliteStarMarker();
         }
 
         private void SpawnEliteTrail()
@@ -447,6 +453,61 @@ namespace CrowdDefense.Entities
             );
             colorOverLifetime.color = grad;
             ps.Play();
+        }
+
+        private void SpawnEliteStarMarker()
+        {
+            // Destroy any previous instance (pool reuse safety)
+            if (_eliteStarGO != null) Destroy(_eliteStarGO);
+            if (_eliteGlowLight != null) Destroy(_eliteGlowLight.gameObject);
+
+            // ── Star quad ──────────────────────────────────────────────────────
+            var starGO = new GameObject("EliteStar");
+            starGO.transform.SetParent(transform, false);
+            starGO.transform.localPosition = new Vector3(0f, 1.8f, 0f);
+            starGO.transform.localScale    = Vector3.one * 0.3f;
+
+            var mf  = starGO.AddComponent<MeshFilter>();
+            mf.mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                      ?? Shader.Find("Sprites/Default")
+                      ?? Shader.Find("Hidden/InternalErrorShader")!;
+            var mat = new Material(shader)
+            {
+                name       = "EliteStar_Mat",
+                renderQueue = 3100,
+            };
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend",   3f);
+            mat.SetInt("_ZWrite",    0);
+            mat.SetInt("_SrcBlend",  5);
+            mat.SetInt("_DstBlend",  10);
+            var starColor = new Color(1f, 0.9f, 0.2f, 1f);
+            mat.color = starColor;
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", starColor);
+
+            var mr = starGO.AddComponent<MeshRenderer>();
+            mr.material            = mat;
+            mr.shadowCastingMode   = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows      = false;
+
+            _eliteStarGO    = starGO;
+            _eliteStarBaseY = transform.position.y + 1.8f;
+
+            // ── Warm point light glow ──────────────────────────────────────────
+            var lightGO = new GameObject("EliteGlow");
+            lightGO.transform.SetParent(transform, false);
+            lightGO.transform.localPosition = new Vector3(0f, 1.4f, 0f);
+
+            var lt            = lightGO.AddComponent<Light>();
+            lt.type           = LightType.Point;
+            lt.color          = new Color(1f, 0.85f, 0.3f);
+            lt.intensity      = 0.6f;
+            lt.range          = 1.5f;
+            lt.shadows        = LightShadows.None;
+
+            _eliteGlowLight = lt;
         }
 
         // Called by BossSystem when enraged phase threshold is crossed
@@ -623,6 +684,8 @@ namespace CrowdDefense.Entities
             _wasWalking       = false;
             _lastDamageDirection = Vector3.back;
             _isElite = false;
+            if (_eliteStarGO != null)  { Destroy(_eliteStarGO);  _eliteStarGO = null; }
+            if (_eliteGlowLight != null) { Destroy(_eliteGlowLight.gameObject); _eliteGlowLight = null; }
             _chaseHero = !type.IsBoss && Random.value < 0.1f;
             if (_popInCoroutine != null) { StopCoroutine(_popInCoroutine); _popInCoroutine = null; }
 
@@ -2669,6 +2732,27 @@ namespace CrowdDefense.Entities
                 pool.ReleaseTyped(this);
             else
                 Destroy(gameObject);
+        }
+
+        // ── Elite star: billboard + float + rotate (no alloc) ───────────────
+
+        private void LateUpdate()
+        {
+            if (_eliteStarGO == null) return;
+
+            // Float up/down
+            float floatY = Mathf.Sin(Time.time * 2f) * 0.05f;
+            var pos = _eliteStarGO.transform.position;
+            pos.y = _eliteStarBaseY + floatY;
+            _eliteStarGO.transform.position = pos;
+
+            // Rotate Y axis at 30°/s
+            _eliteStarGO.transform.Rotate(Vector3.up, 30f * Time.deltaTime, Space.World);
+
+            // Billboard toward camera
+            var cam = Camera.main;
+            if (cam != null)
+                _eliteStarGO.transform.rotation = Quaternion.LookRotation(_eliteStarGO.transform.position - cam.transform.position);
         }
 
         // ── OnDestroy cleanup ─────────────────────────────────────────────────
