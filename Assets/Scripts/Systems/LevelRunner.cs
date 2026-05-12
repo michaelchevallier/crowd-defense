@@ -755,6 +755,14 @@ namespace CrowdDefense.Systems
             // Apply active hero skin at spawn (visual swap + stat bonuses)
             SkinSystem.Instance?.ApplyToHero(Hero);
 
+            // Apply meta-upgrades bonuses (damage, range, fire-rate multipliers)
+            var metaBonuses = MetaUpgradeSystem.Instance?.ActiveBonuses;
+            if (metaBonuses != null)
+                Hero.ApplyMetaBonuses(
+                    heroDamageMul: metaBonuses.heroDamageMul,
+                    heroRangeMul: metaBonuses.heroRangeMul,
+                    heroFireRateMul: metaBonuses.heroFireRateMul);
+
 #if UNITY_EDITOR
             Debug.Log($"[LevelRunner] spawned hero '{heroType.Id}' at {spawnPos}");
 #endif

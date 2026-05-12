@@ -53,19 +53,28 @@ namespace CrowdDefense.Systems
         private Vector3 lastMouseWorld;
         private readonly Plane groundPlane = new Plane(Vector3.up, Vector3.zero);
 
+        private bool _subscribed = false;
+
         protected override void OnAwakeSingleton()
         {
             cam = Camera.main;
             ghostMatTransparent = BuildTransparentMaterial();
             dotMaterial         = BuildDotMaterial();
             BuildAimLine();
-            if (PlacementController.Instance != null)
-                PlacementController.Instance.OnHoverPlacementCell += OnHoverCell;
+        }
+
+        private void EnsureSubscribed()
+        {
+            if (_subscribed) return;
+            var pc = PlacementController.Instance;
+            if (pc == null) return;
+            pc.OnHoverPlacementCell += OnHoverCell;
+            _subscribed = true;
         }
 
         protected override void OnDestroySingleton()
         {
-            if (PlacementController.Instance != null)
+            if (_subscribed && PlacementController.Instance != null)
                 PlacementController.Instance.OnHoverPlacementCell -= OnHoverCell;
         }
 
@@ -86,6 +95,7 @@ namespace CrowdDefense.Systems
 
         private void Update()
         {
+            EnsureSubscribed();
             var pc = PlacementController.Instance;
             if (pc == null) { HideGhost(); return; }
 
