@@ -129,6 +129,13 @@ namespace CrowdDefense.Systems
 
             if (!Input.GetMouseButtonDown(0)) return;
 
+            // Shift+click : ouvre le panneau de comparaison de tours (TowerComparePanel)
+            if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+            {
+                TryRegisterCompareAtMouse();
+                return;
+            }
+
             // Click sur tour existante : sélectionner pour radial menu (production + debug)
             // Priorité : si selectedTowerType non set, tenter sélection tour.
             // Si selectedTowerType set, placement a priorité (click place la tour).
@@ -137,15 +144,6 @@ namespace CrowdDefense.Systems
                 TrySelectTowerAtMouse();
                 return;
             }
-
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-            // Shift-click : sélectionner tour même quand selectedTowerType est set (debug override)
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                TrySelectTowerAtMouse();
-                return;
-            }
-#endif
 
             if (towerPrefab == null) return;
             if (PathManager.Instance == null || PathManager.Instance.Grid == null) return;
@@ -276,6 +274,27 @@ namespace CrowdDefense.Systems
                 WaveHistoryLog.Instance?.Log("tower", $"Tour : {selectedTowerType.DisplayName} N1");
                 OnTowerPlaced?.Invoke(tower);
             }
+        }
+
+        // Shift+click : forward tower to TowerComparePanel (slot A then slot B)
+        private void TryRegisterCompareAtMouse()
+        {
+            if (cam == null) return;
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+            if (!groundPlane.Raycast(ray, out float dist)) return;
+            Vector3 hitPos = ray.GetPoint(dist);
+
+            Tower? closest = null;
+            float bestDist = 1.5f;
+            foreach (var t in placedTowers)
+            {
+                if (t == null) continue;
+                float d = (t.transform.position - hitPos).magnitude;
+                if (d < bestDist) { bestDist = d; closest = t; }
+            }
+
+            if (closest != null)
+                CrowdDefense.UI.TowerComparePanel.Instance?.RegisterShiftClick(closest);
         }
 
         // Selection de tour via click (production + debug) — utilisee par radial menu CORE-20

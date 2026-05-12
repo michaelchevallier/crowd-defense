@@ -1,0 +1,74 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="TowerComparePanel.uss" />
+    <ui:VisualElement name="compare-overlay" class="compare-overlay hidden">
+        <ui:VisualElement name="compare-panel" class="compare-panel">
+            <ui:Label name="compare-title" class="compare-title" text="Comparer les tours" />
+            <ui:VisualElement class="compare-columns">
+                <!-- Colonne tour 1 -->
+                <ui:VisualElement name="compare-col-1" class="compare-col">
+                    <ui:VisualElement name="col1-portrait" class="compare-portrait" />
+                    <ui:Label name="col1-name" class="compare-col-name" text="-" />
+                    <ui:Label name="col1-level" class="compare-col-level" text="" />
+                    <ui:VisualElement class="compare-stats">
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="DPS" />
+                            <ui:Label name="col1-dps" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="Degats" />
+                            <ui:Label name="col1-dmg" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="Portee" />
+                            <ui:Label name="col1-range" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="Cadence" />
+                            <ui:Label name="col1-rate" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="Cout" />
+                            <ui:Label name="col1-cost" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:Label name="col1-special" class="compare-special" text="" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <!-- Séparateur -->
+                <ui:VisualElement class="compare-separator" />
+                <!-- Colonne tour 2 -->
+                <ui:VisualElement name="compare-col-2" class="compare-col">
+                    <ui:VisualElement name="col2-portrait" class="compare-portrait" />
+                    <ui:Label name="col2-name" class="compare-col-name" text="-" />
+                    <ui:Label name="col2-level" class="compare-col-level" text="" />
+                    <ui:VisualElement class="compare-stats">
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="DPS" />
+                            <ui:Label name="col2-dps" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="Degats" />
+                            <ui:Label name="col2-dmg" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="Portee" />
+                            <ui:Label name="col2-range" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="Cadence" />
+                            <ui:Label name="col2-rate" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="compare-stat-row">
+                            <ui:Label class="compare-stat-label" text="Cout" />
+                            <ui:Label name="col2-cost" class="compare-stat-value" text="-" />
+                        </ui:VisualElement>
+                        <ui:Label name="col2-special" class="compare-special" text="" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label name="compare-hint" class="compare-hint" text="Shift+clic pour selectionner une tour" />
+            <ui:Button name="compare-close-btn" class="compare-close-btn" text="Fermer" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
