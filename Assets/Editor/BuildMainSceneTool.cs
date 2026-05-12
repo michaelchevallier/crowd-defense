@@ -48,7 +48,7 @@ namespace CrowdDefense.Editor
             EnsureSingleton<HeroProjectilePool>(systems, "HeroProjectilePool", ref created, ref existing);
             EnsureSingleton<SkinSystem>        (systems, "SkinSystem",         ref created, ref existing);
             EnsureSingleton<RunContext>         (systems, "RunContext",          ref created, ref existing);
-            EnsureSingleton<LevelEvents>        (systems, "LevelEvents",         ref created, ref existing);
+            // LevelEvents is a static event hub — no MonoBehaviour, skip EnsureSingleton.
             EnsureSingleton<BossSystem>         (systems, "BossSystem",          ref created, ref existing);
             EnsureSingleton<CrowdDefense.Systems.EventSystem>(systems, "EventSystem", ref created, ref existing);
             EnsureSingleton<Achievements>       (systems, "Achievements",        ref created, ref existing);
@@ -57,7 +57,7 @@ namespace CrowdDefense.Editor
             EnsureSingleton<RunMap>             (systems, "RunMap",              ref created, ref existing);
             EnsureSingleton<MetaUpgradeSystem>  (systems, "MetaUpgradeSystem",   ref created, ref existing);
             EnsureSingleton<DoctrineSystem>     (systems, "DoctrineSystem",      ref created, ref existing);
-            EnsureSingleton<SchoolRegistry>     (systems, "SchoolRegistry",      ref created, ref existing);
+            // SchoolRegistry is a static registry — no MonoBehaviour, skip EnsureSingleton.
             EnsureSingleton<TutorialState>      (systems, "TutorialState",       ref created, ref existing);
             EnsureSingleton<StatsTracker>       (systems, "StatsTracker",        ref created, ref existing);
             // TODO: MapPathfinder (needs nav mesh config), SceneTransition (needs animator refs)
