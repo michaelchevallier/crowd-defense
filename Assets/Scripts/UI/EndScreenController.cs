@@ -47,6 +47,9 @@ namespace CrowdDefense.UI
         private Text?          _trophyText;
         private RectTransform? _trophyRect;
 
+        // Stars rating (top of panel, big)
+        private Text? _starsText;
+
         // Share buttons (victory only)
         private GameObject? _shareRow;
         private Button?     _btnDiscord;
@@ -140,18 +143,42 @@ namespace CrowdDefense.UI
                 }
             }
 
-            if (_subtitleText != null && r != null)
+            // Big stars display — top-right of panel
+            if (_starsText != null)
             {
+                int stars = r?.StarsEarned ?? 0;
                 if (isVictory)
                 {
-                    var starsStr = new string('*', r.StarsEarned);
-                    var dotsStr  = new string('.', 3 - r.StarsEarned);
-                    _subtitleText.text = starsStr + dotsStr;
+                    _starsText.text  = new string('*', stars) + new string('-', 3 - stars);
+                    _starsText.color = new Color(1.00f, 0.84f, 0.00f, 1.00f);
+                    _starsText.gameObject.SetActive(true);
                 }
                 else
                 {
-                    _subtitleText.text = $"Chateau : {r.CastleHPRemaining}/{r.CastleHPMax} PV";
+                    _starsText.text  = "-  -  -";
+                    _starsText.color = new Color(0.55f, 0.55f, 0.55f, 1.00f);
+                    _starsText.gameObject.SetActive(true);
                 }
+            }
+
+            // Save best stars to PlayerPrefs
+            if (r != null && !string.IsNullOrEmpty(r.LevelId))
+            {
+                string key    = $"cd.level.{r.LevelId}.stars";
+                int    best   = PlayerPrefs.GetInt(key, 0);
+                if (r.StarsEarned > best)
+                {
+                    PlayerPrefs.SetInt(key, r.StarsEarned);
+                    PlayerPrefs.Save();
+                }
+            }
+
+            if (_subtitleText != null && r != null)
+            {
+                if (isVictory)
+                    _subtitleText.text = "Toutes les vagues vaincues !";
+                else
+                    _subtitleText.text = $"Chateau : {r.CastleHPRemaining}/{r.CastleHPMax} PV";
             }
             else if (_subtitleText != null)
             {
@@ -223,6 +250,11 @@ namespace CrowdDefense.UI
                     var c = _titleText.color;
                     _titleText.color = new Color(c.r, c.g, c.b, eased);
                 }
+                if (_starsText != null)
+                {
+                    var c = _starsText.color;
+                    _starsText.color = new Color(c.r, c.g, c.b, eased);
+                }
                 if (_subtitleText != null)
                 {
                     var c = _subtitleText.color;
@@ -255,6 +287,8 @@ namespace CrowdDefense.UI
             }
             if (btnRect1 != null) btnRect1.anchoredPosition = btnFinal1;
             if (btnRect2 != null) btnRect2.anchoredPosition = btnFinal2;
+
+            if (_starsText != null) { var c = _starsText.color; _starsText.color = new Color(c.r, c.g, c.b, 1f); }
 
             foreach (var sl in new[] { _statKills, _statGold, _statTowers, _statTime, _statWaves })
             {
@@ -466,7 +500,7 @@ namespace CrowdDefense.UI
 
         // Panel is 600x560. Chart anchor spans x:[0.04,0.96] y:[0.42,0.53].
         private const float ChartW = 600f * (0.96f - 0.04f);   // 552
-        private const float ChartH = 560f * (0.53f - 0.42f);   // 61.6
+        private const float ChartH = 560f * (0.44f - 0.33f);   // 61.6
 
         private void RefreshKillsChart()
         {
@@ -616,27 +650,34 @@ namespace CrowdDefense.UI
                 anchorMax: new Vector2(1f, 1.00f),
                 fontSize: 48, color: VictoryTitleColor);
 
-            // Subtitle (stars or castle HP)
-            _subtitleText = CreateLabel(panelGo.transform, "SubtitleLabel",
-                anchorMin: new Vector2(0.05f, 0.82f),
+            // Big stars rating — below title, full width, prominent
+            _starsText = CreateLabel(panelGo.transform, "StarsRating",
+                anchorMin: new Vector2(0.05f, 0.83f),
                 anchorMax: new Vector2(0.95f, 0.91f),
-                fontSize: 20, color: statColor);
+                fontSize: 42, color: new Color(1.00f, 0.84f, 0.00f, 1.00f));
+            _starsText.gameObject.SetActive(false);
+
+            // Subtitle (castle HP on defeat, win message on victory)
+            _subtitleText = CreateLabel(panelGo.transform, "SubtitleLabel",
+                anchorMin: new Vector2(0.05f, 0.74f),
+                anchorMax: new Vector2(0.95f, 0.83f),
+                fontSize: 18, color: statColor);
 
             // Stats grid — 2 columns x 3 rows
             _statKills  = CreateLabel(panelGo.transform, "StatKills",
-                anchorMin: new Vector2(0.04f, 0.72f), anchorMax: new Vector2(0.50f, 0.82f),
+                anchorMin: new Vector2(0.04f, 0.63f), anchorMax: new Vector2(0.50f, 0.73f),
                 fontSize: 17, color: statColor);
             _statGold   = CreateLabel(panelGo.transform, "StatGold",
-                anchorMin: new Vector2(0.52f, 0.72f), anchorMax: new Vector2(0.97f, 0.82f),
+                anchorMin: new Vector2(0.52f, 0.63f), anchorMax: new Vector2(0.97f, 0.73f),
                 fontSize: 17, color: statColor);
             _statTowers = CreateLabel(panelGo.transform, "StatTowers",
-                anchorMin: new Vector2(0.04f, 0.62f), anchorMax: new Vector2(0.50f, 0.72f),
+                anchorMin: new Vector2(0.04f, 0.53f), anchorMax: new Vector2(0.50f, 0.63f),
                 fontSize: 17, color: statColor);
             _statWaves  = CreateLabel(panelGo.transform, "StatWaves",
-                anchorMin: new Vector2(0.52f, 0.62f), anchorMax: new Vector2(0.97f, 0.72f),
+                anchorMin: new Vector2(0.52f, 0.53f), anchorMax: new Vector2(0.97f, 0.63f),
                 fontSize: 17, color: statColor);
             _statTime   = CreateLabel(panelGo.transform, "StatTime",
-                anchorMin: new Vector2(0.04f, 0.53f), anchorMax: new Vector2(0.97f, 0.62f),
+                anchorMin: new Vector2(0.04f, 0.44f), anchorMax: new Vector2(0.97f, 0.53f),
                 fontSize: 17, color: statColor);
 
             // Left-align individual stat labels
@@ -647,29 +688,29 @@ namespace CrowdDefense.UI
             var chartGo = new GameObject("KillsChart");
             chartGo.transform.SetParent(panelGo.transform, false);
             _chartArea = chartGo.AddComponent<RectTransform>();
-            _chartArea.anchorMin = new Vector2(0.04f, 0.42f);
-            _chartArea.anchorMax = new Vector2(0.96f, 0.53f);
+            _chartArea.anchorMin = new Vector2(0.04f, 0.33f);
+            _chartArea.anchorMax = new Vector2(0.96f, 0.44f);
             _chartArea.offsetMin = Vector2.zero;
             _chartArea.offsetMax = Vector2.zero;
 
             // Top-3 tower leaderboard — below chart
             _lbHeader = CreateLabel(panelGo.transform, "LbHeader",
-                anchorMin: new Vector2(0.04f, 0.35f), anchorMax: new Vector2(0.96f, 0.42f),
+                anchorMin: new Vector2(0.04f, 0.26f), anchorMax: new Vector2(0.96f, 0.33f),
                 fontSize: 15, color: LbHeaderColor);
             _lbHeader.alignment = TextAnchor.MiddleLeft;
 
             _lbRow1 = CreateLabel(panelGo.transform, "LbRow1",
-                anchorMin: new Vector2(0.04f, 0.27f), anchorMax: new Vector2(0.96f, 0.35f),
+                anchorMin: new Vector2(0.04f, 0.20f), anchorMax: new Vector2(0.96f, 0.26f),
                 fontSize: 15, color: LbRowColor);
             _lbRow1.alignment = TextAnchor.MiddleLeft;
 
             _lbRow2 = CreateLabel(panelGo.transform, "LbRow2",
-                anchorMin: new Vector2(0.04f, 0.19f), anchorMax: new Vector2(0.96f, 0.27f),
+                anchorMin: new Vector2(0.04f, 0.14f), anchorMax: new Vector2(0.96f, 0.20f),
                 fontSize: 15, color: LbRowColor);
             _lbRow2.alignment = TextAnchor.MiddleLeft;
 
             _lbRow3 = CreateLabel(panelGo.transform, "LbRow3",
-                anchorMin: new Vector2(0.04f, 0.12f), anchorMax: new Vector2(0.96f, 0.19f),
+                anchorMin: new Vector2(0.04f, 0.12f), anchorMax: new Vector2(0.96f, 0.14f),
                 fontSize: 15, color: LbRowColor);
             _lbRow3.alignment = TextAnchor.MiddleLeft;
 
