@@ -26,6 +26,7 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? frostPrefab;
         [SerializeField] private GameObject? portalPrefab;
         [SerializeField] private GameObject? fireBreathPrefab;
+        [SerializeField] private GameObject? muzzleFlashPrefab;
 
         private ObjectPool<ParticleSystem>? _impactPool;
         private ObjectPool<ParticleSystem>? _deathPool;
@@ -37,6 +38,7 @@ namespace CrowdDefense.Visual
         private ObjectPool<ParticleSystem>? _frostPool;
         private ObjectPool<ParticleSystem>? _portalPool;
         private ObjectPool<ParticleSystem>? _fireBreathPool;
+        private ObjectPool<ParticleSystem>? _muzzleFlashPool;
 
         private Transform? _root;
         private Material? _additiveMat;
@@ -57,6 +59,7 @@ namespace CrowdDefense.Visual
             frostPrefab     ??= BuildProceduralPrefab("Frost",     BuildFrostModule);
             portalPrefab    ??= BuildProceduralPrefab("Portal",    BuildPortalModule);
             fireBreathPrefab ??= BuildProceduralPrefab("FireBreath", BuildFireBreathModule);
+            muzzleFlashPrefab ??= BuildProceduralPrefab("MuzzleFlash", BuildMuzzleFlashModule);
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
@@ -67,7 +70,8 @@ namespace CrowdDefense.Visual
             _perkPickupPool = BuildPool(perkPickupPrefab, "PerkPickup", DefaultCapacity);
             _frostPool     = BuildPool(frostPrefab,     "Frost",     DefaultCapacity);
             _portalPool    = BuildPool(portalPrefab,    "Portal",    DefaultCapacity);
-            _fireBreathPool = BuildPool(fireBreathPrefab, "FireBreath", 8);
+            _fireBreathPool  = BuildPool(fireBreathPrefab,  "FireBreath",  8);
+            _muzzleFlashPool = BuildPool(muzzleFlashPrefab, "MuzzleFlash", DefaultCapacity);
 
             PreWarm();
         }
@@ -215,6 +219,15 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _perkPickupPool);
         }
 
+        public void SpawnMuzzleFlash(Vector3 worldPos, Color tint)
+        {
+            if (!IsVfxEnabled() || _muzzleFlashPool == null) return;
+            var ps = _muzzleFlashPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+            ApplyTint(ps, tint);
+            PlayAndAutoRelease(ps, _muzzleFlashPool);
+        }
+
         public void SpawnFrost(Vector3 worldPos, float radius)
         {
             if (!IsVfxEnabled() || _frostPool == null) return;
@@ -349,7 +362,8 @@ namespace CrowdDefense.Visual
             PreWarmPool(_perkPickupPool, DefaultCapacity);
             PreWarmPool(_frostPool,      DefaultCapacity);
             PreWarmPool(_portalPool,     DefaultCapacity);
-            PreWarmPool(_fireBreathPool, 4);
+            PreWarmPool(_fireBreathPool,  4);
+            PreWarmPool(_muzzleFlashPool, DefaultCapacity);
         }
 
         private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
@@ -688,6 +702,31 @@ namespace CrowdDefense.Visual
             col.color = new ParticleSystem.MinMaxGradient(grad);
 
             SetSizeOverLifetimeFade(ps);
+        }
+
+        private static void BuildMuzzleFlashModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.10f, 0.15f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 5f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.10f, 0.20f);
+            main.startColor     = new Color(1f, 0.55f, 0.05f);
+            main.maxParticles   = 16;
+            main.duration       = 0.05f;
+            main.gravityModifier = 0.2f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 8, 8, 1, 0.01f) });
+
+            var shape = ps.shape;
+            shape.enabled   = true;
+            shape.shapeType = ParticleSystemShapeType.Cone;
+            shape.angle     = 15f;
+            shape.radius    = 0.05f;
+
+            SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
         }
 
         // ── Shared curve helpers ──────────────────────────────────────────────

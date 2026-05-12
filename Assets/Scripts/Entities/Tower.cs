@@ -251,6 +251,9 @@ namespace CrowdDefense.Entities
         // Global throttle — skip cam shake if another tower shook within 50 ms (multi-cannon spam guard).
         private static float _lastCamShakeAt = -1f;
 
+        // Per-tower muzzle flash throttle — skip if same tower fired within 50 ms.
+        private float _lastMuzzleFlashAt = -1f;
+
         // AimLine : thin red laser tower → target (togglable via PlayerPrefs "show_aim_lines_v1")
         private LineRenderer? _aimLine;
 
@@ -805,6 +808,13 @@ namespace CrowdDefense.Entities
                 ? _barrelTip.position
                 : transform.position + Vector3.up * 0.5f;
             VfxPool.Instance?.SpawnImpact(muzzlePos, cfg.ProjectileColor);
+            if (Time.time - _lastMuzzleFlashAt >= 0.05f)
+            {
+                VfxPool.Instance?.SpawnMuzzleFlash(
+                    _barrelTip?.position ?? transform.position + Vector3.up * 0.8f,
+                    cfg.ProjectileColor);
+                _lastMuzzleFlashAt = Time.time;
+            }
             if (_animator != null) _animator.SetTrigger("attackTrigger");
             if (!_recoiling) StartCoroutine(RecoilRoutine());
             _lastFireAt = Time.time;
