@@ -91,7 +91,7 @@ namespace CrowdDefense.UI
                         LevelData? levelData = registry?.FindById(id);
                         if (levelData != null)
                         {
-                            btn.RegisterCallback<ClickEvent>(_ => OnLevelClicked(id));
+                            btn.RegisterCallback<ClickEvent>(_ => ShowPreviewModal(root, id, levelData));
                             AttachMiniMapPreview(btn, levelData);
                         }
                         else
@@ -148,6 +148,100 @@ namespace CrowdDefense.UI
                 LevelLoader.LoadLevel(levelId);
         }
 
+        private static void ShowPreviewModal(VisualElement root, string levelId, LevelData levelData)
+        {
+            // Remove any existing modal first
+            var existing = root.Q<VisualElement>("preview-modal-overlay");
+            existing?.RemoveFromHierarchy();
+
+            // Full-screen overlay
+            var overlay = new VisualElement();
+            overlay.name = "preview-modal-overlay";
+            overlay.style.position           = Position.Absolute;
+            overlay.style.left               = 0;
+            overlay.style.top                = 0;
+            overlay.style.right              = 0;
+            overlay.style.bottom             = 0;
+            overlay.style.backgroundColor    = new StyleColor(new Color(0f, 0f, 0f, 0.75f));
+            overlay.style.alignItems         = Align.Center;
+            overlay.style.justifyContent     = Justify.Center;
+
+            // Modal card
+            var card = new VisualElement();
+            card.style.backgroundColor    = new StyleColor(new Color(0.12f, 0.12f, 0.18f, 0.98f));
+            card.style.borderTopLeftRadius     = 8;
+            card.style.borderTopRightRadius    = 8;
+            card.style.borderBottomLeftRadius  = 8;
+            card.style.borderBottomRightRadius = 8;
+            card.style.paddingTop    = 20;
+            card.style.paddingBottom = 20;
+            card.style.paddingLeft   = 24;
+            card.style.paddingRight  = 24;
+            card.style.alignItems    = Align.Center;
+            card.style.minWidth      = 320;
+
+            // Title
+            var title = new Label(levelId);
+            title.style.fontSize      = 22;
+            title.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            title.style.color         = new StyleColor(Color.white);
+            title.style.marginBottom  = 12;
+            card.Add(title);
+
+            // 256x256 map preview
+            var map = BuildMiniMap(levelData, 256);
+            map.style.marginBottom = 14;
+            card.Add(map);
+
+            // Level metadata
+            string waves = levelData.Waves.Count > 0 ? $"{levelData.Waves.Count} vagues" : "";
+            if (!string.IsNullOrEmpty(waves))
+            {
+                var info = new Label(waves);
+                info.style.color        = new StyleColor(new Color(0.75f, 0.75f, 0.75f));
+                info.style.fontSize     = 14;
+                info.style.marginBottom = 12;
+                card.Add(info);
+            }
+
+            // Button row
+            var btnRow = new VisualElement();
+            btnRow.style.flexDirection  = FlexDirection.Row;
+            btnRow.style.justifyContent = Justify.Center;
+            btnRow.style.marginTop      = 4;
+
+            var btnClose = new Button();
+            btnClose.text = "Fermer";
+            btnClose.AddToClassList("level-btn");
+            btnClose.style.marginRight = 12;
+            btnClose.RegisterCallback<ClickEvent>(_ => overlay.RemoveFromHierarchy());
+            btnRow.Add(btnClose);
+
+            var btnPlay = new Button();
+            btnPlay.text = "Jouer";
+            btnPlay.AddToClassList("level-btn");
+            btnPlay.AddToClassList("cleared");
+            string id = levelId;
+            btnPlay.RegisterCallback<ClickEvent>(_ =>
+            {
+                overlay.RemoveFromHierarchy();
+                OnLevelClicked(id);
+            });
+            btnRow.Add(btnPlay);
+
+            card.Add(btnRow);
+            overlay.Add(card);
+
+            // Click outside to dismiss
+            overlay.RegisterCallback<ClickEvent>(evt =>
+            {
+                if (evt.target == overlay)
+                    overlay.RemoveFromHierarchy();
+            });
+
+            root.Add(overlay);
+        }
+
         private static void AddEndlessRow(VisualElement grid)
         {
             var row = new VisualElement();
@@ -170,7 +264,7 @@ namespace CrowdDefense.UI
 
         private static void AttachMiniMapPreview(VisualElement anchor, LevelData levelData)
         {
-            var preview = BuildMiniMap(levelData);
+            var preview = BuildMiniMap(levelData, 64);
             preview.style.position = Position.Absolute;
             preview.style.bottom = new StyleLength(new Length(105, LengthUnit.Percent));
             preview.style.left = 0;
@@ -183,7 +277,7 @@ namespace CrowdDefense.UI
             anchor.RegisterCallback<MouseLeaveEvent>(_ => preview.style.display = DisplayStyle.None);
         }
 
-        private static VisualElement BuildMiniMap(LevelData levelData)
+        private static VisualElement BuildMiniMap(LevelData levelData, int previewSize)
         {
             var rows = levelData.MapRows;
             int rowCount = rows.Count;
@@ -192,13 +286,12 @@ namespace CrowdDefense.UI
                 if (rows[r].Length > colCount) colCount = rows[r].Length;
             if (rowCount == 0 || colCount == 0) rowCount = colCount = 1;
 
-            const int PreviewSize = 64;
-            float cellW = PreviewSize / (float)colCount;
-            float cellH = PreviewSize / (float)rowCount;
+            float cellW = previewSize / (float)colCount;
+            float cellH = previewSize / (float)rowCount;
 
             var container = new VisualElement();
-            container.style.width  = PreviewSize;
-            container.style.height = PreviewSize;
+            container.style.width  = previewSize;
+            container.style.height = previewSize;
             container.style.flexDirection = FlexDirection.Column;
             container.style.backgroundColor = new StyleColor(new Color(0.1f, 0.1f, 0.1f, 0.9f));
             container.style.borderTopLeftRadius     = 3;
