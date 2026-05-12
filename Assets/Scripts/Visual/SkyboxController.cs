@@ -69,10 +69,8 @@ namespace CrowdDefense.Visual
 #endif
             }
 
-            // Switch ambient to derive lighting from the skybox image.
-            RenderSettings.ambientMode = AmbientMode.Skybox;
-
             // Trigger GI re-bake from new skybox so ambient + reflection match.
+            // ambientMode is owned by ThemeAmbientController (order 53) — not set here.
             DynamicGI.UpdateEnvironment();
 
             // If a reflection probe with Realtime mode is present, request a refresh.

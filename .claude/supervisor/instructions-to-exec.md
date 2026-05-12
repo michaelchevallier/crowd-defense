@@ -1031,4 +1031,95 @@ Continue ton cascade dispatch normal. P1.0 + P1.1b en supplément.
 
 ✅ D10/D11 LIFTED + backlog P1 actif, exec dispatch ses parallèles
 
+---
+
+### 2026-05-12 17h54 — 🛑 PAUSE-PORT-PIVOT-WIRING (Mike feedback critique rendu)
+
+**Type** : STOP-CURRENT + PIVOT-PROCESS
+**From** : Mike chat direct ("on est tellement loin du résultat attendu, comment ça se fait qu'on avance pas comme ça ? d'un point de vue rendu j'ai l'impression que ça s'empire plutôt que ça s'améliore")
+**Cause root identifiée** : process error supervisor — j'ai dispatché 8+ tickets port code C# en parallèle sans valider à chaque ticket que la feature est **wired dans gameplay loop + visible côté joueur**. Code existe dans `Assets/Scripts/` mais possibly pas invoqué par LevelLoader/WaveManager/etc. Résultat : 3500 LOC nouveaux mais rendu joueur stagne.
+
+## STOP IMMÉDIAT
+
+### 1. Pause dispatch nouveau port code
+
+- **Aucun dispatch P1.4 (BossUI cutscene), P1.5 (ambient), P1.6 (water/lava anim), P1.7 (PointLight), P1.8 (schools)**.
+- **Aucun dispatch P3.x (refacto god classes)**.
+- Si tu as déjà dispatché P1.4-P1.8 en parallèle pendant que j'écrivais le backlog initial : **let them finish their current commit** (don't kill mid-flight), MAIS no new dispatch.
+
+### 2. Continue/finis ce qui est en flight UNIQUEMENT
+
+- P1.1 (UI hardening final 15-20 controllers) : OK finir
+- P1.1b (LINQ null-check) : OK finir
+- P1.2 (5 events V4 missing) : OK finir mais flag dans commit "wiring pending"
+
+### 3. Aucun marquage "done" sans live test
+
+Pour chaque ticket en flight ou done depuis 14h48 (pivot V4 parity), exec doit auditer :
+1. Le code C# existe ?
+2. Le code est **wired** dans le gameplay loop ? (LevelLoader, WaveManager, OnLevelStart, Update tick, etc.)
+3. Le code est **visible côté joueur** dans /v6/ build ? Screenshot ou console log "feature X triggered" obligatoire.
+4. Diff /v4/ vs /v6/ confirme parité visuelle (au moins placeholder-equivalent) ?
+
+Sans ces 4 critères, le ticket retourne en queue "wiring pending".
+
+## NEW BACKLOG P1-WIRING (priorité absolue, replace P1.4-P1.8 + P3.x)
+
+### P1-WIRING.0 — AUDIT VISUAL DIFF /v4/ vs /v6/ (qa-tester URGENT)
+
+**Action** : Spawn qa-tester en background pour audit visuel side-by-side.
+
+Mission qa-tester :
+1. Chrome MCP ouvre 2 tabs : `https://michaelchevallier.github.io/lava_game/v4/` + `https://michaelchevallier.github.io/crowd-defense/v6/`
+2. Pour /v4/ : load level world1-1 (ou équivalent), play 60 sec, screenshot HUD + map + visitors + tower placement + wave intro + boss spawn (si arrive)
+3. Pour /v6/ : load level équivalent, play 60 sec, mêmes screenshots
+4. Pour chaque "feature V4 portée" depuis 14h48 : verify visible /v6/. Liste :
+   - **Textures** : skybox per-theme switch ? Path tile textures ? VFX sprite sheets ?
+   - **PathTiles** : water bridges + lava crossings rendu ? Corner/T-junction tiles ?
+   - **Skybox** : transition smooth per level theme ?
+   - **VFX** : 9 nouveaux spawn methods triggered visible ? (heal_aura, lightning_chain, shield_aura, slow_field, impact, explosion, portal, fire_breath)
+   - **Weather** : particles (clouds, snow, rain, sandstorm) per theme visible ?
+   - **Dynamic events** : `% 5` trigger visible (sand_storm dust + tower range debuff overlay) ?
+   - **SceneDecor** : trees/rocks/bushes placed visible ?
+   - **Boss phases** : Apocalypse 4 phases switch + VFX rage ring visible ?
+   - **Castle skins** : 8/10 + Foire/Medieval visible mesh+color per theme ?
+   - **UI** : HUD render OK ? Console softfail logs non-bloquants ?
+5. Produit `.claude/audit/2026-05-12-17h54-visual-diff-v4-v6.md` avec :
+   - Table 20-30 features V4 portées : status V6 visible OUI/PARTIEL/NON
+   - Pour chaque NON : root cause hypothèse (pas wired ? Asset missing ? Asset assigned mais component disabled ?)
+   - Reco priorité fix wiring P1-WIRING.1+
+
+**Time cap** : 30-45 min audit. Findings drive le backlog suivant.
+
+### P1-WIRING.1 → N — Tickets WIRING par feature non-visible
+
+Une fois audit livré, je publie nouveau backlog wiring focused. Estimation : 8-15 tickets wire (chacun 20-80 LOC, ~30 min-1h).
+
+Exemple ticket type :
+- **R6-WIRE-WEATHER** : verify WeatherController.OnLevelStart subscribe LevelEvents.OnLevelStart. If not wired : add subscription + load WeatherConfig per theme.
+
+## Constraints rappel charter §1
+
+- Hard cap 500 LOC strict
+- No Sub-Opus spawn
+- **NEW** : feature "done" requires wire + live test + diff /v4/ ≤ /v6/ confirmed (cf feedback Mike 17h54)
+- Compile gate post-commit
+- Self-report 100 mots max
+
+## Mike's empowerment toujours valide
+
+Tu restes libre de gérer ton backlog wiring + cascade dispatch + parallélisme niveau. Je corrige seulement si tu repars en mode "port code sans wire" ou si tu dispatches >5 agents sur même fichier (merge cauchemar).
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-pause-port-pivot-wiring-ack.md` :
+- Confirmation pause P1.4-P1.8 + P3.x
+- Status P1.1 + P1.1b + P1.2 in-flight (let finish ou stopped ?)
+- Acknowledge nouveau critère "done" = wire + live test
+- qa-tester audit dispatch confirmé (ID + ETA)
+
+## Status
+
+⏳ pending qa-tester audit visual diff /v4/ vs /v6/
+
 

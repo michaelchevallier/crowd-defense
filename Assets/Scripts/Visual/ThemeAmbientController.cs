@@ -7,9 +7,9 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.Visual
 {
-    // Applies per-theme sun rotation, ambient light color and skybox tint
-    // at LevelStart. Attach to Main.unity (auto-created if missing via MonoSingleton).
-    [DefaultExecutionOrder(51)]
+    // Applies per-theme sun rotation, ambient Trilight and skybox tint at LevelStart.
+    // Runs after SkyboxController (order 52) so Trilight overrides AmbientMode.Skybox.
+    [DefaultExecutionOrder(53)]
     public class ThemeAmbientController : MonoSingleton<ThemeAmbientController>
     {
         // Cached reference to the scene directional light (named "Sun" or first found).
@@ -82,11 +82,23 @@ namespace CrowdDefense.Visual
 
         private static void ApplyAmbient(LevelTheme theme)
         {
-            RenderSettings.ambientMode  = AmbientMode.Flat;
-            RenderSettings.ambientLight = AmbientColor(theme);
+            var cfg = Resources.Load<ThemeAmbientConfig>($"Lighting/ThemeAmbient_{theme}");
+            if (cfg != null)
+            {
+                RenderSettings.ambientMode         = AmbientMode.Trilight;
+                RenderSettings.ambientSkyColor     = cfg.skyColor;
+                RenderSettings.ambientEquatorColor = cfg.equatorColor;
+                RenderSettings.ambientGroundColor  = cfg.groundColor;
+                RenderSettings.ambientIntensity    = cfg.intensity;
+            }
+            else
+            {
+                RenderSettings.ambientMode  = AmbientMode.Flat;
+                RenderSettings.ambientLight = FlatFallback(theme);
+            }
         }
 
-        private static Color AmbientColor(LevelTheme theme) => theme switch
+        private static Color FlatFallback(LevelTheme theme) => theme switch
         {
             LevelTheme.Foret      => new Color(0.45f, 0.60f, 0.38f),
             LevelTheme.Desert     => new Color(0.80f, 0.68f, 0.42f),

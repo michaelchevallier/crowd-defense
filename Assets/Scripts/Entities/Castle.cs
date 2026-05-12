@@ -58,6 +58,9 @@ namespace CrowdDefense.Entities
         private float         _dangerLightPhase;
         private bool          _grayscaleApplied;
 
+        // HP-aware ambient aura PointLight (parity V4 R6-018)
+        private Light?        _castleAura;
+
         // VFX components (optional — assigned lazily, null = skip)
         private ParticleSystem? _smokePs;
         private ParticleSystem? _firePs;
@@ -98,6 +101,7 @@ namespace CrowdDefense.Entities
             BuildHpBar();
             SpawnCandleParticles();
             BuildGate();
+            BuildCastleAura();
             SubscribeWaveEvents();
             OnHPChanged?.Invoke(HP, HPMax);
         }
@@ -233,6 +237,7 @@ namespace CrowdDefense.Entities
             UpdateTint();
             TriggerHitVfx();
             UpdateDamageVfxIntensity();
+            UpdateCastleAura();
 
             AudioController.Instance?.Play3D("castle_hit", transform.position);
             VfxPool.Instance?.SpawnHitFlash(transform);
@@ -689,6 +694,34 @@ namespace CrowdDefense.Entities
             var rend = go.GetComponent<MeshRenderer>();
             rend.material = BuildUnlitMaterial(new Color(0.29f, 0.17f, 0.04f, 1f), transparent: false);
             _gateDoor = go.transform;
+        }
+
+        private void BuildCastleAura()
+        {
+            // Try child first (prefab-authored), else create at runtime
+            _castleAura = transform.Find("CastleAura")?.GetComponent<Light>();
+            if (_castleAura == null)
+            {
+                var go = new GameObject("CastleAura");
+                go.transform.SetParent(transform, false);
+                go.transform.localPosition = Vector3.zero;
+                _castleAura = go.AddComponent<Light>();
+                _castleAura.type      = LightType.Point;
+                _castleAura.range     = 5f;
+                _castleAura.intensity = 2f;
+                _castleAura.color     = Color.white;
+            }
+            UpdateCastleAura();
+        }
+
+        private void UpdateCastleAura()
+        {
+            if (_castleAura == null) return;
+            var pct = HPMax > 0 ? (float)HP / HPMax : 0f;
+            _castleAura.intensity = Mathf.Lerp(0.5f, 2f, pct);
+            _castleAura.color     = pct < 0.3f
+                ? Color.red
+                : Color.Lerp(Color.red, Color.white, pct);
         }
 
         private void SubscribeWaveEvents()

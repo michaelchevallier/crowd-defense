@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.Visual;
 using UnityEngine;
 
 namespace CrowdDefense.Systems
