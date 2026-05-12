@@ -234,6 +234,29 @@ namespace CrowdDefense.Systems
         }
 
         /// <summary>
+        /// Select calm track pitch-shifted per world tier.
+        /// W1-2=1.0, W3-4=0.95, W5-6=0.90, W7-8=0.85, W9-10=0.80.
+        /// No-op when boss track is active.
+        /// </summary>
+        public void PlayWorldTheme(int worldId)
+        {
+            if (_currentTrack == "boss") return;
+            float pitch = worldId switch
+            {
+                <= 2 => 1.00f,
+                <= 4 => 0.95f,
+                <= 6 => 0.90f,
+                <= 8 => 0.85f,
+                _    => 0.80f,
+            };
+            if (_sources.TryGetValue("calm", out var calmSrc))
+                calmSrc.pitch = pitch;
+            if (_sources.TryGetValue("intense", out var intenseSrc))
+                intenseSrc.pitch = pitch;
+            Play("calm");
+        }
+
+        /// <summary>
         /// Select track based on level theme string from LevelData.
         /// Mapping: "boss" → boss track, "intense" → intense, else calm.
         /// </summary>
@@ -480,7 +503,7 @@ namespace CrowdDefense.Systems
         private void OnWaveStarted(int _)  => SetCombatLayer(true);
         private void OnWaveCleared(int _)   => SetCombatLayer(false);
 
-        private void OnLevelStart(CrowdDefense.Data.LevelData _, Bounds __)  => CrossfadeTo("wave_combat");
+        private void OnLevelStart(CrowdDefense.Data.LevelData level, Bounds __) => PlayWorldTheme(level.World);
 
         private void OnLevelThemeChanged(LevelThemeChangedEvent evt) => PlayLevel(evt.ThemeName);
 
