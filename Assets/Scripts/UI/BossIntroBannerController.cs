@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using CrowdDefense.Common;
 using CrowdDefense.Systems;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.UI
 {
@@ -42,17 +43,22 @@ namespace CrowdDefense.UI
 
         private void OnBossEncountered(BossEncounteredEvent e) => Show(e.DisplayName);
 
-        public void Show(string bossName)
+        public void Show(string bossName, string subtitle = "")
         {
             if (_animCo != null) StopCoroutine(_animCo);
-            if (_label != null) _label.text = $"BOSS APPROCHE\n{bossName.ToUpper()}";
+            string body = string.IsNullOrEmpty(subtitle)
+                ? $"BOSS APPROCHE\n{bossName.ToUpper()}"
+                : $"BOSS APPROCHE\n{bossName.ToUpper()}\n{subtitle}";
+            if (_label != null) _label.text = body;
             _prefsKey = $"boss_intro_seen_{bossName.ToLower().Replace(" ", "_")}_v1";
             bool seen = PlayerPrefs.GetInt(_prefsKey, 0) == 1;
             if (_skipBtn != null) _skipBtn.gameObject.SetActive(true);
             _animCo = StartCoroutine(AnimateBanner(seen));
 
-            // AudioController log-warns + joue un beep si la clé manque — pas de crash
-            AudioController.Instance?.Play("boss_intro_roar", 1f);
+            JuiceFX.Instance?.Flash(new Color(0f, 0f, 0f, 0.3f), 200);
+            JuiceFX.Instance?.SlowMo(0.5f, 1000);
+            StartCoroutine(CameraDramaticZoom());
+            AudioController.Instance?.Play("boss_roar", 1.2f);
         }
 
         private void SkipBanner()
@@ -182,6 +188,30 @@ namespace CrowdDefense.UI
         {
             if (_panel == null) return;
             _panel.anchoredPosition = new Vector2(x, 0f);
+        }
+
+        private IEnumerator CameraDramaticZoom()
+        {
+            Camera cam = MainCameraCache.Main;
+            if (cam == null) yield break;
+            float origFOV = cam.fieldOfView;
+            float targetFOV = origFOV * 0.7f;
+            float t = 0f;
+            while (t < 0.7f)
+            {
+                t += Time.unscaledDeltaTime;
+                cam.fieldOfView = Mathf.Lerp(origFOV, targetFOV, Mathf.Clamp01(t / 0.7f));
+                yield return null;
+            }
+            yield return new WaitForSecondsRealtime(0.3f);
+            t = 0f;
+            while (t < 0.5f)
+            {
+                t += Time.unscaledDeltaTime;
+                cam.fieldOfView = Mathf.Lerp(targetFOV, origFOV, Mathf.Clamp01(t / 0.5f));
+                yield return null;
+            }
+            cam.fieldOfView = origFOV;
         }
 
 #if UNITY_EDITOR
