@@ -31,6 +31,20 @@ MonoBehaviour:
   overrideCastleHP: 1
   castleHPOverride: 190
   allowMultiMagnet: 0
+  waveEvents:
+  - waveIndex: 2
+    eventType: sand_storm
+    duration: 12.0
+    param: 0.0
+  - waveIndex: 3
+    eventType: lava_surge
+    duration: 10.0
+    param: 0.0
+  - waveIndex: 4
+    eventType: carousel_spin
+    duration: 1.0
+    param: 0.0
+
   waves:
   - entries:
     - type: {fileID: 11400000, guid: 57b80134c2304d3884080285b6a9b5f4, type: 2}

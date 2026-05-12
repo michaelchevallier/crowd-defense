@@ -31,6 +31,7 @@ MonoBehaviour:
   overrideCastleHP: 1
   castleHPOverride: 160
   allowMultiMagnet: 0
+  waveEvents: []
   waves:
   - entries:
     - type: {fileID: 11400000, guid: 53c26439f6ec4adcad7bc70ca2fd30dc, type: 2}
