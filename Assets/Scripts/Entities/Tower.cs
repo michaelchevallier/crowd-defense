@@ -172,6 +172,9 @@ namespace CrowdDefense.Entities
         // Recoil state — prevents TickIdleAnim from overriding during recoil.
         private bool _recoiling;
 
+        // AimLine : thin red laser tower → target (togglable via PlayerPrefs "show_aim_lines_v1")
+        private LineRenderer? _aimLine;
+
         public void Init(TowerType type, GameObject? projPrefab)
         {
             cfg = type;
@@ -245,6 +248,7 @@ namespace CrowdDefense.Entities
 
             BuildRangeRing(type.Range);
             BuildSynergyHalo();
+            BuildAimLine();
         }
 
         /// <summary>
@@ -374,13 +378,13 @@ namespace CrowdDefense.Entities
 
         /// <summary>
         /// Applique les stats divergentes L3 selon la branche et le type de tour (D1-03).
-        /// Tours signature : archer, mage, ballista, cannon.
+        /// Tours signature : archer, crossbow, tank, mage.
         /// </summary>
         private void ApplyL3Branch(TowerBranch branch)
         {
             if (cfg == null) return;
 
-            bool isSignature = cfg.Id is "archer" or "mage" or "ballista" or "cannon";
+            bool isSignature = cfg.Id is "archer" or "crossbow" or "tank" or "mage";
 
             if (isSignature && branch == TowerBranch.None)
             {
@@ -392,98 +396,68 @@ namespace CrowdDefense.Entities
 
             UpgradeBranch = isSignature ? branch : TowerBranch.None;
 
-            // Tours non-signature : effets L3 spécifiques sans choix de branche (port V5 Tower.js L350-355)
-            if (!isSignature)
-            {
-                switch (cfg.Id)
-                {
-                    case "tank":
-                        L3TankBlockAura      = true;
-                        L3TankBlockAuraRange = 5f;
-                        L3TankBlockAuraDps   = 0.6f;
-                        break;
-                    case "crossbow":
-                        L3FinalExplosion     = true;
-                        L3FinalExplosionAoe  = 2f;
-                        L3FinalExplosionDmg  = cfg.Damage * BalanceConfig.Get().TowerDamageMul * 2.5f;
-                        break;
-                }
-                return;
-            }
+            if (!isSignature) return;
 
             switch (cfg.Id)
             {
                 case "archer":
                     if (branch == TowerBranch.Dps)
                     {
-                        // Sniper : x3 dmg, fire-rate /2
-                        L3DmgMul = 3.0f;
-                        L3FireRateMul = 2.0f;
+                        // Master Hunter : multishot 3 projectiles spread 15 degrees (D1-03)
+                        L3MultiShot = 2;   // 1 main + 2 extra = 3 total; spread wired in Fire
                     }
                     else
                     {
-                        // Pluie d'archer : multiShot 2, AOE 3, +20% dmg
-                        L3DmgMul = 1.2f;
-                        L3Aoe = 3.0f;
-                        L3MultiShot = 2;
+                        // Ranger Marksman : crit 25% chance x dmg 3 (D1-03)
+                        L3CritChance = 0.25f;
+                        L3CritMul    = 3f;
+                    }
+                    break;
+
+                case "crossbow":
+                    if (branch == TowerBranch.Dps)
+                    {
+                        // Bolt Storm : finalExplosion AoE 2.5m radius on kill (D1-03)
+                        L3FinalExplosion    = true;
+                        L3FinalExplosionAoe = 2.5f;
+                        L3FinalExplosionDmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * 2.5f;
+                    }
+                    else
+                    {
+                        // Heavy Bolt : pierce +3 enemies (D1-03)
+                        L3Pierce = cfg.Pierce + 3;
+                    }
+                    break;
+
+                case "tank":
+                    if (branch == TowerBranch.Dps)
+                    {
+                        // Berserker : damage x2 when castle HP < 50% (D1-03)
+                        L3BerserkerActive      = true;
+                        L3BerserkerDmgMul      = 2f;
+                        L3BerserkerHpThreshold = 0.5f;
+                    }
+                    else
+                    {
+                        // Bulwark : -20% dmg to adjacent towers within 4m (D1-03)
+                        L3BulwarkAura         = true;
+                        L3BulwarkAuraRange    = 4f;
+                        L3BulwarkDmgReduction = 0.20f;
                     }
                     break;
 
                 case "mage":
                     if (branch == TowerBranch.Dps)
                     {
-                        // Arcane : x2.5 dmg, slow on hit 30%/1.5s
-                        L3DmgMul = 2.5f;
-                        L3SlowOnHit = true;
-                        L3SlowMul = 0.7f;
-                        L3SlowDurMs = 1500;
+                        // Archmage : chain lightning 3 jumps (D1-03)
+                        L3ChainLightningJumps = 3;
+                        L3ChainLightningRange = 5f;
                     }
                     else
                     {
-                        // Boule de feu : AOE 4, x1.8 dmg, burn DOT 3s
-                        L3DmgMul = 1.8f;
-                        L3Aoe = 4.0f;
-                        L3BurnDot = true;
-                        L3BurnDps = cfg.Damage * 0.8f;
-                        L3BurnDurMs = 3000;
-                    }
-                    break;
-
-                case "ballista":
-                    if (branch == TowerBranch.Dps)
-                    {
-                        // Pierce infini : x2.5 dmg, pierce 99, armor break 10s
-                        L3DmgMul = 2.5f;
-                        L3Pierce = 99;
-                        L3ArmorBreak = true;
-                        L3ArmorBreakMul = 1.5f;
-                        L3ArmorBreakDurMs = 10000;
-                    }
-                    else
-                    {
-                        // Explosion : AOE 5, x2 dmg, knockback
-                        L3DmgMul = 2.0f;
-                        L3Aoe = 5.0f;
-                        L3Knockback = true;
-                    }
-                    break;
-
-                case "cannon":
-                    if (branch == TowerBranch.Dps)
-                    {
-                        // Mega shell : x3 dmg, AOE 3.5, slow 50%/2s
-                        L3DmgMul = 3.0f;
-                        L3Aoe = 3.5f;
-                        L3SlowOnHit = true;
-                        L3SlowMul = 0.5f;
-                        L3SlowDurMs = 2000;
-                    }
-                    else
-                    {
-                        // Shotgun : multiShot 5, x1.5 dmg, AOE 2
-                        L3DmgMul = 1.5f;
-                        L3MultiShot = 5;
-                        L3Aoe = 2.0f;
+                        // Frostmage : freeze on hit 0.5s (D1-03)
+                        L3FreezeOnHit = true;
+                        L3FreezeDurMs = 500;
                     }
                     break;
             }
@@ -537,9 +511,16 @@ namespace CrowdDefense.Entities
 
             TickIdleAnim();
             TickHeadAim();
+            TickAimLine();
+
+            // Reset bulwark protection each frame; re-set by nearby Bulwark towers below.
+            _bulwarkProtected = false;
 
             // L3 Tank DoT aura — continuous damage to enemies in radius (V5 _tankBlockAura)
             if (L3TankBlockAura) TickTankBlockAura();
+
+            // L3 Tank Bulwark aura — protect adjacent towers -20% dmg (D1-03)
+            if (L3BulwarkAura) TickBulwarkAura();
 
             // _buffMul et tous les champs synergy sont reset + recomputed par Synergies.LateUpdate.
             switch (cfg.Behavior)
@@ -724,6 +705,17 @@ namespace CrowdDefense.Entities
             // _heroBuffDmgMul: aura du Hero (ApplyHeroBuff / ClearHeroBuff)
             float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
 
+            // L3 Berserker (tank DPS) : x2 dmg when castle HP ratio < threshold (D1-03)
+            if (L3BerserkerActive && Castle.Instance != null && Castle.Instance.HPMax > 0)
+            {
+                float hpRatio = (float)Castle.Instance.HP / Castle.Instance.HPMax;
+                if (hpRatio < L3BerserkerHpThreshold) dmg *= L3BerserkerDmgMul;
+            }
+
+            // L3 Ranger Marksman (archer Utility) : crit hit (D1-03)
+            if (L3CritChance > 0f && Random.value < L3CritChance)
+                dmg *= L3CritMul;
+
             if (t.IsFlyer && !t.ImmuneToFlyerBonus)
             {
                 float flyMul = Mathf.Max(cfg.FlyerDmgMul, _flyerDmgBonus);
@@ -754,14 +746,17 @@ namespace CrowdDefense.Entities
                 effectivePierce, effectiveAoe, cfg.Parabolic, flightDur, arcH, this);
 
             // Extra projectiles : synergy _multiShotBonus + L3MultiShot (cumulatifs)
+            // Archer Master Hunter (L3 DPS) uses 15 degree spread; others default 12 degrees (D1-03)
             int extraShots = _multiShotBonus + L3MultiShot;
             if (extraShots > 0)
             {
+                float spreadStep = (cfg.Id == "archer" && UpgradeBranch == TowerBranch.Dps) ? 15f : 12f;
+                Vector3 baseDir = (t.transform.position - transform.position).normalized;
                 for (int i = 0; i < extraShots; i++)
                 {
-                    float spreadAngle = (i + 1) * 12f;
-                    Vector3 dir = (t.transform.position - transform.position).normalized;
-                    Vector3 spread = Quaternion.Euler(0f, spreadAngle, 0f) * dir;
+                    float spreadAngle = (i + 1) * spreadStep;
+                    float sign = (i % 2 == 0) ? 1f : -1f;
+                    Vector3 spread = Quaternion.Euler(0f, spreadAngle * sign, 0f) * baseDir;
                     var proj2 = ProjectilePool.Instance.Get();
                     if (proj2 == null) continue;
                     proj2.transform.position = transform.position + Vector3.up * 1.0f;
@@ -774,6 +769,14 @@ namespace CrowdDefense.Entities
             // L3 slow on hit (mage Arcane / cannon Mega shell)
             if (L3SlowOnHit && SlowEffectManager.Instance != null)
                 SlowEffectManager.Instance.ApplySlow(t, L3SlowMul, L3SlowDurMs);
+
+            // L3 Frostmage (mage Utility) : freeze on hit 0.5s (D1-03)
+            if (L3FreezeOnHit && SlowEffectManager.Instance != null)
+                SlowEffectManager.Instance.ApplySlow(t, 0f, L3FreezeDurMs);
+
+            // L3 Archmage (mage DPS) : chain lightning jumps to nearby enemies (D1-03)
+            if (L3ChainLightningJumps > 0)
+                FireChainLightning(t, dmg * 0.6f, L3ChainLightningJumps, L3ChainLightningRange);
         }
 
         // ── Hero Buff Aura ────────────────────────────────────────────────────
@@ -911,6 +914,52 @@ namespace CrowdDefense.Entities
                 }
 
                 _tierPips.Add(pip);
+            }
+        }
+
+        // ── L3 Archmage Chain Lightning ───────────────────────────────────────
+        // Jumps from initial target to up to jumps additional nearby enemies (D1-03)
+        private void FireChainLightning(Enemy origin, float dmg, int jumps, float range)
+        {
+            if (WaveManager.Instance == null || jumps <= 0) return;
+            float rangeSq = range * range;
+            var hit = new HashSet<Enemy> { origin };
+            Enemy? current = origin;
+
+            VfxPool.Instance?.SpawnImpact(origin.transform.position, new Color(0.4f, 0.7f, 1f));
+
+            for (int j = 0; j < jumps; j++)
+            {
+                Enemy? next = null;
+                float bestDist = rangeSq;
+                var enemies = WaveManager.Instance.ActiveEnemies;
+                for (int i = 0; i < enemies.Count; i++)
+                {
+                    var e = enemies[i];
+                    if (e == null || e.IsDead || hit.Contains(e)) continue;
+                    float d = (e.transform.position - current!.transform.position).sqrMagnitude;
+                    if (d < bestDist) { bestDist = d; next = e; }
+                }
+                if (next == null) break;
+                next.TakeDamage(dmg);
+                VfxPool.Instance?.SpawnImpact(next.transform.position, new Color(0.4f, 0.7f, 1f));
+                hit.Add(next);
+                current = next;
+                dmg *= 0.8f; // each jump loses 20% dmg
+            }
+        }
+
+        // ── L3 Tank Bulwark Aura ──────────────────────────────────────────────
+        // Sets _bulwarkProtected on adjacent towers each frame; towers read flag in damage calc (D1-03)
+        private void TickBulwarkAura()
+        {
+            if (PlacementController.Instance == null) return;
+            float rangeSq = L3BulwarkAuraRange * L3BulwarkAuraRange;
+            Vector3 myPos = transform.position;
+            foreach (var t in PlacementController.Instance.PlacedTowers)
+            {
+                if (t == null || t == this) continue;
+                t._bulwarkProtected = (t.transform.position - myPos).sqrMagnitude < rangeSq;
             }
         }
 
