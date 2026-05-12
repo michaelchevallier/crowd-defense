@@ -142,6 +142,9 @@ namespace CrowdDefense.Entities
         private AudioSource?    _enrageAudio;
         private float           _enrageLightBaseIntensity = 4f;
 
+        // ── 60% HP minion burst — 3 fast mobs spawned once (V4 parity bonus) ──
+        private bool             _minionsSummoned     = false;
+
         // ── 30% HP enrage — red pulsing ring + castle dmg +30% ───────────────
         private bool             _enrageActive        = false;
         private LineRenderer?    _enrageRing;
@@ -552,6 +555,7 @@ namespace CrowdDefense.Entities
             StopEnrageVFX();
             StopEnrageRing();
             _enrageActive     = false;
+            _minionsSummoned  = false;
             _invulUntilTime   = 0f;
             _summonHordePending = false;
             _summonHordeTime  = 0f;
@@ -1758,6 +1762,14 @@ namespace CrowdDefense.Entities
                 EventManager.Instance?.Publish(new BossPhaseChangedEvent("enraged", 1));
             }
 
+            // 60% HP minion burst — spawn 3 fast mobs once (V4 parity bonus)
+            if (cfg != null && cfg.IsBoss && !cfg.IsApocalypseBoss && !_minionsSummoned && hp <= maxHp * 0.60f && hp > 0f)
+            {
+                _minionsSummoned = true;
+                AudioController.Instance?.Play3D("boss_roar", transform.position, 0.8f);
+                SpawnMinionBurst();
+            }
+
             // 30% HP enrage — red pulsing ring + castle dmg +30% (V4 parity)
             if (cfg != null && cfg.IsBoss && !_enrageActive && hp <= maxHp * 0.30f && hp > 0f)
             {
@@ -2216,6 +2228,33 @@ namespace CrowdDefense.Entities
             WaveManager.Instance?.RegisterSpawnedEnemy(minion);
 #if UNITY_EDITOR
             Debug.Log($"[Enemy] boss {cfg.Id} summons {cfg.SummonType.Id}");
+#endif
+        }
+
+        // 60% HP trigger — spawns 3 fast minions at random offsets with red portal rings.
+        // Uses cfg.SummonType if set; otherwise spawns the same type with Fast variant applied.
+        private void SpawnMinionBurst()
+        {
+            if (cfg == null || EnemyPool.Instance == null) return;
+            if (PathManager.Instance == null || PathManager.Instance.Paths.Count == 0) return;
+
+            var spawnType = cfg.SummonType ?? cfg;
+            bool applyFast = cfg.SummonType == null;
+
+            for (int i = 0; i < 3; i++)
+            {
+                float angle  = i * 120f * Mathf.Deg2Rad;
+                Vector3 offset = new Vector3(Mathf.Cos(angle) * 1.5f, 0f, Mathf.Sin(angle) * 1.5f);
+                Vector3 spawnPos = transform.position + offset;
+
+                VfxPool.Instance?.SpawnPortal(spawnPos);
+
+                var minion = EnemyPool.Instance.SpawnFromType(spawnType, spawnPos, pathIdx);
+                if (applyFast) minion.ApplyVariant(CrowdDefense.Data.EnemyVariant.Fast);
+                WaveManager.Instance?.RegisterSpawnedEnemy(minion);
+            }
+#if UNITY_EDITOR
+            Debug.Log($"[Enemy] Boss {cfg.Id} 60% HP burst — 3 {spawnType.Id} minions summoned");
 #endif
         }
 
