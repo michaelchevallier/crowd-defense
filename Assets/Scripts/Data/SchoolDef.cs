@@ -14,5 +14,6 @@ namespace CrowdDefense.Data
         [SerializeField] public Sprite? icon;
         [SerializeField] public List<PerkDef> perks = new();
         [SerializeField] public int    unlockCost  = 0;
+        [SerializeField] public string starterTowerType = "";  // e.g., "mage", "frost", "tank"
     }
 }
