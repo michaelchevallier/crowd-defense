@@ -14,7 +14,6 @@ namespace CrowdDefense.Visual
     public class VfxPool : MonoSingleton<VfxPool>
     {
         private static readonly Dictionary<float, WaitForSeconds> _waitCache = new();
-    {
         private const int DefaultCapacity = 24;
         private const int MaxPoolSize = 100;
 
@@ -169,7 +168,7 @@ namespace CrowdDefense.Visual
 
         private IEnumerator FlyCoin(Vector3 origin, float delay)
         {
-            if (delay > 0f) yield return new WaitForSeconds(delay);
+            if (delay > 0f) yield return GetWait(delay);
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             go.name = "CoinTrail_VFX";
@@ -307,12 +306,12 @@ namespace CrowdDefense.Visual
         {
             const float EmitDuration = 0.7f;
             const float TailDuration = 1.0f; // lifetime max des particules
-            yield return new WaitForSeconds(EmitDuration);
+            yield return GetWait(EmitDuration);
 
             // Arrêter l'émission, laisser les particules existantes se consumer
             ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
 
-            yield return new WaitForSeconds(TailDuration);
+            yield return GetWait(TailDuration);
 
             if (ps != null && ps.gameObject != null)
             {

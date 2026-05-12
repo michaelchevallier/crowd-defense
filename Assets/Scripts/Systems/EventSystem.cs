@@ -71,9 +71,41 @@ namespace CrowdDefense.Systems
 
         // Action parser: "coins+N", "castleHP-N", "pendingPerk=tag", "skipNextPerk",
         //                "modifier=<id>" (lookup ModifierRegistry, apply + save in RunContext)
-        internal static void ApplyAction(string action)
+        //                "A|B" (pipe-separator: apply both), "random50:A:B" (50/50 choice)
+        internal static void ApplyAction(string action, int depth = 0)
         {
             if (string.IsNullOrEmpty(action)) return;
+
+            // Recursion guard: prevent infinite loops
+            if (depth > 8)
+            {
+                Debug.LogError("[EventSystem] Action recursion > 8 in: " + action);
+                return;
+            }
+
+            // Pipe-separator: apply each action sequentially
+            if (action.Contains("|"))
+            {
+                var tokens = action.Split('|');
+                foreach (var token in tokens)
+                {
+                    ApplyAction(token.Trim(), depth + 1);
+                }
+                return;
+            }
+
+            // random50: prefix: 50/50 choice between two options
+            if (action.StartsWith("random50:", StringComparison.OrdinalIgnoreCase))
+            {
+                var suffix = action.Substring("random50:".Length);
+                var options = suffix.Split(':');
+                if (options.Length >= 2)
+                {
+                    var chosen = UnityEngine.Random.value < 0.5f ? options[0] : options[1];
+                    ApplyAction(chosen.Trim(), depth + 1);
+                }
+                return;
+            }
 
             var ctx = RunContext.Instance;
             var castle = Castle.Instance;
@@ -100,7 +132,7 @@ namespace CrowdDefense.Systems
                 {
                     ctx?.AddModifier(mod.Id);
                     if (!string.IsNullOrEmpty(mod.ApplyAction))
-                        ApplyAction(mod.ApplyAction);
+                        ApplyAction(mod.ApplyAction, depth + 1);
                 }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
                 else Debug.LogWarning($"[EventSystem] modifier '{modId}' non trouvé dans ModifierRegistry");

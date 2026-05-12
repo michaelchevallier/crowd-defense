@@ -1,5 +1,6 @@
 #nullable enable
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace CrowdDefense.Visual
 {
@@ -9,6 +10,7 @@ namespace CrowdDefense.Visual
     public static class Outline
     {
         private static Material? _outlineMat;
+        private static readonly Dictionary<Color, Material> _outlineMatCache = new();
 
         /// <summary>
         /// Ajoute l'effet outline inverted hull à tout le subtree du root.

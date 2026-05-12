@@ -17,6 +17,7 @@ namespace CrowdDefense.Visual
         float _shakeIntensity;
         float _shakeEndTime;
         float _shakeDuration;
+        Vector3 _currentShakeOffset = Vector3.zero;
 
         // Flash state
         VisualElement? _flashOverlay;
@@ -140,24 +141,25 @@ namespace CrowdDefense.Visual
         {
             if (_cam == null) return;
 
+            // Undo the previous frame's offset to avoid accumulation
+            _cam.transform.position -= _currentShakeOffset;
+
             float now = Time.unscaledTime;
             if (now < _shakeEndTime && _shakeDuration > 0f)
             {
                 float remaining = _shakeEndTime - now;
                 float fade = remaining / _shakeDuration;
                 float k = _shakeIntensity * fade;
-                Vector3 offset = new Vector3(
+                _currentShakeOffset = new Vector3(
                     Random.Range(-1f, 1f) * k,
                     Random.Range(-1f, 1f) * k * 0.4f,
                     Random.Range(-1f, 1f) * k
                 );
-                _cam.transform.position = _baseCamPos + offset;
+                _cam.transform.position += _currentShakeOffset;
             }
             else
             {
-                // Restore base position once shake expires
-                if (_cam.transform.position != _baseCamPos)
-                    _cam.transform.position = _baseCamPos;
+                _currentShakeOffset = Vector3.zero;
                 _shakeEndTime = 0f;
             }
         }
