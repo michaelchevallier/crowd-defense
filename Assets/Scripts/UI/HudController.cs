@@ -2637,25 +2637,51 @@ namespace CrowdDefense.UI
             _wavePreviewPanel.RemoveFromClassList("hidden");
         }
 
+        // Threat tier border colors — evaluated once per card, no per-frame cost
+        private static readonly Color _kThreatLow    = new(0.4f,  0.9f,  0.4f,  1f);  // HP < 50
+        private static readonly Color _kThreatMedium = new(1f,    0.9f,  0.2f,  1f);  // HP 50-150
+        private static readonly Color _kThreatHigh   = new(1f,    0.3f,  0.2f,  1f);  // HP > 150
+        private static readonly Color _kThreatBoss   = new(1f,    0.85f, 0.2f,  1f);  // Boss
+
         private VisualElement BuildChip(EnemyType et, int count)
         {
-            var chip = new VisualElement();
-            chip.AddToClassList("wave-preview-chip");
-            if (et.IsBoss || et.IsMidBoss) chip.AddToClassList("boss-chip");
+            var card = new VisualElement();
+            card.AddToClassList("wave-preview-chip");
+
+            // Border color by threat tier
+            Color border;
+            if (et.IsBoss || et.IsMidBoss)
+                border = _kThreatBoss;
+            else if (et.Hp < 50f)
+                border = _kThreatLow;
+            else if (et.Hp <= 150f)
+                border = _kThreatMedium;
+            else
+                border = _kThreatHigh;
+
+            var borderStyle = new StyleColor(border);
+            card.style.borderTopColor    = borderStyle;
+            card.style.borderBottomColor = borderStyle;
+            card.style.borderLeftColor   = borderStyle;
+            card.style.borderRightColor  = borderStyle;
 
             var icon = new Label { text = et.IconEmoji };
             icon.AddToClassList("wave-preview-chip-icon");
 
+            var nameLabel = new Label { text = et.DisplayName };
+            nameLabel.AddToClassList("wave-preview-chip-name");
+
             var countLabel = new Label { text = $"x{count}" };
             countLabel.AddToClassList("wave-preview-chip-count");
 
-            chip.Add(icon);
-            chip.Add(countLabel);
+            card.Add(icon);
+            card.Add(nameLabel);
+            card.Add(countLabel);
 
-            chip.RegisterCallback<MouseEnterEvent>(evt => ShowEnemyIntelPopup(et, evt.mousePosition));
-            chip.RegisterCallback<MouseLeaveEvent>(_ => HideEnemyIntelPopup());
+            card.RegisterCallback<MouseEnterEvent>(evt => ShowEnemyIntelPopup(et, evt.mousePosition));
+            card.RegisterCallback<MouseLeaveEvent>(_ => HideEnemyIntelPopup());
 
-            return chip;
+            return card;
         }
 
         // ── Enemy intel popup ────────────────────────────────────────────────

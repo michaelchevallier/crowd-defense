@@ -883,32 +883,47 @@
     justify-content: center;
 }
 
+/* Mini-card layout (replaces old chip) */
 .wave-preview-chip {
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
-    background-color: rgba(255, 255, 255, 0.07);
+    justify-content: center;
+    background-color: rgba(20, 26, 38, 0.92);
     border-radius: 8px;
-    padding: 3px 8px;
-    margin: 2px 3px;
+    border-width: 2px;
+    width: 80px;
+    height: 90px;
+    margin: 4px;
+    padding: 4px 4px 6px 4px;
 }
 
 .wave-preview-chip-icon {
-    font-size: 16px;
+    font-size: 28px;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    margin-right: 3px;
+    -unity-text-align: middle-center;
+    margin-bottom: 2px;
+    height: 40px;
+    width: 40px;
+}
+
+.wave-preview-chip-name {
+    color: rgba(200, 215, 240, 0.85);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 74px;
+    margin-bottom: 1px;
 }
 
 .wave-preview-chip-count {
-    color: rgba(220, 230, 255, 0.9);
-    font-size: 13px;
+    color: rgba(255, 210, 60, 0.95);
+    font-size: 14px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-}
-
-.wave-preview-chip.boss-chip {
-    background-color: rgba(180, 40, 40, 0.25);
-    border-color: rgba(220, 80, 80, 0.5);
-    border-width: 1px;
+    -unity-text-align: middle-center;
 }
 
 /* === Debug HUD (top-left, editor / debug=1) === */
