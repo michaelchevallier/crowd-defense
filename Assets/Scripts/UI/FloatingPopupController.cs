@@ -71,6 +71,21 @@ namespace CrowdDefense.UI
         public void SpawnReward(string text, Vector3 worldPos, Color color)
             => SpawnWorld(text, worldPos, color);
 
+        // Screen-space popup — sx/sy in pixels (top-left origin). Used for HUD skip bonus.
+        public void SpawnAtScreenPos(string text, string cssClass, float sx, float sy)
+        {
+            if (_overlay == null) return;
+            var lbl = AcquireLabel(cssClass);
+            lbl.text = text;
+            lbl.style.left      = new StyleLength(sx);
+            lbl.style.top       = new StyleLength(sy);
+            lbl.style.opacity   = 1f;
+            lbl.style.translate = new Translate(0, 0);
+            _overlay.Add(lbl);
+            _active.Add(lbl);
+            StartCoroutine(AnimatePopup(lbl));
+        }
+
         // ── World-space 3D implementation ─────────────────────────────────────
 
         private void SpawnWorld(string text, Vector3 worldPos, Color color)

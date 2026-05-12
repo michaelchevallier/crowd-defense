@@ -606,6 +606,18 @@ namespace CrowdDefense.UI
                 if (waveLaunchBtn != null) StartCoroutine(FlashButtonGreen(waveLaunchBtn, 0.35f));
 
                 var cfg = BalanceConfig.Get();
+
+                // Floating popup near gold counter
+                if (FloatingPopupController.Instance != null && goldValue != null)
+                {
+                    var gvPanel = goldValue.worldBound;
+                    float sx = gvPanel.center.x;
+                    float sy = gvPanel.center.y - 20f;
+                    FloatingPopupController.Instance.SpawnAtScreenPos(
+                        $"+{cfg.SkipBonusGold}g Skip Bonus!", "popup-coin", sx, sy);
+                }
+                AudioController.Instance?.Play("gold_earn", 0.9f);
+
                 Toast.Show(
                     L.Get("hud.skip_toast_title"),
                     L.Get("hud.skip_toast_body"),
