@@ -5,8 +5,8 @@ using UnityEngine.UI;
 
 namespace CrowdDefense.UI
 {
-    // 4-step intro panel shown once before L1 starts for first-time players.
-    // Steps: Welcome → Place tower → Defend castle → Earn gold.
+    // 5-step intro panel shown once before L1 starts for first-time players.
+    // Steps: Welcome → Place tower → Defend castle → Earn gold → Perks.
     // Gated on PlayerPrefs "cd.tutorial_done" == 0. Next/Skip buttons. Self-destructs.
     public class TutorialIntroPanel : MonoBehaviour
     {
@@ -20,6 +20,7 @@ namespace CrowdDefense.UI
             "Place tes tours",
             "Protege le chateau",
             "Gagne de l'or",
+            "Perks",
         };
 
         private static readonly string[] Bodies =
@@ -28,6 +29,7 @@ namespace CrowdDefense.UI
             "Clique sur une cellule vide pour placer une tour.\nLes tours attaquent automatiquement les ennemis.",
             "Les ennemis avancent vers ton chateau.\nSi le chateau tombe, la partie est perdue.",
             "Tue des ennemis et lance les vagues tot\npour gagner des pieces supplementaires.",
+            "When your hero levels up, choose 1 of 3 perks to enhance your build.",
         };
 
         private int          _step;
