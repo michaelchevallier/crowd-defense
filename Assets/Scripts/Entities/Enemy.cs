@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
