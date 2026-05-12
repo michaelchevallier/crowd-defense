@@ -51,8 +51,12 @@ namespace CrowdDefense.UI
         private Text?          _trophyText;
         private RectTransform? _trophyRect;
 
-        // Stars rating (top of panel, big)
+        // Stars rating (top of panel, big) — defeat display only
         private Text? _starsText;
+
+        // Individual star slots for victory scale-in animation
+        private readonly RectTransform?[] _starSlots = new RectTransform?[3];
+        private int _pendingStars;
 
         // Share buttons (victory only)
         private GameObject? _shareRow;
@@ -158,16 +162,26 @@ namespace CrowdDefense.UI
             }
 
             // Big stars display — top-right of panel
-            if (_starsText != null)
+            int starsEarned = r?.StarsEarned ?? 0;
+            if (isVictory)
             {
-                int stars = r?.StarsEarned ?? 0;
-                if (isVictory)
+                // Hide the flat text; individual slots will animate in
+                if (_starsText != null) _starsText.gameObject.SetActive(false);
+                _pendingStars = starsEarned;
+                // Reset all slots to scale 0, hidden
+                foreach (var slot in _starSlots)
                 {
-                    _starsText.text  = new string('*', stars) + new string('-', 3 - stars);
-                    _starsText.color = new Color(1.00f, 0.84f, 0.00f, 1.00f);
-                    _starsText.gameObject.SetActive(true);
+                    if (slot == null) continue;
+                    slot.localScale = Vector3.zero;
+                    slot.gameObject.SetActive(true);
                 }
-                else
+            }
+            else
+            {
+                _pendingStars = 0;
+                foreach (var slot in _starSlots)
+                    if (slot != null) slot.gameObject.SetActive(false);
+                if (_starsText != null)
                 {
                     _starsText.text  = "-  -  -";
                     _starsText.color = new Color(0.55f, 0.55f, 0.55f, 1.00f);
@@ -236,6 +250,8 @@ namespace CrowdDefense.UI
             StartCoroutine(FadeInPanel());
             if (_isVictory && _trophyRect != null)
                 StartCoroutine(AnimateTrophy());
+            if (_isVictory)
+                StartCoroutine(AnimateStars(_pendingStars));
         }
 
         private IEnumerator FadeInPanel()
@@ -379,6 +395,97 @@ namespace CrowdDefense.UI
                 _trophyText.color = Color.Lerp(baseColor, dimColor, phase);
                 yield return null;
             }
+        }
+
+        // Stars: each earned star scales 0→1 over 0.3s with 0.15s stagger, then confetti + audio
+        private IEnumerator AnimateStars(int count)
+        {
+            // Short initial delay to let the panel fade-in start
+            float waited = 0f;
+            while (waited < 0.4f) { waited += Time.unscaledDeltaTime; yield return null; }
+
+            for (int i = 0; i < _starSlots.Length; i++)
+            {
+                var slot = _starSlots[i];
+                if (slot == null) continue;
+
+                bool earned = i < count;
+                // Unearned stars are visible but dim and not scaled-in
+                if (!earned)
+                {
+                    slot.localScale = Vector3.one;
+                    var txt = slot.GetComponentInChildren<Text>();
+                    if (txt != null) txt.color = new Color(0.35f, 0.30f, 0.10f, 1f);
+                    continue;
+                }
+
+                // Scale 0 → 1.2 → 1 over 0.3s (punch)
+                const float dur = 0.3f;
+                float e = 0f;
+                while (e < dur)
+                {
+                    float t = e / dur;
+                    float scale = t < 0.75f
+                        ? Mathf.Lerp(0f, 1.2f, t / 0.75f)
+                        : Mathf.Lerp(1.2f, 1.0f, (t - 0.75f) / 0.25f);
+                    slot.localScale = new Vector3(scale, scale, 1f);
+                    e += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+                slot.localScale = Vector3.one;
+
+                // Audio ping (pitch rises with each star: 1.0, 1.2, 1.45)
+                float[] pitches = { 1.0f, 1.2f, 1.45f };
+                if (AudioController.Instance != null)
+                    AudioController.Instance.PlayPitched("star_ping", 0.8f, pitches[i]);
+
+                // Confetti micro-burst at star UI position
+                SpawnStarConfetti(slot);
+
+                // Stagger between stars
+                float stagger = 0f;
+                while (stagger < 0.15f) { stagger += Time.unscaledDeltaTime; yield return null; }
+            }
+        }
+
+        private void SpawnStarConfetti(RectTransform slot)
+        {
+            if (_canvas == null) return;
+            // Convert anchored UI position to world space
+            Vector3 worldPos;
+            var cam = _canvas.renderMode == RenderMode.ScreenSpaceOverlay
+                ? null
+                : _canvas.worldCamera;
+            RectTransformUtility.ScreenPointToWorldPointInRectangle(
+                slot, slot.position, cam, out worldPos);
+
+            var go = new GameObject("StarConfetti");
+            go.transform.position = worldPos;
+            var ps = go.AddComponent<ParticleSystem>();
+
+            var main = ps.main;
+            main.duration          = 0.5f;
+            main.loop              = false;
+            main.startLifetime     = new ParticleSystem.MinMaxCurve(0.4f, 0.8f);
+            main.startSpeed        = new ParticleSystem.MinMaxCurve(1.5f, 3.5f);
+            main.startSize         = new ParticleSystem.MinMaxCurve(0.04f, 0.10f);
+            main.startColor        = new ParticleSystem.MinMaxGradient(
+                new Color(1.00f, 0.84f, 0.00f, 1f),
+                new Color(1.00f, 0.55f, 0.10f, 1f));
+            main.simulationSpace   = ParticleSystemSimulationSpace.World;
+            main.gravityModifier   = 0.4f;
+            main.playOnAwake       = false;
+
+            var emission = ps.emission;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 20) });
+
+            var shape = ps.shape;
+            shape.enabled   = true;
+            shape.shapeType = ParticleSystemShapeType.Circle;
+            shape.radius    = 0.05f;
+
+            ps.Play();
+            Destroy(go, 1.5f);
         }
 
         // ── Share handlers ──────────────────────────────────────────────────────
@@ -801,12 +908,26 @@ namespace CrowdDefense.UI
                 anchorMax: new Vector2(1f, 1.00f),
                 fontSize: 48, color: VictoryTitleColor);
 
-            // Big stars rating — below title, full width, prominent
+            // Defeat-only flat stars text (e.g. "-  -  -")
             _starsText = CreateLabel(panelGo.transform, "StarsRating",
                 anchorMin: new Vector2(0.05f, 0.83f),
                 anchorMax: new Vector2(0.95f, 0.91f),
-                fontSize: 42, color: new Color(1.00f, 0.84f, 0.00f, 1.00f));
+                fontSize: 42, color: new Color(0.55f, 0.55f, 0.55f, 1.00f));
             _starsText.gameObject.SetActive(false);
+
+            // Individual victory star slots (3 positions), scaled in one by one on win
+            float[] starXMins = { 0.18f, 0.43f, 0.68f };
+            float[] starXMaxs = { 0.38f, 0.63f, 0.88f };
+            for (int i = 0; i < 3; i++)
+            {
+                var lbl = CreateLabel(panelGo.transform, $"StarSlot{i}",
+                    anchorMin: new Vector2(starXMins[i], 0.83f),
+                    anchorMax: new Vector2(starXMaxs[i], 0.91f),
+                    fontSize: 42, color: new Color(1.00f, 0.84f, 0.00f, 1.00f));
+                lbl.text = "*";
+                _starSlots[i] = lbl.GetComponent<RectTransform>();
+                lbl.gameObject.SetActive(false);
+            }
 
             // Subtitle (castle HP on defeat, win message on victory)
             _subtitleText = CreateLabel(panelGo.transform, "SubtitleLabel",
