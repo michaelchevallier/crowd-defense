@@ -7,9 +7,8 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     [RequireComponent(typeof(UIDocument))]
-    public class LeaderboardController : MonoBehaviour
+    public class LeaderboardController : UIControllerBase
     {
-        private VisualElement? _root;
         private VisualElement? _panelRoot;
         private Label? _titleLabel;
         private VisualElement? _listContainer;
@@ -18,23 +17,16 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null)
-            {
-                Debug.LogError("[LeaderboardController] UIDocument not found");
-                return;
-            }
-            _root = uiDoc.rootVisualElement;
-            if (_root == null)
-            {
-                Debug.LogError("[LeaderboardController] rootVisualElement is null — UXML failed to load");
-                return;
-            }
-            _panelRoot = _root.Q<VisualElement>("leaderboard-root");
-            _titleLabel = _root.Q<Label>("leaderboard-title");
-            _listContainer = _root.Q<VisualElement>("leaderboard-list");
-            _emptyLabel = _root.Q<Label>("leaderboard-empty");
-            _closeBtn = _root.Q<Button>("leaderboard-close-btn");
+            ResolveUI();
+        }
+
+        protected override void OnUIReady()
+        {
+            _panelRoot = Root?.Q<VisualElement>("leaderboard-root");
+            _titleLabel = Root?.Q<Label>("leaderboard-title");
+            _listContainer = Root?.Q<VisualElement>("leaderboard-list");
+            _emptyLabel = Root?.Q<Label>("leaderboard-empty");
+            _closeBtn = Root?.Q<Button>("leaderboard-close-btn");
 
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Hide());
 

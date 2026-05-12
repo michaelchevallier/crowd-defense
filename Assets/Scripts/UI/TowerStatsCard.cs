@@ -10,7 +10,7 @@ namespace CrowdDefense.UI
     // Affiche une stats card (Damage / Range / Fire-rate / DPS) au survol d'une tour placée.
     // Suit le curseur. Fade-in opacity 0→1 en 0.2s via USS transition.
     // Piloté par TowerHoverController.HoveredTower — pas de raycasting interne.
-    public class TowerStatsCard : MonoBehaviour
+    public class TowerStatsCard : UIControllerBase
     {
         private const float OffsetX = 16f;
         private const float OffsetY = 16f;
@@ -24,12 +24,21 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
+            if (ResolveUI()) return;
+            var doc = FindFirstObjectByType<UIDocument>();
             if (doc == null) return;
             var root = doc.rootVisualElement;
             _card   = root.Q<VisualElement>("tower-stats-card");
             _header = root.Q<Label>("stats-card-header");
             _body   = root.Q<Label>("stats-card-body");
+            HideCard();
+        }
+
+        protected override void OnUIReady()
+        {
+            _card   = Root?.Q<VisualElement>("tower-stats-card");
+            _header = Root?.Q<Label>("stats-card-header");
+            _body   = Root?.Q<Label>("stats-card-body");
             HideCard();
         }
 

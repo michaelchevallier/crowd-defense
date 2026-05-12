@@ -9,11 +9,10 @@ namespace CrowdDefense.UI
     // Each column shows talent name, current level/5, % bonus, and an Upgrade button.
     // The panel is shown/hidden by MenuController via Show()/Hide().
     [RequireComponent(typeof(UIDocument))]
-    public class TalentPanelController : MonoBehaviour
+    public class TalentPanelController : UIControllerBase
     {
         public static TalentPanelController? Instance { get; private set; }
 
-        private VisualElement? _root;
         private Label?  _lblPoints;
 
         // Per-column state
@@ -39,30 +38,22 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null)
-            {
-                Debug.LogError("[TalentPanelController] UIDocument not found");
-                return;
-            }
-            _root = uiDoc.rootVisualElement;
-            if (_root == null)
-            {
-                Debug.LogError("[TalentPanelController] rootVisualElement is null — UXML failed to load");
-                return;
-            }
+            ResolveUI();
+        }
 
-            _lblPoints   = _root.Q<Label>("lbl-talent-points");
-            _lblTowerLvl = _root.Q<Label>("lbl-tower-lvl");
-            _lblTowerPct = _root.Q<Label>("lbl-tower-pct");
-            _btnTower    = _root.Q<Button>("btn-upgrade-tower");
-            _lblHeroLvl  = _root.Q<Label>("lbl-hero-lvl");
-            _lblHeroPct  = _root.Q<Label>("lbl-hero-pct");
-            _btnHero     = _root.Q<Button>("btn-upgrade-hero");
-            _lblGoldLvl  = _root.Q<Label>("lbl-gold-lvl");
-            _lblGoldPct  = _root.Q<Label>("lbl-gold-pct");
-            _btnGold     = _root.Q<Button>("btn-upgrade-gold");
-            _btnClose    = _root.Q<Button>("btn-talent-close");
+        protected override void OnUIReady()
+        {
+            _lblPoints   = Root?.Q<Label>("lbl-talent-points");
+            _lblTowerLvl = Root?.Q<Label>("lbl-tower-lvl");
+            _lblTowerPct = Root?.Q<Label>("lbl-tower-pct");
+            _btnTower    = Root?.Q<Button>("btn-upgrade-tower");
+            _lblHeroLvl  = Root?.Q<Label>("lbl-hero-lvl");
+            _lblHeroPct  = Root?.Q<Label>("lbl-hero-pct");
+            _btnHero     = Root?.Q<Button>("btn-upgrade-hero");
+            _lblGoldLvl  = Root?.Q<Label>("lbl-gold-lvl");
+            _lblGoldPct  = Root?.Q<Label>("lbl-gold-pct");
+            _btnGold     = Root?.Q<Button>("btn-upgrade-gold");
+            _btnClose    = Root?.Q<Button>("btn-talent-close");
 
             if (_btnTower != null) _btnTower.clicked += () => OnUpgrade(TalentSystem.Tower);
             if (_btnHero  != null) _btnHero.clicked  += () => OnUpgrade(TalentSystem.Hero);

@@ -8,20 +8,18 @@ using static CrowdDefense.UI.Toast;
 namespace CrowdDefense.UI
 {
     [RequireComponent(typeof(UIDocument))]
-    public class SynergyHudController : MonoBehaviour
+    public class SynergyHudController : UIControllerBase
     {
         private VisualElement? _container;
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
-
-            var root = uiDoc.rootVisualElement;
-
-            if (root == null) return;
-            _container = root.Q<VisualElement>("synergy-badges");
+        protected override void OnUIReady()
+        {
+            _container = Root?.Q<VisualElement>("synergy-badges");
 
             if (Synergies.Instance != null)
             {

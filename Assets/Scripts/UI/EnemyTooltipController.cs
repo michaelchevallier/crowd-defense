@@ -9,7 +9,7 @@ namespace CrowdDefense.UI
     // Affiche un tooltip compact (hover enemy) dans le panneau enemy-tooltip du HUD.
     // Pilote par EnemyHoverController via Show/Hide.
     // Partage le UIDocument de HudController (sibling component, meme GameObject).
-    public class EnemyTooltipController : MonoBehaviour
+    public class EnemyTooltipController : UIControllerBase
     {
         public static EnemyTooltipController? Instance { get; private set; }
 
@@ -38,14 +38,25 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
-            if (doc == null) return;
-            var r = doc.rootVisualElement;
-            _root        = r.Q<VisualElement>("enemy-tooltip");
-            _labelName   = r.Q<Label>("enemy-tooltip-name");
-            _labelStats  = r.Q<Label>("enemy-tooltip-stats");
-            _labelSpecial = r.Q<Label>("enemy-tooltip-special");
+            if (!ResolveUI())
+            {
+                var doc = FindFirstObjectByType<UIDocument>();
+                if (doc == null) return;
+                var r = doc.rootVisualElement;
+                _root        = r.Q<VisualElement>("enemy-tooltip");
+                _labelName   = r.Q<Label>("enemy-tooltip-name");
+                _labelStats  = r.Q<Label>("enemy-tooltip-stats");
+                _labelSpecial = r.Q<Label>("enemy-tooltip-special");
+            }
             Hide();
+        }
+
+        protected override void OnUIReady()
+        {
+            _root        = Root?.Q<VisualElement>("enemy-tooltip");
+            _labelName   = Root?.Q<Label>("enemy-tooltip-name");
+            _labelStats  = Root?.Q<Label>("enemy-tooltip-stats");
+            _labelSpecial = Root?.Q<Label>("enemy-tooltip-special");
         }
 
         private void Update()

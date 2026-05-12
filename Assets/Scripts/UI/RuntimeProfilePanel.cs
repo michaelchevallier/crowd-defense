@@ -8,7 +8,7 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     [RequireComponent(typeof(UIDocument))]
-    public class RuntimeProfilePanel : MonoBehaviour
+    public class RuntimeProfilePanel : UIControllerBase
     {
         private Label? _label;
         private Label? _spawnLabel;
@@ -20,15 +20,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
-
-            var root = uiDoc.rootVisualElement;
-
-            if (root == null) return;
-            _label = root.Q<Label>("profile-overlay");
-            _spawnLabel = root.Q<Label>("spawn-overlay");
+        protected override void OnUIReady()
+        {
+            _label = Root?.Q<Label>("profile-overlay");
+            _spawnLabel = Root?.Q<Label>("spawn-overlay");
 
 #if UNITY_WEBGL && !UNITY_EDITOR
             var url = Application.absoluteURL;

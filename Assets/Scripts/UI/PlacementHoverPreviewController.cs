@@ -9,7 +9,7 @@ namespace CrowdDefense.UI
 {
     /// Shows a stats card near the cursor when hovering a valid build cell
     /// while a tower type is selected. Hides when no valid cell is hovered.
-    public class PlacementHoverPreviewController : MonoBehaviour
+    public class PlacementHoverPreviewController : UIControllerBase
     {
         private const float LerpSpeed = 18f; // approx 0.2s settle at 60fps
 
@@ -23,13 +23,14 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var doc = GetComponent<UIDocument>();
-            if (doc == null) return;
+            ResolveUI();
+        }
 
-            var root = doc.rootVisualElement;
-            _card  = root.Q<VisualElement>("tower-hover-card");
-            _name  = root.Q<Label>("hover-card-name");
-            _stats = root.Q<Label>("hover-card-stats");
+        protected override void OnUIReady()
+        {
+            _card  = Root?.Q<VisualElement>("tower-hover-card");
+            _name  = Root?.Q<Label>("hover-card-name");
+            _stats = Root?.Q<Label>("hover-card-stats");
 
             HideCard();
 

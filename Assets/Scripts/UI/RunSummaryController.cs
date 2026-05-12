@@ -11,7 +11,7 @@ namespace CrowdDefense.UI
     // Subscribes to LevelRunner.OnSummaryReady and populates the run-summary-panel
     // embedded in HUD.uxml with per-run stats + star rating.
     [RequireComponent(typeof(UIDocument))]
-    public sealed class RunSummaryController : MonoBehaviour
+    public sealed class RunSummaryController : UIControllerBase
     {
         private VisualElement? _panel;
         private Label?         _title;
@@ -28,26 +28,23 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
-
-            var root = uiDoc.rootVisualElement;
-
-            if (root == null) return;
-
-            _panel    = root.Q<VisualElement>("run-summary-panel");
-            _title    = root.Q<Label>("rs-title");
-            _stars    = root.Q<Label>("rs-stars");
-            _score    = root.Q<Label>("rs-score");
-            _waves    = root.Q<Label>("rs-waves");
-            _kills    = root.Q<Label>("rs-kills");
-            _gold     = root.Q<Label>("rs-gold");
-            _towers   = root.Q<Label>("rs-towers");
-            _perks    = root.Q<Label>("rs-perks");
-            _time     = root.Q<Label>("rs-time");
-            _btnMenu   = root.Q<Button>("rs-btn-menu");
-            _btnReplay = root.Q<Button>("rs-btn-replay");
+        protected override void OnUIReady()
+        {
+            _panel    = Root?.Q<VisualElement>("run-summary-panel");
+            _title    = Root?.Q<Label>("rs-title");
+            _stars    = Root?.Q<Label>("rs-stars");
+            _score    = Root?.Q<Label>("rs-score");
+            _waves    = Root?.Q<Label>("rs-waves");
+            _kills    = Root?.Q<Label>("rs-kills");
+            _gold     = Root?.Q<Label>("rs-gold");
+            _towers   = Root?.Q<Label>("rs-towers");
+            _perks    = Root?.Q<Label>("rs-perks");
+            _time     = Root?.Q<Label>("rs-time");
+            _btnMenu   = Root?.Q<Button>("rs-btn-menu");
+            _btnReplay = Root?.Q<Button>("rs-btn-replay");
 
             if (_btnMenu   != null) _btnMenu.clicked   += OnContinue;
             if (_btnReplay != null) _btnReplay.clicked += OnReplay;
