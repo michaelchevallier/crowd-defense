@@ -6,10 +6,11 @@
 ## Current
 
 - **Sprint** : R6-02 (DELETE pass)
-- **Mode** : supervisé Mike batch (par défaut, Mike valide chaque batch 3-4 tickets)
-- **Started** : 2026-05-12 14h20
-- **Time cap** : pas de cap explicite (~4-6h estimé pour 24 tickets)
-- **Status** : sealed, awaiting Mike GO dispatch
+- **Mode** : AUTONOME (Mike GO 14h22)
+- **Started** : 2026-05-12 14h22
+- **Time cap** : 2h00 (deadline 16h22)
+- **Status** : ACTIVE, batch 1 (worktree E systems) dispatched
+- **ScheduleWakeup interval** : 1800s (charter §4)
 - **Backlog** : `.claude/specs/R6-EXEC/_backlog.md` (24 tickets)
 - **Coordination** : `.claude/coordination/sprint-R6-02.md`
 
