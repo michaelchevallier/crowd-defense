@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Data;
@@ -24,6 +25,7 @@ namespace CrowdDefense.UI
         private readonly List<TowerType> menuTowers = new();
         private readonly List<Button> menuButtons = new();
 
+        private VisualElement? _tooltip;
         private bool _isOpen;
 
         private void Start()
@@ -43,6 +45,7 @@ namespace CrowdDefense.UI
             }
 
             BuildMenuContent();
+            BuildTooltip(root);
 
             // Close on click anywhere outside the menu
             root.RegisterCallback<PointerDownEvent>(OnRootPointerDown, TrickleDown.TrickleDown);
@@ -103,6 +106,91 @@ namespace CrowdDefense.UI
             Show();
         }
 
+        private void BuildTooltip(VisualElement root)
+        {
+            _tooltip = new VisualElement();
+            _tooltip.AddToClassList("tower-stat-tooltip");
+            _tooltip.AddToClassList("hidden");
+            _tooltip.pickingMode = PickingMode.Ignore;
+            root.Add(_tooltip);
+        }
+
+        private void ShowTooltipFor(TowerType type, VisualElement anchor)
+        {
+            if (_tooltip == null) return;
+
+            _tooltip.Clear();
+
+            var header = new Label($"{type.IconEmoji}  {type.DisplayName}  T{type.UnlockWorld}");
+            header.AddToClassList("tower-stat-header");
+            _tooltip.Add(header);
+
+            float dps = type.FireRateMs > 0 ? type.Damage / (type.FireRateMs / 1000f) : 0f;
+
+            AddStatRow("DMG",       $"{type.Damage:0.#}");
+            AddStatRow("RANGE",     $"{type.Range:0.#}");
+            AddStatRow("FIRE RATE", $"{type.FireRateMs} ms");
+            AddStatRow("SPEED",     $"{type.ProjectileSpeed:0.#}");
+            AddStatRow("DPS",       $"{dps:0.##}");
+            if (type.Aoe > 0f)
+                AddStatRow("AOE",   $"{type.Aoe:0.#}");
+            if (type.Pierce > 0)
+                AddStatRow("PIERCE",$"{type.Pierce}");
+
+            var syns = type.Synergies;
+            if (syns != null && syns.Count > 0)
+            {
+                var sb = new StringBuilder();
+                foreach (var s in syns)
+                {
+                    if (sb.Length > 0) sb.Append(", ");
+                    if (!string.IsNullOrEmpty(s.from))
+                        sb.Append(Capitalize(s.from));
+                    else
+                        sb.Append(s.type.ToString());
+                }
+                AddStatRow("SYN", sb.ToString());
+            }
+
+            AddStatRow("TYPE", type.DamageType.ToString());
+
+            _tooltip.RemoveFromClassList("hidden");
+
+            // Position tooltip above / beside the anchor button
+            anchor.schedule.Execute(() =>
+            {
+                if (_tooltip == null) return;
+                var anchorRect = anchor.worldBound;
+                var panel = _tooltip.panel;
+                if (panel == null) return;
+                float panelH = panel.visualTree.layout.height;
+                float panelW = panel.visualTree.layout.width;
+                float tipW   = _tooltip.layout.width;
+                float tipH   = _tooltip.layout.height;
+
+                float left = Mathf.Clamp(anchorRect.x, 4f, panelW - tipW - 4f);
+                float top  = Mathf.Clamp(anchorRect.y - tipH - 8f, 4f, panelH - tipH - 4f);
+                _tooltip.style.left = left;
+                _tooltip.style.top  = top;
+            });
+        }
+
+        private void AddStatRow(string label, string value)
+        {
+            if (_tooltip == null) return;
+            var row = new VisualElement();
+            row.AddToClassList("tower-stat-row");
+            var lbl = new Label(label);
+            lbl.AddToClassList("tower-stat-label");
+            var val = new Label(value);
+            val.AddToClassList("tower-stat-value");
+            row.Add(lbl);
+            row.Add(val);
+            _tooltip.Add(row);
+        }
+
+        private void HideTooltip() => _tooltip?.AddToClassList("hidden");
+
         private void BuildMenuContent()
         {
             if (menuRoot == null) return;
@@ -154,6 +242,13 @@ namespace CrowdDefense.UI
                 int capturedIdx = menuTowers.Count;
                 btn.RegisterCallback<ClickEvent>(_ => OnButtonClick(capturedIdx));
 
+                if (type != null)
+                {
+                    var capturedType = type;
+                    btn.RegisterCallback<MouseEnterEvent>(_ => ShowTooltipFor(capturedType, btn));
+                    btn.RegisterCallback<MouseLeaveEvent>(_ => HideTooltip());
+                }
+
                 row.Add(btn);
                 menuTowers.Add(type!);
                 menuButtons.Add(btn);
@@ -202,6 +297,7 @@ namespace CrowdDefense.UI
         private void Hide()
         {
             menuRoot?.AddToClassList("hidden");
+            HideTooltip();
             _isOpen = false;
         }
 
