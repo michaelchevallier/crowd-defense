@@ -99,7 +99,7 @@ namespace CrowdDefense.Editor
                     char ch = grid[r, c];
                     if (ch == 'P') portals.Add((c, r));
                     else if (ch == 'C') castles.Add((c, r));
-                    else if (ch == '0') buildSlots++;
+                    else if (ch == '0' || ch == 'B') buildSlots++;
                 }
             }
 
@@ -167,10 +167,10 @@ namespace CrowdDefense.Editor
                     errors.Add($"castle at ({col},{row}) has no contiguous path from any portal");
             }
 
-            // Build slots warning (spec: ≥ N depending on level, default 4)
+            // Build slots constraint (spec: ≥ max(4, world*2))
             int minSlots = Mathf.Max(4, level.World * 2);
             if (buildSlots < minSlots)
-                errors.Add($"WARN: only {buildSlots} build slots (expected ≥{minSlots} for world {level.World})");
+                errors.Add($"insufficient build slots: {buildSlots} < {minSlots}");
 
             // Decor density warning
             var decorSet = new HashSet<char> { 'D', 'T', 'R', 'B' };
