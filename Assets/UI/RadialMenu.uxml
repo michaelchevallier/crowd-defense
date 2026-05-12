@@ -37,7 +37,7 @@
         <!-- Tooltip preview upgrade stats (visible au survol des boutons upgrade) -->
         <ui:Label text="" name="upgrade-preview" class="upgrade-preview hidden" />
 
-        <!-- Ligne secondaire : Range ring toggle + Sell -->
+        <!-- Ligne secondaire : Range ring toggle + Sell + Cancel -->
         <ui:VisualElement class="radial-action-row">
             <ui:Button name="btn-range" class="radial-btn-range">
                 <ui:Label text="Range" name="btn-range-label" class="radial-btn-action-label" />
@@ -46,6 +46,15 @@
             <ui:Button name="btn-sell" class="radial-btn-sell">
                 <ui:Label text="" name="btn-sell-label" class="radial-btn-sell-label" />
             </ui:Button>
+
+            <ui:Button name="btn-cancel" class="radial-btn-cancel">
+                <ui:Label text="Annuler" name="btn-cancel-label" class="radial-btn-action-label" />
+            </ui:Button>
+        </ui:VisualElement>
+
+        <!-- Tooltip flottant (populate + show/hide via RadialMenuController) -->
+        <ui:VisualElement name="radial-tooltip" class="radial-tooltip hidden">
+            <ui:Label text="" name="radial-tooltip-text" class="radial-tooltip-text" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

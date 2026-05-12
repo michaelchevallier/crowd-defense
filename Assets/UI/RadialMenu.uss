@@ -117,12 +117,19 @@
     -unity-text-align: middle-center;
 }
 
-/* Bouton upgrade L2 / L3 non-signature - pleine largeur */
+/* Pulse animation for upgrade button border glow */
+@keyframes radial-upgrade-pulse {
+    0%   { border-color: rgba(255, 217, 51, 0.6); }
+    50%  { border-color: rgba(255, 217, 51, 1.0); }
+    100% { border-color: rgba(255, 217, 51, 0.6); }
+}
+
+/* Bouton upgrade L2 / L3 non-signature - pleine largeur - gold */
 .radial-btn-upgrade {
     width: 100%;
     height: 52px;
-    background-color: rgba(30, 90, 30, 0.85);
-    border-color: rgb(80, 200, 80);
+    background-color: rgba(180, 140, 20, 0.85);
+    border-color: rgba(255, 217, 51, 0.6);
     border-width: 2px;
     border-radius: 10px;
     padding: 6px 12px;
@@ -131,23 +138,35 @@
     justify-content: center;
     flex-direction: row;
     margin-bottom: 8px;
+    transform-origin: center;
+    scale: 1 1;
+    transition-property: scale, background-color, border-color;
+    transition-duration: 0.1s, 0.1s, 0.1s;
+    transition-timing-function: ease-out, ease-out, ease-out;
+    animation-name: radial-upgrade-pulse;
+    animation-duration: 0.667s;
+    animation-iteration-count: infinite;
+    animation-timing-function: ease-in-out;
 }
 
 .radial-btn-upgrade:hover {
-    background-color: rgba(40, 120, 40, 0.95);
+    background-color: rgba(220, 180, 30, 0.95);
+    border-color: rgba(255, 235, 120, 1.0);
+    scale: 1.1 1.1;
 }
 
 .radial-btn-upgrade:active {
-    background-color: rgba(20, 70, 20, 0.95);
+    background-color: rgba(140, 100, 10, 0.95);
+    scale: 0.97 0.97;
 }
 
 .radial-btn-upgrade:disabled {
-    background-color: rgba(20, 40, 20, 0.5);
-    border-color: rgba(50, 100, 50, 0.4);
+    background-color: rgba(80, 65, 15, 0.5);
+    border-color: rgba(130, 110, 40, 0.4);
 }
 
 .radial-btn-upgrade-label {
-    color: white;
+    color: rgb(255, 245, 200);
     font-size: 15px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
@@ -203,29 +222,109 @@
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
 
-/* Bouton vendre */
+/* Bouton vendre - rouge */
 .radial-btn-sell {
     flex-grow: 1;
     height: 36px;
-    background-color: rgba(60, 60, 60, 0.7);
-    border-color: rgba(140, 140, 140, 0.4);
-    border-width: 1px;
+    background-color: rgba(180, 50, 50, 0.85);
+    border-color: rgba(255, 100, 100, 0.7);
+    border-width: 2px;
     border-radius: 8px;
     padding: 0 12px;
     cursor: link;
     align-items: center;
     justify-content: center;
     margin-left: 6px;
+    transform-origin: center;
+    scale: 1 1;
+    transition-property: scale, background-color, border-color;
+    transition-duration: 0.1s, 0.1s, 0.1s;
+    transition-timing-function: ease-out, ease-out, ease-out;
 }
 
 .radial-btn-sell:hover {
-    background-color: rgba(80, 80, 80, 0.85);
+    background-color: rgba(230, 70, 70, 0.95);
+    border-color: rgba(255, 160, 160, 1.0);
+    scale: 1.1 1.1;
+}
+
+.radial-btn-sell:active {
+    background-color: rgba(140, 30, 30, 0.95);
+    scale: 0.97 0.97;
 }
 
 .radial-btn-sell-label {
-    color: rgba(210, 210, 210, 0.85);
+    color: rgba(255, 220, 220, 0.95);
     font-size: 13px;
+    -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+/* Bouton annuler - gris */
+.radial-btn-cancel {
+    width: 70px;
+    height: 36px;
+    background-color: rgba(100, 100, 100, 0.75);
+    border-color: rgba(180, 180, 180, 0.55);
+    border-width: 2px;
+    border-radius: 8px;
+    padding: 0 8px;
+    cursor: link;
+    align-items: center;
+    justify-content: center;
+    margin-left: 6px;
+    transform-origin: center;
+    scale: 1 1;
+    transition-property: scale, background-color, border-color;
+    transition-duration: 0.1s, 0.1s, 0.1s;
+    transition-timing-function: ease-out, ease-out, ease-out;
+}
+
+.radial-btn-cancel:hover {
+    background-color: rgba(140, 140, 140, 0.9);
+    border-color: rgba(230, 230, 230, 1.0);
+    scale: 1.1 1.1;
+}
+
+.radial-btn-cancel:active {
+    background-color: rgba(70, 70, 70, 0.9);
+    scale: 0.97 0.97;
+}
+
+/* Tooltip flottant */
+.radial-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    translate: -50% -6px;
+    background-color: rgba(10, 14, 20, 0.96);
+    border-color: rgba(200, 210, 255, 0.5);
+    border-width: 1px;
+    border-radius: 6px;
+    padding: 5px 10px;
+    max-width: 280px;
+    opacity: 1;
+    transition-property: opacity;
+    transition-duration: 0.1s;
+    transition-timing-function: ease-out;
+}
+
+.radial-tooltip.hidden {
+    opacity: 0;
+    display: none;
+}
+
+.radial-tooltip--fade-out {
+    opacity: 0;
+    display: flex;
+}
+
+.radial-tooltip-text {
+    color: rgb(220, 230, 255);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    white-space: normal;
 }
 
 .hidden {
@@ -236,7 +335,7 @@
 /* === MOBILE TOUCH FIXES (D5-01) — touch targets min 44px  === */
 /* ============================================================ */
 
-/* Range + Sell : 36px -> 52px */
+/* Range + Sell + Cancel : 36px -> 52px */
 .hud-root.mobile .radial-btn-range {
     height: 52px;
     width: 90px;
@@ -244,6 +343,11 @@
 
 .hud-root.mobile .radial-btn-sell {
     height: 52px;
+}
+
+.hud-root.mobile .radial-btn-cancel {
+    height: 52px;
+    width: 80px;
 }
 
 /* L2/L3 upgrade : 52px -> 60px */

@@ -35,10 +35,13 @@ namespace CrowdDefense.UI
         private Button? btnRepair;
         private Label?  btnRepairCost;
         private Button? btnSell;
+        private Button? btnCancel;
         private Button? btnRange;
         private Button? btnTarget;
         private Button? btnGuard;
         private Button? btnResearch;
+        private VisualElement? radialTooltip;
+        private Label? radialTooltipText;
         private Label? btnDpsLabel;
         private Label? btnDpsCost;
         private Label? btnDpsHint;
@@ -74,8 +77,11 @@ namespace CrowdDefense.UI
             btnRepair         = root.Q<Button>("btn-repair");
             btnRepairCost     = root.Q<Label>("btn-repair-cost");
             btnSell           = root.Q<Button>("btn-sell");
+            btnCancel         = root.Q<Button>("btn-cancel");
             btnRange          = root.Q<Button>("btn-range");
             btnTarget         = root.Q<Button>("btn-target");
+            radialTooltip     = root.Q<VisualElement>("radial-tooltip");
+            radialTooltipText = root.Q<Label>("radial-tooltip-text");
             btnGuard          = root.Q<Button>("btn-guard");
             btnResearch       = root.Q<Button>("btn-research");
             btnDpsLabel       = root.Q<Label>("btn-dps-label");
@@ -98,10 +104,16 @@ namespace CrowdDefense.UI
             btnUpgradeL3?.RegisterCallback<MouseLeaveEvent>(_ => HideUpgradePreview());
             btnRepair?.RegisterCallback<ClickEvent>(_ => OnRepairClicked());
             btnSell?.RegisterCallback<ClickEvent>(_ => OnSellClicked());
+            btnCancel?.RegisterCallback<ClickEvent>(_ => OnCancelClicked());
             btnRange?.RegisterCallback<ClickEvent>(_ => OnRangeClicked());
             btnTarget?.RegisterCallback<ClickEvent>(_ => OnTargetClicked());
             btnGuard?.RegisterCallback<ClickEvent>(_ => OnGuardClicked());
             btnResearch?.RegisterCallback<ClickEvent>(_ => OnResearchClicked());
+
+            RegisterTooltipHover(btnUpgradeL2, () => BuildUpgradeTooltip());
+            RegisterTooltipHover(btnUpgradeL3, () => BuildUpgradeTooltip());
+            RegisterTooltipHover(btnSell,      () => BuildSellTooltip());
+            RegisterTooltipHover(btnCancel,    () => "Annuler");
 
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnTowerSelected += OnTowerSelected;
@@ -534,11 +546,61 @@ namespace CrowdDefense.UI
             return sb.ToString();
         }
 
+        private void OnCancelClicked()
+        {
+            PlacementController.Instance?.DeselectTower();
+        }
+
+        private void RegisterTooltipHover(VisualElement? el, System.Func<string> textProvider)
+        {
+            if (el == null) return;
+            el.RegisterCallback<MouseEnterEvent>(_ =>
+            {
+                ShowTooltip(textProvider());
+                AudioController.Instance?.PlayPitched("menu_button_hover", 0.3f, 1.1f);
+            });
+            el.RegisterCallback<MouseLeaveEvent>(_ => HideTooltip());
+        }
+
+        private void ShowTooltip(string text)
+        {
+            if (radialTooltip == null || radialTooltipText == null) return;
+            radialTooltipText.text = text;
+            radialTooltip.RemoveFromClassList("hidden");
+            radialTooltip.RemoveFromClassList("radial-tooltip--fade-out");
+        }
+
+        private void HideTooltip()
+        {
+            radialTooltip?.AddToClassList("hidden");
+        }
+
+        private string BuildUpgradeTooltip()
+        {
+            if (currentTower == null) return "";
+            var cfg = currentTower.Config;
+            if (cfg == null) return "";
+            var bal = BalanceConfig.Get();
+            int nextLevel = currentTower.UpgradeLevel + 1;
+            float mulKey = nextLevel == 2 ? bal.UpgradeMulL2 : bal.UpgradeMulL3;
+            int cost = Mathf.RoundToInt(cfg.Cost * mulKey);
+            return $"Ameliorer (Niveau {nextLevel}) - {cost} or";
+        }
+
+        private string BuildSellTooltip()
+        {
+            if (currentTower == null) return "";
+            var bal = BalanceConfig.Get();
+            int refund = Mathf.RoundToInt(currentTower.CumulativeCost * bal.SellRefundRatio);
+            return $"Vendre - Recup. {refund} or (80%)";
+        }
+
         private void Show() => radialMenu?.RemoveFromClassList("hidden");
 
         private void Hide()
         {
             radialMenu?.AddToClassList("hidden");
+            HideTooltip();
             if (_rangeVisible && currentTower != null)
                 currentTower.ShowRangeRing(false);
             _rangeVisible = false;
