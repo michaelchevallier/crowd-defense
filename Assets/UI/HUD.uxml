@@ -42,6 +42,8 @@
                 <ui:Button text="×3" name="speed-3" class="speed-btn" tooltip="Vitesse x3 [Space]" />
             </ui:VisualElement>
 
+            <ui:Label name="bank-label" class="bank-pill hidden" text="&#x1F3E6; 0&#162;" />
+
             <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines [D]" />
             <ui:Button text="&#x2699;" name="btn-settings" class="hud-settings-btn" tooltip="Settings" />
             <ui:Button text="&#x1F50A;" name="btn-mute" class="hud-mute-btn" tooltip="Mute audio" />

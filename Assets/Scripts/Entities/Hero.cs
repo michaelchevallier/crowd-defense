@@ -44,6 +44,8 @@ namespace CrowdDefense.Entities
 
         // ── Movement ──────────────────────────────────────────────────────────
         private Vector2 _moveDir;
+        private Vector2 _smoothedMoveDir;
+        private const float MoveAccel = 8f;
 
         // ── XP / Level ────────────────────────────────────────────────────────
         public int   Level     { get; private set; } = 1;
@@ -683,22 +685,24 @@ namespace CrowdDefense.Entities
             if (_attackAnimTimer <= 0f) return;
             _attackAnimTimer -= dt;
             if (_attackAnimTimer <= 0f && _animator != null)
-                AnimationController.SetWalking(_animator, _moveDir.sqrMagnitude > 0.01f);
+                AnimationController.SetWalking(_animator, _smoothedMoveDir.sqrMagnitude > 0.01f);
         }
 
         // ── Movement + bounds ─────────────────────────────────────────────────
         private void UpdateMovement(float dt)
         {
             if (cfg == null) return;
-            bool moving = _moveDir.sqrMagnitude > 0.01f;
+
+            _smoothedMoveDir = Vector2.MoveTowards(_smoothedMoveDir, _moveDir, MoveAccel * dt);
+            bool moving = _smoothedMoveDir.sqrMagnitude > 0.01f;
 
             if (moving)
             {
                 float speed = cfg.MoveSpeed * MoveSpeedMul * (_running ? 1.8f : 1f);
                 var oldPos = transform.position;
                 var pos = oldPos;
-                pos.x += _moveDir.x * speed * dt;
-                pos.z += _moveDir.y * speed * dt;
+                pos.x += _smoothedMoveDir.x * speed * dt;
+                pos.z += _smoothedMoveDir.y * speed * dt;
                 pos.x = Mathf.Clamp(pos.x, -_maxX, _maxX);
                 pos.z = Mathf.Clamp(pos.z, -_maxZ, _maxZ);
 
@@ -715,6 +719,14 @@ namespace CrowdDefense.Entities
             {
                 if (_attackAnimTimer <= 0f && _animator != null)
                     AnimationController.SetWalking(_animator, false);
+            }
+
+            // Rotate toward smoothed direction (for idle orientation + attack aiming)
+            if (_smoothedMoveDir.sqrMagnitude > 0.01f)
+            {
+                var fwd = new Vector3(_smoothedMoveDir.x, 0f, _smoothedMoveDir.y);
+                if (fwd != Vector3.zero)
+                    transform.rotation = Quaternion.LookRotation(fwd);
             }
         }
 
@@ -774,16 +786,9 @@ namespace CrowdDefense.Entities
             }
             else
             {
-                if (_moveDir.sqrMagnitude > 0.01f)
+                if (_attackAnimTimer <= 0f)
                 {
-                    // Face movement direction when no target
-                    var fwd = new Vector3(_moveDir.x, 0f, _moveDir.y);
-                    if (fwd != Vector3.zero)
-                        transform.rotation = Quaternion.LookRotation(fwd);
-                }
-                else if (_attackAnimTimer <= 0f)
-                {
-                    // No target, no movement, no pending attack anim → explicit Idle
+                    // No target, no pending attack anim → explicit Idle
                     AnimationController.SetIdle(_animator);
                 }
             }

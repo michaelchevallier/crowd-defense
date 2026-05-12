@@ -202,6 +202,7 @@ namespace CrowdDefense.Systems
             {
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
+                Synergies.Instance?.MarkDirty();
                 AudioController.Instance?.Play("tower_built", 0.7f);
                 VfxPool.Instance?.SpawnImpact(cellWorld + Vector3.up * 0.3f, new Color(1f, 0.84f, 0f));
                 AudioController.Instance?.Play3D("tower_placed", cellWorld);
@@ -266,6 +267,7 @@ namespace CrowdDefense.Systems
             {
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
+                Synergies.Instance?.MarkDirty();
                 AudioController.Instance?.Play("tower_built", 0.7f);
                 VfxPool.Instance?.SpawnImpact(cellWorld + Vector3.up * 0.3f, new Color(1f, 0.84f, 0f));
                 AudioController.Instance?.Play3D("tower_placed", cellWorld);

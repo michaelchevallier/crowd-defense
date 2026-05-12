@@ -38,6 +38,17 @@
     color: rgb(255, 210, 63);
 }
 
+.bank-pill {
+    background-color: rgba(180, 130, 0, 0.85);
+    border-radius: 14px;
+    padding: 6px 14px;
+    color: rgb(255, 240, 160);
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    align-self: center;
+}
+
 .pill-hp {
     min-width: 140px;
 }

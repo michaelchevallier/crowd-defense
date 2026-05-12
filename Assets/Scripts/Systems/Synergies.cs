@@ -39,6 +39,8 @@ namespace CrowdDefense.Systems
     {
         private const float TickInterval = 0.2f;
         private float _tickTimer;
+        private bool _dirty = true;
+        private float _recomputeTimer = 0f;
 
         // Fired after each Resolve tick when active-synergy set changes.
         public event Action? OnSynergyChanged;
@@ -56,11 +58,12 @@ namespace CrowdDefense.Systems
         // Allows firing OnSynergyActivated exactly once per pair becoming active.
         private readonly Dictionary<string, bool> _crossActiveKeys = new();
 
+        public void MarkDirty() => _dirty = true;
+
         private void LateUpdate()
         {
-            _tickTimer -= Time.deltaTime;
-            if (_tickTimer > 0f) return;
-            _tickTimer = TickInterval;
+            if (!_dirty || Time.time < _recomputeTimer)
+                return;
 
             if (PlacementController.Instance == null) return;
             var towers = PlacementController.Instance.PlacedTowers;
@@ -68,6 +71,8 @@ namespace CrowdDefense.Systems
 
             Resolve(towers, enemies, this);
             UpdateBadges(towers);
+            _dirty = false;
+            _recomputeTimer = Time.time + TickInterval;
         }
 
         private void UpdateBadges(IReadOnlyList<Tower> towers)

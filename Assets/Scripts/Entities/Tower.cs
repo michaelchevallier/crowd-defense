@@ -519,6 +519,7 @@ namespace CrowdDefense.Entities
 #if UNITY_EDITOR
             Debug.Log($"[Tower] UpgradeTo L{level} cost={cost} cumul={CumulativeCost} dmgScale={_levelDmgScale:F2} branch={branch}");
 #endif
+            Synergies.Instance?.MarkDirty();
             return true;
         }
 

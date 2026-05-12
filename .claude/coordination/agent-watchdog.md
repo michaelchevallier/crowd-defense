@@ -1,35 +1,33 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 04:56
+## 2026-05-12 05:00
 
 ### Snapshot
 
-- Actifs (<8 min) : 2 (Monitor r12 + current scan)
-- Stalled (8-30 min) : 3 (b* anciens Monitors dead r10/r11/r12 timeouts)
+- Actifs (<8 min) : 2 (Monitor r13 + current scan)
+- Stalled (8-30 min) : 3 (b* anciens Monitors dead — r10/r11/r12 timeouts)
 - Worktrees : 16
-- Unity batch : **CLEAN**
-- Deploy LIVE : `acf7e93` (r12)
+- Unity batch : **YES** PID 5281 (r13 phase ILPP context 1 unloading = normal intermédiaire)
+- Lockfile : assumed present (Unity actif)
+- r13 log silence : 65s — normal IL2CPP transition phase
 
 ### Killed
 
-0. Aucun. Système clean.
+0. Aucun. r13 progresse, IL2CPP normal.
 
 ### Sonnet en flight
 
-- a1f8e8157e80954b2 (SettingsPanel tab nav — encore en travail)
+- a9b57cccc9b34355c (Combo multiplier display HUD)
 
-### Commits depuis r12 deploy : **5** (threshold 4+ MET → rebuild r13 candidat)
+### Recent commits accumulent
 
-- `2cacf16` FloatingPopup pool reset
-- `af188ac` TutorialOverlay arrow ease-in
-- `2886054` AchievementsPanel filter
-- `561ddc2` JuiceFX OnDestroy cleanup
-- `6a1a471` RunSummary score count-up animation
+- `1184e53` CoinPullManager magnet synergy radius + ease-out
+- `64712fe` EnemyAmbientChatter throttle
 
 ### Notes
 
-5 commits accumulent — rebuild r13 va être déclenché au prochain autonomous loop wakeup (04:58).
+r13 ships 5-6 commits depuis r12 deploy (FloatingPopup reset, Tutorial arrow, AchievementsPanel filter, JuiceFX cleanup, RunSummary anim, SettingsPanel tabs). Build in progress.
 
 ### Stdout
 
-`Actifs:2 Stalled:3 Killed:0 Worktrees:16 UnityBatch:CLEAN DeployLIVE:acf7e93 CommitsPostR12:5 RebuildTrigger:Y`
+`Actifs:2 Stalled:3 Killed:0 Worktrees:16 UnityBatch:YES(PID5281,r13,IL2CPP) Sonnet:1InFlight`

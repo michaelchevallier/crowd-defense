@@ -59,6 +59,9 @@ namespace CrowdDefense.UI
         // Sidebar showing all active perks of the current run
         private CurrentRunPerksPanel? _perksPanel;
 
+        // Bank pill (D1-01 §3.5)
+        private Label? _bankLabel;
+
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
 
@@ -162,6 +165,7 @@ namespace CrowdDefense.UI
             waveTimeLabel = root.Q<Label>("wave-time");
             bluePillBtn = root.Q<Button>("bluepill-btn");
             _comboMultiplierLabel = root.Q<Label>("combo-multiplier-label");
+            _bankLabel = root.Q<Label>("bank-label");
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -194,6 +198,7 @@ namespace CrowdDefense.UI
             if (Economy.Instance != null)
             {
                 Economy.Instance.OnGoldChanged += OnGoldChanged;
+                Economy.Instance.OnBankTick += HandleBankTick;
                 OnGoldChanged(Economy.Instance.Gold);
             }
 
@@ -230,7 +235,11 @@ namespace CrowdDefense.UI
         private void OnDestroy()
         {
             L.OnLocaleChanged -= ApplyLocalizedTexts;
-            if (Economy.Instance != null) Economy.Instance.OnGoldChanged -= OnGoldChanged;
+            if (Economy.Instance != null)
+            {
+                Economy.Instance.OnGoldChanged -= OnGoldChanged;
+                Economy.Instance.OnBankTick -= HandleBankTick;
+            }
             if (LevelRunner.Instance != null)
             {
                 LevelRunner.Instance.OnTotalHPChanged -= OnHPChanged;
