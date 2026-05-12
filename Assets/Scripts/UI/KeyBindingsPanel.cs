@@ -1,5 +1,4 @@
 #nullable enable
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -28,7 +27,6 @@ namespace CrowdDefense.UI
         };
 
         private VisualElement? _root;
-        private bool _visible;
         private string? _remappingAction;
 
         // Row buttons keyed by action
@@ -63,7 +61,6 @@ namespace CrowdDefense.UI
 
         public void Show()
         {
-            _visible = true;
             RefreshLabels();
             _root?.RemoveFromClassList("hidden");
         }
@@ -71,7 +68,6 @@ namespace CrowdDefense.UI
         public void Hide()
         {
             CancelRemap();
-            _visible = false;
             _root?.AddToClassList("hidden");
         }
 
