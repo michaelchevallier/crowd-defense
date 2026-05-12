@@ -10,8 +10,6 @@ namespace CrowdDefense.Visual
     {
         private static Material? _outlineMat;
 
-        public static void ResetCache() => _outlineMat = null;
-
         /// <summary>
         /// Ajoute l'effet outline inverted hull à tout le subtree du root.
         /// Appeler après MaterialController.ApplyToon (outline pas tinté toon).
