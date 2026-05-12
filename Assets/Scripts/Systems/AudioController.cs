@@ -82,18 +82,15 @@ namespace CrowdDefense.Systems
                 source.clip = clip;
                 source.volume = Mathf.Clamp01(volMul);
                 source.Play();
+                if (clipKey == "boss_roar" || clipKey == "victory")
+                    MusicManager.Instance?.DuckMusic(1.5f);
+                return;
             }
 
-            if (clipKey == "boss_roar" || clipKey == "victory")
-                MusicManager.Instance?.DuckMusic(1.5f);
-            else
+            if (!_warned.Contains(clipKey))
             {
-                if (!_warned.Contains(clipKey))
-                {
-                    _warned.Add(clipKey);
-                    Debug.LogWarning($"[AudioController] Missing clip: {clipKey}");
-                }
-                StartCoroutine(PlayProceduralBeepCo(clipKey, volMul));
+                _warned.Add(clipKey);
+                Debug.LogWarning($"[AudioController] Missing clip: {clipKey}");
             }
         }
 
