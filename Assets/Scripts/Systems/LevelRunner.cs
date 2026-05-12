@@ -178,11 +178,12 @@ namespace CrowdDefense.Systems
                 float halfH = (grid.Height - 1) / 2f * grid.CellSize;
                 bounds = new Bounds(Vector3.zero, new Vector3(halfW * 2f, 100f, halfH * 2f));
             }
-            if (currentLevel != null)
-                LevelEvents.RaiseLevelStart(currentLevel, bounds);
 
             SetGameSpeed(1);
             TransitionTo(GameState.Lobby);
+
+            // Defer LevelStart event until next frame so all OnEnable() subscribers (MinimapController, etc.) are wired.
+            StartCoroutine(RaiseLevelStartDeferred(currentLevel, bounds));
         }
 
         private void Update()
@@ -761,6 +762,13 @@ namespace CrowdDefense.Systems
                 Time.timeScale = 0f;
             else
                 Time.timeScale = _targetSpeed;
+        }
+
+        private System.Collections.IEnumerator RaiseLevelStartDeferred(Data.LevelData? level, Bounds bounds)
+        {
+            yield return null;
+            if (level != null)
+                LevelEvents.RaiseLevelStart(level, bounds);
         }
     }
 }
