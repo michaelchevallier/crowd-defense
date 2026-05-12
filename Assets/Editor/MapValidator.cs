@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using CrowdDefense.Data;
+using CrowdDefense.Systems;
 
 namespace CrowdDefense.Editor
 {
@@ -227,6 +228,92 @@ namespace CrowdDefense.Editor
             if (col < w - 1) yield return (col + 1, row);
             if (row > 0)     yield return (col, row - 1);
             if (row < h - 1) yield return (col, row + 1);
+        }
+
+        // ── Map Smoke Test ─────────────────────────────────────────────────────
+
+        [MenuItem("Tools/CrowdDefense/Map Smoke Test")]
+        public static void MapSmokeTest()
+        {
+            string[] guids = AssetDatabase.FindAssets("t:LevelData");
+            if (guids.Length == 0)
+            {
+                Debug.LogWarning("[MapSmokeTest] No LevelData assets found.");
+                return;
+            }
+
+            int errorCount = 0;
+            foreach (string guid in guids)
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                LevelData? lvl = AssetDatabase.LoadAssetAtPath<LevelData>(path);
+                if (lvl == null) continue;
+
+                string? err = ValidateLevelRuntime(lvl);
+                if (err == null)
+                    Debug.Log($"[MapSmokeTest] OK — {lvl.name} (W{lvl.World}-L{lvl.Level})");
+                else
+                {
+                    Debug.LogError($"[MapSmokeTest] {lvl.name} — {err}");
+                    errorCount++;
+                }
+            }
+            Debug.Log($"[MapSmokeTest] {errorCount} errors / {guids.Length} levels");
+        }
+
+        /// Returns null if valid, otherwise a short error description.
+        private static string? ValidateLevelRuntime(LevelData lvl)
+        {
+            // 1. Grid parses without exception and has positive area
+            GridData gd;
+            try
+            {
+                gd = GridData.Parse(lvl);
+            }
+            catch (System.Exception ex)
+            {
+                return $"GridData.Parse threw: {ex.Message}";
+            }
+
+            if (gd.Width <= 0 || gd.Height <= 0)
+                return $"bounds not positive ({gd.Width}×{gd.Height})";
+
+            // 2. At least one portal and one castle
+            if (gd.Portals.Count == 0) return "no portal (P) found";
+            if (gd.Castles.Count == 0) return "no castle (C) found";
+
+            // 3. Castle must be within grid bounds
+            foreach (var castle in gd.Castles)
+            {
+                if (castle.x < 0 || castle.x >= gd.Width || castle.y < 0 || castle.y >= gd.Height)
+                    return $"castle at ({castle.x},{castle.y}) out of bounds ({gd.Width}×{gd.Height})";
+            }
+
+            // 4. BFS: each portal must reach at least one castle
+            var firstCastle = gd.Castles[0];
+            bool anyPortalReachesCastle = false;
+            foreach (var portal in gd.Portals)
+            {
+                var path = gd.BfsShortestPath(portal, firstCastle);
+                if (path != null && path.Count > 0) { anyPortalReachesCastle = true; break; }
+            }
+            if (!anyPortalReachesCastle)
+                return $"no BFS path from any portal to castle at ({firstCastle.x},{firstCastle.y})";
+
+            // 5. Sample 10 evenly-spaced cells on the BFS path — verify all are walkable
+            var samplePath = gd.BfsShortestPath(gd.Portals[0], firstCastle);
+            if (samplePath != null && samplePath.Count > 0)
+            {
+                int step = Mathf.Max(1, samplePath.Count / 10);
+                for (int i = 0; i < samplePath.Count; i += step)
+                {
+                    var cell = samplePath[i];
+                    if (!gd.IsWalkable(cell.x, cell.y))
+                        return $"path cell ({cell.x},{cell.y}) is not walkable — char '{gd.At(cell.x, cell.y)}'";
+                }
+            }
+
+            return null;
         }
     }
 }
