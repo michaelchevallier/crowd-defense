@@ -7,8 +7,7 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     // Mounted on a UIDocument GameObject that holds Shop.uxml.
-    [RequireComponent(typeof(UIDocument))]
-    public class ShopController : MonoBehaviour
+    public class ShopController : UIControllerBase
     {
         private VisualElement? _overlay;
         private Label? _gemsValue;
@@ -24,22 +23,21 @@ namespace CrowdDefense.UI
 
         private void Awake()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
-
-            var root = uiDoc.rootVisualElement;
-
-            if (root == null) return;
-            _overlay   = root.Q<VisualElement>("shop-overlay");
-            _gemsValue = root.Q<Label>("shop-gems-value");
-            _closeBtn  = root.Q<Button>("shop-close-btn");
-            _tab1      = root.Q<Button>("shop-tab-1");
-            _tab2      = root.Q<Button>("shop-tab-2");
-            _tab3      = root.Q<Button>("shop-tab-3");
-            _tierHint  = root.Q<Label>("shop-tier-hint");
-            _cardsGrid = root.Q<VisualElement>("shop-cards-grid");
-            _resetHint = root.Q<Label>("shop-reset-hint");
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+            _overlay   = Root.Q<VisualElement>("shop-overlay");
+            _gemsValue = Root.Q<Label>("shop-gems-value");
+            _closeBtn  = Root.Q<Button>("shop-close-btn");
+            _tab1      = Root.Q<Button>("shop-tab-1");
+            _tab2      = Root.Q<Button>("shop-tab-2");
+            _tab3      = Root.Q<Button>("shop-tab-3");
+            _tierHint  = Root.Q<Label>("shop-tier-hint");
+            _cardsGrid = Root.Q<VisualElement>("shop-cards-grid");
+            _resetHint = Root.Q<Label>("shop-reset-hint");
 
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Hide());
             _tab1?.RegisterCallback<ClickEvent>(_ => SwitchTier(1));

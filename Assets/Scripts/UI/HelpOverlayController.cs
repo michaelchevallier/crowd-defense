@@ -5,8 +5,7 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class HelpOverlayController : MonoBehaviour
+    public class HelpOverlayController : UIControllerBase
     {
         static readonly (string key, string desc)[] Shortcuts =
         {
@@ -26,19 +25,21 @@ namespace CrowdDefense.UI
 
         private void Awake()
         {
-            var doc = GetComponent<UIDocument>();
-            if (doc == null) { Debug.LogError("[HelpOverlay] UIDocument null"); return; }
-            var ve = doc.rootVisualElement;
-            if (ve == null) { Debug.LogError("[HelpOverlay] rootVisualElement null"); return; }
-            _root = ve.Q("help-root");
-            _closeBtn = ve.Q<Button>("help-close-btn");
+            ResolveUI();
+        }
+
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+            _root = Root.Q("help-root");
+            _closeBtn = Root.Q<Button>("help-close-btn");
 
             if (_closeBtn != null) _closeBtn.clicked += Hide;
 
-            var questionBtn = ve.Q<Button>("btn-help");
+            var questionBtn = Root.Q<Button>("btn-help");
             if (questionBtn != null) questionBtn.clicked += Toggle;
 
-            PopulateRows(ve);
+            PopulateRows(Root);
         }
 
         private void Update()

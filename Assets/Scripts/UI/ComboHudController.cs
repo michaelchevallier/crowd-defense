@@ -12,8 +12,7 @@ namespace CrowdDefense.UI
     // Auto-hides after ComboHideDelaySec if no further kill resets the timer.
     // Animation: grow punch (scale 1→1.35→1) + horizontal shake on each combo level-up.
     // Milestone banner: big gold x2!/x4!/x8! slides in from top-right on crossing kill levels 2/4/8.
-    [RequireComponent(typeof(UIDocument))]
-    public class ComboHudController : MonoBehaviour
+    public class ComboHudController : UIControllerBase
     {
         private const float ComboHideDelaySec = 1.2f;
         private const float GrowDuration = 0.12f;    // seconds to peak scale
@@ -41,16 +40,15 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
-
-            var root = uiDoc.rootVisualElement;
-
-            if (root == null) return;
-            _comboDisplay = root.Q<VisualElement>("combo-display");
-            _comboLabel = root.Q<Label>("combo-label");
-            _comboBanner = root.Q<Label>("combo-banner");
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+            _comboDisplay = Root.Q<VisualElement>("combo-display");
+            _comboLabel = Root.Q<Label>("combo-label");
+            _comboBanner = Root.Q<Label>("combo-banner");
 
             var em = EventManager.Instance;
             em?.Subscribe<ComboUpdatedEvent>(OnComboUpdated);
