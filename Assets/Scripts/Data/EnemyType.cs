@@ -49,10 +49,14 @@ namespace CrowdDefense.Data
         [SerializeField] private string bossName = "";
         [SerializeField] private Color bossAuraColor = Color.clear;
 
-        [Header("Charge (Brigand)")]
+        [Header("Charge (Brigand/Warlord)")]
+        [SerializeField] private bool enableCharge = false;
         [SerializeField] private int chargeMs = 0;
         [SerializeField] private int chargeCooldownMs = 0;
         [SerializeField] private float chargeMul = 1f;
+
+        [Header("Fire Breath (Dragon)")]
+        [SerializeField] private bool hasFireBreath = false;
 
         [Header("Summons")]
         [SerializeField] private bool summonsMinions = false;
@@ -99,6 +103,8 @@ namespace CrowdDefense.Data
         public bool ImmuneToFlyerBonus => immuneToFlyerBonus;
         public string BossName => bossName;
         public Color BossAuraColor => bossAuraColor;
+        public bool EnableCharge => enableCharge || isBrigand;
+        public bool HasFireBreath => hasFireBreath;
         public int ChargeMs => chargeMs;
         public int ChargeCooldownMs => chargeCooldownMs;
         public float ChargeMul => chargeMul;
