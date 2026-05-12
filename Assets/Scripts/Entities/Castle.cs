@@ -10,7 +10,7 @@ using CrowdDefense.Visual;
 
 namespace CrowdDefense.Entities
 {
-    public class Castle : MonoSingleton<Castle>
+    public partial class Castle : MonoSingleton<Castle>
     {
         public int HP { get; private set; }
         public int HPMax { get; private set; }
@@ -20,61 +20,21 @@ namespace CrowdDefense.Entities
         public event Action<int, int>? OnHPChanged;
         public event Action<Castle>?   OnCastleDied;
 
-        // World index used for no-regen threshold (D1-04)
-        private int _world = 1;
+        protected int _world = 1;
+        protected MeshFilter? _meshFilter;
+        protected ParticleSystem? _smokePs;
+        protected Light? _castleAura;
+        protected Transform? _gateDoor;
+        protected Coroutine? _gateCoroutine;
+        protected Light? _dangerLight;
+        protected bool _smokeActive;
+        protected Coroutine? _smokeCoroutine;
+        protected Coroutine? _sparksCoroutine;
+        protected bool _grayscaleApplied;
+        protected ParticleSystem? _firePs;
+        protected bool _firePsSpawned;
+        protected readonly ParticleSystem?[] _candlePs = new ParticleSystem?[4];
 
-        // Armor break — temporary damage taken multiplier (siege enemies / armor break effect)
-        private float _dmgTakenMul        = 1f;
-        private float _dmgTakenMulUntil   = 0f;
-
-        // Damage state meshes (assign in Inspector; null = no swap)
-        [SerializeField] private Mesh? _meshIntact;    // 100–66 %
-        [SerializeField] private Mesh? _meshCracked;   // 66–33 %
-        [SerializeField] private Mesh? _meshRuined;    // 33–15 %
-        [SerializeField] private Mesh? _meshCritical;  // < 15 %
-
-        private MeshFilter?   _meshFilter;
-        private DamageStage   _currentStage = DamageStage.Intact;
-
-        private enum DamageStage { Intact, Cracked, Ruined, Critical }
-
-        // Overrun detection — 3+ hits in 3 s triggers red vignette + alert, 10 s cooldown
-        private const int   OverrunHitThreshold  = 3;
-        private const float OverrunWindowSec      = 3f;
-        private const float OverrunCooldownSec    = 10f;
-        private const float OverrunVignetteDurSec = 0.5f;
-        private readonly System.Collections.Generic.Queue<float> _hitTimestamps = new();
-        private float _overrunCooldownUntil = -1f;
-
-        // Gate door (cube child, animated on wave start/end)
-        private Transform?    _gateDoor;
-        private Coroutine?    _gateCoroutine;
-
-        // Visual state
-        private bool          _smokeActive;
-        private Coroutine?    _smokeCoroutine;
-        private Coroutine?    _sparksCoroutine;
-        private Light?        _dangerLight;
-        private float         _dangerLightPhase;
-        private bool          _grayscaleApplied;
-
-        // HP-aware ambient aura PointLight (parity V4 R6-018)
-        private Light?        _castleAura;
-
-        // VFX components (optional — assigned lazily, null = skip)
-        private ParticleSystem? _smokePs;
-        private ParticleSystem? _firePs;
-        private bool            _firePsSpawned;
-
-        // Ambient candle flames — 4 corner PS, always on while alive
-        private readonly ParticleSystem?[] _candlePs = new ParticleSystem?[4];
-
-        // HP bar (world-space canvas child)
-        private Transform?    _hpBarFill;
-        private float         _hpBarBaseScaleX;
-        private TextMesh?     _hpText;
-
-        // Computes MaxHp via D1-04 formula: 100 + 50*sqrt(W)*diffMul, then delegates to Init(hp, world)
         public void InitWithFormula(int world, int level = 1)
         {
             int hp = BalanceConfig.GetCastleMaxHp(world, level);
@@ -106,527 +66,6 @@ namespace CrowdDefense.Entities
             OnHPChanged?.Invoke(HP, HPMax);
         }
 
-        // ── HP bar ──────────────────────────────────────────────────────────────
-
-        private void BuildHpBar()
-        {
-            // World-space quad children: background + fill.
-            const float barW = 2.0f, barH = 0.18f, barY = 1.6f;
-
-            var bgGo = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            bgGo.name = "CastleHPBar_BG";
-            Destroy(bgGo.GetComponent<MeshCollider>());
-            bgGo.transform.SetParent(transform, false);
-            bgGo.transform.localPosition = new Vector3(0f, barY, -0.05f);
-            bgGo.transform.localScale    = new Vector3(barW, barH, 1f);
-            var bgRend = bgGo.GetComponent<MeshRenderer>();
-            bgRend.material = BuildUnlitMaterial(new Color(0f, 0f, 0f, 0.75f), transparent: true);
-            bgRend.sortingOrder = 1;
-
-            var fillGo = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            fillGo.name = "CastleHPBar_Fill";
-            Destroy(fillGo.GetComponent<MeshCollider>());
-            fillGo.transform.SetParent(transform, false);
-            fillGo.transform.localPosition = new Vector3(0f, barY, -0.06f);
-            fillGo.transform.localScale    = new Vector3(barW * 0.94f, barH * 0.7f, 1f);
-            _hpBarFill     = fillGo.transform;
-            _hpBarBaseScaleX = barW * 0.94f;
-            var fillRend = fillGo.GetComponent<MeshRenderer>();
-            fillRend.material = BuildUnlitMaterial(new Color(0.27f, 0.87f, 0.27f, 1f), transparent: false);
-            fillRend.sortingOrder = 2;
-
-            // HP number text above the bar — "<hp> / <hpMax>" (port V5 _hpText sprite)
-            var textGo = new GameObject("CastleHPText");
-            textGo.transform.SetParent(transform, false);
-            textGo.transform.localPosition = new Vector3(0f, barY + 0.4f, -0.06f);
-            textGo.transform.localScale    = Vector3.one * 0.18f;
-            _hpText = textGo.AddComponent<TextMesh>();
-            _hpText.anchor    = TextAnchor.MiddleCenter;
-            _hpText.alignment = TextAlignment.Center;
-            _hpText.fontSize  = 64;
-            _hpText.fontStyle = FontStyle.Bold;
-            _hpText.color     = Color.white;
-            _hpText.text      = $"{HP} / {HPMax}";
-
-            RefreshHpBar();
-        }
-
-        private void RefreshHpBar()
-        {
-            if (_hpText != null) _hpText.text = $"{Mathf.Max(0, HP)} / {HPMax}";
-            if (_hpBarFill == null) return;
-            float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
-            ratio = Mathf.Clamp01(ratio);
-
-            // Scale fill width and offset pivot so it shrinks from the right
-            float newScaleX = _hpBarBaseScaleX * ratio;
-            _hpBarFill.localScale = new Vector3(newScaleX, _hpBarFill.localScale.y, 1f);
-            _hpBarFill.localPosition = new Vector3(
-                (_hpBarBaseScaleX * (ratio - 1f)) / 2f,
-                _hpBarFill.localPosition.y,
-                _hpBarFill.localPosition.z);
-
-            // Colour: green > 60 %, orange > 30 %, red otherwise
-            var rend = _hpBarFill.GetComponent<MeshRenderer>();
-            if (rend != null)
-            {
-                Color fillColor = ratio > 0.6f
-                    ? new Color(0.27f, 0.87f, 0.27f)
-                    : ratio > 0.3f
-                        ? new Color(1f, 0.67f, 0.13f)
-                        : new Color(1f, 0.2f, 0.13f);
-                rend.material.color = fillColor;
-            }
-        }
-
-        private static Material BuildUnlitMaterial(Color color, bool transparent)
-        {
-            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
-            var mat = new Material(shader ?? Shader.Find("Standard")!);
-            mat.color = color;
-            if (transparent)
-            {
-                mat.SetFloat("_Surface", 1f);   // URP Transparent
-                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                mat.SetInt("_ZWrite", 0);
-                mat.renderQueue = 3000;
-            }
-            return mat;
-        }
-
-        // ── Damage / regen ──────────────────────────────────────────────────────
-
-        // Armor break — boost incoming damage for a duration (ms). Caller picks max if already active.
-        public void ApplyArmorBreak(float dmgTakenMul, int durMs)
-        {
-            if (dmgTakenMul <= 1f || durMs <= 0) return;
-            _dmgTakenMul       = Mathf.Max(_dmgTakenMul, dmgTakenMul);
-            float until        = Time.time + durMs / 1000f;
-            _dmgTakenMulUntil  = Mathf.Max(_dmgTakenMulUntil, until);
-        }
-
-        public void TakeDamage(int dmg)
-        {
-            if (IsDead || dmg <= 0) return;
-
-            int actualDmg = dmg;
-
-            // Armor break — amplify incoming damage while active (siege enemies / armor break synergy)
-            if (_dmgTakenMulUntil > 0f)
-            {
-                if (Time.time < _dmgTakenMulUntil)
-                    actualDmg = Mathf.RoundToInt(dmg * _dmgTakenMul);
-                else
-                {
-                    _dmgTakenMul      = 1f;
-                    _dmgTakenMulUntil = 0f;
-                }
-            }
-
-            HP = Mathf.Max(0, HP - actualDmg);
-            WasHitThisWave = true;
-            // Flag interest bank — any hit resets bank for this wave (D1-01 §3.5)
-            Economy.Instance?.FlagCastleDamaged();
-            // D1-02: streak broken if castle leaks during the break window
-            WaveManager.Instance?.NotifyCastleDamaged();
-            OnHPChanged?.Invoke(HP, HPMax);
-
-            RefreshHpBar();
-            RefreshDamageMesh();
-            UpdateTint();
-            TriggerHitVfx();
-            UpdateDamageVfxIntensity();
-            UpdateCastleAura();
-
-            AudioController.Instance?.Play3D("castle_hit", transform.position);
-            VfxPool.Instance?.SpawnHitFlash(transform);
-            CheckOverrun();
-
-            if (HP == 0)
-            {
-                ApplyGrayscale();
-                OnCastleDied?.Invoke(this);
-                AudioController.Instance?.Play("enemy_die_boss", 1f);
-                JuiceFX.Instance?.SlowMo(0.2f, 1500);
-                JuiceFX.Instance?.Flash(new Color(0f, 0f, 0f, 0.7f), 1000);
-                VfxPool.Instance?.SpawnExplosion(transform.position, 4f);
-#if UNITY_EDITOR
-                Debug.Log("[Castle] destroyed");
-#endif
-            }
-        }
-
-        // D1-04: no-regen W6+ (BalanceConfig.NoRegenWorldThreshold)
-        public void Regen(int amount)
-        {
-            if (IsDead || amount <= 0) return;
-            var cfg = BalanceConfig.Get();
-            if (_world >= cfg.NoRegenWorldThreshold) return;
-            HP = Mathf.Min(HPMax, HP + amount);
-            OnHPChanged?.Invoke(HP, HPMax);
-            RefreshHpBar();
-            UpdateCastleAura();
-            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnHeal(
-                amount, transform.position + Vector3.up * 2f);
-            VfxPool.Instance?.SpawnHealAura(transform.position);
-        }
-
-        // Increase max HP (forteresse_perk / set bonus "pierre") — also heals by the delta.
-        public void GrantBonusHP(int bonus)
-        {
-            if (bonus <= 0) return;
-            HPMax += bonus;
-            HP    += bonus;
-            OnHPChanged?.Invoke(HP, HPMax);
-            RefreshHpBar();
-            UpdateCastleAura();
-        }
-
-        // ── Visual helpers ──────────────────────────────────────────────────────
-
-        private void RefreshDamageMesh()
-        {
-            if (_meshFilter == null) return;
-            float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
-            DamageStage stage = ratio > 0.66f ? DamageStage.Intact
-                              : ratio > 0.33f ? DamageStage.Cracked
-                              : ratio > 0.15f ? DamageStage.Ruined
-                              :                 DamageStage.Critical;
-            if (stage == _currentStage) return;
-            _currentStage = stage;
-            Mesh? next = stage switch
-            {
-                DamageStage.Cracked  => _meshCracked,
-                DamageStage.Ruined   => _meshRuined,
-                DamageStage.Critical => _meshCritical ?? _meshRuined,
-                _                    => _meshIntact,
-            };
-            if (next != null) _meshFilter.sharedMesh = next;
-        }
-
-        // HP-threshold tint via AssetVariants.GetCastleTint (spec V5 CASTLE_TINTS).
-        // Uses MaterialPropertyBlock to avoid material instancing.
-        private static readonly int _baseColorId = Shader.PropertyToID("_BaseColor");
-        private static readonly int _colorId     = Shader.PropertyToID("_Color");
-        private MaterialPropertyBlock? _castleMpb;
-        private Color     _currentCastleTint = Color.white;
-        private Coroutine? _tintLerpCoroutine;
-
-        private void UpdateTint()
-        {
-            float ratio  = HPMax > 0 ? (float)HP / HPMax : 0f;
-            Color target = AssetVariants.GetCastleTint(ratio);
-            if (target == _currentCastleTint) return;
-            if (_tintLerpCoroutine != null) StopCoroutine(_tintLerpCoroutine);
-            _tintLerpCoroutine = StartCoroutine(LerpCastleTint(target, 0.3f));
-        }
-
-        private IEnumerator LerpCastleTint(Color target, float dur)
-        {
-            _castleMpb ??= new MaterialPropertyBlock();
-            Color from = _currentCastleTint;
-            float t    = 0f;
-            while (t < dur)
-            {
-                t += Time.deltaTime;
-                Color c = Color.Lerp(from, target, t / dur);
-                _castleMpb.SetColor(_baseColorId, c);
-                _castleMpb.SetColor(_colorId,     c);
-                foreach (var rend in GetComponentsInChildren<Renderer>())
-                {
-                    if (rend.gameObject.name.StartsWith("CastleHPBar")) continue;
-                    rend.SetPropertyBlock(_castleMpb);
-                }
-                yield return null;
-            }
-            _currentCastleTint = target;
-            _castleMpb.SetColor(_baseColorId, target);
-            _castleMpb.SetColor(_colorId,     target);
-            foreach (var rend in GetComponentsInChildren<Renderer>())
-            {
-                if (rend.gameObject.name.StartsWith("CastleHPBar")) continue;
-                rend.SetPropertyBlock(_castleMpb);
-            }
-            _tintLerpCoroutine = null;
-        }
-
-        // Progressive smoke + danger light intensity scaled to HP%
-        private void UpdateDamageVfxIntensity()
-        {
-            float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
-
-            // ── ParticleSystem smoke ──────────────────────────────────────────
-            if (_smokePs != null)
-            {
-                var emission = _smokePs.emission;
-                if (ratio > 0.66f)
-                {
-                    emission.rateOverTime = 0f;
-                    if (_smokePs.isPlaying) _smokePs.Stop();
-                }
-                else if (ratio > 0.33f)
-                {
-                    emission.rateOverTime = 8f;
-                    if (!_smokePs.isPlaying) _smokePs.Play();
-                }
-                else if (ratio > 0.15f)
-                {
-                    emission.rateOverTime = 20f;
-                    if (!_smokePs.isPlaying) _smokePs.Play();
-                }
-                else
-                {
-                    // Stage 4 critical — heavy smoke
-                    emission.rateOverTime = 35f;
-                    if (!_smokePs.isPlaying) _smokePs.Play();
-                }
-            }
-
-            // ── Stage 4: fire ParticleSystem + vignette flash ────────────────
-            if (ratio <= 0.15f && !_firePsSpawned)
-            {
-                _firePsSpawned = true;
-                _firePs        = SpawnFirePs();
-                JuiceFX.Instance?.Flash(new Color(0.9f, 0.1f, 0f, 0.3f), 800);
-            }
-
-            // ── Danger light ──────────────────────────────────────────────────
-            if (_dangerLight == null) return;
-
-            if (ratio > 0.66f)
-            {
-                _dangerLight.intensity = 0f;
-            }
-            else if (ratio > 0.33f)
-            {
-                _dangerLight.intensity = 1f;
-                _dangerLight.color     = new Color(1f, 0.9f, 0.3f);
-            }
-            else if (ratio > 0.15f)
-            {
-                _dangerLight.intensity = 3f;
-                _dangerLight.color     = new Color(1f, 0.3f, 0.1f);
-
-                if (_sparksCoroutine == null)
-                    _sparksCoroutine = StartCoroutine(SparksLoop());
-            }
-            else
-            {
-                // Stage 4 critical — intense red light
-                _dangerLight.intensity = 5f;
-                _dangerLight.color     = new Color(1f, 0.1f, 0f);
-
-                if (_sparksCoroutine == null)
-                    _sparksCoroutine = StartCoroutine(SparksLoop());
-            }
-        }
-
-        // Orange fire ParticleSystem spawned at Stage 4 (HP < 15 %)
-        private ParticleSystem SpawnFirePs()
-        {
-            var go = new GameObject("CastleFirePs");
-            go.transform.SetParent(transform, false);
-            go.transform.localPosition = new Vector3(0f, 1.5f, 0f);
-            var ps = go.AddComponent<ParticleSystem>();
-
-            var main = ps.main;
-            main.loop           = true;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(1.5f, 3f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.2f, 0.5f);
-            main.startColor     = new ParticleSystem.MinMaxGradient(new Color(1f, 0.55f, 0.05f), new Color(1f, 0.2f, 0f));
-            main.gravityModifier = -0.3f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 25f;
-
-            var shape = ps.shape;
-            shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle     = 15f;
-            shape.radius    = 0.3f;
-
-            ps.Play();
-            return ps;
-        }
-
-        // 4 ambient candle flames at base corners — always on while alive
-        private void SpawnCandleParticles()
-        {
-            Vector3[] corners =
-            {
-                new Vector3( 0.6f, 0.15f,  0.6f),
-                new Vector3(-0.6f, 0.15f,  0.6f),
-                new Vector3( 0.6f, 0.15f, -0.6f),
-                new Vector3(-0.6f, 0.15f, -0.6f),
-            };
-
-            for (int i = 0; i < corners.Length; i++)
-            {
-                var go = new GameObject($"CastleCandle_{i}");
-                go.transform.SetParent(transform, false);
-                go.transform.localPosition = corners[i];
-
-                var ps = go.AddComponent<ParticleSystem>();
-
-                var main = ps.main;
-                main.loop            = true;
-                main.startLifetime   = new ParticleSystem.MinMaxCurve(0.7f, 1.1f);
-                main.startSpeed      = new ParticleSystem.MinMaxCurve(0.4f, 0.9f);
-                main.startSize       = new ParticleSystem.MinMaxCurve(0.06f, 0.14f);
-                main.startColor      = new ParticleSystem.MinMaxGradient(
-                                           new Color(1f, 0.6f, 0.05f),
-                                           new Color(1f, 0.25f, 0f));
-                main.gravityModifier = -0.15f;
-                main.simulationSpace = ParticleSystemSimulationSpace.World;
-
-                var emission = ps.emission;
-                emission.rateOverTime = 10f;
-
-                var shape = ps.shape;
-                shape.shapeType = ParticleSystemShapeType.Cone;
-                shape.angle     = 8f;
-                shape.radius    = 0.03f;
-
-                var sol = ps.sizeOverLifetime;
-                sol.enabled = true;
-                sol.size = new ParticleSystem.MinMaxCurve(1f,
-                    new AnimationCurve(
-                        new Keyframe(0f, 0.4f, 0f, 1.5f),
-                        new Keyframe(0.4f, 1f, 1.5f, -1.5f),
-                        new Keyframe(1f, 0f, -1.5f, 0f)));
-
-                var col = ps.colorOverLifetime;
-                col.enabled = true;
-                var grad = new Gradient();
-                grad.SetKeys(
-                    new[]
-                    {
-                        new GradientColorKey(new Color(1f, 0.9f, 0.4f), 0f),
-                        new GradientColorKey(new Color(1f, 0.45f, 0.05f), 0.5f),
-                        new GradientColorKey(new Color(0.6f, 0.1f, 0f), 1f)
-                    },
-                    new[]
-                    {
-                        new GradientAlphaKey(0.9f, 0f),
-                        new GradientAlphaKey(0.7f, 0.5f),
-                        new GradientAlphaKey(0f, 1f)
-                    });
-                col.color = new ParticleSystem.MinMaxGradient(grad);
-
-                ps.Play();
-                _candlePs[i] = ps;
-            }
-        }
-
-        // Occasional spark burst every 2 s while HP < 33 %
-        private IEnumerator SparksLoop()
-        {
-            var wait = new WaitForSeconds(2f);
-            while (!IsDead && HPMax > 0 && (float)HP / HPMax < 0.33f)
-            {
-                var sparkColor = new Color(1f, 0.7f, 0.1f, 0.9f);
-                for (int i = 0; i < 5; i++)
-                {
-                    var offset = new Vector3(
-                        UnityEngine.Random.Range(-0.5f, 0.5f),
-                        UnityEngine.Random.Range(1.5f, 3f),
-                        UnityEngine.Random.Range(-0.5f, 0.5f));
-                    VfxPool.Instance?.SpawnImpact(transform.position + offset, sparkColor);
-                }
-                yield return wait;
-            }
-            _sparksCoroutine = null;
-        }
-
-        // Overrun: 3+ hits in 3 s window → red vignette 0.5 s + "overrun_alert" audio, 10 s cooldown
-        private void CheckOverrun()
-        {
-            float now = Time.time;
-
-            // Purge timestamps outside the rolling window
-            while (_hitTimestamps.Count > 0 && now - _hitTimestamps.Peek() > OverrunWindowSec)
-                _hitTimestamps.Dequeue();
-
-            _hitTimestamps.Enqueue(now);
-
-            if (_hitTimestamps.Count < OverrunHitThreshold) return;
-            if (now < _overrunCooldownUntil) return;
-
-            _overrunCooldownUntil = now + OverrunCooldownSec;
-            _hitTimestamps.Clear();
-
-            JuiceFX.Instance?.Flash(new Color(1f, 0f, 0f, 0.55f), Mathf.RoundToInt(OverrunVignetteDurSec * 1000f));
-            AudioController.Instance?.Play("overrun_alert", 1f);
-        }
-
-        // Smoke below 50 %, danger light below 20 %
-        private void TriggerHitVfx()
-        {
-            float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
-
-            if (ratio < 0.5f && !_smokeActive)
-            {
-                _smokeActive = true;
-                _smokeCoroutine = StartCoroutine(SmokeLoop());
-            }
-
-            if (ratio < 0.2f && _dangerLight == null)
-            {
-                var lightGo = new GameObject("CastleDangerLight");
-                lightGo.transform.SetParent(transform, false);
-                lightGo.transform.localPosition = new Vector3(0f, 3f, 0f);
-                _dangerLight = lightGo.AddComponent<Light>();
-                _dangerLight.type      = LightType.Point;
-                _dangerLight.color     = new Color(1f, 0.13f, 0.13f);
-                _dangerLight.intensity = 2.5f;
-                _dangerLight.range     = 8f;
-                _dangerLightPhase      = 0f;
-            }
-        }
-
-        // Continuous smoke particles every ~400 ms while below 50 % HP
-        private IEnumerator SmokeLoop()
-        {
-            var wait = new WaitForSeconds(0.4f);
-            while (!IsDead && _smokeActive)
-            {
-                var offset = new Vector3(
-                    UnityEngine.Random.Range(-0.6f, 0.6f),
-                    2.5f,
-                    UnityEngine.Random.Range(-0.6f, 0.6f));
-                VfxPool.Instance?.SpawnImpact(transform.position + offset, new Color(0.33f, 0.33f, 0.33f, 0.7f));
-                yield return wait;
-            }
-            _smokeActive = false;
-        }
-
-        // Grayscale all child renderers on death
-        private void ApplyGrayscale()
-        {
-            if (_grayscaleApplied) return;
-            _grayscaleApplied = true;
-            _smokeActive = false;
-            if (_smokeCoroutine != null) { StopCoroutine(_smokeCoroutine); _smokeCoroutine = null; }
-            if (_sparksCoroutine != null) { StopCoroutine(_sparksCoroutine); _sparksCoroutine = null; }
-            if (_smokePs != null) _smokePs.Stop();
-            if (_firePs != null)  { _firePs.Stop(); _firePs = null; }
-            if (_dangerLight != null) _dangerLight.intensity = 0f;
-            foreach (var cp in _candlePs) { if (cp != null) cp.Stop(); }
-
-            var gray = new Color(0.53f, 0.53f, 0.53f);
-            foreach (var rend in GetComponentsInChildren<Renderer>())
-            {
-                if (rend.gameObject.name.StartsWith("CastleHPBar")) continue;
-                foreach (var mat in rend.materials)
-                    mat.color = gray;
-            }
-        }
-
-        // ── Victory banner ──────────────────────────────────────────────────────
-
-        // Spawns a "Victoire !" TextMeshPro that floats up 3 units over 2 s with
-        // scale punch (0→1.4→1) then fade-out. Billboard toward Camera.main.
         public void SpawnVictoryBanner()
             => StartCoroutine(VictoryBannerCoroutine());
 
@@ -651,7 +90,6 @@ namespace CrowdDefense.Entities
             const float totalDur  = 2.0f;
             const float riseUnits = 3.0f;
 
-            // Phase 1 — scale punch: 0 → 1.4 → 1 in punchDur
             float elapsed = 0f;
             while (elapsed < punchDur)
             {
@@ -664,7 +102,6 @@ namespace CrowdDefense.Entities
             }
             go.transform.localScale = Vector3.one;
 
-            // Phase 2 — float up + fade over remaining duration
             Vector3 startPos  = go.transform.position;
             float   remaining = totalDur - punchDur;
             elapsed = 0f;
@@ -683,9 +120,7 @@ namespace CrowdDefense.Entities
             Destroy(go);
         }
 
-        // ── Gate animation ──────────────────────────────────────────────────────
-
-        private void BuildGate()
+        protected void BuildGate()
         {
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
             go.name = "CastleGate";
@@ -698,35 +133,7 @@ namespace CrowdDefense.Entities
             _gateDoor = go.transform;
         }
 
-        private void BuildCastleAura()
-        {
-            // Try child first (prefab-authored), else create at runtime
-            _castleAura = transform.Find("CastleAura")?.GetComponent<Light>();
-            if (_castleAura == null)
-            {
-                var go = new GameObject("CastleAura");
-                go.transform.SetParent(transform, false);
-                go.transform.localPosition = Vector3.zero;
-                _castleAura = go.AddComponent<Light>();
-                _castleAura.type      = LightType.Point;
-                _castleAura.range     = 5f;
-                _castleAura.intensity = 2f;
-                _castleAura.color     = Color.white;
-            }
-            UpdateCastleAura();
-        }
-
-        private void UpdateCastleAura()
-        {
-            if (_castleAura == null) return;
-            var pct = HPMax > 0 ? (float)HP / HPMax : 0f;
-            _castleAura.intensity = Mathf.Lerp(0.5f, 2f, pct);
-            _castleAura.color     = pct < 0.3f
-                ? Color.red
-                : Color.Lerp(Color.red, Color.white, pct);
-        }
-
-        private void SubscribeWaveEvents()
+        protected void SubscribeWaveEvents()
         {
             var wm = WaveManager.Instance;
             if (wm == null) return;
@@ -734,14 +141,13 @@ namespace CrowdDefense.Entities
             wm.OnWaveCleared += _ => AnimateGate(open: false);
         }
 
-        private void AnimateGate(bool open)
+        protected void AnimateGate(bool open)
         {
             if (_gateDoor == null) return;
             if (_gateCoroutine != null) StopCoroutine(_gateCoroutine);
             _gateCoroutine = StartCoroutine(open ? OpenGateCoroutine() : CloseGateCoroutine());
         }
 
-        // Open: 0° → 90°, linear over 0.5 s
         private IEnumerator OpenGateCoroutine()
         {
             const float dur = 0.5f;
@@ -758,7 +164,6 @@ namespace CrowdDefense.Entities
             _gateCoroutine = null;
         }
 
-        // Close: 90° → 0°, linear over 0.5 s
         private IEnumerator CloseGateCoroutine()
         {
             const float dur = 0.5f;
@@ -781,11 +186,29 @@ namespace CrowdDefense.Entities
             return deg;
         }
 
-        // ── MonoBehaviour ───────────────────────────────────────────────────────
-
-        private void Update()
+        protected static Material BuildUnlitMaterial(Color color, bool transparent)
         {
-            // Danger light flicker — base intensity scales with damage stage
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            var mat = new Material(shader ?? Shader.Find("Standard")!);
+            mat.color = color;
+            if (transparent)
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetInt("_ZWrite", 0);
+                mat.renderQueue = 3000;
+            }
+            return mat;
+        }
+
+        protected void Update()
+        {
+            UpdateDangerLightFlicker();
+        }
+
+        protected void UpdateDangerLightFlicker()
+        {
             if (_dangerLight == null) return;
             _dangerLightPhase += Time.deltaTime * 3.5f;
             float sin   = Mathf.Sin(_dangerLightPhase) * 0.5f + 0.5f;
@@ -793,5 +216,7 @@ namespace CrowdDefense.Entities
             float baseI = ratio <= 0.15f ? 3.5f : 1.5f;
             _dangerLight.intensity = baseI + baseI * sin;
         }
+
+        protected float _dangerLightPhase;
     }
 }
