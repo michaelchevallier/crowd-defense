@@ -281,8 +281,28 @@ namespace CrowdDefense.Systems
                 src.Stop();
         }
 
+        public void StopAllSfx()
+        {
+            foreach (var src in _sfxPool)
+            {
+                if (src != null && src.isPlaying) src.Stop();
+            }
+            foreach (var kvp in _loopChannels)
+            {
+                kvp.Value?.Stop();
+            }
+            _loopChannels.Clear();
+        }
+
         public void SetMuted(bool muted) =>
             AudioListener.pause = muted;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.F4)) StopAllSfx();
+        }
+#endif
 
         private static float LinearToDb(float zeroToOne)
         {
