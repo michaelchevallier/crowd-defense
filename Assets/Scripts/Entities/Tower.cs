@@ -304,6 +304,10 @@ namespace CrowdDefense.Entities
         public float ResearchRangeMul   => cfg != null ? TowerResearchTree.RangeMul(cfg.Id)               : 1f;
         public float ResearchFireRateMul => cfg != null ? TowerResearchTree.FireRateIntervalMul(cfg.Id)   : 1f;
 
+        // DynamicEventManager hooks (R6-PARITY-012)
+        public float EventRangeMul { get; set; } = 1f;
+        public bool  IsDisabled    { get; set; } = false;
+
         /// <summary>
         /// Returns the upgrade cost for the next level, applying a -20% cluster discount
         /// if 3 or more towers of the same type are placed within radius meters (P1 synergie cluster).
@@ -825,6 +829,8 @@ namespace CrowdDefense.Entities
             // L3 Tank Bulwark aura — protect adjacent towers -20% dmg (D1-03)
             if (L3BulwarkAura) TickBulwarkAura();
 
+            if (IsDisabled) return;
+
             // _buffMul et tous les champs synergy sont reset + recomputed par Synergies.LateUpdate.
             switch (cfg.Behavior)
             {
@@ -945,13 +951,14 @@ namespace CrowdDefense.Entities
         private bool OutOfRange(Enemy e)
         {
             if (cfg == null || e == null) return true;
-            return (e.transform.position - transform.position).sqrMagnitude > cfg.Range * cfg.Range;
+            float r = cfg.Range * EventRangeMul;
+            return (e.transform.position - transform.position).sqrMagnitude > r * r;
         }
 
         private Enemy? AcquireTarget()
         {
             if (cfg == null || WaveManager.Instance == null) return null;
-            float effRange = cfg.Range * ResearchRangeMul;
+            float effRange = cfg.Range * ResearchRangeMul * EventRangeMul;
             float rangeSq = effRange * effRange;
             Enemy? best = null;
             float bestScore = float.MinValue;
