@@ -192,7 +192,7 @@ namespace CrowdDefense.Visual
             go.transform.localScale = Vector3.one * 0.15f;
 
             // Target = approximate world position of gold counter (top-left HUD)
-            var cam = Camera.main;
+            var cam = MainCameraCache.Main;
             Vector3 target = cam != null
                 ? cam.ScreenToWorldPoint(new Vector3(100f, Screen.height - 50f, 10f))
                 : startPos + new Vector3(-5f, 3f, 0f);

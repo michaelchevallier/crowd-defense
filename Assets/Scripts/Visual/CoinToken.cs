@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
+using CrowdDefense.Common;
 
 namespace CrowdDefense.Visual
 {
@@ -66,9 +67,10 @@ namespace CrowdDefense.Visual
                 transform.position = CubicBezier(start, p1, p2, end, ease);
 
                 // Billboard: face camera
-                if (Camera.main != null)
-                    transform.LookAt(transform.position + Camera.main.transform.rotation * Vector3.forward,
-                                     Camera.main.transform.rotation * Vector3.up);
+                var coinCam = MainCameraCache.Main;
+                if (coinCam != null)
+                    transform.LookAt(transform.position + coinCam.transform.rotation * Vector3.forward,
+                                     coinCam.transform.rotation * Vector3.up);
 
                 // Pulse scale: grow then shrink on arrival
                 float scaleCurve = t < 0.8f

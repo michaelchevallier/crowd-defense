@@ -1327,8 +1327,8 @@ namespace CrowdDefense.Entities
                 bool show = active[i];
                 if (_debuffIcons[i].activeSelf != show)
                     _debuffIcons[i].SetActive(show);
-                if (show && Camera.main != null)
-                    _debuffIcons[i].transform.rotation = Quaternion.LookRotation(Camera.main.transform.forward);
+                if (show && MainCameraCache.Main != null)
+                    _debuffIcons[i].transform.rotation = Quaternion.LookRotation(MainCameraCache.Main.transform.forward);
             }
         }
 

@@ -1,5 +1,6 @@
 #nullable enable
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Entities;
 
 namespace CrowdDefense.Visual
@@ -119,9 +120,10 @@ namespace CrowdDefense.Visual
 
         private void FaceCamera()
         {
-            if (Camera.main == null) return;
+            var cam = MainCameraCache.Main;
+            if (cam == null) return;
             // Rotate both quads to face camera — they share the same parent transform local rotation
-            var dir = Camera.main.transform.position - transform.position;
+            var dir = cam.transform.position - transform.position;
             if (dir.sqrMagnitude < 0.001f) return;
 
             // Billboard: only rotate the bar children (BG + Fill), not the enemy model
