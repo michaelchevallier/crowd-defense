@@ -73,6 +73,22 @@ namespace CrowdDefense.Data
         [SerializeField] private float aoeAttackRadius = 1.5f;
         [SerializeField] private int aoeAttackDamage = 3;
 
+        [Header("Teleport (WizardKing)")]
+        [SerializeField] private bool canTeleport = false;
+        [SerializeField] private float teleportCooldown = 8f;
+        [SerializeField] private int projectileRainCount = 0;
+
+        [Header("Drone Burst (AI Hub)")]
+        [SerializeField] private bool isBurstSummoner = false;
+        [SerializeField] private int burstCount = 5;
+        [SerializeField] private float burstAngleStep = 72f;
+
+        [Header("Tentacle Slam (Kraken)")]
+        [SerializeField] private bool hasTentacleSlam = false;
+        [SerializeField] private int tentacleCount = 4;
+        [SerializeField] private int tentacleDamage = 15;
+        [SerializeField] private float tentacleRadius = 3.5f;
+
         [Header("Shader")]
         [SerializeField] private string shaderOverlay = "";
 
@@ -118,5 +134,21 @@ namespace CrowdDefense.Data
         public float AoEAttackRadius => aoeAttackRadius;
         public int AoEAttackDamage => aoeAttackDamage;
         public string ShaderOverlay => shaderOverlay;
+
+        // Teleport (WizardKing)
+        public bool CanTeleport => canTeleport;
+        public float TeleportCooldown => teleportCooldown;
+        public int ProjectileRainCount => projectileRainCount;
+
+        // Drone Burst (AI Hub)
+        public bool IsBurstSummoner => isBurstSummoner;
+        public int BurstCount => burstCount;
+        public float BurstAngleStep => burstAngleStep;
+
+        // Tentacle Slam (Kraken)
+        public bool HasTentacleSlam => hasTentacleSlam;
+        public int TentacleCount => tentacleCount;
+        public int TentacleDamage => tentacleDamage;
+        public float TentacleRadius => tentacleRadius;
     }
 }
