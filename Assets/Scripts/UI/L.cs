@@ -61,6 +61,9 @@ namespace CrowdDefense.UI
                     ["hud.hero_ult_ready"] = "ULT READY",
                     ["hud.hero_ult_cd"] = "ULT {0:F1}s",
 
+                    // ── Tower select menu ──────────────────────────────────────────
+                    ["ui.tower_select.title"] = "Place a tower",
+
                     // ── Radial menu ────────────────────────────────────────────────
                     ["hud.radial_title"] = "{0}  L2  — Choose L3 (irreversible except sell)",
                     ["hud.radial_sell"] = "Sell +{0}g",
@@ -389,6 +392,9 @@ namespace CrowdDefense.UI
                     ["hud.hero_level"] = "Nv{0}",
                     ["hud.hero_ult_ready"] = "ULT DISPO",
                     ["hud.hero_ult_cd"] = "ULT {0:F1}s",
+
+                    // ── Tower select menu ──────────────────────────────────────────
+                    ["ui.tower_select.title"] = "Placer une tour",
 
                     // ── Radial menu ────────────────────────────────────────────────
                     ["hud.radial_title"] = "{0}  L2  — Choisir L3 (irréversible sauf vente)",

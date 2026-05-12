@@ -110,7 +110,7 @@ namespace CrowdDefense.UI
             menuTowers.Clear();
             menuButtons.Clear();
 
-            var title = new Label("Placer une tour");
+            var title = new Label(L.Get("ui.tower_select.title"));
             title.AddToClassList("tower-select-title");
             menuRoot.Add(title);
 
