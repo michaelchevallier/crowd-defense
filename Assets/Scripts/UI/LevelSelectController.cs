@@ -90,7 +90,10 @@ namespace CrowdDefense.UI
                         string id = levelId;
                         LevelData? levelData = registry?.FindById(id);
                         if (levelData != null)
+                        {
                             btn.RegisterCallback<ClickEvent>(_ => OnLevelClicked(id));
+                            AttachMiniMapPreview(btn, levelData);
+                        }
                         else
                             btn.SetEnabled(false);
                     }
@@ -164,6 +167,81 @@ namespace CrowdDefense.UI
 
             grid.Add(row);
         }
+
+        private static void AttachMiniMapPreview(VisualElement anchor, LevelData levelData)
+        {
+            var preview = BuildMiniMap(levelData);
+            preview.style.position = Position.Absolute;
+            preview.style.bottom = new StyleLength(new Length(105, LengthUnit.Percent));
+            preview.style.left = 0;
+            preview.style.display = DisplayStyle.None;
+            preview.style.zIndex = 100;
+            preview.pickingMode = PickingMode.Ignore;
+            anchor.Add(preview);
+
+            anchor.RegisterCallback<MouseEnterEvent>(_ => preview.style.display = DisplayStyle.Flex);
+            anchor.RegisterCallback<MouseLeaveEvent>(_ => preview.style.display = DisplayStyle.None);
+        }
+
+        private static VisualElement BuildMiniMap(LevelData levelData)
+        {
+            var rows = levelData.MapRows;
+            int rowCount = rows.Count;
+            int colCount = 0;
+            for (int r = 0; r < rowCount; r++)
+                if (rows[r].Length > colCount) colCount = rows[r].Length;
+            if (rowCount == 0 || colCount == 0) rowCount = colCount = 1;
+
+            const int PreviewSize = 64;
+            float cellW = PreviewSize / (float)colCount;
+            float cellH = PreviewSize / (float)rowCount;
+
+            var container = new VisualElement();
+            container.style.width  = PreviewSize;
+            container.style.height = PreviewSize;
+            container.style.flexDirection = FlexDirection.Column;
+            container.style.backgroundColor = new StyleColor(new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            container.style.borderTopLeftRadius     = 3;
+            container.style.borderTopRightRadius    = 3;
+            container.style.borderBottomLeftRadius  = 3;
+            container.style.borderBottomRightRadius = 3;
+            container.style.overflow = Overflow.Hidden;
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                string rowStr = r < rows.Count ? rows[r] : "";
+                var rowEl = new VisualElement();
+                rowEl.style.flexDirection = FlexDirection.Row;
+                rowEl.style.height = cellH;
+
+                for (int c = 0; c < colCount; c++)
+                {
+                    char ch = c < rowStr.Length ? rowStr[c] : '0';
+                    Color color = CellColor(ch);
+
+                    var cell = new VisualElement();
+                    cell.style.width           = cellW;
+                    cell.style.height          = cellH;
+                    cell.style.backgroundColor = new StyleColor(color);
+                    rowEl.Add(cell);
+                }
+                container.Add(rowEl);
+            }
+
+            return container;
+        }
+
+        private static Color CellColor(char ch) => ch switch
+        {
+            '1'  => new Color(0.15f, 0.15f, 0.15f), // wall
+            'P'  => new Color(0.95f, 0.85f, 0.20f), // path
+            'C'  => new Color(0.90f, 0.20f, 0.20f), // castle
+            'L'  => new Color(0.20f, 0.80f, 0.30f), // portal/entry
+            'T'  => new Color(0.20f, 0.55f, 0.90f), // tower slot
+            'W'  => new Color(0.30f, 0.55f, 0.80f), // water
+            'M'  => new Color(0.45f, 0.35f, 0.20f), // mountain
+            _    => new Color(0.55f, 0.55f, 0.55f), // floor / unknown
+        };
 
         private static void AddDailyRow(VisualElement grid)
         {
