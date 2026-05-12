@@ -5,7 +5,7 @@ namespace CrowdDefense.Data
 {
     public enum PerkCategory { Offensive, Economy, Mobility, Transform, Support }
     public enum PerkTag      { None, Foudre, Sang, Pierre, Feu, Vide, Or }
-    public enum PerkRarity   { Common, Rare, Epic, Legendary }
+    public enum PerkRarity   { Common, Uncommon, Rare, Epic, Legendary }
 
     public enum School { None, Elementaire, Mecanique, Mystique, Bestiaire, Strategie }
 

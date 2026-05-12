@@ -305,6 +305,7 @@ namespace CrowdDefense.Systems
         private static Color RarityColor(PerkRarity rarity) => rarity switch
         {
             PerkRarity.Common    => new Color(0.75f, 0.75f, 0.75f),
+            PerkRarity.Uncommon  => new Color(0.25f, 0.85f, 0.25f),
             PerkRarity.Rare      => new Color(0.25f, 0.5f,  1f),
             PerkRarity.Epic      => new Color(0.65f, 0.25f, 1f),
             PerkRarity.Legendary => new Color(1f,    0.65f, 0.1f),

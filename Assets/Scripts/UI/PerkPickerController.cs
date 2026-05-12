@@ -265,6 +265,7 @@ namespace CrowdDefense.UI
         private static string RarityClass(PerkRarity rarity) => rarity switch
         {
             PerkRarity.Common    => "rarity-common",
+            PerkRarity.Uncommon  => "rarity-uncommon",
             PerkRarity.Rare      => "rarity-rare",
             PerkRarity.Epic      => "rarity-epic",
             PerkRarity.Legendary => "rarity-legendary",
@@ -274,6 +275,7 @@ namespace CrowdDefense.UI
         private static string RarityKey(PerkRarity rarity) => rarity switch
         {
             PerkRarity.Common    => "perk.rarity_common",
+            PerkRarity.Uncommon  => "perk.rarity_uncommon",
             PerkRarity.Rare      => "perk.rarity_rare",
             PerkRarity.Epic      => "perk.rarity_epic",
             PerkRarity.Legendary => "perk.rarity_legendary",

@@ -151,9 +151,16 @@ namespace CrowdDefense.Systems
                 }
             }
 
-            FisherYates(available);
-            int take = Mathf.Min(count, available.Count);
-            return available.GetRange(0, take);
+            var weighted = BuildWeightedPool(available);
+            FisherYates(weighted);
+            var seen = new System.Collections.Generic.HashSet<string>();
+            var result2 = new List<PerkDef>();
+            foreach (var p in weighted)
+            {
+                if (seen.Add(p.id)) result2.Add(p);
+                if (result2.Count == count) break;
+            }
+            return result2;
         }
 
         // ── Legendary (all achievements unlocked) ────────────────────────────
@@ -322,6 +329,27 @@ namespace CrowdDefense.Systems
             School.Strategie   => PerkTag.Or,
             _                  => PerkTag.None,
         };
+
+        // Builds a pool with entries duplicated according to rarity weight (60/30/10).
+        // Common=60 copies, Uncommon=30, Rare/Epic=10 — then shuffle to pick distinct perks.
+        private static List<PerkDef> BuildWeightedPool(List<PerkDef> available)
+        {
+            var pool = new List<PerkDef>(available.Count * 10);
+            foreach (var p in available)
+            {
+                int copies = p.rarity switch
+                {
+                    PerkRarity.Common    => 60,
+                    PerkRarity.Uncommon  => 30,
+                    PerkRarity.Rare      => 10,
+                    PerkRarity.Epic      => 10,
+                    PerkRarity.Legendary =>  5,
+                    _                    => 60,
+                };
+                for (int i = 0; i < copies; i++) pool.Add(p);
+            }
+            return pool;
+        }
 
         private static void FisherYates<T>(List<T> list)
         {
