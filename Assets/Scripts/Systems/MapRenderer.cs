@@ -45,6 +45,16 @@ namespace CrowdDefense.Systems
             }
 
             var grid = pm.Grid;
+
+            // Bootstrap WaterLavaAnimController singleton before slab loop so
+            // registration calls (RegisterWater/RegisterLava) find a live instance.
+            if (WaterLavaAnimController.Instance == null)
+            {
+                var animGo = new GameObject("WaterLavaAnimController");
+                animGo.transform.SetParent(transform, false);
+                animGo.AddComponent<WaterLavaAnimController>();
+            }
+
             for (int r = 0; r < grid.Height; r++)
             {
                 for (int c = 0; c < grid.Width; c++)
@@ -68,6 +78,12 @@ namespace CrowdDefense.Systems
                     var mr = slab.GetComponent<MeshRenderer>();
                     mr.sharedMaterial = GetMat(ch, _theme);
                     _slabRenderers.Add(mr);
+
+                    // Register animated tiles with WaterLavaAnimController
+                    if (ch == GridCoords.WATER)
+                        WaterLavaAnimController.Instance?.RegisterWater(mr);
+                    else if (ch == GridCoords.LAVA)
+                        WaterLavaAnimController.Instance?.RegisterLava(mr);
                 }
             }
 

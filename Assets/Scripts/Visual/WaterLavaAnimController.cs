@@ -148,14 +148,11 @@ namespace CrowdDefense.Visual
 
         private void ScanMapRendererChildren()
         {
-            var mapRenderer = FindObjectOfType<MapRenderer>();
+            var mapRenderer = FindFirstObjectByType<MapRenderer>();
             if (mapRenderer == null) return;
 
             var grid = PathManager.Instance?.Grid;
             if (grid == null) return;
-
-            var lr = LevelRunner.Instance;
-            var theme = lr?.CurrentLevel?.LevelTheme ?? LevelTheme.Plaine;
 
             // MapRenderer names slabs "Cell_c_r" and stores them as direct children.
             foreach (Transform child in mapRenderer.transform)
