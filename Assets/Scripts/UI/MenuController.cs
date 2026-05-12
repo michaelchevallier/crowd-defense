@@ -16,6 +16,7 @@ namespace CrowdDefense.UI
         private Button? _btnCredits;
         private Button? _btnQuit;
         private Button? _btnTalents;
+        private Button? _btnDaily;
 
         private void Awake()
         {
@@ -33,6 +34,7 @@ namespace CrowdDefense.UI
             _btnCredits  = root.Q<Button>("btn-credits");
             _btnQuit     = root.Q<Button>("btn-quit");
             _btnTalents  = root.Q<Button>("btn-talents");
+            _btnDaily    = root.Q<Button>("btn-daily");
 
             if (_btnContinue != null) _btnContinue.clicked += OnContinue;
             if (_btnNewRun   != null) _btnNewRun.clicked   += OnNewRun;
@@ -40,6 +42,9 @@ namespace CrowdDefense.UI
             if (_btnCredits  != null) _btnCredits.clicked  += OnCredits;
             if (_btnQuit     != null) _btnQuit.clicked     += OnQuit;
             if (_btnTalents  != null) _btnTalents.clicked  += OnTalents;
+            if (_btnDaily    != null) _btnDaily.clicked    += OnDaily;
+
+            RefreshDailyButton();
 
             RefreshContinueButton();
         }
@@ -92,6 +97,24 @@ namespace CrowdDefense.UI
         private static void OnTalents()
         {
             TalentPanelController.Instance?.Show();
+        }
+
+        private void RefreshDailyButton()
+        {
+            if (_btnDaily == null) return;
+            bool done = DailyChallenge.Instance?.HasCompletedToday() ?? false;
+            _btnDaily.text = done
+                ? $"{L.Get("worldmap.btn_daily")} (fait)"
+                : L.Get("worldmap.btn_daily");
+            if (done)
+                _btnDaily.AddToClassList("menu-btn-done");
+            else
+                _btnDaily.RemoveFromClassList("menu-btn-done");
+        }
+
+        private static void OnDaily()
+        {
+            DailyChallengeModal.Instance?.Show();
         }
     }
 }
