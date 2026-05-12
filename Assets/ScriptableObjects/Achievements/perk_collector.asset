@@ -22,3 +22,6 @@ MonoBehaviour:
   predicateType: 1
   threshold: 20
   eventKey: perk_collected
+  iconEmoji: 
+  category: 3
+  rewardGold: 50

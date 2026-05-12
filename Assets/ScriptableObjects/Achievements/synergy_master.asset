@@ -22,3 +22,6 @@ MonoBehaviour:
   predicateType: 1
   threshold: 10
   eventKey: synergy_activated
+  iconEmoji: 
+  category: 3
+  rewardGold: 50

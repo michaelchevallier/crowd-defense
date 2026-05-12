@@ -19,7 +19,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   category: 0
   tag: 4
-  rarity: 1
+  rarity: 0
   stackable: 1
   maxStacks: 3
   school: 

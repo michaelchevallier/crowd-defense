@@ -180,7 +180,7 @@ namespace CrowdDefense.Entities
         private float _apocImpSummonTimer = 0f;
         private float _apocImpSummonEndTime = 0f;
 
-        // ── Boss special behavior timers (EnemyBossBehaviors.cs) ──────────────
+        // ── Boss special behavior timers (EnemyBossBehaviorsStatic.cs) ────────
         internal float _teleportTimer     = 0f;
         internal float _burstSummonTimer  = 0f;
         internal float _tentacleSlamTimer = 0f;
@@ -1207,10 +1207,10 @@ namespace CrowdDefense.Entities
             UpdateAoeBlast();
             UpdateCharge();
             UpdateFireBreath();
-            EnemyBossBehaviors.TickWizardKing(this);
-            EnemyBossBehaviors.TickWarlordCharge(this);
-            EnemyBossBehaviors.TickAiHubBurst(this);
-            EnemyBossBehaviors.TickKrakenTentacles(this);
+            EnemyBossBehaviorsStatic.TickWizardKing(this);
+            EnemyBossBehaviorsStatic.TickWarlordCharge(this);
+            EnemyBossBehaviorsStatic.TickAiHubBurst(this);
+            EnemyBossBehaviorsStatic.TickKrakenTentacles(this);
             UpdateFreeze();
             UpdateDebuffIcons();
             UpdateGroundDecals();

@@ -23,3 +23,5 @@ MonoBehaviour:
   threshold: 100
   eventKey: enemy_killed
   iconEmoji: "\U0001F480"
+  category: 3
+  rewardGold: 50

@@ -22,3 +22,6 @@ MonoBehaviour:
   predicateType: 1
   threshold: 10
   eventKey: wave_cleared
+  iconEmoji: 
+  category: 3
+  rewardGold: 50

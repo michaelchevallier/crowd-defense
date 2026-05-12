@@ -22,3 +22,6 @@ MonoBehaviour:
   predicateType: 1
   threshold: 3
   eventKey: daily_streak
+  iconEmoji: 
+  category: 3
+  rewardGold: 50

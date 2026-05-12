@@ -22,3 +22,6 @@ MonoBehaviour:
   predicateType: 0
   threshold: 1
   eventKey: 
+  iconEmoji: 
+  category: 3
+  rewardGold: 50

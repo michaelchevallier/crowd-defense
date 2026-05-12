@@ -22,3 +22,6 @@ MonoBehaviour:
   predicateType: 1
   threshold: 50
   eventKey: tower_placed
+  iconEmoji: 
+  category: 3
+  rewardGold: 50

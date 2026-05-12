@@ -22,3 +22,6 @@ MonoBehaviour:
   predicateType: 1
   threshold: 1000000
   eventKey: gold_earned
+  iconEmoji: 
+  category: 3
+  rewardGold: 50
