@@ -866,11 +866,11 @@ namespace CrowdDefense.Entities
                     e.TakeDamage(dmg);
             }
 
-            VfxPool.Instance?.SpawnImpact(pos + Vector3.up, new Color(1f, 0.2f, 1f));
-            VfxPool.Instance?.SpawnConfetti(pos + Vector3.up, UltimateAoeRadius);
+            VfxPool.Instance?.SpawnDeath(pos + Vector3.up, new Color(0.9f, 0.3f, 1f), intensityMul: 3.0f);
+            VfxPool.Instance?.SpawnExplosion(pos, UltimateAoeRadius);
             AudioController.Instance?.Play("hero_ult", 1.2f);
             JuiceFX.Instance?.Flash(new Color(0.8f, 0.2f, 1f, 0.45f), 450);
-            JuiceFX.Instance?.Shake(0.5f, 500);
+            JuiceFX.Instance?.Shake(0.3f, 400);
             FloatingPopupController.Instance?.SpawnReward("ULTIMATE!", pos + Vector3.up * 2.5f, new Color(0.9f, 0.3f, 1f));
             OnUltFired?.Invoke();
             return true;
