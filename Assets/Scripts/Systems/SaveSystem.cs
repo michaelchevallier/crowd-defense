@@ -167,7 +167,13 @@ namespace CrowdDefense.Systems
                             ? DiagnoseResult.Corrupted
                             : DiagnoseResult.Ok;
                     }
-                    catch { results[s] = DiagnoseResult.Corrupted; }
+                    catch (Exception ex)
+                    {
+#if UNITY_EDITOR
+                        Debug.LogWarning("[SaveSystem] v2 Progression slot" + s + " corrupted: " + ex.Message);
+#endif
+                        results[s] = DiagnoseResult.Corrupted;
+                    }
                     continue;
                 }
 
@@ -201,7 +207,13 @@ namespace CrowdDefense.Systems
                     _cachedRunMaps[s] = null;
                     results[s] = DiagnoseResult.BackupCreated;
                 }
-                catch { results[s] = DiagnoseResult.Corrupted; }
+                catch (Exception ex)
+                {
+#if UNITY_EDITOR
+                    Debug.LogWarning("[SaveSystem] v1 Progression slot" + s + " corrupted during migration: " + ex.Message);
+#endif
+                    results[s] = DiagnoseResult.Corrupted;
+                }
             }
             return results;
         }
@@ -640,8 +652,11 @@ namespace CrowdDefense.Systems
             {
                 _cachedRunMaps[s] = JsonUtility.FromJson<RunMapState>(json);
             }
-            catch
+            catch (Exception ex)
             {
+#if UNITY_EDITOR
+                Debug.LogWarning("[SaveSystem] RunMapState slot" + s + " corrupted: " + ex.Message);
+#endif
                 _cachedRunMaps[s] = null;
             }
             return _cachedRunMaps[s];
