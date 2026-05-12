@@ -22,3 +22,4 @@ MonoBehaviour:
   predicateType: 1
   threshold: 100
   eventKey: enemy_killed
+  iconEmoji: "\U0001F480"

@@ -22,3 +22,4 @@ MonoBehaviour:
   predicateType: 0
   threshold: 1
   eventKey:
+  iconEmoji: "\U0001F30A"

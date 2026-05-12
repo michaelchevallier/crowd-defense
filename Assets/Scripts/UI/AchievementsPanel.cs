@@ -34,6 +34,8 @@ namespace CrowdDefense.UI
             if (Instance == this) Instance = null;
         }
 
+        public bool IsOpen => _root != null && !_root.ClassListContains("hidden");
+
         public void Show()
         {
             if (_root == null) return;
@@ -83,7 +85,7 @@ namespace CrowdDefense.UI
             card.AddToClassList("ach-card");
             if (unlocked) card.AddToClassList("ach-card--unlocked");
 
-            var icon = new Label(unlocked ? "\U0001F3C6" : "\U0001F512");
+            var icon = new Label(unlocked ? def.IconEmoji : "\U0001F512");
             icon.AddToClassList("ach-icon");
             card.Add(icon);
 

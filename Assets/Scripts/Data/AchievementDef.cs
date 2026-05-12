@@ -19,5 +19,8 @@ namespace CrowdDefense.Data
         [SerializeField] public int threshold = 1;
         // For Counter predicates: matches the eventKey passed to Achievements.TrackEvent.
         [SerializeField] public string eventKey = "";
+        [SerializeField] public string iconEmoji = "";
+
+        public string IconEmoji => string.IsNullOrEmpty(iconEmoji) ? "\U0001F3C6" : iconEmoji;
     }
 }

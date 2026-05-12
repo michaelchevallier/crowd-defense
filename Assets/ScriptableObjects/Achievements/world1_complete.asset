@@ -21,4 +21,5 @@ MonoBehaviour:
   icon: {fileID: 0}
   predicateType: 0
   threshold: 1
-  eventKey: 
+  eventKey:
+  iconEmoji: "\U0001F3C6"
