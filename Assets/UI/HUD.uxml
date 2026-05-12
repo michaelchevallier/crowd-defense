@@ -321,6 +321,44 @@
 
         <ui:VisualElement name="popup-overlay" class="popup-overlay" picking-mode="Ignore" />
 
+        <!-- Run summary modal (victory/defeat end-of-run stats, RunSummaryController) -->
+        <ui:VisualElement name="run-summary-panel" class="run-summary-panel hidden">
+            <ui:VisualElement class="run-summary-box">
+                <ui:Label text="" name="rs-title" class="rs-title" />
+                <ui:Label text="" name="rs-stars" class="rs-stars" />
+                <ui:VisualElement class="rs-stats-grid">
+                    <ui:VisualElement class="rs-stat-row">
+                        <ui:Label text="Vagues" class="rs-stat-label" />
+                        <ui:Label text="" name="rs-waves" class="rs-stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="rs-stat-row">
+                        <ui:Label text="Ennemis tues" class="rs-stat-label" />
+                        <ui:Label text="" name="rs-kills" class="rs-stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="rs-stat-row">
+                        <ui:Label text="Or gagne" class="rs-stat-label" />
+                        <ui:Label text="" name="rs-gold" class="rs-stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="rs-stat-row">
+                        <ui:Label text="Tours placees" class="rs-stat-label" />
+                        <ui:Label text="" name="rs-towers" class="rs-stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="rs-stat-row">
+                        <ui:Label text="Perks" class="rs-stat-label" />
+                        <ui:Label text="" name="rs-perks" class="rs-stat-value" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="rs-stat-row">
+                        <ui:Label text="Temps" class="rs-stat-label" />
+                        <ui:Label text="" name="rs-time" class="rs-stat-value" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement class="rs-buttons">
+                    <ui:Button text="Continuer" name="rs-btn-menu" class="rs-btn rs-btn-secondary" />
+                    <ui:Button text="Rejouer" name="rs-btn-replay" class="rs-btn rs-btn-primary" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+
         <!-- Help overlay (HelpOverlayController — H or ? key, or btn-help click) -->
         <ui:Button text="?" name="btn-help" class="help-question-btn" tooltip="Raccourcis [H]" />
         <ui:VisualElement name="help-root" class="help-root hidden">

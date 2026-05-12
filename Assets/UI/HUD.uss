@@ -1272,6 +1272,105 @@
     -unity-font-style: italic;
 }
 
+/* === Run Summary modal === */
+.run-summary-panel {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.72);
+    align-items: center;
+    justify-content: center;
+    transition-property: opacity;
+    transition-duration: 0.35s;
+}
+
+.run-summary-box {
+    background-color: rgba(15, 15, 25, 0.96);
+    border-radius: 16px;
+    border-width: 2px;
+    border-color: rgba(255, 210, 60, 0.4);
+    padding: 32px 40px;
+    min-width: 440px;
+    max-width: 520px;
+    align-items: center;
+}
+
+.rs-title {
+    color: rgb(255, 210, 60);
+    font-size: 52px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+}
+
+.rs-stars {
+    color: rgb(255, 210, 60);
+    font-size: 36px;
+    -unity-text-align: middle-center;
+    margin-bottom: 20px;
+}
+
+.rs-stats-grid {
+    width: 100%;
+    margin-bottom: 24px;
+}
+
+.rs-stat-row {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.rs-stat-label {
+    color: rgba(200, 200, 200, 0.75);
+    font-size: 17px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.rs-stat-value {
+    color: white;
+    font-size: 17px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.rs-buttons {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.rs-btn {
+    flex-grow: 1;
+    padding: 14px 0;
+    border-radius: 8px;
+    border-width: 0;
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin: 0 6px;
+    color: white;
+}
+
+.rs-btn-primary {
+    background-color: rgb(50, 140, 220);
+}
+
+.rs-btn-primary:hover {
+    background-color: rgb(70, 160, 240);
+}
+
+.rs-btn-secondary {
+    background-color: rgba(80, 80, 80, 0.8);
+}
+
+.rs-btn-secondary:hover {
+    background-color: rgba(110, 110, 110, 0.9);
+}
+
 /* === Wave elapsed timer === */
 .wave-time {
     font-size: 11px;
