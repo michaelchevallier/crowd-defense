@@ -62,10 +62,6 @@ namespace CrowdDefense.Entities
         public int   XpToNext  { get; private set; }
         public int   MaxLevel  { get; private set; }
 
-        // ── Kill counter ──────────────────────────────────────────────────────
-        private int _killCount;
-        public  int KillCount => _killCount;
-
         // ── Perk multipliers (reset + reapplied by ApplyRunContext) ───────────
         public float FireRateMul      { get; internal set; } = 1f;
         public float RangeMul         { get; internal set; } = 1f;
@@ -1253,12 +1249,8 @@ namespace CrowdDefense.Entities
             }
         }
 
-        public void RegisterKill() => _killCount++;
-
         private void OnProjKill(Vector3 killPos)
         {
-            RegisterKill();
-
             // Lifesteal: each kill restores HP to the castle (V5 pattern — lifesteal unit = HP pts)
             if (Lifesteal > 0f && Castle.Instance != null)
                 Castle.Instance.Regen(Mathf.Max(1, Mathf.RoundToInt(Lifesteal)));
@@ -1373,80 +1365,17 @@ namespace CrowdDefense.Entities
             FirstTowerFree        = false;
             FirstTowerFreeUsed    = false;
             _projFiredCount       = 0;
-            _killCount            = 0;
             _fireTrails.Clear();
         }
 
         private void Awake()
         {
             Current = this;
-            Enemy.OnDeathStatic      += OnEnemyKilled;
-        }
-
-        private void OnEnemyKilled(Enemy enemy, bool isBoss)
-        {
-            if (!isBoss) return;
-            TriggerFinisherCinematic(enemy.transform.position);
-        }
-
-        public void TriggerFinisherCinematic(Vector3 bossPos)
-        {
-            JuiceFX.Instance?.SlowMo(0.5f, 1000);
-            VfxPool.Instance?.SpawnConfetti(bossPos + Vector3.up * 0.5f, 2.5f);
-            VfxPool.Instance?.SpawnConfetti(bossPos + Vector3.up * 1.0f, 2.0f);
-            AudioController.Instance?.Play("hero_ult", 1.1f);
-            JuiceFX.Instance?.Flash(new Color(1f, 0.92f, 0.2f, 0.35f), 400);
-            StartCoroutine(FinisherCameraZoom(bossPos));
-        }
-
-        private System.Collections.IEnumerator FinisherCameraZoom(Vector3 bossPos)
-        {
-            var cam = MainCameraCache.Main;
-            if (cam == null) yield break;
-
-            float origFOV = cam.fieldOfView;
-            float zoomFOV = origFOV * 0.72f;
-            var origPos   = cam.transform.position;
-
-            Vector3 dirToBoss = (bossPos - cam.transform.position).normalized;
-            Vector3 zoomPos   = origPos + dirToBoss * 4f;
-
-            float t = 0f;
-            const float ZoomIn  = 0.35f;
-            const float Hold    = 0.65f;
-            const float ZoomOut = 0.50f;
-
-            // zoom in (unscaled — SlowMo affects Time.timeScale)
-            while (t < ZoomIn)
-            {
-                t += Time.unscaledDeltaTime;
-                float k = Mathf.Clamp01(t / ZoomIn);
-                cam.fieldOfView   = Mathf.Lerp(origFOV, zoomFOV, k);
-                cam.transform.position = Vector3.Lerp(origPos, zoomPos, k);
-                yield return null;
-            }
-
-            yield return new WaitForSecondsRealtime(Hold);
-
-            // zoom out
-            t = 0f;
-            while (t < ZoomOut)
-            {
-                t += Time.unscaledDeltaTime;
-                float k = Mathf.Clamp01(t / ZoomOut);
-                cam.fieldOfView   = Mathf.Lerp(zoomFOV, origFOV, k);
-                cam.transform.position = Vector3.Lerp(zoomPos, origPos, k);
-                yield return null;
-            }
-
-            cam.fieldOfView        = origFOV;
-            cam.transform.position = origPos;
         }
 
         // ── OnDestroy — return dangling projectiles to pool ──────────────────
         private void OnDestroy()
         {
-            Enemy.OnDeathStatic      -= OnEnemyKilled;
             if (_respawnRoutine != null) StopCoroutine(_respawnRoutine);
             if (Current == this) Current = null;
             for (int i = _projectiles.Count - 1; i >= 0; i--)

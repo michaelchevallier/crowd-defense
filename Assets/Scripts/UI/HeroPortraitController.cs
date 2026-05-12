@@ -126,8 +126,6 @@ namespace CrowdDefense.UI
             if (_hpLabel != null)
                 _hpLabel.text = atMaxLevel ? "XP MAX" : $"XP {hero.Xp}/{hero.XpToNext}";
 
-            if (_killLabel != null)
-                _killLabel.text = $"Tues : {hero.KillCount}";
         }
 
         public void AnimateXpGain(int amount)
