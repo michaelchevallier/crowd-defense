@@ -300,6 +300,23 @@ namespace CrowdDefense.UI
                     ["stats.reset_yes"]         = "Reset",
                     ["stats.reset_no"]          = "Cancel",
                     ["stats.no_run"]            = "No active run.",
+
+                    // ── Wave tips ──────────────────────────────────────────────────
+                    ["tip.0"]  = "Frost towers slow enemies — combine with DPS towers for maximum effect.",
+                    ["tip.1"]  = "Selling a tower refunds 80% of your total investment.",
+                    ["tip.2"]  = "Your hero levels up by collecting XP orbs — each level unlocks a new perk.",
+                    ["tip.3"]  = "Bosses have 4 phases — save your ultimate ability for the final phase!",
+                    ["tip.4"]  = "Launch the wave early to earn +30 coins bonus.",
+                    ["tip.5"]  = "The Acid tower reduces enemy armor — pair it with your heaviest hitters.",
+                    ["tip.6"]  = "The Magnet tower pulls coins to the castle automatically.",
+                    ["tip.7"]  = "Portal towers boost nearby towers' attack speed — place them centrally.",
+                    ["tip.8"]  = "Consecutive early launches build a streak: kill rewards increase up to +25%.",
+                    ["tip.9"]  = "Skyguard towers are the only ones that can target flying enemies.",
+                    ["tip.10"] = "Upgrade towers to L3 for signature abilities: DPS or Utility branch.",
+                    ["tip.11"] = "The Mine tower chains explosions with nearby Cannon towers.",
+                    ["tip.12"] = "Place the Fan tower at chokepoints to push enemies back onto the path.",
+                    ["tip.13"] = "Hero ultimate charges faster when the hero is close to enemies.",
+                    ["tip.14"] = "Bank gold between waves — interest is paid at wave end if the castle took no damage.",
                 },
                 ["fr"] = new()
                 {
@@ -584,6 +601,23 @@ namespace CrowdDefense.UI
                     ["stats.reset_yes"]         = "Réinitialiser",
                     ["stats.reset_no"]          = "Annuler",
                     ["stats.no_run"]            = "Aucune partie en cours.",
+
+                    // ── Wave tips ──────────────────────────────────────────────────
+                    ["tip.0"]  = "Les tours Frost ralentissent les ennemis — combinez-les avec des tours DPS.",
+                    ["tip.1"]  = "Vendre une tour rembourse 80% de l'investissement total.",
+                    ["tip.2"]  = "Votre héros monte de niveau en ramassant des orbes d'XP — chaque niveau débloque un perk.",
+                    ["tip.3"]  = "Les boss ont 4 phases — gardez votre ultime pour la phase finale !",
+                    ["tip.4"]  = "Lancez la vague tôt pour gagner +30 pièces bonus.",
+                    ["tip.5"]  = "La tour Acide réduit l'armure des ennemis — associez-la à vos tours les plus puissantes.",
+                    ["tip.6"]  = "La tour Aimant aspire automatiquement les pièces vers le château.",
+                    ["tip.7"]  = "Les tours Portail boostent la vitesse d'attaque des tours voisines — placez-les au centre.",
+                    ["tip.8"]  = "Les lancements anticipés enchaînés créent un streak : les récompenses de kills augmentent jusqu'à +25%.",
+                    ["tip.9"]  = "La tour Garde-ciel est la seule capable de cibler les ennemis volants.",
+                    ["tip.10"] = "Améliorez vos tours au niveau L3 pour des capacités de signature : branche DPS ou Utilitaire.",
+                    ["tip.11"] = "La tour Mine déclenche des explosions en chaîne avec les tours Canon voisines.",
+                    ["tip.12"] = "Placez la tour Ventilateur aux goulots d'étranglement pour repousser les ennemis sur le chemin.",
+                    ["tip.13"] = "L'ultime du héros se charge plus vite quand il est proche des ennemis.",
+                    ["tip.14"] = "Accumulez de l'or entre les vagues — les intérêts sont versés en fin de vague si le château n'a pas subi de dégâts.",
                 },
             },
 
