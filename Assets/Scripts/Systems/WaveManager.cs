@@ -283,10 +283,10 @@ namespace CrowdDefense.Systems
         {
             float pressureRate = Mathf.Clamp01((worldId - 1) / 9f * 0.6f);
             if (UnityEngine.Random.value > pressureRate) return;
-            StartCoroutine(SpawnPressureDelayed(3f, 1.5f));
+            StartCoroutine(SpawnPressureDelayed(3f, 1.5f, waveIdx, worldId));
         }
 
-        private System.Collections.IEnumerator SpawnPressureDelayed(float delaySec, float speedMul)
+        private System.Collections.IEnumerator SpawnPressureDelayed(float delaySec, float speedMul, int waveIdx, int worldId)
         {
             yield return new WaitForSeconds(delaySec);
             if (!waveActive) yield break;
@@ -295,13 +295,13 @@ namespace CrowdDefense.Systems
 
             // Pick a random non-null enemy type from the wave
             EnemyType? pick = null;
-            foreach (var entry in wave.entries)
+            foreach (var entry in wave.Entries)
             {
                 if (entry.type != null) { pick = entry.type; break; }
             }
             if (pick == null) yield break;
 
-            int resolvedPathIdx = ResolvePathIdx(wave.portalIdx);
+            int resolvedPathIdx = ResolvePathIdx(wave.PortalIdx);
             if (PathManager.Instance == null || EnemyPool.Instance == null) yield break;
             Vector3 spawnPos = PathManager.Instance.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
             var enemy = EnemyPool.Instance.SpawnFromType(pick, spawnPos, resolvedPathIdx, _currentWaveScaleMul);
