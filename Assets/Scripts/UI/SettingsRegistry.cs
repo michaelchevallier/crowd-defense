@@ -25,6 +25,7 @@ namespace CrowdDefense.UI
         private const string KAutoPauseOnBlur = "cd.gameplay.auto_pause_blur";
         private const string KShowDamageIcons = "cd.gfx.damage_icons";
         private const string KMusicPulse = "cd.gfx.music_pulse_v1";
+        private const string KWeather = "cd.gfx.weather";
 
         public event Action? OnSettingsChanged;
 
@@ -46,6 +47,7 @@ namespace CrowdDefense.UI
         private bool _autoPauseOnBlur = true;
         private bool _showDamageIcons;
         private bool _musicPulseEnabled;
+        private bool _weatherEnabled = true;
 
         public float MasterVolume
         {
@@ -155,6 +157,12 @@ namespace CrowdDefense.UI
             set { if (_musicPulseEnabled == value) return; _musicPulseEnabled = value; Save(); Notify(); }
         }
 
+        public bool WeatherEnabled
+        {
+            get => _weatherEnabled;
+            set { if (_weatherEnabled == value) return; _weatherEnabled = value; ApplyWeather(); Save(); Notify(); }
+        }
+
         protected override void OnAwakeSingleton()
         {
             Load();
@@ -182,6 +190,7 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetInt(KAutoPauseOnBlur, _autoPauseOnBlur ? 1 : 0);
             PlayerPrefs.SetInt(KShowDamageIcons, _showDamageIcons ? 1 : 0);
             PlayerPrefs.SetInt(KMusicPulse, _musicPulseEnabled ? 1 : 0);
+            PlayerPrefs.SetInt(KWeather, _weatherEnabled ? 1 : 0);
             PlayerPrefs.Save();
         }
 
@@ -205,6 +214,7 @@ namespace CrowdDefense.UI
             _autoPauseOnBlur = PlayerPrefs.GetInt(KAutoPauseOnBlur, 1) == 1;
             _showDamageIcons = PlayerPrefs.GetInt(KShowDamageIcons, 0) == 1;
             _musicPulseEnabled = PlayerPrefs.GetInt(KMusicPulse, 0) == 1;
+            _weatherEnabled = PlayerPrefs.GetInt(KWeather, 1) == 1;
         }
 
         private void ApplyAudio()
@@ -231,6 +241,13 @@ namespace CrowdDefense.UI
         {
             int idx = Mathf.Clamp(_qualityLevel, 0, QualitySettings.names.Length - 1);
             QualitySettings.SetQualityLevel(idx, applyExpensiveChanges: false);
+        }
+
+        private void ApplyWeather()
+        {
+            var wc = Visual.WeatherController.Instance;
+            if (wc == null) return;
+            if (!_weatherEnabled) wc.StopAll();
         }
 
         private void Notify() => OnSettingsChanged?.Invoke();
