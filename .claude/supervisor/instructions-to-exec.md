@@ -6,7 +6,7 @@
 
 ## Last ack expected from exec
 
-`acks/2026-05-12-HHhMM-parity-v4-p1-go-ack.md` après l'instruction PARITY-V4-P1-GO ci-dessous (Mike GO autonome batch P1).
+`acks/2026-05-12-HHhMM-stop-runtime-critical-ack.md` après l'instruction STOP-RUNTIME-CRITICAL ci-dessous (drift D10/D11 confirmé).
 
 ---
 
@@ -492,7 +492,76 @@ ThemeSkins[] couvre 8/10 themes. Foire et Medieval → default tint silencieux.
 
 ## Status
 
-⏳ pending exec bug-fixer dispatch (~15 min total)
+✅ DONE — 3 fixes shipped en ~10 min (commits 7817aeb + fd8f4a1 + ae7945b)
+
+---
+
+### 2026-05-12 17h17 — 🛑 STOP-RUNTIME-CRITICAL (drift D10/D11 confirmé)
+
+**Type** : STOP-CURRENT + URGENT FIX
+**From** : Opus superviseur — Mike a paste console output `/v6/` montrant crash runtime
+**Drift criteria** : D10 (build runtime broken) + D11 (runtime exceptions ≥3) confirmés sur 1 check
+**Drift report** : `.claude/supervisor/drift-reports/2026-05-12-17h17-runtime-crash.md`
+
+## Détection
+
+Mike a testé live `https://michaelchevallier.github.io/crowd-defense/v6/` (build R1706/R1718 deployed). Console browser montre :
+
+1. **3 shaders URP not supported** : `Hidden/CoreSRP/CoreCopy`, `Hidden/Universal Render Pipeline/StencilDitherMaskSeed`, `Hidden/Universal/HDRDebugView`
+2. **5× ArgumentNullException UIElements.Q[T]** (VisualElement target null)
+3. **1× NullReferenceException** (stack stripped)
+4. **🛑 Uncaught RuntimeError: table index is out of bounds → HALTING PROGRAM** — jeu crashed
+
+## Actions immédiates pour exec
+
+### 1. STOP toute autre activité
+
+- **Aucun dispatch nouveau ticket** P2/P3 jusqu'à fix
+- **Aucun feature creep** ni cleanup hygiène pour l'instant
+- **Aucun déploiement** tant que runtime pas fixé (auto-build-loop peut continuer mais pas trigger manuel)
+
+### 2. Bug-fixer URGENT déjà dispatched par superviseur
+
+**Agent superviseur-spawned** : `bug-fixer` ID `ab94607c0d28cb1fb`, background, ETA 30-60 min.
+
+Mission : diagnose + fix les 4 problèmes par ordre criticité :
+1. RuntimeError table index out of bounds (CRITICAL crash)
+2. ArgumentNullException UIElements.Q (5×)
+3. 3 shaders URP not supported (build inclusion)
+4. NullRef collateral
+
+L'agent investigate les commits suspects R6-PARITY-V4 (top 3 risk : `7817aeb` SPLIT EnemyBossBehaviors + `a49ed12` Dynamic events + `08d7229` merge 014+005-IMPL boss).
+
+### 3. Exec collabore si nécessaire
+
+Si bug-fixer pose une question dans `questions-to-supervisor.md` (catégorie B escalation Mike), réveille toi rapidement + relay à Mike.
+
+Sinon : exec attend bug-fixer completion + relit ce canal.
+
+### 4. Pas de revert partial sans Mike validation
+
+Charter §3 D10/D11 action : "STOP, build broken, run bug-fixer" ✅ déjà fait. Pas de revert spontané — bug-fixer doit trouver root cause.
+
+Si bug-fixer suggère revert (ex : `git revert 7817aeb`) → Mike notif T1 + attendre validation.
+
+## Hypothèses top 3 (cf drift report)
+
+1. **`7817aeb` SPLIT EnemyBossBehaviors** : extraction static class — possible binding internal field access perdu post-split → tick boss → table index OOB
+2. **`a49ed12` Dynamic events** : `% 5` auto-trigger sur Tower/Enemy/Castle → index OOB possible dans loop `foreach (var t in TowerPool.Active)` si pool reordered pendant event
+3. **`a502416` 014 Boss phases** + merge : Apocalypse 4 phases avec timers → array OOB possible sur phases array si phase index dépasse `phases.Length`
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-stop-runtime-critical-ack.md` :
+- Confirmation STOP toute activité P2/P3
+- Aware bug-fixer en cours (ID `ab94607c0d28cb1fb`)
+- Status build/deploy actuel (continue OR pause auto-build-loop ?)
+- Si bug-fixer trouve solution, post-fix verify cycle plan
+
+## Status
+
+⏳ pending bug-fixer completion + exec ack STOP
+
 
 
 
