@@ -1,31 +1,32 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 latest
+## 2026-05-12 03:55
 
 ### Snapshot
 
-- Actifs (<30 min) : 18
-- Stalled (8-30 min) : 14
+- Actifs (<8 min) : 9 (dont bbissrkip = Monitor build, bd4n4rpu6 = watchdog scan, a6c12a80d96576a52 = qa-tester V4 diff en flight)
+- Stalled (8-30 min) : 10 (b* IDs anciennes sessions — artifacts inertes, pas d'agents Sonnet vivants à killer)
 - Worktrees : 16
-- Unity batch : NO (no process)
-- Lockfile : absent (clean)
+- Unity batch : **YES** PID 93091 (Unity.app batchmode rebuild WebGL post-shader-fix)
+- Lockfile : present (normal, Unity batch tient le lock)
+- Build log silence : 1s (compile actif, sain)
 
 ### Killed
 
-0. Pas de batch Unity actif, pas de lockfile orphelin. Rien à killer.
+0. Build Unity PID 93091 actif et productif (log mtime fresh) — laisser tourner.
 
 ### Stalled outputs (mtime 8-30 min)
 
-bibtu76k4 (9m), bu7e8gd55 (11m), b5v2ds2f9 (12m), be1gq22ca (18m), bzw06hzvd (22m), buezxrxvi (22m), birqagk98 (22m), byy2poq6d (23m), bkavqvtya (23m), bt2pgnqq3 (24m), b5zb6d9tj (26m), blt0ic8re (26m), bqbjgk5ks (27m), b80la2eto (29m)
+b5v2ds2f9 (17m), bibtu76k4 (15m), bu7e8gd55 (17m), be1gq22ca (23m), bzw06hzvd (27m), buezxrxvi (27m), birqagk98 (27m), byy2poq6d (28m), bkavqvtya (28m), bt2pgnqq3 (29m)
 
 ### Notes
 
-14 agents Sonnet en background silencieux 8-30 min — pas d'action destructive (peuvent encore livrer). 16 worktrees ouverts. Pas de batch Unity ni lockfile = pas de watchdog Unity nécessaire.
+10 "b*" outputs sont vieux task-result files (cross-session), pas Sonnet sub-agents — pas d'action destructive. Build Unity en pleine compile post Library/Bee wipe, log silent 1s = healthy. Monitor `bbissrkip` armé pour notification "Build succeeded|failed".
 
 ### Next
 
-Re-check next iter. Si nouveau batch démarre et silent > 15 min → `bash /Users/mike/Work/crowd-defense/tools/unity-watchdog.sh`.
+Re-check next iter (5 min). Surveiller : Unity batch silent > 120s → bash tools/unity-watchdog.sh ; nouveaux Sonnet stalled > 15 min → tail + dispatch bug-fixer.
 
 ### Stdout
 
-`Actifs:18 Stalled:14 Killed:0 Worktrees:16 UnityBatch:N`
+`Actifs:9 Stalled:10 Killed:0 Worktrees:16 UnityBatch:YES(PID93091,silent1s)`

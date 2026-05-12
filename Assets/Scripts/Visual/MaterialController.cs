@@ -73,7 +73,7 @@ namespace CrowdDefense.Visual
                     }
                     newMats[i] = m;
                 }
-                r.materials = newMats;
+                r.sharedMaterials = newMats;
             }
         }
 
@@ -134,7 +134,7 @@ namespace CrowdDefense.Visual
         public static void ApplyOverrideMaterial(GameObject root, Material mat)
         {
             foreach (var r in root.GetComponentsInChildren<Renderer>())
-                r.material = mat;
+                r.sharedMaterial = mat;
         }
 
         private static Material? LoadCached(ref Material? cache, string resourceName)

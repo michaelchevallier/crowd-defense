@@ -13,6 +13,8 @@ namespace CrowdDefense.Visual
     // API canon C3. Tint via MainModule.startColor.
     public class VfxPool : MonoSingleton<VfxPool>
     {
+        private static readonly Dictionary<float, WaitForSeconds> _waitCache = new();
+    {
         private const int DefaultCapacity = 24;
         private const int MaxPoolSize = 100;
 
@@ -419,13 +421,24 @@ namespace CrowdDefense.Visual
             StartCoroutine(AutoReleaseRoutine(ps, pool, _root));
         }
 
+        private static WaitForSeconds GetWait(float seconds)
+        {
+            float key = Mathf.Round(seconds * 20f) / 20f;
+            if (!_waitCache.TryGetValue(key, out var w))
+            {
+                w = new WaitForSeconds(key);
+                _waitCache[key] = w;
+            }
+            return w;
+        }
+
         private static IEnumerator AutoReleaseRoutine(ParticleSystem ps,
                                                        ObjectPool<ParticleSystem> pool,
                                                        Transform? root)
         {
             var main = ps.main;
             float waitTime = main.startLifetime.constantMax + main.duration + 0.1f;
-            yield return new WaitForSeconds(waitTime);
+            yield return GetWait(waitTime);
             if (ps == null || !ps.gameObject.activeSelf) yield break;
             if (root != null) ps.transform.SetParent(root, worldPositionStays: false);
             pool.Release(ps);
