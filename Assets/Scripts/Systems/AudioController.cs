@@ -87,11 +87,8 @@ namespace CrowdDefense.Systems
                 return;
             }
 
-            if (!_warned.Contains(clipKey))
-            {
-                _warned.Add(clipKey);
-                Debug.LogWarning($"[AudioController] Missing clip: {clipKey}");
-            }
+            // Fallback: procedural beep for missing SFX clips
+            StartCoroutine(PlayProceduralBeepCo(clipKey, volMul));
         }
 
         private static float FreqForKey(string key)
@@ -122,6 +119,31 @@ namespace CrowdDefense.Systems
             source.clip = beep;
             source.volume = Mathf.Clamp01(volMul * 0.25f);
             source.Play();
+            yield return new WaitForSeconds(duration + 0.05f);
+            if (this != null) Destroy(beep);
+        }
+
+        private IEnumerator PlayProceduralBeep3DCo(string clipKey, Vector3 worldPos, float volMul)
+        {
+            if (this == null) yield break;
+            const int sampleRate = 44100;
+            float freq = FreqForKey(clipKey);
+            const float duration = 0.07f;
+            int samples = Mathf.RoundToInt(sampleRate * duration);
+            var data = new float[samples];
+            for (int i = 0; i < samples; i++)
+            {
+                float t = (float)i / sampleRate;
+                float env = 1f - t / duration;
+                data[i] = Mathf.Sin(2f * Mathf.PI * freq * t) * env;
+            }
+            var beep = AudioClip.Create("_beep_3d", samples, 1, sampleRate, false);
+            beep.SetData(data, 0);
+            var src = _sfxPool[_nextIdx++ % PoolSize];
+            src.transform.position = worldPos;
+            src.clip = beep;
+            src.volume = Mathf.Clamp01(volMul * 0.25f);
+            src.Play();
             yield return new WaitForSeconds(duration + 0.05f);
             if (this != null) Destroy(beep);
         }
@@ -157,11 +179,8 @@ namespace CrowdDefense.Systems
             var clip = registry?.Get(clipKey);
             if (clip == null)
             {
-                if (!_warned.Contains(clipKey))
-                {
-                    _warned.Add(clipKey);
-                    Debug.LogWarning($"[AudioController] Missing clip: {clipKey}");
-                }
+                // Fallback: procedural beep at world position
+                StartCoroutine(PlayProceduralBeep3DCo(clipKey, worldPos, volMul));
                 return;
             }
             AudioSource.PlayClipAtPoint(clip, worldPos, Mathf.Clamp01(volMul));
@@ -279,7 +298,7 @@ namespace CrowdDefense.Systems
 
         public void SetMixerMasterVolume(float zeroToOne)
         {
-            if (mixer != null) mixer.SetFloat("MasterVol", LinearToDb(zeroToOne));
+            if (mixer != null) mixer.SetFloat("Master_Volume", LinearToDb(zeroToOne));
         }
 
         public void SetGlobalListenerVolume(float zeroToOne)
@@ -289,20 +308,20 @@ namespace CrowdDefense.Systems
 
         public void SetSFXVolume(float zeroToOne)
         {
-            if (mixer != null && mixer.SetFloat("SFXVol", LinearToDb(zeroToOne))) return;
+            if (mixer != null && mixer.SetFloat("SFX_Volume", LinearToDb(zeroToOne))) return;
             foreach (var src in _sfxPool) src.volume = Mathf.Clamp01(zeroToOne);
         }
 
         public void SetMusicVolume(float zeroToOne)
         {
-            if (mixer != null && mixer.SetFloat("MusicVol", LinearToDb(zeroToOne))) return;
+            if (mixer != null && mixer.SetFloat("Music_Volume", LinearToDb(zeroToOne))) return;
             if (_musicSource != null) _musicSource.volume = Mathf.Clamp01(zeroToOne);
             MusicManager.Instance?.SetMusicVolume(zeroToOne);
         }
 
         public void SetUIVolume(float zeroToOne)
         {
-            if (mixer != null && mixer.SetFloat("UIVol", LinearToDb(zeroToOne))) return;
+            if (mixer != null && mixer.SetFloat("UI_Volume", LinearToDb(zeroToOne))) return;
         }
 
         public void PlayLoop(AudioClip clip, string channel, float volume = 1f)

@@ -394,6 +394,69 @@ namespace CrowdDefense.Systems
 
         public TowerType? SelectedTowerType => selectedTowerType;
 
+        // ── BuildPoint walk-in API ──────────────────────────────────────────────
+
+        public Vector2Int? ActiveBuildCell { get; private set; }
+
+        public void OpenBuildPointPicker(Vector2Int cell)
+        {
+            ActiveBuildCell = cell;
+            var grid = PathManager.Instance?.Grid;
+            if (grid == null) return;
+            Vector3 cellWorld = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
+            OnEmptyBuildableTileClick?.Invoke(cellWorld);
+        }
+
+        public void CloseBuildPointPicker(Vector2Int cell)
+        {
+            if (ActiveBuildCell == cell)
+                ActiveBuildCell = null;
+        }
+
+        public bool TryPlaceAtActiveBuildCell(TowerType type)
+        {
+            if (ActiveBuildCell == null) return false;
+            var cell = ActiveBuildCell.Value;
+            var grid = PathManager.Instance?.Grid;
+            if (grid == null || towerPrefab == null) return false;
+            if (!grid.IsBuildable(cell.x, cell.y)) return false;
+
+            if (type.Behavior == TowerBehavior.CoinPull)
+            {
+                var cfg = BalanceConfig.Get();
+                bool allowMulti = LevelRunner.Instance?.CurrentLevel?.AllowMultiMagnet ?? false;
+                int cap = allowMulti ? cfg.MagnetCapAllowMulti : cfg.MagnetCapDefault;
+                int count = 0;
+                foreach (var t in placedTowers)
+                    if (t != null && t.Config?.Behavior == TowerBehavior.CoinPull) count++;
+                if (count >= cap) return false;
+            }
+
+            var hero = LevelRunner.Instance?.Hero;
+            int cost = ComputeTowerCost(type.Cost, hero);
+            if (cost > 0 && (Economy.Instance == null || !Economy.Instance.TrySpend(cost))) return false;
+            if (cost == 0 && hero != null && hero.FirstTowerFree)
+                hero.FirstTowerFreeUsed = true;
+
+            Vector3 cellWorld = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
+            var go = Instantiate(towerPrefab, cellWorld, Quaternion.identity);
+            var tower = go.GetComponent<Tower>();
+            if (tower != null)
+            {
+                tower.Init(type, projectilePrefab);
+                placedTowers.Add(tower);
+                ActiveBuildCell = null;
+                Synergies.Instance?.MarkDirty();
+                TriggerPlaceFeedback(true, cellWorld + Vector3.up * 0.3f);
+                AudioController.Instance?.Play3D("tower_placed", cellWorld);
+                JuiceFX.Instance?.PunchScale(tower.transform, 1.15f, 0.3f);
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward("Tour placee !", cellWorld + Vector3.up * 1.5f, Color.green);
+                WaveHistoryLog.Instance?.Log("tower", $"Tour : {type.DisplayName} N1");
+                OnTowerPlaced?.Invoke(tower);
+            }
+            return tower != null;
+        }
+
         private static int ComputeTowerCost(int baseCost, Hero? hero)
         {
             if (hero == null) return baseCost;
