@@ -193,7 +193,18 @@ namespace CrowdDefense.UI
             EnsureSibling<RuntimeProfilePanel>();
             EnsureSibling<AchievementToastController>();
 
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[HudController] UIDocument component not found — HUD will not render");
+                return;
+            }
+            var root = uiDoc.rootVisualElement;
+            if (root == null)
+            {
+                Debug.LogError("[HudController] rootVisualElement is null — HUD UXML failed to load");
+                return;
+            }
             ApplyDeviceClasses(root);
             goldLabel = root.Q<Label>("gold-label");
             goldValue = root.Q<Label>("gold-value");
