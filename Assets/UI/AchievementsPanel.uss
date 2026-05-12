@@ -152,6 +152,41 @@
     color: rgb(255, 210, 63);
 }
 
+/* === Category tabs === */
+.ach-tab-row {
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.ach-tab {
+    height: 28px;
+    min-width: 80px;
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: rgba(180, 185, 205, 0.75);
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin: 0 3px;
+    cursor: link;
+}
+
+.ach-tab:hover {
+    background-color: rgba(120, 180, 255, 0.12);
+    border-color: rgba(120, 180, 255, 0.50);
+    color: white;
+}
+
+.ach-tab--active {
+    background-color: rgba(120, 180, 255, 0.20);
+    border-color: rgb(120, 180, 255);
+    color: rgb(120, 180, 255);
+}
+
 /* === Locked card override === */
 .ach-card--locked {
     opacity: 0.45;

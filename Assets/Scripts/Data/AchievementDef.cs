@@ -5,6 +5,8 @@ namespace CrowdDefense.Data
 {
     public enum AchievementPredicateType { Event, Counter }
 
+    public enum AchievementCategory { Combat, Economy, Progression, Misc }
+
     [CreateAssetMenu(menuName = "CrowdDefense/AchievementDef", fileName = "AchievementDef")]
     public class AchievementDef : ScriptableObject
     {
@@ -20,6 +22,7 @@ namespace CrowdDefense.Data
         // For Counter predicates: matches the eventKey passed to Achievements.TrackEvent.
         [SerializeField] public string eventKey = "";
         [SerializeField] public string iconEmoji = "";
+        [SerializeField] public AchievementCategory category = AchievementCategory.Misc;
 
         public string IconEmoji => string.IsNullOrEmpty(iconEmoji) ? "\U0001F3C6" : iconEmoji;
     }

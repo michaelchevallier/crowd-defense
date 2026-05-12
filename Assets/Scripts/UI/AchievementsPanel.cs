@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Data;
@@ -22,7 +21,14 @@ namespace CrowdDefense.UI
         private Button?        _btnUnlocked;
         private Button?        _btnLocked;
 
-        private AchievementFilter _filter = AchievementFilter.All;
+        private Button?        _tabAll;
+        private Button?        _tabCombat;
+        private Button?        _tabEconomy;
+        private Button?        _tabProgression;
+        private Button?        _tabMisc;
+
+        private AchievementFilter   _filter   = AchievementFilter.All;
+        private AchievementCategory? _category = null; // null = toutes
 
         private void Awake()
         {
@@ -37,12 +43,24 @@ namespace CrowdDefense.UI
             _btnUnlocked = doc.Q<Button>("btn-filter-unlocked");
             _btnLocked   = doc.Q<Button>("btn-filter-locked");
 
+            _tabAll         = doc.Q<Button>("tab-all");
+            _tabCombat      = doc.Q<Button>("tab-combat");
+            _tabEconomy     = doc.Q<Button>("tab-economy");
+            _tabProgression = doc.Q<Button>("tab-progression");
+            _tabMisc        = doc.Q<Button>("tab-misc");
+
             var btnBack = doc.Q<Button>("btn-achievements-back");
             if (btnBack != null) btnBack.clicked += Hide;
 
             if (_btnAll      != null) _btnAll.clicked      += () => SetFilter(AchievementFilter.All);
             if (_btnUnlocked != null) _btnUnlocked.clicked += () => SetFilter(AchievementFilter.Unlocked);
             if (_btnLocked   != null) _btnLocked.clicked   += () => SetFilter(AchievementFilter.Locked);
+
+            if (_tabAll         != null) _tabAll.clicked         += () => SetCategory(null);
+            if (_tabCombat      != null) _tabCombat.clicked      += () => SetCategory(AchievementCategory.Combat);
+            if (_tabEconomy     != null) _tabEconomy.clicked     += () => SetCategory(AchievementCategory.Economy);
+            if (_tabProgression != null) _tabProgression.clicked += () => SetCategory(AchievementCategory.Progression);
+            if (_tabMisc        != null) _tabMisc.clicked        += () => SetCategory(AchievementCategory.Misc);
         }
 
         private void OnDestroy()
@@ -55,8 +73,10 @@ namespace CrowdDefense.UI
         public void Show()
         {
             if (_root == null) return;
-            _filter = AchievementFilter.All;
+            _filter   = AchievementFilter.All;
+            _category = null;
             RefreshFilterButtons();
+            RefreshTabs();
             Rebuild();
             _root.RemoveFromClassList("hidden");
         }
@@ -70,18 +90,34 @@ namespace CrowdDefense.UI
             Rebuild();
         }
 
-        private void RefreshFilterButtons()
+        private void SetCategory(AchievementCategory? cat)
         {
-            SetActive(_btnAll,      _filter == AchievementFilter.All);
-            SetActive(_btnUnlocked, _filter == AchievementFilter.Unlocked);
-            SetActive(_btnLocked,   _filter == AchievementFilter.Locked);
+            _category = cat;
+            RefreshTabs();
+            Rebuild();
         }
 
-        private static void SetActive(Button? btn, bool active)
+        private void RefreshFilterButtons()
+        {
+            SetActiveClass(_btnAll,      "ach-filter-btn--active", _filter == AchievementFilter.All);
+            SetActiveClass(_btnUnlocked, "ach-filter-btn--active", _filter == AchievementFilter.Unlocked);
+            SetActiveClass(_btnLocked,   "ach-filter-btn--active", _filter == AchievementFilter.Locked);
+        }
+
+        private void RefreshTabs()
+        {
+            SetActiveClass(_tabAll,         "ach-tab--active", _category == null);
+            SetActiveClass(_tabCombat,      "ach-tab--active", _category == AchievementCategory.Combat);
+            SetActiveClass(_tabEconomy,     "ach-tab--active", _category == AchievementCategory.Economy);
+            SetActiveClass(_tabProgression, "ach-tab--active", _category == AchievementCategory.Progression);
+            SetActiveClass(_tabMisc,        "ach-tab--active", _category == AchievementCategory.Misc);
+        }
+
+        private static void SetActiveClass(Button? btn, string cssClass, bool active)
         {
             if (btn == null) return;
-            if (active) btn.AddToClassList("ach-filter-btn--active");
-            else        btn.RemoveFromClassList("ach-filter-btn--active");
+            if (active) btn.AddToClassList(cssClass);
+            else        btn.RemoveFromClassList(cssClass);
         }
 
         private void Rebuild()
@@ -129,13 +165,14 @@ namespace CrowdDefense.UI
             for (int i = 0; i < count; i++)
             {
                 var (def, unlocked, _) = sorted[i];
-                bool show = _filter switch
+                bool passStatus = _filter switch
                 {
                     AchievementFilter.Unlocked => unlocked,
                     AchievementFilter.Locked   => !unlocked,
                     _                          => true,
                 };
-                if (!show) continue;
+                bool passCategory = _category == null || def.category == _category;
+                if (!passStatus || !passCategory) continue;
 
                 int progress  = ach != null && def.predicateType == AchievementPredicateType.Counter
                     ? ach.GetEventCount(def.eventKey)

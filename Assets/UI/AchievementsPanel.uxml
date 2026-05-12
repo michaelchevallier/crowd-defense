@@ -11,6 +11,13 @@
                 <ui:Button text="Obtenus" name="btn-filter-unlocked" class="ach-filter-btn" />
                 <ui:Button text="Verrouilles" name="btn-filter-locked" class="ach-filter-btn" />
             </ui:VisualElement>
+            <ui:VisualElement name="ach-tabs" class="ach-tab-row">
+                <ui:Button text="Tout" name="tab-all" class="ach-tab ach-tab--active" />
+                <ui:Button text="Combat" name="tab-combat" class="ach-tab" />
+                <ui:Button text="Economie" name="tab-economy" class="ach-tab" />
+                <ui:Button text="Progression" name="tab-progression" class="ach-tab" />
+                <ui:Button text="Divers" name="tab-misc" class="ach-tab" />
+            </ui:VisualElement>
             <ui:ScrollView name="achievements-scroll" class="ach-scroll"
                            vertical-scroller-visibility="AlwaysVisible"
                            horizontal-scroller-visibility="Hidden">
