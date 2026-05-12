@@ -51,18 +51,13 @@
     transition-timing-function: ease-out, ease-out, ease-out;
 }
 
-/* Slide-in animation state: cards start offscreen left, controller toggles this class */
+/* Slide-in animation state: cards start offscreen bottom, controller animates imperatively */
 .perk-card.card-hidden {
-    translate: -120px 0;
     opacity: 0;
 }
 
 .perk-card.card-visible {
-    translate: 0 0;
     opacity: 1;
-    transition-property: translate, opacity;
-    transition-duration: 0.35s, 0.3s;
-    transition-timing-function: ease-out, ease-out;
 }
 
 /* ── Hover & active ── */

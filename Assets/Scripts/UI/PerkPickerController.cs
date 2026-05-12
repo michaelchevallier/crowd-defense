@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -144,25 +145,53 @@ namespace CrowdDefense.UI
         {
             if (cardsRow == null) return;
             cardsRow.Clear();
+            var cards = new List<VisualElement>();
             for (int i = 0; i < offers.Count; i++)
             {
                 var def  = offers[i];
                 bool locked = def != null && def.unlockLevel > heroLevel;
                 var card = CreateCard(def, locked);
                 cardsRow.Add(card);
-
-                if (animate)
-                {
-                    // Start hidden (offscreen left), schedule reveal with stagger via VisualElement scheduler
-                    card.AddToClassList("card-hidden");
-                    int capturedIndex = i;
-                    VisualElement capturedCard = card;
-                    card.schedule.Execute(() => {
-                        capturedCard.RemoveFromClassList("card-hidden");
-                        capturedCard.AddToClassList("card-visible");
-                    }).StartingIn((long)(capturedIndex * CardRevealStagger * 1000));
-                }
+                cards.Add(card);
             }
+
+            if (animate)
+                StartCoroutine(AnimateCardsEntrance(cards));
+        }
+
+        private IEnumerator AnimateCardsEntrance(List<VisualElement> cards)
+        {
+            for (int i = 0; i < cards.Count; i++)
+            {
+                var card = cards[i];
+                card.AddToClassList("card-hidden");
+                // Set initial position: offscreen bottom (120% of own height via translate Y)
+                card.style.translate = new StyleTranslate(new Translate(0, new Length(120f, LengthUnit.Percent)));
+            }
+
+            for (int i = 0; i < cards.Count; i++)
+            {
+                StartCoroutine(AnimateCardEnter(cards[i], i));
+            }
+            yield break;
+        }
+
+        private IEnumerator AnimateCardEnter(VisualElement card, int idx)
+        {
+            yield return new WaitForSecondsRealtime(idx * 0.1f);
+            card.RemoveFromClassList("card-hidden");
+            card.AddToClassList("card-visible");
+            card.style.translate = new StyleTranslate(new Translate(0, new Length(120f, LengthUnit.Percent)));
+            float t = 0f;
+            const float duration = 0.3f;
+            while (t < duration)
+            {
+                t += Time.unscaledDeltaTime;
+                float k = 1f - Mathf.Pow(1f - Mathf.Clamp01(t / duration), 3f);
+                card.style.translate = new StyleTranslate(new Translate(0, new Length(120f * (1f - k), LengthUnit.Percent)));
+                yield return null;
+            }
+            card.style.translate = new StyleTranslate(new Translate(0, 0));
         }
 
         private VisualElement CreateCard(PerkDef? def, bool locked)
