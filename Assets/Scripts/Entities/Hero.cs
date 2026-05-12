@@ -272,6 +272,17 @@ namespace CrowdDefense.Entities
         private const int   UltimateUnlockLevel = 10;
         private float _ultimateCooldown;
 
+        // ── Ultimate charge-up windup (0.5s) ──────────────────────────────────
+        private const float ChargeUpDuration    = 0.5f;
+        private const float ChargeUpFadeDuration = 0.3f;
+        private const int   ChargeParticleCount  = 16;
+        private const float ChargeGatherRadius   = 3f;
+        private bool _ultChargingUp;
+        private Coroutine? _ultChargeRoutine;
+        // Pre-allocated particle GOs — created once on first charge, reused
+        private readonly GameObject?[] _chargeParticles = new GameObject?[ChargeParticleCount];
+        private Light? _chargeLight;
+
         // ── Aura pulse ────────────────────────────────────────────────────────
         private float _heroPulseT;
         private Renderer? _auraRenderer;
@@ -309,6 +320,10 @@ namespace CrowdDefense.Entities
             _cooldown         = 0f;
             _ultCooldown      = 0f;
             _ultimateCooldown = 0f;
+
+            if (_ultChargeRoutine != null) { StopCoroutine(_ultChargeRoutine); _ultChargeRoutine = null; }
+            _ultChargingUp = false;
+            for (int i = 0; i < ChargeParticleCount; i++) _chargeParticles[i]?.SetActive(false);
             _autoAttack  = PlayerPrefs.GetInt(AutoAttackPrefsKey, 1) != 0;
             _maxHp       = DefaultMaxHp;
             _hp          = _maxHp;
@@ -937,22 +952,113 @@ namespace CrowdDefense.Entities
         {
             if (!IsUltimateUnlocked) return false;
             if (_ultimateCooldown > 0f) return false;
+            if (_ultChargingUp) return false;
             if (WaveManager.Instance == null) return false;
 
             _ultimateCooldown = UltimateCooldown;
-            _ultCastWindow    = 0.5f;
+            _ultChargeRoutine = StartCoroutine(UltimateChargeUp());
+            return true;
+        }
 
+        private System.Collections.IEnumerator UltimateChargeUp()
+        {
+            _ultChargingUp = true;
+
+            // Ensure particle pool exists (allocated once, reused)
+            EnsureChargeParticles();
+
+            // Snapshot origin for the entire charge-up (hero may not move during this)
+            var originPos = transform.position;
+            var baseScale = transform.localScale;
+
+            // Phase 1: 0 → ChargeUpDuration (0.5s) charge-up
+            // - Hero crouches (scale Y → 0.85)
+            // - 16 gold particles converge from radius 3m
+            // - Point light intensity 0 → 4
+            // - Audio pitch sweep 0.8 → 1.3
+            if (_chargeLight == null)
+            {
+                var lightGo = new GameObject("UltChargeLight");
+                lightGo.transform.SetParent(transform);
+                lightGo.transform.localPosition = Vector3.up * 1.5f;
+                _chargeLight = lightGo.AddComponent<Light>();
+                _chargeLight.type  = LightType.Point;
+                _chargeLight.color = new Color(1f, 0.85f, 0.15f);
+                _chargeLight.range = 6f;
+            }
+            _chargeLight.intensity = 0f;
+            _chargeLight.gameObject.SetActive(true);
+
+            // Position particles at gather-radius offsets around hero
+            for (int i = 0; i < ChargeParticleCount; i++)
+            {
+                var p = _chargeParticles[i];
+                if (p == null) continue;
+                float angle = i * (2f * Mathf.PI / ChargeParticleCount);
+                float startX = originPos.x + Mathf.Cos(angle) * ChargeGatherRadius;
+                float startZ = originPos.z + Mathf.Sin(angle) * ChargeGatherRadius;
+                p.transform.position = new Vector3(startX, originPos.y + 0.5f, startZ);
+                p.SetActive(true);
+            }
+
+            float elapsed = 0f;
+            while (elapsed < ChargeUpDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / ChargeUpDuration);
+
+                // Crouch: scale Y lerp 1 → 0.85
+                var s = baseScale;
+                s.y = Mathf.Lerp(baseScale.y, baseScale.y * 0.85f, t);
+                transform.localScale = s;
+
+                // Light intensity 0 → 4
+                if (_chargeLight != null)
+                    _chargeLight.intensity = Mathf.Lerp(0f, 4f, t);
+
+                // Particles converge toward hero center
+                for (int i = 0; i < ChargeParticleCount; i++)
+                {
+                    var p = _chargeParticles[i];
+                    if (p == null) continue;
+                    float angle = i * (2f * Mathf.PI / ChargeParticleCount);
+                    float startX = originPos.x + Mathf.Cos(angle) * ChargeGatherRadius;
+                    float startZ = originPos.z + Mathf.Sin(angle) * ChargeGatherRadius;
+                    var startPt = new Vector3(startX, originPos.y + 0.5f, startZ);
+                    var endPt   = originPos + Vector3.up * 1f;
+                    p.transform.position = Vector3.Lerp(startPt, endPt, t);
+
+                    // Pulse scale with time
+                    float pulse = 1f + 0.3f * Mathf.Sin(elapsed * 20f + i);
+                    p.transform.localScale = Vector3.one * pulse * 0.18f;
+                }
+
+                // Audio pitch sweep via repeated plays with interpolated pitch — play once
+                // AudioController doesn't expose pitch-sweep, so we drive a repeating
+                // "ultimate_charge" trigger only if it hasn't been started yet.
+                if (elapsed <= Time.deltaTime * 1.5f)
+                    AudioController.Instance?.Play("ultimate_charge", Mathf.Lerp(0.8f, 1.3f, t));
+
+                yield return null;
+            }
+
+            // Phase 2: t=0.5s — fire the actual AoE
+            _ultCastWindow = 0.5f;
+
+            var pos = transform.position;
             float baseDmg = cfg != null ? cfg.UltAoeDamage : 15f;
             float dmg = baseDmg * UltimateDmgMul * DamageMul;
             float r2  = UltimateAoeRadius * UltimateAoeRadius;
-            var   pos = transform.position;
-            var   active = WaveManager.Instance.ActiveEnemies;
-            for (int i = active.Count - 1; i >= 0; i--)
+            if (WaveManager.Instance != null)
             {
-                var e = active[i];
-                if (e == null || e.IsDead) continue;
-                if ((e.transform.position - pos).sqrMagnitude < r2)
-                    e.TakeDamage(dmg);
+                var active = WaveManager.Instance.ActiveEnemies;
+                for (int i = active.Count - 1; i >= 0; i--)
+                {
+                    var e = active[i];
+                    if (e == null || e.IsDead) continue;
+                    if ((e.transform.position - pos).sqrMagnitude < r2)
+                        e.TakeDamage(dmg);
+                }
             }
 
             VfxPool.Instance?.SpawnDeath(pos + Vector3.up, new Color(0.9f, 0.3f, 1f), intensityMul: 3.0f);
@@ -963,7 +1069,72 @@ namespace CrowdDefense.Entities
             FloatingPopupController.Instance?.SpawnReward("ULTIMATE!", pos + Vector3.up * 2.5f, new Color(0.9f, 0.3f, 1f));
             SpawnUltimateShockwave(pos, UltimateAoeRadius);
             OnUltFired?.Invoke();
-            return true;
+
+            // Hide particles immediately after firing
+            for (int i = 0; i < ChargeParticleCount; i++)
+                _chargeParticles[i]?.SetActive(false);
+
+            // Phase 3: 0 → ChargeUpFadeDuration (0.3s) — hero un-crouches, light fades
+            float fadeElapsed = 0f;
+            float scaleYAtFire = transform.localScale.y;
+            while (fadeElapsed < ChargeUpFadeDuration)
+            {
+                fadeElapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(fadeElapsed / ChargeUpFadeDuration);
+
+                var s = transform.localScale;
+                s.y = Mathf.Lerp(scaleYAtFire, baseScale.y, t);
+                transform.localScale = s;
+
+                if (_chargeLight != null)
+                    _chargeLight.intensity = Mathf.Lerp(4f, 0f, t);
+
+                yield return null;
+            }
+
+            // Cleanup
+            transform.localScale = baseScale;
+            if (_chargeLight != null)
+            {
+                _chargeLight.intensity = 0f;
+                _chargeLight.gameObject.SetActive(false);
+            }
+
+            _ultChargingUp    = false;
+            _ultChargeRoutine = null;
+        }
+
+        private void EnsureChargeParticles()
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                      ?? Shader.Find("Sprites/Default")
+                      ?? Shader.Find("Standard");
+
+            for (int i = 0; i < ChargeParticleCount; i++)
+            {
+                if (_chargeParticles[i] != null) continue;
+
+                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                go.name = $"UltChargeParticle_{i}";
+                // Remove collider — purely visual
+                Object.Destroy(go.GetComponent<Collider>());
+
+                var rend = go.GetComponent<Renderer>();
+                var mat = new Material(shader!)
+                {
+                    color = new Color(1f, 0.85f, 0.15f, 0.9f)
+                };
+                mat.SetFloat("_Surface", 1f);
+                mat.SetInt("_ZWrite", 0);
+                mat.renderQueue = 3000;
+                rend.material   = mat;
+                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                rend.receiveShadows    = false;
+
+                go.transform.localScale = Vector3.one * 0.18f;
+                go.SetActive(false);
+                _chargeParticles[i] = go;
+            }
         }
 
         // ── Ultimate shockwave VFX ────────────────────────────────────────────
@@ -1113,6 +1284,7 @@ namespace CrowdDefense.Entities
         private void UpdateMovement(float dt)
         {
             if (cfg == null) return;
+            if (_ultChargingUp) return;
 
             _smoothedMoveDir = Vector2.MoveTowards(_smoothedMoveDir, _moveDir, MoveAccel * dt);
             bool moving = _smoothedMoveDir.sqrMagnitude > 0.01f;
