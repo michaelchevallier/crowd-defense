@@ -95,6 +95,12 @@ namespace CrowdDefense.UI
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
 
+        // Perfect wave streak banner (top-center, shown when >= 2 consecutive no-damage waves)
+        private VisualElement? _perfectStreakBanner;
+        private Label?         _perfectStreakLabel;
+        private Coroutine?     _perfectStreakCoroutine;
+        private int            _perfectWaveStreak = 0;
+
         // Boss intro banner (bottom-center, 4s then fade)
         private VisualElement? _bossIntroBanner;
         private Label?         _bossIntroQuote;
@@ -280,6 +286,7 @@ namespace CrowdDefense.UI
 
             BuildBossHpBar(root);
             BuildBossIntroBanner(root);
+            BuildPerfectStreakBanner(root);
             BuildWaveCountdownLabel(root);
             BuildWaveProgressDots(root);
 
@@ -811,6 +818,15 @@ namespace CrowdDefense.UI
         {
             _wavesCompleted = idx + 1;
             RefreshWaveDots();
+
+            bool perfect = Castle.Instance != null && !Castle.Instance.WasHitThisWave;
+            if (perfect)
+                _perfectWaveStreak++;
+            else
+                _perfectWaveStreak = 0;
+
+            if (_perfectWaveStreak >= 2)
+                ShowPerfectStreakBanner(_perfectWaveStreak);
         }
 
         private void BuildWaveCountdownLabel(VisualElement root)
@@ -1093,6 +1109,9 @@ namespace CrowdDefense.UI
             {
                 if (waveLaunchBtn != null)  SetVisible(waveLaunchBtn,  false);
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
+                _perfectWaveStreak = 0;
+                if (_perfectStreakCoroutine != null) { StopCoroutine(_perfectStreakCoroutine); _perfectStreakCoroutine = null; }
+                if (_perfectStreakBanner != null) _perfectStreakBanner.style.display = DisplayStyle.None;
             }
         }
 
@@ -1415,6 +1434,102 @@ namespace CrowdDefense.UI
         {
             Time.timeScale = 1f;
             Systems.LevelLoader.GoToMenu();
+        }
+
+        // ── Perfect wave streak banner ────────────────────────────────────────
+
+        private void BuildPerfectStreakBanner(VisualElement root)
+        {
+            _perfectStreakBanner = new VisualElement { name = "perfect-streak-banner" };
+            _perfectStreakBanner.style.position      = Position.Absolute;
+            _perfectStreakBanner.style.top           = new Length(8f,  LengthUnit.Pixel);
+            _perfectStreakBanner.style.left          = new Length(50f, LengthUnit.Percent);
+            _perfectStreakBanner.style.translate     = new Translate(new Length(-50f, LengthUnit.Percent), Length.Auto());
+            _perfectStreakBanner.style.paddingTop    = new Length(8f,  LengthUnit.Pixel);
+            _perfectStreakBanner.style.paddingBottom = new Length(8f,  LengthUnit.Pixel);
+            _perfectStreakBanner.style.paddingLeft   = new Length(24f, LengthUnit.Pixel);
+            _perfectStreakBanner.style.paddingRight  = new Length(24f, LengthUnit.Pixel);
+            _perfectStreakBanner.style.backgroundColor = new StyleColor(new Color(0.04f, 0.03f, 0f, 0.88f));
+            _perfectStreakBanner.style.borderTopWidth    = _perfectStreakBanner.style.borderBottomWidth =
+            _perfectStreakBanner.style.borderLeftWidth   = _perfectStreakBanner.style.borderRightWidth  = 2f;
+            var goldBorder = new StyleColor(new Color(1f, 0.85f, 0.2f));
+            _perfectStreakBanner.style.borderTopColor    = _perfectStreakBanner.style.borderBottomColor =
+            _perfectStreakBanner.style.borderLeftColor   = _perfectStreakBanner.style.borderRightColor  = goldBorder;
+            _perfectStreakBanner.style.borderTopLeftRadius    = _perfectStreakBanner.style.borderTopRightRadius =
+            _perfectStreakBanner.style.borderBottomLeftRadius = _perfectStreakBanner.style.borderBottomRightRadius = new Length(6f, LengthUnit.Pixel);
+            _perfectStreakBanner.style.display       = DisplayStyle.None;
+            _perfectStreakBanner.style.alignItems    = Align.Center;
+
+            _perfectStreakLabel = new Label { name = "perfect-streak-label", text = "" };
+            _perfectStreakLabel.style.color                   = new StyleColor(new Color(1f, 0.85f, 0.2f));
+            _perfectStreakLabel.style.fontSize                = new Length(20f, LengthUnit.Pixel);
+            _perfectStreakLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            _perfectStreakLabel.style.unityTextAlign          = TextAnchor.MiddleCenter;
+            _perfectStreakLabel.style.textShadow              = new TextShadow
+            {
+                color      = new Color(0.5f, 0.35f, 0f, 0.9f),
+                offset     = new Vector2(2f, 2f),
+                blurRadius = 5f,
+            };
+            _perfectStreakBanner.Add(_perfectStreakLabel);
+            root.Add(_perfectStreakBanner);
+        }
+
+        private void ShowPerfectStreakBanner(int streak)
+        {
+            if (_perfectStreakBanner == null || _perfectStreakLabel == null) return;
+
+            _perfectStreakLabel.text = $"PERFECT WAVE STREAK x{streak}";
+            _perfectStreakBanner.style.display = DisplayStyle.Flex;
+            _perfectStreakBanner.style.opacity = 0f;
+            _perfectStreakBanner.style.scale   = new Scale(new Vector3(0.8f, 0.8f, 1f));
+
+            if (_perfectStreakCoroutine != null) StopCoroutine(_perfectStreakCoroutine);
+            _perfectStreakCoroutine = StartCoroutine(PerfectStreakBannerCoroutine(streak));
+        }
+
+        private System.Collections.IEnumerator PerfectStreakBannerCoroutine(int streak)
+        {
+            if (_perfectStreakBanner == null || _perfectStreakLabel == null) yield break;
+
+            // Pitch: 1.0 base + 0.05 per streak level
+            float pitch = 1f + streak * 0.05f;
+            AudioController.Instance?.PlayPitched("perfect_wave_chime", 1f, pitch);
+
+            // Phase 1 — fade-in + scale punch: 0.8→1.1→1.0 over 0.4s
+            const float punchDur = 0.4f;
+            float t = 0f;
+            while (t < punchDur)
+            {
+                t += Time.unscaledDeltaTime;
+                float frac = Mathf.Clamp01(t / punchDur);
+                // Opacity: 0→1 in first half
+                _perfectStreakBanner.style.opacity = Mathf.Clamp01(frac * 2f);
+                // Scale: 0.8→1.1→1.0
+                float s = frac < 0.5f
+                    ? Mathf.Lerp(0.8f, 1.1f, frac * 2f)
+                    : Mathf.Lerp(1.1f, 1.0f, (frac - 0.5f) * 2f);
+                _perfectStreakBanner.style.scale = new Scale(new Vector3(s, s, 1f));
+                yield return null;
+            }
+            _perfectStreakBanner.style.opacity = 1f;
+            _perfectStreakBanner.style.scale   = new Scale(new Vector3(1f, 1f, 1f));
+
+            // Phase 2 — hold 2.5s
+            yield return new WaitForSecondsRealtime(2.5f);
+            if (_perfectStreakBanner == null) yield break;
+
+            // Phase 3 — fade-out 0.5s via transition
+            _perfectStreakBanner.style.transitionProperty = new StyleList<StylePropertyName>(
+                new System.Collections.Generic.List<StylePropertyName> { new StylePropertyName("opacity") });
+            _perfectStreakBanner.style.transitionDuration = new StyleList<TimeValue>(
+                new System.Collections.Generic.List<TimeValue> { new TimeValue(0.5f, TimeUnit.Second) });
+            _perfectStreakBanner.style.transitionTimingFunction = new StyleList<EasingFunction>(
+                new System.Collections.Generic.List<EasingFunction> { new EasingFunction(EasingMode.EaseIn) });
+            _perfectStreakBanner.style.opacity = 0f;
+            yield return new WaitForSecondsRealtime(0.5f);
+            if (_perfectStreakBanner != null) _perfectStreakBanner.style.display = DisplayStyle.None;
+            _perfectStreakCoroutine = null;
         }
     }
 }

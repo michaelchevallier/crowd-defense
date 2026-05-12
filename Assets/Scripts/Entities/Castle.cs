@@ -15,6 +15,7 @@ namespace CrowdDefense.Entities
         public int HP { get; private set; }
         public int HPMax { get; private set; }
         public bool IsDead => HP <= 0;
+        public bool WasHitThisWave { get; private set; }
 
         public event Action<int, int>? OnHPChanged;
         public event Action<Castle>?   OnCastleDied;
@@ -349,6 +350,7 @@ namespace CrowdDefense.Entities
             }
 
             HP = Mathf.Max(0, HP - actualDmg);
+            WasHitThisWave = true;
             // Flag interest bank — any hit resets bank for this wave (D1-01 §3.5)
             Economy.Instance?.FlagCastleDamaged();
             // D1-02: streak broken if castle leaks during the break window
@@ -369,46 +371,54 @@ namespace CrowdDefense.Entities
             if (actualDmg > 5 && HPMax > 0 && (float)HP / HPMax < 0.3f)
                 SpawnSiegeDebris();
 
-            // Screen shake & flash — tiered by HP%, throttled to once every 100 ms to prevent spam
-            if (Time.unscaledTime - _lastShakeTime > 0.1f)
+            // Screen shake — tiered by damage magnitude, throttled to once every 100 ms
+            if (Time.timeScale > 0f && Time.unscaledTime - _lastShakeTime > 0.1f)
             {
                 _lastShakeTime = Time.unscaledTime;
-                float hpRatio = HPMax > 0 ? (float)HP / HPMax : 0f;
                 var jc = JuiceConfig.Get();
 
                 float shakeAmp;
-                int shakeMs;
+                float shakeDur;
                 float flashAlpha;
-                int flashMs;
+                int   flashMs;
 
-                if (hpRatio < 0.25f)
+                if (actualDmg > 100)
                 {
-                    // Heavy: critical tier
-                    shakeAmp = jc?.CastleHitShakeAmp * 1.2f ?? 0.8f;
-                    shakeMs = 400;
+                    // Boss hit — heavy rumble
+                    shakeAmp   = 0.8f;
+                    shakeDur   = 0.6f;
                     flashAlpha = 0.65f;
-                    flashMs = 300;
-                    AudioController.Instance?.Play("castle_critical", 1f);
+                    flashMs    = 300;
+                    AudioController.Instance?.PlayPitched("castle_impact_heavy", 1.2f, 0.8f);
                 }
-                else if (hpRatio < 0.5f)
+                else if (actualDmg >= 50)
                 {
-                    // Medium: warning tier
-                    shakeAmp = jc?.CastleHitShakeAmp ?? 0.5f;
-                    shakeMs = 250;
-                    flashAlpha = jc?.CastleHitFlashWarnAlpha ?? 0.4f;
-                    flashMs = jc?.CastleHitFlashWarnMs ?? 200;
+                    // Heavy hit
+                    shakeAmp   = 0.4f;
+                    shakeDur   = 0.4f;
+                    flashAlpha = 0.45f;
+                    flashMs    = 250;
+                    AudioController.Instance?.PlayPitched("castle_impact_heavy", 1.2f, 0.8f);
+                }
+                else if (actualDmg >= 10)
+                {
+                    // Medium hit
+                    shakeAmp   = 0.2f;
+                    shakeDur   = 0.25f;
+                    flashAlpha = jc?.CastleHitFlashWarnAlpha ?? 0.3f;
+                    flashMs    = jc?.CastleHitFlashWarnMs ?? 200;
                     AudioController.Instance?.Play("castle_damaged", 0.85f);
                 }
                 else
                 {
-                    // Light: normal hit
-                    shakeAmp = jc?.CastleHitShakeAmp * 0.5f ?? 0.3f;
-                    shakeMs = 150;
+                    // Light hit (dmg < 10)
+                    shakeAmp   = 0.08f;
+                    shakeDur   = 0.15f;
                     flashAlpha = jc?.CastleHitFlashAlpha ?? 0.1f;
-                    flashMs = jc?.CastleHitFlashMs ?? 100;
+                    flashMs    = jc?.CastleHitFlashMs ?? 100;
                 }
 
-                CameraController.Instance?.Shake(shakeAmp, shakeMs / 1000f);
+                CameraController.Instance?.Shake(shakeAmp, shakeDur);
                 JuiceFX.Instance?.Flash(new Color(1f, 0.2f, 0.2f, flashAlpha), flashMs);
             }
 
@@ -911,7 +921,7 @@ namespace CrowdDefense.Entities
         {
             var wm = WaveManager.Instance;
             if (wm == null) return;
-            wm.OnWaveStart   += _ => AnimateGate(open: true);
+            wm.OnWaveStart   += _ => { WasHitThisWave = false; AnimateGate(open: true); };
             wm.OnWaveCleared += _ => AnimateGate(open: false);
         }
 
