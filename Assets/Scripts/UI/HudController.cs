@@ -262,6 +262,17 @@ namespace CrowdDefense.UI
         // Settings panel controller — sibling component on same GameObject
         private SettingsPanelController? _settingsCtrl;
 
+        // Tutorial popup (one-time per playthrough, shown 1 s after first wave start)
+        private VisualElement? _tutorialPopup;
+        private Button?        _tutorialOkBtn;
+        private Coroutine?     _tutorialCoroutine;
+
+        private static bool TutorialShown
+        {
+            get => PlayerPrefs.GetInt("cd.tutorial_shown", 0) == 1;
+            set { PlayerPrefs.SetInt("cd.tutorial_shown", value ? 1 : 0); PlayerPrefs.Save(); }
+        }
+
         private void Start()
         {
             BindUiRefs();
@@ -373,6 +384,7 @@ namespace CrowdDefense.UI
             BuildDamageVignette(root);
             BindWavePreview(root);
             BuildEnemyIntelPopup(root);
+            BuildTutorialPopup(root);
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -1238,6 +1250,13 @@ namespace CrowdDefense.UI
         private void OnWaveStart(int idx)
         {
             RefreshWaveDots();
+
+            // Tutorial popup — first wave only, once per playthrough
+            if (idx == 0 && !TutorialShown)
+            {
+                if (_tutorialCoroutine != null) StopCoroutine(_tutorialCoroutine);
+                _tutorialCoroutine = StartCoroutine(ShowTutorialPopupCoroutine());
+            }
 
             // Wave intro banner — pull primary enemy name from first non-null entry
             string enemyName = string.Empty;
@@ -2804,6 +2823,98 @@ namespace CrowdDefense.UI
             _enemyIntelPopup.style.opacity = 0f;
             _enemyIntelPopup.style.display = DisplayStyle.None;
             _enemyIntelFadeCoroutine = null;
+        }
+
+        // ── Tutorial popup (first launch) ────────────────────────────────────
+
+        private static readonly Color _kTutorialGold  = new Color(1f, 0.84f, 0f);
+        private static readonly Color _kTutorialWhite = new Color(0.92f, 0.92f, 0.92f);
+
+        private void BuildTutorialPopup(VisualElement root)
+        {
+            _tutorialPopup = new VisualElement { name = "tutorial-popup" };
+            _tutorialPopup.style.position        = Position.Absolute;
+            _tutorialPopup.style.top             = new Length(50f, LengthUnit.Percent);
+            _tutorialPopup.style.left            = new Length(50f, LengthUnit.Percent);
+            _tutorialPopup.style.translate       = new Translate(new Length(-50f, LengthUnit.Percent), new Length(-50f, LengthUnit.Percent));
+            _tutorialPopup.style.width           = new Length(350f, LengthUnit.Pixel);
+            _tutorialPopup.style.paddingTop      = new Length(16f,  LengthUnit.Pixel);
+            _tutorialPopup.style.paddingBottom   = new Length(16f,  LengthUnit.Pixel);
+            _tutorialPopup.style.paddingLeft     = new Length(16f,  LengthUnit.Pixel);
+            _tutorialPopup.style.paddingRight    = new Length(16f,  LengthUnit.Pixel);
+            _tutorialPopup.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.92f));
+            _tutorialPopup.style.borderTopWidth    = _tutorialPopup.style.borderBottomWidth =
+            _tutorialPopup.style.borderLeftWidth   = _tutorialPopup.style.borderRightWidth  = 2f;
+            var goldBorderColor = new StyleColor(_kTutorialGold);
+            _tutorialPopup.style.borderTopColor    = _tutorialPopup.style.borderBottomColor =
+            _tutorialPopup.style.borderLeftColor   = _tutorialPopup.style.borderRightColor  = goldBorderColor;
+            _tutorialPopup.style.borderTopLeftRadius    = _tutorialPopup.style.borderTopRightRadius =
+            _tutorialPopup.style.borderBottomLeftRadius = _tutorialPopup.style.borderBottomRightRadius = new Length(8f, LengthUnit.Pixel);
+            _tutorialPopup.style.flexDirection   = FlexDirection.Column;
+            _tutorialPopup.style.alignItems      = Align.Center;
+            _tutorialPopup.style.display         = DisplayStyle.None;
+            // Block input below the popup
+            _tutorialPopup.pickingMode           = PickingMode.Position;
+
+            var title = new Label { name = "tutorial-title", text = "BIENVENUE !" };
+            title.style.color                   = new StyleColor(_kTutorialGold);
+            title.style.fontSize                = new Length(28f, LengthUnit.Pixel);
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            title.style.unityTextAlign          = TextAnchor.MiddleCenter;
+            title.style.marginBottom            = new Length(12f, LengthUnit.Pixel);
+            title.style.textShadow              = new TextShadow
+            {
+                color      = new Color(0.4f, 0.25f, 0f, 1f),
+                offset     = new Vector2(2f, 2f),
+                blurRadius = 4f,
+            };
+            _tutorialPopup.Add(title);
+
+            var body = new Label
+            {
+                name = "tutorial-body",
+                text = "Clic gauche pour placer une tour\n" +
+                       "Recolte l'or des ennemis tues\n" +
+                       "Defends le chateau !\n\n" +
+                       "Clique 'Lancer la vague' pour commencer",
+            };
+            body.style.color                   = new StyleColor(_kTutorialWhite);
+            body.style.fontSize                = new Length(16f, LengthUnit.Pixel);
+            body.style.unityTextAlign          = TextAnchor.MiddleCenter;
+            body.style.whiteSpace              = WhiteSpace.Normal;
+            body.style.marginBottom            = new Length(16f, LengthUnit.Pixel);
+            _tutorialPopup.Add(body);
+
+            _tutorialOkBtn = new Button { name = "tutorial-ok-btn", text = "OK !" };
+            _tutorialOkBtn.style.backgroundColor = new StyleColor(_kTutorialGold);
+            _tutorialOkBtn.style.color           = new StyleColor(Color.black);
+            _tutorialOkBtn.style.fontSize        = new Length(18f, LengthUnit.Pixel);
+            _tutorialOkBtn.style.unityFontStyleAndWeight = FontStyle.Bold;
+            _tutorialOkBtn.style.paddingTop      = new Length(8f,  LengthUnit.Pixel);
+            _tutorialOkBtn.style.paddingBottom   = new Length(8f,  LengthUnit.Pixel);
+            _tutorialOkBtn.style.paddingLeft     = new Length(32f, LengthUnit.Pixel);
+            _tutorialOkBtn.style.paddingRight    = new Length(32f, LengthUnit.Pixel);
+            _tutorialOkBtn.style.borderTopLeftRadius    = _tutorialOkBtn.style.borderTopRightRadius =
+            _tutorialOkBtn.style.borderBottomLeftRadius = _tutorialOkBtn.style.borderBottomRightRadius = new Length(6f, LengthUnit.Pixel);
+            _tutorialOkBtn.RegisterCallback<ClickEvent>(_ =>
+            {
+                TutorialShown = true;
+                if (_tutorialPopup != null) _tutorialPopup.style.display = DisplayStyle.None;
+                if (_tutorialCoroutine != null) { StopCoroutine(_tutorialCoroutine); _tutorialCoroutine = null; }
+            });
+            _tutorialPopup.Add(_tutorialOkBtn);
+
+            root.Add(_tutorialPopup);
+            _tutorialPopup.BringToFront();
+        }
+
+        private System.Collections.IEnumerator ShowTutorialPopupCoroutine()
+        {
+            yield return new WaitForSecondsRealtime(1f);
+            if (_tutorialPopup == null || TutorialShown) yield break;
+            _tutorialPopup.style.display = DisplayStyle.Flex;
+            _tutorialPopup.BringToFront();
+            _tutorialCoroutine = null;
         }
     }
 }
