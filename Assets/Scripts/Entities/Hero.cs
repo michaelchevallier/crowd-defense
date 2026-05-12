@@ -48,6 +48,10 @@ namespace CrowdDefense.Entities
         public int   XpToNext  { get; private set; }
         public int   MaxLevel  { get; private set; }
 
+        // ── Kill counter ──────────────────────────────────────────────────────
+        private int _killCount;
+        public  int KillCount => _killCount;
+
         // ── Perk multipliers (reset + reapplied by ApplyRunContext) ───────────
         public float FireRateMul      { get; internal set; } = 1f;
         public float RangeMul         { get; internal set; } = 1f;
@@ -935,8 +939,12 @@ namespace CrowdDefense.Entities
             }
         }
 
+        public void RegisterKill() => _killCount++;
+
         private void OnProjKill(Vector3 killPos)
         {
+            RegisterKill();
+
             // Lifesteal: each kill restores HP to the castle (V5 pattern — lifesteal unit = HP pts)
             if (Lifesteal > 0f && Castle.Instance != null)
                 Castle.Instance.Regen(Mathf.Max(1, Mathf.RoundToInt(Lifesteal)));
@@ -1025,6 +1033,7 @@ namespace CrowdDefense.Entities
             FirstTowerFree        = false;
             FirstTowerFreeUsed    = false;
             _projFiredCount       = 0;
+            _killCount            = 0;
             _fireTrails.Clear();
         }
 

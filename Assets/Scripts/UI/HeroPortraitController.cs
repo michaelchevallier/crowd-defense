@@ -20,6 +20,7 @@ namespace CrowdDefense.UI
         private VisualElement? _portrait;
         private VisualElement? _hpBarFill;
         private Label?         _hpLabel;
+        private Label?         _killLabel;
         private VisualElement[]? _perkSlots;
         private Label[]?         _perkLabels;
 
@@ -94,6 +95,9 @@ namespace CrowdDefense.UI
 
             if (_hpLabel != null)
                 _hpLabel.text = atMaxLevel ? $"XP MAX" : $"XP {hero.Xp}/{hero.XpToNext}";
+
+            if (_killLabel != null)
+                _killLabel.text = $"Tues : {hero.KillCount}";
 
             // Perk slots
             if (_perkSlots == null || _perkLabels == null) return;
@@ -175,6 +179,10 @@ namespace CrowdDefense.UI
             _hpLabel = new Label("XP 0/20");
             _hpLabel.AddToClassList("hp-label");
             info.Add(_hpLabel);
+
+            _killLabel = new Label("Tues : 0");
+            _killLabel.AddToClassList("kill-label");
+            info.Add(_killLabel);
 
             var perksRow = new VisualElement();
             perksRow.AddToClassList("perks-row");
