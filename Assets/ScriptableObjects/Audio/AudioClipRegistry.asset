@@ -15,16 +15,40 @@ MonoBehaviour:
   entries:
   - Key: achievement
     Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: achievement_chime
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: achievement_unlock
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
   - Key: blue_pill
     Clip: {fileID: 8300000, guid: 64965f7858f0b44e78f25ee41fa2b379, type: 3}
   - Key: boom
     Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: boss_charge
     Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
+  - Key: boss_death_roar
+    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
+  - Key: boss_defeated
+    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
+  - Key: boss_kill_special
+    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
+  - Key: boss_roar
+    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
+  - Key: boss_spawn_drone
+    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
+  - Key: cancel
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: castle_hit
     Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+  - Key: castle_lost
+    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+  - Key: chest_open
+    Clip: {fileID: 8300000, guid: b9158f8f1710845ddbd7c72226764aba, type: 3}
   - Key: coin_pickup
     Clip: {fileID: 8300000, guid: b9158f8f1710845ddbd7c72226764aba, type: 3}
+  - Key: combo_up
+    Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
+  - Key: cutscene_start
+    Clip: {fileID: 8300000, guid: 40a31f1789dc546ec938c15607c09aaf, type: 3}
   - Key: enemy_die_basic
     Clip: {fileID: 8300000, guid: e4b1e123611e84c9bbff4da6225ed67b, type: 3}
   - Key: enemy_die_boss
@@ -35,37 +59,109 @@ MonoBehaviour:
     Clip: {fileID: 8300000, guid: c17cb62325efa43e9adace1ae96eaf00, type: 3}
   - Key: gem_gain
     Clip: {fileID: 8300000, guid: 5c10666d059cc4ef0bbe2350155f8077, type: 3}
+  - Key: gold_earn
+    Clip: {fileID: 8300000, guid: b9158f8f1710845ddbd7c72226764aba, type: 3}
+  - Key: hero_death
+    Clip: {fileID: 8300000, guid: c1a65be9840414b60b1bcdb718d05a39, type: 3}
+  - Key: hero_levelup
+    Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: hero_shoot
+    Clip: {fileID: 8300000, guid: 0c58db39650b3439cb7f3a34c670cc32, type: 3}
+  - Key: hero_ult
     Clip: {fileID: 8300000, guid: 0c58db39650b3439cb7f3a34c670cc32, type: 3}
   - Key: level_up
     Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
+  - Key: menu_button_hover
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
+  - Key: menu_open_woosh
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
+  - Key: overrun_alert
+    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+  - Key: path_reveal
+    Clip: {fileID: 8300000, guid: 40a31f1789dc546ec938c15607c09aaf, type: 3}
   - Key: perk_pick
     Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
+  - Key: place_invalid
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
+  - Key: place_tower
+    Clip: {fileID: 8300000, guid: a5ec57ba5de1447028b7e5866941d79b, type: 3}
+  - Key: powerup
+    Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
+  - Key: research_ding
+    Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
+  - Key: set_bonus
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
   - Key: skin_equip
     Clip: {fileID: 8300000, guid: 7b0b6a4c7143d42529ab240963addef7, type: 3}
+  - Key: star
+    Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
+  - Key: step_dirt
+    Clip: {fileID: 8300000, guid: 0c58db39650b3439cb7f3a34c670cc32, type: 3}
+  - Key: toast_generic
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: toast_achievement
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: toast_perk
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: toast_synergy
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: toast_combo
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: toast_modifier
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: toast_success
+    Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
+  - Key: toast_warning
+    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+  - Key: toast_error
+    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+  - Key: toast_info
+    Clip: {fileID: 8300000, guid: 40a31f1789dc546ec938c15607c09aaf, type: 3}
   - Key: tower_built
     Clip: {fileID: 8300000, guid: a5ec57ba5de1447028b7e5866941d79b, type: 3}
+  - Key: tower_deselect_click
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
+  - Key: tower_placed
+    Clip: {fileID: 8300000, guid: a5ec57ba5de1447028b7e5866941d79b, type: 3}
+  - Key: tower_select_click
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: tower_shoot
     Clip: {fileID: 8300000, guid: c7ecb9fccfd27498c968a77196909424, type: 3}
+  - Key: tower_sold
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: tower_upgrade
     Clip: {fileID: 8300000, guid: 4864c4da0857b494691a5e5ec52c851a, type: 3}
+  - Key: tutorial_complete
+    Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
+  - Key: tutorial_progress
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
+  - Key: warning_sound
+    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
   - Key: wave_clear
     Clip: {fileID: 8300000, guid: da00b163e9c6e4e96a8dca439e468f62, type: 3}
   - Key: wave_start
     Clip: {fileID: 8300000, guid: 40a31f1789dc546ec938c15607c09aaf, type: 3}
-  - Key: hero_ult
-    Clip: {fileID: 0}
-  - Key: cancel
-    Clip: {fileID: 0}
-  - Key: castle_lost
-    Clip: {fileID: 0}
-  - Key: combo_up
-    Clip: {fileID: 0}
-  - Key: cutscene_start
-    Clip: {fileID: 0}
-  - Key: path_reveal
-    Clip: {fileID: 0}
-  - Key: set_bonus
-    Clip: {fileID: 0}
+  - Key: xp_pickup
+    Clip: {fileID: 8300000, guid: b9158f8f1710845ddbd7c72226764aba, type: 3}
   - Key: music_ambient_w1
     Clip: {fileID: 8300000, guid: 6ba6dbd38230f411eb081e2eb911de19, type: 3}
+  - Key: music_ambient_w1_plaine
+    Clip: {fileID: 8300000, guid: 33e9b2fbef0404198ad34192dc020e56, type: 3}
+  - Key: music_ambient_w2_foret
+    Clip: {fileID: 8300000, guid: e5b06cedac89541c396f3872ccb7dfac, type: 3}
+  - Key: music_ambient_w3_desert
+    Clip: {fileID: 8300000, guid: d16024d1304644c11808e62a61b67cb4, type: 3}
+  - Key: music_ambient_w4_volcan
+    Clip: {fileID: 8300000, guid: e3c419c2821b9433fb4715adc9fb4bb6, type: 3}
+  - Key: music_ambient_w5_foire
+    Clip: {fileID: 8300000, guid: 0439b3ffd8bc3497cb20c9dbcf17bef6, type: 3}
+  - Key: music_ambient_w6_apocalypse
+    Clip: {fileID: 8300000, guid: f1198b74023304fd7a5b2bfaeebf9aeb, type: 3}
+  - Key: music_ambient_w7_espace
+    Clip: {fileID: 8300000, guid: ac8250d12c0c843b3923e98de4ce95f4, type: 3}
+  - Key: music_ambient_w8_submarin
+    Clip: {fileID: 8300000, guid: b4381a6f28cbd4e0db47e99b024a445f, type: 3}
+  - Key: music_ambient_w9_medieval
+    Clip: {fileID: 8300000, guid: 025030ead194e4aecbca7d4f9a6b015d, type: 3}
+  - Key: music_ambient_w10_cyberpunk
+    Clip: {fileID: 8300000, guid: 5d1d7b0f2c51949dfb31d9972c88172e, type: 3}
