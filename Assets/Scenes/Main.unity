@@ -1224,7 +1224,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a88a29e2c01e41a7bcaeaa131fd5326, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.ProjectilePool
-  projectilePrefab: {fileID: 1234567890, guid: d1e2f3a4b5c6789012345678def00202, type: 3}
+  projectilePrefab: {fileID: 2000000000000001, guid: d1e2f3a4b5c6789012345678def00202, type: 3}
 --- !u!1 &781248846
 GameObject:
   m_ObjectHideFlags: 0
