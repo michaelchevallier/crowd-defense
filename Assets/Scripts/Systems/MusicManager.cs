@@ -17,6 +17,8 @@ namespace CrowdDefense.Systems
     public class MusicManager : MonoSingleton<MusicManager>
     {
         private const float CrossfadeDuration = 0.8f;
+        private const float BossCrossfadeDuration = 1.5f;
+        private const float BossFallbackVolBoost = 1.2f;
         private const float DuckMultiplier = 0.35f;
         private const float StingDuckDuration = 4.5f;
 
@@ -71,6 +73,7 @@ namespace CrowdDefense.Systems
             if (em == null) return;
             em.Subscribe<LevelThemeChangedEvent>(OnLevelThemeChanged);
             em.Subscribe<BossEncounteredEvent>(OnBossEncountered);
+            em.Subscribe<BossDefeatedEvent>(OnBossDefeated);
         }
 
         protected override void OnDestroySingleton()
@@ -81,6 +84,7 @@ namespace CrowdDefense.Systems
             if (em == null) return;
             em.Unsubscribe<LevelThemeChangedEvent>(OnLevelThemeChanged);
             em.Unsubscribe<BossEncounteredEvent>(OnBossEncountered);
+            em.Unsubscribe<BossDefeatedEvent>(OnBossDefeated);
         }
 
         // ── Public API ──────────────────────────────────────────────────────
@@ -310,6 +314,31 @@ namespace CrowdDefense.Systems
             }
         }
 
+        private void PlayWithCrossfade(string trackName, float duration)
+        {
+            if (!_tracks.ContainsKey(trackName)) return;
+            StopSting();
+
+            if (_currentTrack == trackName) { EnsurePlaying(trackName); return; }
+
+            string? prev = _currentTrack;
+            _currentTrack = trackName;
+
+            if (prev != null && _sources.TryGetValue(prev, out var prevSrc))
+                StartCoroutine(FadeCo(prevSrc, 0f, duration, stopAfter: true));
+
+            if (_sources.TryGetValue(trackName, out var nextSrc))
+            {
+                var clip = _tracks[trackName];
+                if (clip != null && nextSrc.clip != clip) { nextSrc.clip = clip; nextSrc.loop = true; }
+                if (!_muted && clip != null)
+                {
+                    if (!nextSrc.isPlaying) { nextSrc.volume = 0f; nextSrc.Play(); }
+                    StartCoroutine(FadeCo(nextSrc, TargetVol(trackName), duration));
+                }
+            }
+        }
+
         private void StopSting()
         {
             if (_duckCo != null) { StopCoroutine(_duckCo); _duckCo = null; }
@@ -370,6 +399,23 @@ namespace CrowdDefense.Systems
         // ── EventManager subscriptions ───────────────────────────────────────
 
         private void OnLevelThemeChanged(LevelThemeChangedEvent evt) => PlayLevel(evt.ThemeName);
-        private void OnBossEncountered(BossEncounteredEvent _)        => Duck(2.5f);
+
+        private void OnBossEncountered(BossEncounteredEvent _)
+        {
+            bool hasBossClip = _tracks.TryGetValue("boss", out var clip) && clip != null;
+            if (hasBossClip)
+            {
+                PlayWithCrossfade("boss", BossCrossfadeDuration);
+            }
+            else
+            {
+                // Fallback: switch to "intense" with +20% volume boost
+                float prev = _trackVolMul.TryGetValue("intense", out var m) ? m : 1f;
+                _trackVolMul["intense"] = prev * BossFallbackVolBoost;
+                PlayWithCrossfade("intense", BossCrossfadeDuration);
+            }
+        }
+
+        private void OnBossDefeated(BossDefeatedEvent _) => PlayWithCrossfade("calm", BossCrossfadeDuration);
     }
 }
