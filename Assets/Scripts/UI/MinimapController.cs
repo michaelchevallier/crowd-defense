@@ -13,7 +13,7 @@ namespace CrowdDefense.UI
     // Eliminates ~3000 redundant Painter2D commands/second for geometry that never changes.
     // Port of src-v3/ui/Minimap.js.
     [RequireComponent(typeof(UIDocument))]
-    public class MinimapController : MonoBehaviour
+    public class MinimapController : UIControllerBase
     {
         private const int BASE_W = 200;
         private const int BASE_H = 200;
@@ -25,7 +25,6 @@ namespace CrowdDefense.UI
         private const string PREFS_ZOOM = "Minimap_ZoomLevel";
         private float _zoom = 1f;
 
-        private VisualElement? _hudRoot;
         private VisualElement? _container;
         private Button?         _toggleBtn;
         private StaticLayer?    _staticLayer;
@@ -36,36 +35,24 @@ namespace CrowdDefense.UI
         private bool _boundsReady;
         private bool _visible;
 
-        private void OnEnable()
+        private void Awake()
         {
-            LevelEvents.OnLevelStart += OnLevelStart;
-            LevelEvents.OnLevelEnd   += OnLevelEnd;
+            ResolveUI();
         }
 
-        private void OnDisable()
+        protected override void OnUIReady()
         {
-            LevelEvents.OnLevelStart -= OnLevelStart;
-            LevelEvents.OnLevelEnd   -= OnLevelEnd;
-            _scheduledPaint?.Pause();
+            InitializeUI();
         }
 
-        private void Start()
+        private void InitializeUI()
         {
+            if (Root == null) return;
+
             _zoom = Mathf.Clamp(PlayerPrefs.GetFloat(PREFS_ZOOM, 1f), ZOOM_MIN, ZOOM_MAX);
 
-            var doc = GetComponent<UIDocument>();
-            if (doc == null)
-            {
-#if UNITY_EDITOR
-                Debug.LogWarning("[Minimap] No UIDocument component found.");
-#endif
-                return;
-            }
-
-            var root = doc.rootVisualElement;
-            _hudRoot   = root.Q<VisualElement>("hud-root");
-            _toggleBtn = root.Q<Button>("minimap-toggle-btn");
-            var containerEl = root.Q<VisualElement>("minimap-container");
+            _toggleBtn = Root.Q<Button>("minimap-toggle-btn");
+            var containerEl = Root.Q<VisualElement>("minimap-container");
             if (containerEl == null)
             {
 #if UNITY_EDITOR
@@ -117,6 +104,19 @@ namespace CrowdDefense.UI
 
             // Only the dynamic layer repaints at 10 Hz
             _scheduledPaint = _dynamicLayer.schedule.Execute(RepaintDynamic).Every(100);
+        }
+
+        private void OnEnable()
+        {
+            LevelEvents.OnLevelStart += OnLevelStart;
+            LevelEvents.OnLevelEnd   += OnLevelEnd;
+        }
+
+        private void OnDisable()
+        {
+            LevelEvents.OnLevelStart -= OnLevelStart;
+            LevelEvents.OnLevelEnd   -= OnLevelEnd;
+            _scheduledPaint?.Pause();
         }
 
         private void Update()

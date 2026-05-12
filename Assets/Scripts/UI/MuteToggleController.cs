@@ -6,26 +6,22 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     [RequireComponent(typeof(UIDocument))]
-    public class MuteToggleController : MonoBehaviour
+    public class MuteToggleController : UIControllerBase
     {
         private const string PrefKey = "cd.audio.muted";
 
         private Button? _btn;
         private bool _muted;
 
-        private void Start()
+        private void Awake()
         {
             _muted = PlayerPrefs.GetInt(PrefKey, 0) == 1;
+            ResolveUI();
+        }
 
-            var uiDoc = GetComponent<UIDocument>();
-
-
-            if (uiDoc == null) return;
-
-
-            var root = uiDoc.rootVisualElement;
-
-
+        protected override void OnUIReady()
+        {
+            var root = Root;
             if (root == null) return;
             _btn = root.Q<Button>("btn-mute");
             if (_btn == null) return;

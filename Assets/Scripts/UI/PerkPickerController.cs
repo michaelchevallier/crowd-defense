@@ -12,7 +12,7 @@ namespace CrowdDefense.UI
     // Attached to same GameObject as UIDocument for PerkPicker.uxml.
     // LevelRunner.OnLevelComplete hooks ShowAndWait(onDone).
     [RequireComponent(typeof(UIDocument))]
-    public class PerkPickerController : MonoBehaviour
+    public class PerkPickerController : UIControllerBase
     {
         // Delay between each card slide-in (stagger)
         private const float CardRevealStagger = 0.12f;
@@ -23,7 +23,6 @@ namespace CrowdDefense.UI
             "dmg_bonus", "gold_bonus", "castle_regen"
         };
 
-        private VisualElement? root;
         private Label? titleLabel;
         private Label? subtitleLabel;
         private VisualElement? cardsRow;
@@ -34,19 +33,21 @@ namespace CrowdDefense.UI
         private List<PerkDef?> currentOffers = new();
         private int heroLevel = 1;
 
-        private void Start()
+        private void Awake()
         {
-            var doc = GetComponent<UIDocument>();
-            if (doc == null) { Debug.LogError("[PerkPicker] UIDocument null"); return; }
-            var ve = doc.rootVisualElement;
-            if (ve == null) { Debug.LogError("[PerkPicker] rootVisualElement null"); return; }
-            root         = ve.Q<VisualElement>("perk-picker-root");
+            ResolveUI();
+        }
+
+        protected override void OnUIReady()
+        {
+            var ve = Root;
+            if (ve == null) return;
             titleLabel   = ve.Q<Label>("perk-title");
             subtitleLabel = ve.Q<Label>("perk-subtitle");
             cardsRow     = ve.Q<VisualElement>("perk-cards-row");
             rerollButton = ve.Q<Button>("reroll-button");
 
-            if (root != null) root.AddToClassList("hidden");
+            if (Root != null) Root.AddToClassList("hidden");
 
             if (rerollButton != null)
                 rerollButton.RegisterCallback<ClickEvent>(_ => DoReroll());
@@ -88,7 +89,7 @@ namespace CrowdDefense.UI
 
             SetRerollVisible(HasLuckyPerk());
 
-            if (root != null) root.RemoveFromClassList("hidden");
+            if (Root != null) Root.RemoveFromClassList("hidden");
             Time.timeScale = 0f;
         }
 
@@ -252,7 +253,7 @@ namespace CrowdDefense.UI
 
         private void SelectPerk(string perkId)
         {
-            if (root != null) root.AddToClassList("hidden");
+            if (Root != null) Root.AddToClassList("hidden");
             Time.timeScale = 1f;
 
             if (!string.IsNullOrEmpty(perkId))

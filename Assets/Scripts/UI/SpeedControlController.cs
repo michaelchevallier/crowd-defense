@@ -6,17 +6,19 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     [RequireComponent(typeof(UIDocument))]
-    public class SpeedControlController : MonoBehaviour
+    public class SpeedControlController : UIControllerBase
     {
         // index 0=0.5x 1=1x 2=2x 3=3x — must match LevelRunner.SpeedTable
         private Button?[] _btns = new Button?[4];
 
-        private void Start()
+        private void Awake()
         {
-            var doc = GetComponent<UIDocument>();
-            if (doc == null) return;
+            ResolveUI();
+        }
 
-            var root = doc.rootVisualElement;
+        protected override void OnUIReady()
+        {
+            var root = Root;
             if (root == null) return;
             _btns[0] = root.Q<Button>("speed-0");
             _btns[1] = root.Q<Button>("speed-1");

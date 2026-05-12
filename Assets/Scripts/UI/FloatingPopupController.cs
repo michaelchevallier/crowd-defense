@@ -42,11 +42,18 @@ namespace CrowdDefense.UI
 
         protected override void OnAwakeSingleton()
         {
+            ResolveUIWithFallback();
+
+            for (int i = 0; i < MaxWorld; i++)
+                _worldPool.Enqueue(CreateWorldPopup());
+        }
+
+        private void ResolveUIWithFallback()
+        {
             var doc = GetComponent<UIDocument>();
             if (doc == null)
             {
                 Debug.LogError("[FloatingPopupController] UIDocument not found on this GameObject — trying HUD parent");
-                // Try to find HUD UIDocument in siblings or parent GameObject
                 var hudObj = FindFirstObjectByType<HudController>();
                 if (hudObj != null)
                     doc = hudObj.GetComponent<UIDocument>();
@@ -63,9 +70,6 @@ namespace CrowdDefense.UI
                 return;
             }
             _overlay = root.Q<VisualElement>("popup-overlay");
-
-            for (int i = 0; i < MaxWorld; i++)
-                _worldPool.Enqueue(CreateWorldPopup());
         }
 
         // ── Public API ────────────────────────────────────────────────────────

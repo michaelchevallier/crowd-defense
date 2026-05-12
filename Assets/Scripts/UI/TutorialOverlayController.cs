@@ -19,9 +19,8 @@ namespace CrowdDefense.UI
     }
 
     [RequireComponent(typeof(UIDocument))]
-    public class TutorialOverlayController : MonoBehaviour
+    public class TutorialOverlayController : UIControllerBase
     {
-        private VisualElement? _root;
         private VisualElement? _arrow;
         private Label?         _textLabel;
         private Button?        _btnNext;
@@ -34,16 +33,15 @@ namespace CrowdDefense.UI
 
         // ── Lifecycle ──────────────────────────────────────────────────────────
 
-        private void Start()
+        private void Awake()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
-
-            var doc = uiDoc.rootVisualElement;
-
+        protected override void OnUIReady()
+        {
+            var doc = Root;
             if (doc == null) return;
-            _root      = doc.Q<VisualElement>("tutorial-root");
             _arrow     = doc.Q<VisualElement>("tutorial-arrow");
             _textLabel = doc.Q<Label>("tutorial-text");
             _btnNext   = doc.Q<Button>("tutorial-btn-next");
@@ -51,7 +49,10 @@ namespace CrowdDefense.UI
 
             _btnNext?.RegisterCallback<ClickEvent>(_ => OnNextClicked());
             _btnSkip?.RegisterCallback<ClickEvent>(_ => OnSkipClicked());
+        }
 
+        private void Start()
+        {
             L.OnLocaleChanged += RefreshText;
 
             if (TutorialState.Instance != null)
@@ -148,7 +149,7 @@ namespace CrowdDefense.UI
                 _btnSkip.style.display = DisplayStyle.None;
 
             // Inject temporary Yes / No buttons
-            var confirmRoot = _root?.Q<VisualElement>("tutorial-bubble");
+            var confirmRoot = Root?.Q<VisualElement>("tutorial-bubble");
             var btnYes = new Button { text = L.Get("tutorial.skip_yes"), name = "tutorial-confirm-yes" };
             var btnNo  = new Button { text = L.Get("tutorial.skip_no"),  name = "tutorial-confirm-no"  };
             btnYes.AddToClassList("tutorial-btn");
@@ -292,8 +293,8 @@ namespace CrowdDefense.UI
             _btnNext.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
-        private void Show() => _root?.RemoveFromClassList("hidden");
-        private void Hide() => _root?.AddToClassList("hidden");
+        private void Show() => Root?.RemoveFromClassList("hidden");
+        private void Hide() => Root?.AddToClassList("hidden");
 
         // Arrow positions are static offsets relative to HUD layout
         private void PositionArrowForStep(TutorialStep step)

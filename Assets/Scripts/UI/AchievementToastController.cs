@@ -14,7 +14,7 @@ namespace CrowdDefense.UI
     /// hold 3s, slide-out vers X+300. Audio "achievement_chime" pitch 1.2.
     /// Attacher sur le même GameObject que le HudController.
     /// </summary>
-    public class AchievementToastController : MonoBehaviour
+    public class AchievementToastController : UIControllerBase
     {
         private const float SlideInDuration  = 0.4f;
         private const float DisplayDuration  = 3.0f;
@@ -35,22 +35,15 @@ namespace CrowdDefense.UI
 
         [SerializeField] private AchievementRegistry? registry;
 
-        private VisualElement? _root;
         private readonly Queue<(string id, string displayName)> _pendingIds = new();
         private bool _draining;
         private int  _activeCount;
 
         private void Awake()
         {
-            var doc = GetComponent<UIDocument>()
-                   ?? FindFirstObjectByType<UIDocument>();
-            if (doc == null) { Debug.LogError("[AchievementToast] UIDocument null"); return; }
-            var root = doc.rootVisualElement;
-            if (root == null) { Debug.LogError("[AchievementToast] rootVisualElement null"); return; }
-            _root = root;
-
             if (registry == null)
                 registry = Resources.Load<AchievementRegistry>("AchievementRegistry");
+            ResolveUI();
         }
 
         private void OnEnable()  => Achievements.OnUnlocked += HandleUnlocked;
@@ -63,6 +56,11 @@ namespace CrowdDefense.UI
                 ? L.Get(def.titleKey)
                 : id;
             ShowAchievementToast(id, displayName);
+        }
+
+        protected override void OnUIReady()
+        {
+            // Root is now available via protected VisualElement? Root
         }
 
         public void ShowAchievementToast(string achievementId, string displayName)
@@ -87,7 +85,7 @@ namespace CrowdDefense.UI
 
         private IEnumerator ShowToast(string id, string displayName)
         {
-            if (_root == null) yield break;
+            if (Root == null) yield break;
 
             var def = registry?.Get(id);
             string iconEmoji = def != null ? def.IconEmoji : "\U0001F3C6";
@@ -96,7 +94,7 @@ namespace CrowdDefense.UI
             _activeCount++;
 
             var card = BuildCard(iconEmoji, displayName, slotIndex);
-            _root.Add(card);
+            Root!.Add(card);
 
             AudioController.Instance?.PlayPitched("achievement_chime", volMul: 0.8f, pitch: 1.2f);
 
@@ -104,7 +102,7 @@ namespace CrowdDefense.UI
             yield return new WaitForSecondsRealtime(DisplayDuration);
             yield return AnimateSlideOut(card);
 
-            _root.Remove(card);
+            Root?.Remove(card);
             _activeCount = Mathf.Max(0, _activeCount - 1);
 
             // Shift remaining cards up

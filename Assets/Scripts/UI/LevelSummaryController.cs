@@ -9,9 +9,8 @@ namespace CrowdDefense.UI
     // Listens to LevelRunner.OnSummaryReady, shows win/loss stats, wires Retry / Next / Menu buttons.
     // Attach to the same GameObject as the UIDocument for LevelSummary.uxml.
     [RequireComponent(typeof(UIDocument))]
-    public class LevelSummaryController : MonoBehaviour
+    public class LevelSummaryController : UIControllerBase
     {
-        private VisualElement? _root;
         private Label?         _titleLabel;
         private Label?         _starsLabel;
         private Label?         _statsLabel;
@@ -28,14 +27,16 @@ namespace CrowdDefense.UI
 
         private LevelResult?   _pendingResult;
 
-        private void Start()
+        private void Awake()
         {
-            var doc  = GetComponent<UIDocument>();
-            if (doc == null) { Debug.LogError("[LevelSummary] UIDocument null"); return; }
-            var root = doc.rootVisualElement;
-            if (root == null) { Debug.LogError("[LevelSummary] rootVisualElement null"); return; }
+            ResolveUI();
+        }
 
-            _root       = root.Q<VisualElement>("summary-root");
+        protected override void OnUIReady()
+        {
+            var root = Root;
+            if (root == null) return;
+
             _titleLabel = root.Q<Label>("summary-title");
             _starsLabel = root.Q<Label>("summary-stars");
             _statsLabel = root.Q<Label>("summary-stats");
@@ -49,7 +50,7 @@ namespace CrowdDefense.UI
             _nameField   = root.Q<TextField>("summary-name-field");
             _nameConfirm = root.Q<Button>("summary-name-confirm");
 
-            if (_root != null)       _root.AddToClassList("hidden");
+            if (Root != null)        Root.AddToClassList("hidden");
             if (_namePrompt != null) _namePrompt.AddToClassList("hidden");
 
             if (_btnRetry   != null) _btnRetry.clicked   += OnRetry;
@@ -74,8 +75,8 @@ namespace CrowdDefense.UI
 
         private void Show(LevelResult r)
         {
-            if (_root == null) return;
-            _root.RemoveFromClassList("hidden");
+            if (Root == null) return;
+            Root.RemoveFromClassList("hidden");
             _pendingResult = r;
 
             if (_titleLabel != null)

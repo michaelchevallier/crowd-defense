@@ -11,7 +11,8 @@ namespace CrowdDefense.UI
     // Panel sticky bottom-right : stats détaillées d'une tour sélectionnée.
     // Affiché sur PlacementController.OnTowerSelected(tower), caché sur null.
     // Distinct du tooltip hover (TowerTooltipController) et du mini-panel top-right (TowerStatsPanel).
-    public class TowerInfoPanel : MonoBehaviour
+    [RequireComponent(typeof(UIDocument))]
+    public class TowerInfoPanel : UIControllerBase
     {
         public static TowerInfoPanel? Instance { get; private set; }
 
@@ -36,6 +37,7 @@ namespace CrowdDefense.UI
         {
             if (Instance != null && Instance != this) { Destroy(this); return; }
             Instance = this;
+            ResolveUI();
         }
 
         private void OnDestroy()
@@ -45,11 +47,10 @@ namespace CrowdDefense.UI
                 PlacementController.Instance.OnTowerSelected -= OnTowerSelected;
         }
 
-        private void Start()
+        protected override void OnUIReady()
         {
-            var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
-            if (doc == null) { enabled = false; return; }
-            var root = doc.rootVisualElement;
+            var root = Root;
+            if (root == null) { enabled = false; return; }
 
             _panel       = root.Q<VisualElement>("tower-info-panel");
             _portrait    = root.Q<VisualElement>("info-portrait");
