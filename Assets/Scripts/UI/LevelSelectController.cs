@@ -12,9 +12,18 @@ namespace CrowdDefense.UI
         private const int WorldCount     = 8;
         private const int LevelsPerWorld = 10;
 
+        private VisualElement? _root;
+
+        private void OnDestroy() =>
+            PlayerProfile.OnNameChanged -= OnPlayerNameChanged;
+
+        private void OnPlayerNameChanged(string _) => RefreshGreeting(_root!);
+
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            _root = GetComponent<UIDocument>().rootVisualElement;
+            var root = _root;
+            PlayerProfile.OnNameChanged += OnPlayerNameChanged;
 
             var titleLabel = root.Q<Label>("menu-title-label");
             if (titleLabel != null) titleLabel.text = L.Get("menu.game_title");

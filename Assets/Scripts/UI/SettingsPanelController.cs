@@ -67,6 +67,7 @@ namespace CrowdDefense.UI
         private Toggle?    _highContrastToggle;
 
         private DropdownField? _langDropdown;
+        private TextField? _playerNameField;
         private Button? _closeBtn;
         private Button? _keybindingsBtn;
 
@@ -191,6 +192,7 @@ namespace CrowdDefense.UI
                 _fontSizeSlider.highValue = 2;
             }
 
+            _playerNameField = _root.Q<TextField>("player-name-field");
             _langDropdown = _root.Q<DropdownField>("lang-dropdown");
             _closeBtn = _root.Q<Button>("settings-close-btn");
             _fullscreenBtn = _root.Q<Button>("settings-fullscreen-btn");
@@ -527,6 +529,12 @@ namespace CrowdDefense.UI
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
             _keyResetBtn?.RegisterCallback<ClickEvent>(_ => OnKeyReset());
             _changeNameBtn?.RegisterCallback<ClickEvent>(_ => OnChangeName());
+
+            _playerNameField?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents) return;
+                Systems.PlayerProfile.Instance?.SetName(evt.newValue);
+            });
             _resetDefaultsBtn?.RegisterCallback<ClickEvent>(_ => OnResetSettingsClicked());
             _resetProgressBtn?.RegisterCallback<ClickEvent>(_ => OnResetProgressClicked());
             _exportSaveBtn?.RegisterCallback<ClickEvent>(_ => OnExportSave());
@@ -641,6 +649,9 @@ namespace CrowdDefense.UI
                 }
 
                 SyncDifficultyButtons(reg.Difficulty);
+
+                if (_playerNameField != null)
+                    _playerNameField.SetValueWithoutNotify(Systems.PlayerProfile.Instance?.GetName() ?? "Joueur");
             }
             finally
             {

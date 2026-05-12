@@ -40,6 +40,9 @@ namespace CrowdDefense.UI
         private Text?      _lbRow2;
         private Text?      _lbRow3;
 
+        // Replay highlights (4-5 bullet points)
+        private Text?      _highlightsText;
+
         // Bar chart "Kills par vague"
         private RectTransform? _chartArea;
         private readonly System.Collections.Generic.List<(Image bar, Text label)> _chartBars = new();
@@ -197,9 +200,15 @@ namespace CrowdDefense.UI
             }
 
             if (r != null)
+            {
                 PopulateStats(r);
+                PopulateHighlights(r);
+            }
             else
+            {
                 ClearStats();
+                if (_highlightsText != null) _highlightsText.text = "";
+            }
 
             // Cache level name + score for share messages
             _shareLevelName = LevelRunner.Instance?.CurrentLevel?.DisplayName
@@ -634,16 +643,98 @@ namespace CrowdDefense.UI
 
         private void ClearStats()
         {
-            if (_statKills  != null) _statKills.text  = "";
-            if (_statGold   != null) _statGold.text   = "";
-            if (_statTowers != null) _statTowers.text = "";
-            if (_statTime   != null) _statTime.text   = "";
-            if (_statWaves  != null) _statWaves.text  = "";
-            if (_lbHeader   != null) _lbHeader.text   = "";
-            if (_lbRow1     != null) _lbRow1.text     = "";
-            if (_lbRow2     != null) _lbRow2.text     = "";
-            if (_lbRow3     != null) _lbRow3.text     = "";
+            if (_statKills      != null) _statKills.text      = "";
+            if (_statGold       != null) _statGold.text       = "";
+            if (_statTowers     != null) _statTowers.text     = "";
+            if (_statTime       != null) _statTime.text       = "";
+            if (_statWaves      != null) _statWaves.text      = "";
+            if (_lbHeader       != null) _lbHeader.text       = "";
+            if (_lbRow1         != null) _lbRow1.text         = "";
+            if (_lbRow2         != null) _lbRow2.text         = "";
+            if (_lbRow3         != null) _lbRow3.text         = "";
+            if (_highlightsText != null) _highlightsText.text = "";
             foreach (var (bar, lbl) in _chartBars) { bar.gameObject.SetActive(false); lbl.gameObject.SetActive(false); }
+        }
+
+        // ── Replay highlights ───────────────────────────────────────────────────
+
+        private void PopulateHighlights(LevelResult r)
+        {
+            if (_highlightsText == null) return;
+            var lines = BuildHighlightsFromReplay(r);
+            _highlightsText.text = string.Join("\n", lines);
+        }
+
+        private static List<string> BuildHighlightsFromReplay(LevelResult r)
+        {
+            var lines = new List<string>(5);
+
+            // 1. First tower placed (from replay JSON)
+            string json = PlayerPrefs.GetString("cd.replay.last", "");
+            string firstTowerName = "";
+            float  firstTowerTime = float.MaxValue;
+            if (!string.IsNullOrEmpty(json))
+            {
+                var payload = JsonUtility.FromJson<ReplayPayload>(json);
+                if (payload?.events != null)
+                {
+                    foreach (var ev in payload.events)
+                    {
+                        if (ev.type == nameof(InputEventType.TowerPlaced) && ev.time < firstTowerTime)
+                        {
+                            firstTowerTime = ev.time;
+                            // data format: "TowerId@x,z" — extract id before '@'
+                            int atIdx = ev.data.IndexOf('@');
+                            firstTowerName = atIdx > 0 ? ev.data[..atIdx] : ev.data;
+                        }
+                    }
+                }
+            }
+            if (!string.IsNullOrEmpty(firstTowerName))
+                lines.Add($"- 1re tour : {firstTowerName} (t={firstTowerTime:F0}s)");
+
+            // 2. Best wave (most kills in a single wave)
+            var tracker = KillsPerWaveTracker.Instance;
+            if (tracker != null && tracker.MaxKillsInAnyWave > 0)
+            {
+                int bestKills = tracker.MaxKillsInAnyWave;
+                int bestWaveIdx = 0;
+                foreach (var kv in tracker.KillsByWave)
+                    if (kv.Value == bestKills) { bestWaveIdx = kv.Key; break; }
+                lines.Add($"- Meilleure vague : V{bestWaveIdx + 1} ({bestKills} kills)");
+            }
+
+            // 3. Best upgraded tower
+            var placed = PlacementController.Instance?.PlacedTowers;
+            if (placed != null && placed.Count > 0)
+            {
+                var best = placed
+                    .Where(t => t != null && t.Config != null)
+                    .OrderByDescending(t => t.UpgradeLevel)
+                    .ThenByDescending(t => t.TotalKills)
+                    .FirstOrDefault();
+                if (best != null)
+                    lines.Add($"- Tour max : {best.Config!.DisplayName} N{best.UpgradeLevel} ({best.TotalKills} kills)");
+            }
+
+            // 4. Total kills milestone
+            if (r.Kills > 0)
+            {
+                string milestone = r.Kills >= 1000 ? "Massacre total !" :
+                                   r.Kills >= 500  ? "Boucherie !" :
+                                   r.Kills >= 200  ? "Bonne defense !" : "Debut prometteur.";
+                lines.Add($"- {r.Kills} ennemis tues — {milestone}");
+            }
+
+            // 5. Run outcome
+            if (r.IsVictory)
+                lines.Add($"- Victoire en {r.WaveReached} vagues !");
+            else if (r.WaveReached > 0)
+                lines.Add($"- Resiste jusqu'a la vague {r.WaveReached}");
+
+            // Keep at most 5
+            if (lines.Count > 5) lines.RemoveRange(5, lines.Count - 5);
+            return lines;
         }
 
         // ── UGUI construction ───────────────────────────────────────────────────
@@ -805,6 +896,13 @@ namespace CrowdDefense.UI
             _btnTwitter.onClick.AddListener(OnTwitterShareClicked);
 
             _shareRow.SetActive(false);
+
+            // Replay highlights — multiline bullet list, below share row
+            _highlightsText = CreateLabel(panelGo.transform, "HighlightsText",
+                anchorMin: new Vector2(0.04f, 0.20f),
+                anchorMax: new Vector2(0.96f, 0.32f),
+                fontSize: 13, color: new Color(0.80f, 0.80f, 0.80f, 1f));
+            _highlightsText.alignment = TextAnchor.UpperLeft;
 
             // Toast — centred just above share row, hidden by default
             _toastText = CreateLabel(panelGo.transform, "ToastLabel",
