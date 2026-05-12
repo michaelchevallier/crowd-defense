@@ -21,9 +21,25 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _hero = LevelRunner.Instance?.Hero;
-            if (_hero != null) _hero.OnLevelUp += OnLevelUp;
             if (canvas != null) canvas.enabled = false;
+            // Hero may not be spawned yet — use LateSubscribe coroutine
+            StartCoroutine(LateSubscribe());
+        }
+
+        private IEnumerator LateSubscribe()
+        {
+            // Wait until LevelRunner.Hero is available (spawned after Start)
+            while (_hero == null)
+            {
+                var candidate = LevelRunner.Instance?.Hero;
+                if (candidate != null)
+                {
+                    _hero = candidate;
+                    _hero.OnLevelUp += OnLevelUp;
+                    yield break;
+                }
+                yield return null;
+            }
         }
 
         private void OnDestroy()
