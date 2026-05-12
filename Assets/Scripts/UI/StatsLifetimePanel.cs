@@ -45,6 +45,8 @@ namespace CrowdDefense.UI
             if (Instance == this) Instance = null;
         }
 
+        public bool IsOpen => _root != null && !_root.ClassListContains("hidden");
+
         public void Show()
         {
             if (_root == null) return;

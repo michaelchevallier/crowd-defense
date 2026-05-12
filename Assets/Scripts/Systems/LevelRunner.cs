@@ -207,7 +207,12 @@ namespace CrowdDefense.Systems
             }
 
             if (Input.GetKeyDown(KeyBindings.GetKey("pause")))
-                TogglePause();
+            {
+                if (IsAnyModalOpen())
+                    CloseTopModal();
+                else
+                    TogglePause();
+            }
 
             UpdateHeroInput();
         }
@@ -734,6 +739,20 @@ namespace CrowdDefense.Systems
 
             if (Input.GetKeyDown(KeyCode.U))
                 Hero.TryUlt();
+        }
+
+        private static bool IsAnyModalOpen() =>
+            (UI.SettingsPanelController.Instance?.IsOpen    ?? false) ||
+            (UI.AchievementsPanel.Instance?.IsOpen          ?? false) ||
+            (UI.BestiaryPanel.Instance?.IsOpen              ?? false) ||
+            (UI.StatsLifetimePanel.Instance?.IsOpen         ?? false);
+
+        private static void CloseTopModal()
+        {
+            if (UI.SettingsPanelController.Instance?.IsOpen  ?? false) { UI.SettingsPanelController.Instance!.Hide(); return; }
+            if (UI.AchievementsPanel.Instance?.IsOpen        ?? false) { UI.AchievementsPanel.Instance!.Hide();        return; }
+            if (UI.BestiaryPanel.Instance?.IsOpen            ?? false) { UI.BestiaryPanel.Instance!.Hide();            return; }
+            if (UI.StatsLifetimePanel.Instance?.IsOpen       ?? false) { UI.StatsLifetimePanel.Instance!.Hide();       return; }
         }
 
         private void ApplyTimeScale()

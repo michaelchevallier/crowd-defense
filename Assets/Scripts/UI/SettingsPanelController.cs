@@ -10,6 +10,9 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class SettingsPanelController : MonoBehaviour
     {
+        public static SettingsPanelController? Instance { get; private set; }
+        public bool IsOpen => _settingsRoot != null && !_settingsRoot.ClassListContains("hidden");
+
         private VisualElement? _root;
         private VisualElement? _settingsRoot;
         private Button? _fullscreenBtn;
@@ -93,6 +96,13 @@ namespace CrowdDefense.UI
         };
 
         private bool _suppressEvents;
+
+        private void Awake() => Instance = this;
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
 
         private void Start()
         {
