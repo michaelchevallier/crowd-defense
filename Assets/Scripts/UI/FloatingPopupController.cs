@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using TMPro;
 using CrowdDefense.Common;
 
 namespace CrowdDefense.UI
@@ -10,35 +11,50 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class FloatingPopupController : MonoSingleton<FloatingPopupController>
     {
+        // ── UI Toolkit (coins / heals / gems) ────────────────────────────────
         private const int   MaxActive    = 30;
         private const float LifetimeS    = 0.9f;
         private const float RisePixels   = 40f;
-        private const float StackWindowS = 0.1f;
-
         private VisualElement? _overlay;
         private readonly Queue<Label> _pool   = new(MaxActive);
         private readonly List<Label>  _active = new(MaxActive);
 
-        private readonly Dictionary<(int, string), StackEntry> _stacks = new();
+        // ── World-space 3D popup pool ─────────────────────────────────────────
+        private const int   MaxWorld      = 50;
+        private const float WorldLifetime = 0.9f;
+        private const float WorldRise     = 1.0f;
+        private const float PunchDuration = 0.2f;
+        private const float PunchScale    = 1.2f;
 
-        private struct StackEntry
+        private static readonly Color ColorDamage = new Color(1f, 0.28f, 0.28f);
+        private static readonly Color ColorCrit   = new Color(1f, 0.90f, 0.18f);
+
+        private readonly Queue<WorldPopup> _worldPool   = new(MaxWorld);
+        private readonly List<WorldPopup>  _worldActive = new(MaxWorld);
+
+        private sealed class WorldPopup
         {
-            public Label Lbl;
-            public float AccumDmg;
-            public float SpawnTime;
+            public GameObject Go    = null!;
+            public TextMeshPro Tmp  = null!;
+            public bool        Alive;
         }
 
         protected override void OnAwakeSingleton()
         {
             var doc = GetComponent<UIDocument>();
             _overlay = doc.rootVisualElement.Q<VisualElement>("popup-overlay");
+
+            for (int i = 0; i < MaxWorld; i++)
+                _worldPool.Enqueue(CreateWorldPopup());
         }
 
+        // ── Public API ────────────────────────────────────────────────────────
+
         public void SpawnDamage(float dmg, Vector3 worldPos, int enemyId = 0)
-            => SpawnStacked(Mathf.RoundToInt(dmg), "popup-damage", worldPos, enemyId, "-");
+            => SpawnWorld($"-{Mathf.RoundToInt(dmg)}", worldPos, ColorDamage);
 
         public void SpawnCrit(float dmg, Vector3 worldPos, int enemyId = 0)
-            => SpawnStacked(Mathf.RoundToInt(dmg), "popup-crit", worldPos, enemyId, "!");
+            => SpawnWorld($"CRIT {Mathf.RoundToInt(dmg)}!", worldPos, ColorCrit);
 
         public void SpawnCoin(int amount, Vector3 worldPos)
             => Spawn($"+{amount}g", "popup-coin", worldPos);
@@ -50,70 +66,119 @@ namespace CrowdDefense.UI
             => Spawn($"+{amount}", "popup-gems", worldPos);
 
         public void SpawnReward(string text, Vector3 worldPos, Color color)
+            => SpawnWorld(text, worldPos, color);
+
+        // ── World-space 3D implementation ─────────────────────────────────────
+
+        private void SpawnWorld(string text, Vector3 worldPos, Color color)
         {
-            if (_overlay == null) return;
-            var cam = Camera.main;
-            if (cam == null) return;
-            Vector3 vp = cam.WorldToViewportPoint(worldPos);
-            if (vp.z < 0f) return;
-            float sx = vp.x * Screen.width;
-            float sy = (1f - vp.y) * Screen.height;
-            var lbl = AcquireLabel("popup-reward");
-            lbl.text = text;
-            lbl.style.left      = new StyleLength(sx);
-            lbl.style.top       = new StyleLength(sy);
-            lbl.style.opacity   = 1f;
-            lbl.style.translate = new Translate(0, 0);
-            lbl.style.color     = new StyleColor(color);
-            _overlay.Add(lbl);
-            _active.Add(lbl);
-            StartCoroutine(AnimatePopup(lbl));
+            var wp = AcquireWorldPopup();
+            wp.Alive = true;
+            wp.Tmp.text  = text;
+            wp.Tmp.color = color;
+            wp.Go.transform.position = worldPos + Vector3.up * 0.5f;
+            wp.Go.transform.localScale = Vector3.zero;
+            wp.Go.SetActive(true);
+            _worldActive.Add(wp);
+            StartCoroutine(AnimateWorldPopup(wp));
         }
 
-        private void SpawnStacked(int value, string cssClass, Vector3 worldPos, int enemyId, string prefix)
+        private IEnumerator AnimateWorldPopup(WorldPopup wp)
         {
-            if (_overlay == null) return;
             var cam = Camera.main;
-            if (cam == null) return;
+            float elapsed = 0f;
 
-            Vector3 vp = cam.WorldToViewportPoint(worldPos);
-            if (vp.z < 0f) return;
-
-            float sx = vp.x * Screen.width;
-            float sy = (1f - vp.y) * Screen.height;
-
-            var key = (enemyId, cssClass);
-            float now = Time.unscaledTime;
-
-            if (enemyId != 0
-                && _stacks.TryGetValue(key, out var entry)
-                && now - entry.SpawnTime < StackWindowS
-                && _active.Contains(entry.Lbl))
+            // Punch-in : scale 0 → 1.2 → 1 sur PunchDuration
+            while (elapsed < PunchDuration)
             {
-                entry.AccumDmg += value;
-                entry.Lbl.text  = BuildText(prefix, Mathf.RoundToInt(entry.AccumDmg));
-                _stacks[key]    = entry;
-                return;
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / PunchDuration);
+                float s = t < 0.5f
+                    ? Mathf.Lerp(0f, PunchScale, t * 2f)
+                    : Mathf.Lerp(PunchScale, 1f, (t - 0.5f) * 2f);
+                wp.Go.transform.localScale = Vector3.one * s;
+                BillboardToCamera(wp.Go.transform, cam);
+                yield return null;
             }
 
-            var lbl = AcquireLabel(cssClass);
-            lbl.text = BuildText(prefix, value);
-            lbl.style.left      = new StyleLength(sx);
-            lbl.style.top       = new StyleLength(sy);
-            lbl.style.opacity   = 1f;
-            lbl.style.translate = new Translate(0, 0);
+            wp.Go.transform.localScale = Vector3.one;
 
-            _overlay.Add(lbl);
-            _active.Add(lbl);
+            // Float + fade sur le reste de la durée
+            Vector3 startPos = wp.Go.transform.position;
+            float remaining  = WorldLifetime - PunchDuration;
+            elapsed = 0f;
 
-            if (enemyId != 0)
-                _stacks[key] = new StackEntry { Lbl = lbl, AccumDmg = value, SpawnTime = now };
+            while (elapsed < remaining)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / remaining);
+                wp.Go.transform.position = startPos + Vector3.up * (WorldRise * t);
+                var c = wp.Tmp.color;
+                c.a = 1f - t;
+                wp.Tmp.color = c;
+                BillboardToCamera(wp.Go.transform, cam);
+                yield return null;
+            }
 
-            StartCoroutine(AnimatePopup(lbl));
+            ReturnWorldPopup(wp);
         }
 
-        private static string BuildText(string prefix, int val)
-            => prefix == "!" ? $"CRIT {val}!" : $"{prefix}{val}";
+        private static void BillboardToCamera(Transform t, Camera? cam)
+        {
+            if (cam == null) return;
+            t.rotation = cam.transform.rotation;
+        }
+
+        private WorldPopup AcquireWorldPopup()
+        {
+            if (_worldPool.Count == 0 && _worldActive.Count >= MaxWorld)
+            {
+                var oldest = _worldActive[0];
+                _worldActive.RemoveAt(0);
+                ReturnWorldPopup(oldest);
+            }
+
+            if (_worldPool.Count > 0)
+            {
+                var wp = _worldPool.Dequeue();
+                var c = wp.Tmp.color;
+                c.a = 1f;
+                wp.Tmp.color = c;
+                return wp;
+            }
+
+            return CreateWorldPopup();
+        }
+
+        private WorldPopup CreateWorldPopup()
+        {
+            var go = new GameObject("WorldPopup");
+            go.hideFlags = HideFlags.HideInHierarchy;
+            go.SetActive(false);
+
+            var tmp = go.AddComponent<TextMeshPro>();
+            tmp.fontSize              = 4f;
+            tmp.fontStyle             = FontStyles.Bold;
+            tmp.alignment             = TextAlignmentOptions.Center;
+            tmp.outlineWidth          = 0.2f;
+            tmp.outlineColor          = new Color32(0, 0, 0, 255);
+            tmp.enableWordWrapping    = false;
+            tmp.autoSizeTextContainer = false;
+            tmp.rectTransform.sizeDelta = new Vector2(4f, 1.5f);
+
+            return new WorldPopup { Go = go, Tmp = tmp, Alive = false };
+        }
+
+        private void ReturnWorldPopup(WorldPopup wp)
+        {
+            wp.Alive = false;
+            wp.Go.SetActive(false);
+            _worldActive.Remove(wp);
+            if (_worldPool.Count < MaxWorld)
+                _worldPool.Enqueue(wp);
+        }
+
+        // ── UI Toolkit implementation (coins / heals / gems) ─────────────────
 
         private void Spawn(string text, string cssClass, Vector3 worldPos)
         {
