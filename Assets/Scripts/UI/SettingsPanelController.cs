@@ -56,7 +56,7 @@ namespace CrowdDefense.UI
         private Label? _langSectionLabel;
         private Label? _langLabel;
 
-        private static readonly string[] LangCodes = { "en", "fr" };
+        private static readonly string[] LangCodes = { "en", "fr", "es" };
 
         // Built at runtime so locale changes are reflected
         private List<string> QualityChoices => new()
@@ -69,6 +69,7 @@ namespace CrowdDefense.UI
         {
             L.Get("settings.lang_en"),
             L.Get("settings.lang_fr"),
+            L.Get("settings.lang_es"),
         };
 
         private bool _suppressEvents;
