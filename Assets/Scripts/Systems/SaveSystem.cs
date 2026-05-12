@@ -123,6 +123,18 @@ namespace CrowdDefense.Systems
 
         public static int CurrentSlot { get; private set; } = 0;
 
+        public static string ActiveSlot => CurrentSlot switch { 0 => "A", 1 => "B", _ => "C" };
+
+        public static void SwitchSlot(string slot)
+        {
+            int idx = slot.ToUpperInvariant() switch { "A" => 0, "B" => 1, "C" => 2, _ => 0 };
+            SelectSlot(idx);
+            // Invalidate cache for the newly active slot so next Load() re-reads PlayerPrefs
+            _cachedSlots[idx]   = null;
+            _cachedRuns[idx]    = null;
+            _cachedRunMaps[idx] = null;
+        }
+
         private static ProgressData?[] _cachedSlots   = new ProgressData?[SLOT_COUNT];
         private static RunState?[]     _cachedRuns    = new RunState?[SLOT_COUNT];
         private static RunMapState?[]  _cachedRunMaps = new RunMapState?[SLOT_COUNT];

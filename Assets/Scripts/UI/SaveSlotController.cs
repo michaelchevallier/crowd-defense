@@ -9,6 +9,8 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class SaveSlotController : MonoBehaviour
     {
+        public static SaveSlotController? Instance { get; private set; }
+
         public static event Action<int>? OnSlotSelected;
 
         private VisualElement? _root;
@@ -36,6 +38,9 @@ namespace CrowdDefense.UI
         }
 
         private SlotRefs[] _slots = new SlotRefs[SlotCount];
+
+        private void Awake() => Instance = this;
+        private void OnDestroy() { if (Instance == this) Instance = null; L.OnLocaleChanged -= RefreshAll; }
 
         private void Start()
         {
@@ -73,8 +78,6 @@ namespace CrowdDefense.UI
             L.OnLocaleChanged += RefreshAll;
         }
 
-        private void OnDestroy() => L.OnLocaleChanged -= RefreshAll;
-
         public void Show()
         {
             RefreshAll();
@@ -102,7 +105,21 @@ namespace CrowdDefense.UI
             if (hasData && data != null)
             {
                 if (refs.Date  != null) refs.Date.text  = data.lastPlayedDate;
-                if (refs.World != null) refs.World.text = L.Get("saveslot.world_label", data.worldReached);
+
+                // Show mid-level resume info (level + wave) when available, fallback to world reached
+                if (refs.World != null)
+                {
+                    // Temporarily switch slot to peek MidLevelStateData without disturbing CurrentSlot
+                    int savedCurrent = SaveSystem.CurrentSlot;
+                    SaveSystem.SelectSlot(slot);
+                    var mid = SaveSystem.LoadRunState();
+                    SaveSystem.SelectSlot(savedCurrent);
+
+                    refs.World.text = mid != null && !string.IsNullOrEmpty(mid.levelId)
+                        ? L.Get("saveslot.level_wave_label", mid.levelId, mid.waveIdx)
+                        : L.Get("saveslot.world_label", data.worldReached);
+                }
+
                 if (refs.Gems  != null) refs.Gems.text  = L.Get("saveslot.gems_label", data.gems);
                 if (refs.Time  != null)
                 {

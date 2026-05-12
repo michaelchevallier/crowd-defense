@@ -188,6 +188,10 @@ namespace CrowdDefense.UI
                     ["settings.fullscreen_on"] = "Fullscreen ON",
                     ["settings.fullscreen_off"] = "Fullscreen OFF",
                     ["settings.hud_btn"] = "Settings",
+                    ["settings.reset_progress"] = "Reset Progress",
+                    ["settings.reset_progress_warn"] = "This action is irreversible.",
+                    ["confirm.reset_progress_title"] = "Reset all progress?",
+                    ["confirm.reset_progress_msg"] = "All saved data will be permanently deleted.",
 
                     // ── Achievement toast ──────────────────────────────────────────
                     ["achievement.toast_header"] = "Achievement Unlocked!",
@@ -280,10 +284,11 @@ namespace CrowdDefense.UI
                     ["saveslot.delete"]         = "Delete",
                     ["saveslot.world_label"]    = "World {0}",
                     ["saveslot.gems_label"]     = "{0} gems",
-                    ["saveslot.time_label"]     = "{0}h {1}m",
-                    ["saveslot.confirm_delete"] = "Delete this save?",
-                    ["saveslot.confirm_yes"]    = "Confirm",
-                    ["saveslot.confirm_no"]     = "Cancel",
+                    ["saveslot.time_label"]        = "{0}h {1}m",
+                    ["saveslot.level_wave_label"]  = "Level {0} — wave {1}",
+                    ["saveslot.confirm_delete"]    = "Delete this save?",
+                    ["saveslot.confirm_yes"]       = "Confirm",
+                    ["saveslot.confirm_no"]        = "Cancel",
 
                     // ── Statistics screen ──────────────────────────────────────────
                     ["stats.title"]             = "Statistics",
@@ -492,6 +497,10 @@ namespace CrowdDefense.UI
                     ["settings.fullscreen_on"] = "Plein écran ON",
                     ["settings.fullscreen_off"] = "Plein écran OFF",
                     ["settings.hud_btn"] = "Réglages",
+                    ["settings.reset_progress"] = "Réinitialiser la progression",
+                    ["settings.reset_progress_warn"] = "Cette action est irréversible.",
+                    ["confirm.reset_progress_title"] = "Effacer toute progression ?",
+                    ["confirm.reset_progress_msg"] = "Toutes les données sauvegardées seront supprimées définitivement.",
 
                     // ── Achievement toast ──────────────────────────────────────────
                     ["achievement.toast_header"] = "Succès débloqué !",
@@ -584,10 +593,11 @@ namespace CrowdDefense.UI
                     ["saveslot.delete"]         = "Supprimer",
                     ["saveslot.world_label"]    = "Monde {0}",
                     ["saveslot.gems_label"]     = "{0} gemmes",
-                    ["saveslot.time_label"]     = "{0}h {1}m",
-                    ["saveslot.confirm_delete"] = "Supprimer cette sauvegarde ?",
-                    ["saveslot.confirm_yes"]    = "Confirmer",
-                    ["saveslot.confirm_no"]     = "Annuler",
+                    ["saveslot.time_label"]        = "{0}h {1}m",
+                    ["saveslot.level_wave_label"]  = "Niveau {0} — vague {1}",
+                    ["saveslot.confirm_delete"]    = "Supprimer cette sauvegarde ?",
+                    ["saveslot.confirm_yes"]       = "Confirmer",
+                    ["saveslot.confirm_no"]        = "Annuler",
 
                     // ── Statistics screen ──────────────────────────────────────────
                     ["stats.title"]             = "Statistiques",
@@ -796,6 +806,10 @@ namespace CrowdDefense.UI
                     ["settings.fullscreen_on"] = "Pantalla completa ON",
                     ["settings.fullscreen_off"] = "Pantalla completa OFF",
                     ["settings.hud_btn"] = "Ajustes",
+                    ["settings.reset_progress"] = "Restablecer progreso",
+                    ["settings.reset_progress_warn"] = "Esta accion es irreversible.",
+                    ["confirm.reset_progress_title"] = "Borrar todo el progreso?",
+                    ["confirm.reset_progress_msg"] = "Todos los datos guardados seran eliminados permanentemente.",
 
                     // ── Achievement toast ──────────────────────────────────────────
                     ["achievement.toast_header"] = "Logro desbloqueado!",
@@ -890,10 +904,11 @@ namespace CrowdDefense.UI
                     ["saveslot.delete"]         = "Eliminar",
                     ["saveslot.world_label"]    = "Mundo {0}",
                     ["saveslot.gems_label"]     = "{0} gemas",
-                    ["saveslot.time_label"]     = "{0}h {1}m",
-                    ["saveslot.confirm_delete"] = "Eliminar esta partida?",
-                    ["saveslot.confirm_yes"]    = "Confirmar",
-                    ["saveslot.confirm_no"]     = "Cancelar",
+                    ["saveslot.time_label"]        = "{0}h {1}m",
+                    ["saveslot.level_wave_label"]  = "Nivel {0} — oleada {1}",
+                    ["saveslot.confirm_delete"]    = "Eliminar esta partida?",
+                    ["saveslot.confirm_yes"]       = "Confirmar",
+                    ["saveslot.confirm_no"]        = "Cancelar",
 
                     // ── Statistics screen ──────────────────────────────────────────
                     ["stats.title"]             = "Estadisticas",
