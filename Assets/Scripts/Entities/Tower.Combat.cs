@@ -324,16 +324,39 @@ namespace CrowdDefense.Entities
             proj.SetElementTint(_projectileTint);
         }
 
+        // ── MuzzleFlash light pool (pre-allocated, zero GC after warmup) ─────────
+        private const int MuzzleFlashPoolSize = 6;
+        private (GameObject go, Light light)[]? _muzzleFlashPool;
+        private int _muzzleFlashNext;
+
+        private void EnsureMuzzleFlashPool()
+        {
+            if (_muzzleFlashPool != null) return;
+            _muzzleFlashPool = new (GameObject, Light)[MuzzleFlashPoolSize];
+            for (int i = 0; i < MuzzleFlashPoolSize; i++)
+            {
+                var go = new GameObject("MuzzleFlash");
+                go.transform.SetParent(transform, false);
+                var l = go.AddComponent<Light>();
+                l.type      = LightType.Point;
+                l.color     = new Color(1f, 0.95f, 0.5f);
+                l.range     = 2f;
+                l.intensity = 0f;
+                l.shadows   = LightShadows.None;
+                go.SetActive(false);
+                _muzzleFlashPool[i] = (go, l);
+            }
+        }
+
         private IEnumerator MuzzleFlashLightRoutine(Vector3 worldPos)
         {
-            var go = new GameObject("MuzzleFlash");
+            EnsureMuzzleFlashPool();
+            var (go, light) = _muzzleFlashPool![_muzzleFlashNext % MuzzleFlashPoolSize];
+            _muzzleFlashNext++;
+
             go.transform.position = worldPos;
-            var light = go.AddComponent<Light>();
-            light.type      = LightType.Point;
-            light.color     = new Color(1f, 0.95f, 0.5f);
-            light.range     = 2f;
+            go.SetActive(true);
             light.intensity = 4f;
-            light.shadows   = LightShadows.None;
 
             float elapsed = 0f;
             const float Duration = 0.1f;
@@ -343,7 +366,8 @@ namespace CrowdDefense.Entities
                 light.intensity = Mathf.Lerp(4f, 0f, elapsed / Duration);
                 yield return null;
             }
-            Destroy(go);
+            light.intensity = 0f;
+            go.SetActive(false);
         }
 
         private void TriggerCannonShake()
