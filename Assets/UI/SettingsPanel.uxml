@@ -6,86 +6,155 @@
         <ui:VisualElement name="settings-panel" class="settings-panel">
             <ui:Label text="Settings" name="settings-title" class="settings-title" />
 
-            <ui:ScrollView name="settings-scroll" class="settings-scroll">
+            <!-- Tab row -->
+            <ui:VisualElement name="settings-tabs" class="tab-row">
+                <ui:Button name="tab-audio"    class="tab tab-active" text="Audio" />
+                <ui:Button name="tab-video"    class="tab"            text="Video" />
+                <ui:Button name="tab-controls" class="tab"            text="Controls" />
+                <ui:Button name="tab-gameplay" class="tab"            text="Gameplay" />
+            </ui:VisualElement>
 
-                <ui:VisualElement class="settings-section">
-                    <ui:Label text="Audio" name="audio-section-title" class="section-title" />
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Master" name="master-label" class="setting-label" />
-                        <ui:Slider name="master-slider" low-value="0" high-value="1" value="1" class="setting-slider" />
-                        <ui:Label text="100%" name="master-value" class="setting-value" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="SFX" name="sfx-label" class="setting-label" />
-                        <ui:Slider name="sfx-slider" low-value="0" high-value="1" value="1" class="setting-slider" />
-                        <ui:Label text="100%" name="sfx-value" class="setting-value" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Music" name="music-label" class="setting-label" />
-                        <ui:Slider name="music-slider" low-value="0" high-value="1" value="0.7" class="setting-slider" />
-                        <ui:Label text="70%" name="music-value" class="setting-value" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="UI" name="ui-label" class="setting-label" />
-                        <ui:Slider name="ui-slider" low-value="0" high-value="1" value="1" class="setting-slider" />
-                        <ui:Label text="100%" name="ui-value" class="setting-value" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Mute" name="mute-label" class="setting-label" />
-                        <ui:Toggle name="mute-toggle" class="setting-toggle" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
+            <!-- Tab content -->
+            <ui:VisualElement name="settings-content" class="settings-content">
 
-                <ui:VisualElement class="settings-section">
-                    <ui:Label text="Graphics" name="gfx-section-title" class="section-title" />
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Quality" name="quality-label" class="setting-label" />
-                        <ui:DropdownField name="quality-dropdown" class="setting-dropdown" />
+                <!-- panel-audio -->
+                <ui:ScrollView name="panel-audio" class="settings-scroll">
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Audio" name="audio-section-title" class="section-title" />
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Master" name="master-label" class="setting-label" />
+                            <ui:Slider name="master-slider" low-value="0" high-value="1" value="1" class="setting-slider" />
+                            <ui:Label text="100%" name="master-value" class="setting-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="SFX" name="sfx-label" class="setting-label" />
+                            <ui:Slider name="sfx-slider" low-value="0" high-value="1" value="1" class="setting-slider" />
+                            <ui:Label text="100%" name="sfx-value" class="setting-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Music" name="music-label" class="setting-label" />
+                            <ui:Slider name="music-slider" low-value="0" high-value="1" value="0.7" class="setting-slider" />
+                            <ui:Label text="70%" name="music-value" class="setting-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="UI" name="ui-label" class="setting-label" />
+                            <ui:Slider name="ui-slider" low-value="0" high-value="1" value="1" class="setting-slider" />
+                            <ui:Label text="100%" name="ui-value" class="setting-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Mute all" name="mute-label" class="setting-label" />
+                            <ui:Toggle name="mute-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Mute SFX" name="sfx-mute-label" class="setting-label" />
+                            <ui:Toggle name="sfx-mute-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Mute Music" name="music-mute-label" class="setting-label" />
+                            <ui:Toggle name="music-mute-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Music pulse" name="music-pulse-label" class="setting-label" />
+                            <ui:Toggle name="music-pulse-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="VFX" name="vfx-label" class="setting-label" />
-                        <ui:Toggle name="vfx-toggle" class="setting-toggle" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Camera shake" name="shake-label" class="setting-label" />
-                        <ui:Toggle name="shake-toggle" class="setting-toggle" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Music pulse" name="music-pulse-label" class="setting-label" />
-                        <ui:Toggle name="music-pulse-toggle" class="setting-toggle" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
+                </ui:ScrollView>
 
-                <ui:VisualElement class="settings-section">
-                    <ui:Label text="Accessibility" name="a11y-section-title" class="section-title" />
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Colorblind mode" name="colorblind-label" class="setting-label" />
-                        <ui:Toggle name="colorblind-toggle" class="setting-toggle" />
+                <!-- panel-video -->
+                <ui:ScrollView name="panel-video" class="settings-scroll hidden">
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Graphics" name="gfx-section-title" class="section-title" />
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Quality" name="quality-label" class="setting-label" />
+                            <ui:DropdownField name="quality-dropdown" class="setting-dropdown" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="VFX" name="vfx-label" class="setting-label" />
+                            <ui:Toggle name="vfx-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Camera shake" name="shake-label" class="setting-label" />
+                            <ui:Toggle name="shake-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Fullscreen" name="fullscreen-label" class="setting-label" />
+                            <ui:Button text="Fullscreen ON" name="settings-fullscreen-btn" class="settings-btn settings-btn-fullscreen" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Reduce motion" name="reduce-motion-label" class="setting-label" />
-                        <ui:Toggle name="reduce-motion-toggle" class="setting-toggle" />
-                    </ui:VisualElement>
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Large text" name="large-text-label" class="setting-label" />
-                        <ui:Toggle name="large-text-toggle" class="setting-toggle" />
-                    </ui:VisualElement>
-                </ui:VisualElement>
+                </ui:ScrollView>
 
-                <ui:VisualElement class="settings-section">
-                    <ui:Label text="Language" name="lang-section-title" class="section-title" />
-                    <ui:VisualElement class="setting-row">
-                        <ui:Label text="Locale" name="lang-label" class="setting-label" />
-                        <ui:DropdownField name="lang-dropdown" class="setting-dropdown" />
+                <!-- panel-controls -->
+                <ui:ScrollView name="panel-controls" class="settings-scroll hidden">
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Controls" name="controls-section-title" class="section-title" />
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Camera follows Hero" name="follow-hero-label" class="setting-label" />
+                            <ui:Toggle name="follow-hero-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Virtual joystick" name="joystick-label" class="setting-label" />
+                            <ui:Toggle name="joystick-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Hero auto-attack" name="hero-auto-attack-label" class="setting-label" />
+                            <ui:Toggle name="hero-auto-attack-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Game speed" name="game-speed-label" class="setting-label" />
+                            <ui:SliderInt name="game-speed-slider" low-value="1" high-value="3" value="1" class="setting-slider" />
+                            <ui:Label text="x1" name="game-speed-value" class="setting-value" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Keybindings" name="keybindings-label" class="setting-label" />
+                            <ui:Button text="Keybindings" name="settings-keybindings-btn" class="settings-btn" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Reset camera" name="reset-camera-label" class="setting-label" />
+                            <ui:Button text="Reset Camera" name="settings-reset-camera-btn" class="settings-btn settings-btn-reset" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
-                </ui:VisualElement>
+                </ui:ScrollView>
 
-            </ui:ScrollView>
+                <!-- panel-gameplay -->
+                <ui:ScrollView name="panel-gameplay" class="settings-scroll hidden">
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Accessibility" name="a11y-section-title" class="section-title" />
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Colorblind mode" name="colorblind-label" class="setting-label" />
+                            <ui:Toggle name="colorblind-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Reduce motion" name="reduce-motion-label" class="setting-label" />
+                            <ui:Toggle name="reduce-motion-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Large text" name="large-text-label" class="setting-label" />
+                            <ui:Toggle name="large-text-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Auto-pause on blur" name="auto-pause-label" class="setting-label" />
+                            <ui:Toggle name="auto-pause-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Language" name="lang-section-title" class="section-title" />
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Locale" name="lang-label" class="setting-label" />
+                            <ui:DropdownField name="lang-dropdown" class="setting-dropdown" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="settings-section">
+                        <ui:Label text="Account" name="account-section-title" class="section-title" />
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Player name" name="change-name-label" class="setting-label" />
+                            <ui:Button text="Changer nom" name="settings-change-name-btn" class="settings-btn settings-btn-change-name" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:ScrollView>
+
+            </ui:VisualElement>
 
             <ui:VisualElement class="settings-footer">
-                <ui:Button text="Reset Camera" name="settings-reset-camera-btn" class="settings-btn settings-btn-reset" />
-                <ui:Button text="Fullscreen ON" name="settings-fullscreen-btn" class="settings-btn settings-btn-fullscreen" />
-                <ui:Button text="Changer nom" name="settings-change-name-btn" class="settings-btn settings-btn-change-name" />
                 <ui:Button text="Close" name="settings-close-btn" class="settings-btn settings-btn-close" />
             </ui:VisualElement>
             <ui:VisualElement class="settings-danger-row">

@@ -57,6 +57,16 @@ namespace CrowdDefense.UI
         private Button? _closeBtn;
         private Button? _keybindingsBtn;
 
+        // Tab system
+        private Button? _tabAudio;
+        private Button? _tabVideo;
+        private Button? _tabControls;
+        private Button? _tabGameplay;
+        private VisualElement? _panelAudio;
+        private VisualElement? _panelVideo;
+        private VisualElement? _panelControls;
+        private VisualElement? _panelGameplay;
+
         // Section title label refs for locale refresh
         private Label? _settingsTitleLabel;
         private Label? _audioSectionLabel;
@@ -144,6 +154,15 @@ namespace CrowdDefense.UI
             _closeBtn = _root.Q<Button>("settings-close-btn");
             _fullscreenBtn = _root.Q<Button>("settings-fullscreen-btn");
             _keybindingsBtn = _root.Q<Button>("settings-keybindings-btn");
+
+            _tabAudio    = _root.Q<Button>("tab-audio");
+            _tabVideo    = _root.Q<Button>("tab-video");
+            _tabControls = _root.Q<Button>("tab-controls");
+            _tabGameplay = _root.Q<Button>("tab-gameplay");
+            _panelAudio    = _root.Q<VisualElement>("panel-audio");
+            _panelVideo    = _root.Q<VisualElement>("panel-video");
+            _panelControls = _root.Q<VisualElement>("panel-controls");
+            _panelGameplay = _root.Q<VisualElement>("panel-gameplay");
 
             _settingsTitleLabel  = _root.Q<Label>("settings-title");
             _audioSectionLabel   = _root.Q<Label>("audio-section-title");
@@ -400,6 +419,32 @@ namespace CrowdDefense.UI
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
             _changeNameBtn?.RegisterCallback<ClickEvent>(_ => OnChangeName());
             _resetProgressBtn?.RegisterCallback<ClickEvent>(_ => OnResetProgressClicked());
+
+            _tabAudio?.RegisterCallback<ClickEvent>(_    => SwitchTab(_tabAudio, _panelAudio));
+            _tabVideo?.RegisterCallback<ClickEvent>(_    => SwitchTab(_tabVideo, _panelVideo));
+            _tabControls?.RegisterCallback<ClickEvent>(_ => SwitchTab(_tabControls, _panelControls));
+            _tabGameplay?.RegisterCallback<ClickEvent>(_ => SwitchTab(_tabGameplay, _panelGameplay));
+        }
+
+        private void SwitchTab(Button? activeTab, VisualElement? activePanel)
+        {
+            Button?[] tabs = { _tabAudio, _tabVideo, _tabControls, _tabGameplay };
+            VisualElement?[] panels = { _panelAudio, _panelVideo, _panelControls, _panelGameplay };
+
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                bool isActive = tabs[i] == activeTab;
+                if (tabs[i] != null)
+                {
+                    if (isActive) tabs[i]!.AddToClassList("tab-active");
+                    else tabs[i]!.RemoveFromClassList("tab-active");
+                }
+                if (panels[i] != null)
+                {
+                    if (isActive) panels[i]!.RemoveFromClassList("hidden");
+                    else panels[i]!.AddToClassList("hidden");
+                }
+            }
         }
 
         public void Show()
@@ -409,6 +454,7 @@ namespace CrowdDefense.UI
             SyncJoystick();
             SyncHeroAutoAttack();
             UpdateFullscreenLabel();
+            SwitchTab(_tabAudio, _panelAudio);
             _settingsRoot?.RemoveFromClassList("hidden");
         }
 
