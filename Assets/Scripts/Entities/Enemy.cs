@@ -2274,7 +2274,19 @@ namespace CrowdDefense.Entities
             OnDeathStatic?.Invoke(this, isBoss);
 
             if (this != null && gameObject != null)
-                StartCoroutine(RagdollThenRelease(_lastDamageDirection));
+            {
+                if (!isBoss && _meshChild == null)
+                {
+                    // Capsule fallback — no GLTF bones, use procedural collapse instead of physics ragdoll
+                    SpawnDeathDustPuff();
+                    StartCoroutine(CollapseAndRelease());
+                }
+                else
+                {
+                    if (!isBoss) SpawnDeathDustPuff();
+                    StartCoroutine(RagdollThenRelease(_lastDamageDirection));
+                }
+            }
             else
                 ReleaseToPool();
         }
@@ -2380,6 +2392,74 @@ namespace CrowdDefense.Entities
                     for (int i = 0; i < _cachedRenderers.Length; i++)
                         _cachedRenderers[i].SetPropertyBlock(_mpb);
                 }
+                yield return null;
+            }
+
+            ReleaseToPool();
+        }
+
+        // ── Collapse ragdoll (capsule fallback — no GLTF bones) ──────────────
+
+        private const float CollapseDuration = 0.4f;
+        private const float CollapseFadeStart = 0.25f;  // alpha fade begins at 62.5% of duration
+        private static readonly Color DustGrey = new Color(0.55f, 0.50f, 0.45f);
+
+        private void SpawnDeathDustPuff()
+        {
+            var dustPos = transform.position + Vector3.up * 0.2f;
+            VfxPool.Instance?.SpawnSpark(dustPos, DustGrey);
+            VfxPool.Instance?.SpawnSpark(dustPos + Vector3.right  * 0.15f, DustGrey);
+            VfxPool.Instance?.SpawnSpark(dustPos + Vector3.forward * 0.15f, DustGrey);
+            VfxPool.Instance?.SpawnSpark(dustPos - Vector3.right  * 0.15f, DustGrey);
+        }
+
+        private System.Collections.IEnumerator CollapseAndRelease()
+        {
+            // Disable collider so dead body doesn't block gameplay
+            var col = GetComponent<CapsuleCollider>();
+            if (col != null) col.enabled = false;
+
+            // Disable Animator to stop walk cycle during collapse
+            if (_animator != null) _animator.enabled = false;
+
+            var startPos   = transform.position;
+            var groundPos  = new Vector3(startPos.x, startPos.y - 0.5f, startPos.z);
+            var startScale = transform.localScale;
+            // Random tilt axis perpendicular to up
+            var fallAxis   = Vector3.Cross(Vector3.up, new Vector3(
+                UnityEngine.Random.Range(-1f, 1f), 0f, UnityEngine.Random.Range(-1f, 1f)).normalized);
+            if (fallAxis == Vector3.zero) fallAxis = Vector3.right;
+
+            float elapsed = 0f;
+            while (elapsed < CollapseDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t  = Mathf.Clamp01(elapsed / CollapseDuration);
+                float tE = t * t; // ease-in
+
+                // Rotate on random axis up to ~80°
+                transform.rotation = Quaternion.AngleAxis(80f * tE, fallAxis);
+
+                // Scale Y collapse 1→0.2, XZ expand slightly for squash feel
+                float scaleY = Mathf.Lerp(startScale.y, startScale.y * 0.2f, tE);
+                float scaleXZ = Mathf.Lerp(startScale.x, startScale.x * 1.15f, tE);
+                transform.localScale = new Vector3(scaleXZ, scaleY, scaleXZ);
+
+                // Sink Y toward ground
+                transform.position = Vector3.Lerp(startPos, groundPos, tE);
+
+                // Alpha fade in final portion
+                if (elapsed > CollapseFadeStart && _cachedRenderers != null && _mpb != null)
+                {
+                    float fadeT = Mathf.Clamp01((elapsed - CollapseFadeStart) / (CollapseDuration - CollapseFadeStart));
+                    float alpha = 1f - fadeT;
+                    Color faded = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
+                    _mpb.SetColor(_baseColorId, faded);
+                    _mpb.SetColor(_colorId, faded);
+                    for (int i = 0; i < _cachedRenderers.Length; i++)
+                        _cachedRenderers[i].SetPropertyBlock(_mpb);
+                }
+
                 yield return null;
             }
 
