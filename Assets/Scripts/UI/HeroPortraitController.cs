@@ -174,15 +174,43 @@ namespace CrowdDefense.UI
 
             // Perk slots
             if (_perkSlots == null || _perkLabels == null) return;
-            var perks = hero.Perks;
+            var perks    = hero.Perks;
+            var registry = PerkRegistry.Get();
             for (int i = 0; i < MaxPerkSlots; i++)
             {
                 bool filled = i < perks.Count;
                 _perkSlots[i].RemoveFromClassList(filled ? "perk-slot-empty" : "perk-slot-filled");
                 _perkSlots[i].AddToClassList(filled ? "perk-slot-filled" : "perk-slot-empty");
-                _perkLabels[i].text = filled && perks[i].Length > 0
-                    ? perks[i][0].ToString().ToUpper()
-                    : "";
+
+                if (filled)
+                {
+                    var def = registry?.Get(perks[i]);
+                    // Label: iconEmoji if set, else first char of displayName, else perk id[0]
+                    string label = "";
+                    if (def != null)
+                        label = !string.IsNullOrEmpty(def.iconEmoji) ? def.iconEmoji
+                              : !string.IsNullOrEmpty(def.displayName) ? def.displayName[0].ToString().ToUpper()
+                              : perks[i].Length > 0 ? perks[i][0].ToString().ToUpper() : "";
+                    else
+                        label = perks[i].Length > 0 ? perks[i][0].ToString().ToUpper() : "";
+                    _perkLabels[i].text = label;
+
+                    // Border color by rarity
+                    Color rarityColor = def != null ? RarityColor(def.rarity) : new Color(0.4f, 0.4f, 0.4f);
+                    _perkSlots[i].style.borderTopColor    = new StyleColor(rarityColor);
+                    _perkSlots[i].style.borderRightColor  = new StyleColor(rarityColor);
+                    _perkSlots[i].style.borderBottomColor = new StyleColor(rarityColor);
+                    _perkSlots[i].style.borderLeftColor   = new StyleColor(rarityColor);
+                }
+                else
+                {
+                    _perkLabels[i].text = "";
+                    var dim = new StyleColor(new Color(0.3f, 0.3f, 0.3f, 0.5f));
+                    _perkSlots[i].style.borderTopColor    = dim;
+                    _perkSlots[i].style.borderRightColor  = dim;
+                    _perkSlots[i].style.borderBottomColor = dim;
+                    _perkSlots[i].style.borderLeftColor   = dim;
+                }
             }
         }
 
@@ -424,8 +452,61 @@ namespace CrowdDefense.UI
             Row("Ult cooldown",   ultRemaining > 0f ? $"{ultRemaining:F0}s" : "PRET");
             Row("Kills",          hero.KillCount.ToString());
 
+            // Perks section
+            var perks    = hero.Perks;
+            var registry = PerkRegistry.Get();
+            if (perks.Count > 0)
+            {
+                var separator = new VisualElement();
+                separator.style.height          = new StyleLength(1f);
+                separator.style.backgroundColor = new StyleColor(new Color(1f, 0.5f, 0f, 0.4f));
+                separator.style.marginTop        = new StyleLength(5f);
+                separator.style.marginBottom     = new StyleLength(4f);
+                _tooltip.Add(separator);
+
+                int show = Mathf.Min(perks.Count, MaxPerkSlots);
+                for (int i = 0; i < show; i++)
+                {
+                    var def       = registry?.Get(perks[i]);
+                    string name   = def != null && !string.IsNullOrEmpty(def.displayName) ? def.displayName : perks[i];
+                    string desc   = def != null && !string.IsNullOrEmpty(def.descKey)     ? def.descKey     : "";
+                    Color  rarCol = def != null ? RarityColor(def.rarity) : new Color(0.55f, 0.55f, 0.55f);
+
+                    var perkRow = new VisualElement();
+                    perkRow.style.flexDirection = FlexDirection.Column;
+                    perkRow.style.marginBottom  = new StyleLength(3f);
+                    _tooltip.Add(perkRow);
+
+                    var perkName = new Label(name);
+                    perkName.style.color                   = new StyleColor(rarCol);
+                    perkName.style.fontSize                = new StyleLength(10f);
+                    perkName.style.unityFontStyleAndWeight = FontStyle.Bold;
+                    perkRow.Add(perkName);
+
+                    if (!string.IsNullOrEmpty(desc))
+                    {
+                        var perkDesc = new Label(desc);
+                        perkDesc.style.color                   = new StyleColor(new Color(0.75f, 0.75f, 0.8f));
+                        perkDesc.style.fontSize                = new StyleLength(9f);
+                        perkDesc.style.unityFontStyleAndWeight = FontStyle.Normal;
+                        perkDesc.style.whiteSpace              = WhiteSpace.Normal;
+                        perkRow.Add(perkDesc);
+                    }
+                }
+            }
+
             _tooltip.style.display = DisplayStyle.Flex;
         }
+
+        private static Color RarityColor(PerkRarity rarity) => rarity switch
+        {
+            PerkRarity.Common    => new Color(0.55f, 0.55f, 0.55f),
+            PerkRarity.Uncommon  => new Color(0.2f,  0.8f,  0.2f),
+            PerkRarity.Rare      => new Color(0.2f,  0.5f,  1f),
+            PerkRarity.Epic      => new Color(0.7f,  0.2f,  1f),
+            PerkRarity.Legendary => new Color(1f,    0.75f, 0.1f),
+            _                    => new Color(0.4f,  0.4f,  0.4f),
+        };
 
         // Fallback: attempt to load USS directly from path (Editor only; runtime uses Resources).
         private static StyleSheet? LoadStyleSheetFromPath(string path)
