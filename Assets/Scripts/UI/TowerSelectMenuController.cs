@@ -266,7 +266,14 @@ namespace CrowdDefense.UI
             if (idx < 0 || idx >= menuTowers.Count) return;
             var type = menuTowers[idx];
             if (type == null) return;
-            PlacementController.Instance?.SelectTowerForPlacement(type);
+            var pc = PlacementController.Instance;
+            if (pc != null && pc.ActiveBuildCell != null)
+            {
+                pc.TryPlaceAtActiveBuildCell(type);
+                Hide();
+                return;
+            }
+            pc?.SelectTowerForPlacement(type);
             Hide();
         }
 
