@@ -135,10 +135,16 @@ namespace CrowdDefense.UI
             _sb.Append(cfg.Range.ToString("F1"));
             _sb.Append("m\n");
 
-            float ratePerSec = cfg.FireRateMs > 0 ? 1000f / cfg.FireRateMs : 0f;
             _sb.Append("Cadence: ");
-            _sb.Append(ratePerSec.ToString("F2"));
-            _sb.Append("/s\n");
+            if (cfg.FireRateMs <= 0f)
+                _sb.Append("Continu");
+            else
+            {
+                float ratePerSec = 1000f / cfg.FireRateMs;
+                _sb.Append(ratePerSec.ToString("F1"));
+                _sb.Append(" tirs/s");
+            }
+            _sb.Append('\n');
 
             _sb.Append("Cible: ");
             _sb.Append(tower.CurrentTargetPriority.ToString());
@@ -147,6 +153,13 @@ namespace CrowdDefense.UI
             float liveDps = tower.GetLiveDps();
             _sb.Append("DPS Live: ");
             _sb.Append(liveDps.ToString("F1"));
+
+            if (tower.L3CritChance > 0f)
+            {
+                _sb.Append("\nCrit: ");
+                _sb.Append((tower.L3CritChance * 100f).ToString("F0"));
+                _sb.Append('%');
+            }
 
             if (_tooltipStats != null) _tooltipStats.text = _sb.ToString();
 
