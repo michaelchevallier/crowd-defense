@@ -1717,3 +1717,101 @@ Zone safe pour toi :
 - STATUS.md create (W3-V7)
 - ProjectSettings audit (W3-V8)
 
+
+---
+
+## 2026-05-12 23h55 — WAVE 4 BACKLOG (Top 5 user-facing gaps audit `adb68ee` non couverts)
+
+**État** : exec a livré W3-V1 (VfxPool 22 prefabs wired `5af7e53`) ✅. Continue pioche W3-V2..V8 puis attaque Wave 4 ci-dessous.
+
+**Audit honnête `adb68ee`** : V6 user-facing = 45-65%. Top 5 gaps :
+1. Audio silent → ✅ FIXED (`cdfe829`)
+2. Menu navigation cassée → bug-fixer Opus en cours
+3. Keyboard non-réactif → ✅ FIXED (`de6eec1`)
+4. Animations frozen → ✅ FIXED (`cdfe829` code-driven)
+5. **Textures grises** → ❌ pas couvert par bug-fixers
+
+### Wave 4 backlog parallel-friendly
+
+**TASK W4-T1 (P0) — Textures wire ground+path materials**
+Audit `adb68ee` dit "Everything grey; no Flux PNG applied". V6 a importé 78 PNG mais materials pas assignés aux meshes ground/path.
+
+Steps :
+1. `find Assets/Resources -name "tex_*.png"` → 78 Flux textures
+2. `find Assets/Materials -name "ground_*.mat" -o -name "path_*.mat"` → materials
+3. `grep -l "mainTexture\|_BaseMap" Assets/Materials/*.mat` → check texture assigned in YAML
+4. Pour materials avec `m_TexEnvs` vides → assign correct Flux PNG via YAML edit
+5. Verify : MapRenderer.Start() applies the correct theme material to ground/path
+6. UnityMCP test : Play mode screenshot → check ground textured (pas gray)
+7. Commit : `fix(wiring): wire 78 Flux textures to ground+path+sky materials (audit T0 textures)`
+
+**TASK W4-T2 (P1) — Toolbar visibility check**
+HUD `tower-toolbar` element visible côté joueur ? Audit dit Toolbar low visibility.
+
+Steps :
+1. `grep "tower-toolbar" Assets/UI/HUD.uxml` → element exists ?
+2. Lire TowerToolbarController.cs — Init + Show logic
+3. UnityMCP test : Play mode `execute_code` get root → find tower-toolbar → check display style not "none"
+4. Si missing : add to HUD.uxml + wire controller
+5. Commit : `fix(wiring): TowerToolbar visibility in HUD (audit T1)`
+
+**TASK W4-T3 (P1) — Minimap restoration**
+Audit dit `[Minimap] minimap-container element not found` (fixé après cd67666 HUD parse OK ? À reverify post-fix).
+
+Steps :
+1. UnityMCP test : `root.Q("minimap-container")` returns non-null ?
+2. Si oui : verify MinimapController.Start sets up minimap correctly
+3. Si non : add element to HUD.uxml
+4. Commit : `fix(wiring): Minimap container + controller wire (audit T1)`
+
+**TASK W4-T4 (P1) — Ghost preview visibility check**
+GhostPreviewController had `_mpb` lazy-init fix `b280a2e`. Verify ghost actually visible on tower placement hover.
+
+Steps :
+1. UnityMCP Play : execute_code → `PlacementController.Instance.SelectedTowerType = TowerType.Archer`
+2. Move mouse via Input simulate
+3. `find_gameobjects` GhostPreview instance → check active + position
+4. Screenshot
+5. Si non-visible : fix material/mesh assignment
+6. Commit : `fix(wiring): GhostPreview material+mesh wire (audit T1)`
+
+**TASK W4-T5 (P1) — Wave UI top bar / progress dots**
+HUD elements `wave-pill`, `wave-progress-dots`, `wave-enemy-count` :
+- Wave pill : show "Wave 1/8" current/total
+- Progress dots : 8 dots indicating wave progress
+- Enemy count : live count remaining
+
+Steps :
+1. WavePreviewController + LevelRunner.OnWaveStarted/OnWaveEnded events
+2. Verify these update labels in HUD
+3. UnityMCP test : trigger wave → check label text not empty + dots fill
+4. Commit : `fix(wiring): Wave HUD pill+dots+enemy-count live updates (audit T2)`
+
+**TASK W4-T6 (P1) — Hero Mesh_knight Animator default**
+Audit dit "Enemies T-pose or slide instead of walk". AnimationController.cs loads controller from Resources at runtime, but maybe default state broken.
+
+Steps :
+1. `find Assets/Resources/Animations/Controllers -name "knight*"`
+2. Verify "Idle" + "Walk" states exist with proper clips
+3. Test Play mode : Hero idle = T-pose ou animated ?
+4. Hero walking = animation plays ?
+5. Same check on Enemy default Animator
+6. Commit : `fix(wiring): Animator default states Idle+Walk for Hero+Enemy (audit T1)`
+
+**TASK W4-T7 (P2) — 5-wave smooth cycle integration test**
+Full integration test via UnityMCP :
+1. Play mode + load W1-1
+2. Trigger waves 1-5 consecutively (WaveManager.StartNextWave x5)
+3. Mid-wave : place 3 towers (PlacementController.Place ou via BuildPoint walk-in si restored)
+4. After wave 5 : check Castle still alive, Hero gained XP/perks, gold accumulated
+5. Console : 0 errors, ≤10 warnings (cosmetic)
+6. Output `.claude/audit/2026-05-12-23h55-5waves-integration.md`
+7. Commit : `chore(qa): 5-wave smooth cycle integration test`
+
+### Process
+
+- 4 slots simultanés
+- Push autonome chaque commit
+- Si conflit avec bug-fixers Opus wave-3 actifs (a1e7367e MenuScene, a74c03d0 BuildPoint, a4d7f63a gameplay test) : git pull --rebase
+- **NEVER IDLE** : if all done, audit gaps remaining et propose Wave 5 tickets
+

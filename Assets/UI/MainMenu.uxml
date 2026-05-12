@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="false">
-    <Style src="project://database/Assets/UI/MainMenu.uss?fileID=7433441132954674612&amp;guid=q1w2e3r4t5y6u7i8o9p0a1s2d3f4g5h6&amp;type=3#MainMenu" />
+    <Style src="MainMenu.uss" />
     <ui:VisualElement name="main-menu-root" class="main-menu-root">
         <ui:VisualElement name="menu-container" class="menu-container">
             <ui:Label text="CROWD DEFENSE" name="menu-title" class="menu-title" />
