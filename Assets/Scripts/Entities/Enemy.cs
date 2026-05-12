@@ -186,6 +186,11 @@ namespace CrowdDefense.Entities
         // ── Hover target highlight (yellow ring shown while tower is hovered) ──
         private GameObject? _targetHighlightGO;
 
+        // ── Hit splash VFX (blood/dust particles on damage) ──────────────────
+        private Color _hitSplashColor;
+        private float _lastHitSplashTime = -1f;
+        private const float HitSplashCooldown = 0.05f;
+
         // ── Public API ────────────────────────────────────────────────────────
         public EnemyType? Config              => cfg;
         public int  CurrentWaypoint           => currentWaypoint;
@@ -631,6 +636,12 @@ namespace CrowdDefense.Entities
             hp       = type.Hp * pressure.mobHpMul * diffMul * endlessMul;
             maxHp    = hp;
             pressureSpeedMul = pressure.mobSpeedMul;
+
+            // Cache hit splash color once — grey dust for mechs/skeletons, red blood otherwise
+            string typeIdLower = (type.Id ?? "").ToLowerInvariant();
+            bool isMechanic = typeIdLower.Contains("skeleton") || typeIdLower.Contains("mech") || typeIdLower.Contains("robot");
+            _hitSplashColor = isMechanic ? new Color(0.7f, 0.6f, 0.5f) : new Color(0.6f, 0.1f, 0.1f);
+            _lastHitSplashTime = -1f;
             shieldHp = type.ShieldHP * diffMul * endlessMul;
             _damageMul     = diffMul * endlessMul;
             _diffRewardMul = BalanceConfig.DifficultyRewardMul();
@@ -2055,8 +2066,42 @@ namespace CrowdDefense.Entities
             if (cfg != null && cfg.IsApocalypseBoss)
                 TickApocalypseBossPhases(ratio);
 
+            // Blood/dust splash particles on hit
+            SpawnHitSplash(actualDmg);
+
             if (hp <= 0f)
                 HandleDeath();
+        }
+
+        private void SpawnHitSplash(float actualDmg)
+        {
+            if (VfxPool.Instance == null) return;
+            float now = Time.time;
+            if (now - _lastHitSplashTime < HitSplashCooldown) return;
+            _lastHitSplashTime = now;
+
+            Vector3 splashPos = transform.position + Vector3.up * 0.5f;
+            VfxPool.Instance.SpawnSpark(splashPos, _hitSplashColor);
+            VfxPool.Instance.SpawnSpark(splashPos + Vector3.up * 0.1f, _hitSplashColor);
+            VfxPool.Instance.SpawnSpark(splashPos + _lastDamageDirection * 0.15f, _hitSplashColor);
+
+            if (actualDmg > 50f)
+            {
+                VfxPool.Instance.SpawnSpark(splashPos, _hitSplashColor);
+                VfxPool.Instance.SpawnSpark(splashPos + Vector3.up * 0.2f, _hitSplashColor);
+                VfxPool.Instance.SpawnSpark(splashPos + _lastDamageDirection * 0.25f, _hitSplashColor);
+                VfxPool.Instance.SpawnSpark(splashPos - _lastDamageDirection * 0.15f, _hitSplashColor);
+                VfxPool.Instance.SpawnSpark(splashPos + Vector3.right * 0.1f, _hitSplashColor);
+                VfxPool.Instance.SpawnSpark(splashPos + Vector3.left  * 0.1f, _hitSplashColor);
+                StartCoroutine(CritSlowMoCoroutine());
+            }
+        }
+
+        private IEnumerator CritSlowMoCoroutine()
+        {
+            Time.timeScale = 0.85f;
+            yield return new WaitForSecondsRealtime(0.05f);
+            Time.timeScale = 1f;
         }
 
         private void TickApocalypseBossPhases(float ratio)
