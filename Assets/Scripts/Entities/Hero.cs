@@ -48,6 +48,11 @@ namespace CrowdDefense.Entities
         private Vector2 _smoothedMoveDir;
         private const float MoveAccel = 8f;
 
+        // ── Footstep dust VFX ─────────────────────────────────────────────────
+        private float   _lastFootstepTime;
+        private Vector3 _lastPos;
+        private static readonly Color FootstepDustTint = new(0.7f, 0.65f, 0.55f, 0.6f);
+
         // ── Idle dance ────────────────────────────────────────────────────────
         private float _idleSeconds;
         private const float IdleDanceDelay  = 5f;
@@ -308,6 +313,8 @@ namespace CrowdDefense.Entities
 
             transform.position = spawnPos;
             transform.localScale = Vector3.one * type.ModelScale;
+            _lastPos          = spawnPos;
+            _lastFootstepTime = -1f;
 
             MaxLevel = type.MaxLevel;
             Level    = 1;
@@ -992,6 +999,7 @@ namespace CrowdDefense.Entities
             UpdatePerkIconsBillboard();
             UpdateAttackAnimTimer(dt);
             UpdateMovement(dt);
+            UpdateFootstepDust();
             UpdateCombat();
             UpdateProjectiles(dt);
         }
@@ -1073,6 +1081,37 @@ namespace CrowdDefense.Entities
                 var fwd = new Vector3(_smoothedMoveDir.x, 0f, _smoothedMoveDir.y);
                 if (fwd != Vector3.zero)
                     transform.rotation = Quaternion.LookRotation(fwd);
+            }
+        }
+
+        // ── Footstep dust ─────────────────────────────────────────────────────
+        private void UpdateFootstepDust()
+        {
+            var currentPos = transform.position;
+            var delta      = currentPos - _lastPos;
+            _lastPos = currentPos;
+
+            // XZ speed in world units/s — Y ignored (ground movement only)
+            float speed = new Vector2(delta.x, delta.z).magnitude / Mathf.Max(Time.deltaTime, 0.0001f);
+
+            bool running  = speed > 3f;
+            float interval = running ? 0.2f : 0.3f;
+
+            if (speed > 0.5f && (Time.time - _lastFootstepTime) >= interval)
+            {
+                _lastFootstepTime = Time.time;
+
+                var spawnPos = currentPos + new Vector3(0f, 0.05f, 0f);
+                var vfx = VfxPool.Instance;
+                if (vfx != null)
+                {
+                    int bursts = running ? 2 : 1;
+                    for (int i = 0; i < bursts; i++)
+                        vfx.SpawnSpark(spawnPos, FootstepDustTint);
+                }
+
+                AudioController.Instance?.PlayPitched("footstep_dirt", 0.2f,
+                    UnityEngine.Random.Range(0.9f, 1.1f));
             }
         }
 
