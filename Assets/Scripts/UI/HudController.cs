@@ -187,6 +187,14 @@ namespace CrowdDefense.UI
             "Every castle falls in time.",
         };
 
+        // Level start banner (full-width top, slide-down 0.4s / hold 1.0s / slide-up 0.4s = 1.8s total)
+        private VisualElement? _levelStartBanner;
+        private Label?         _levelStartWorldLabel;
+        private Label?         _levelStartNameLabel;
+        private Label?         _levelStartBriefingLabel;
+        private Coroutine?     _levelStartBannerCoroutine;
+        private bool           _levelStartBannerActive;
+
         // Boss healthbar (top-center, shown while a boss is alive)
         private VisualElement? _bossHpRoot;
         private VisualElement? _bossHpFill;
@@ -327,6 +335,7 @@ namespace CrowdDefense.UI
             _bankLabel = root.Q<Label>("bank-label");
             _bankTooltip = root.Q<VisualElement>("bank-tooltip");
 
+            BuildLevelStartBanner(root);
             BuildBossHpBar(root);
             BuildBossIntroBanner(root);
             BuildPerfectStreakBanner(root);
@@ -411,6 +420,7 @@ namespace CrowdDefense.UI
             Enemy.OnDeathStatic += HandleEnemyDeath;
             Hero.OnHeroDamaged  += OnHeroDamaged;
             Hero.OnHeroRespawned += OnHeroRespawnedHandler;
+            Systems.LevelEvents.OnLevelStart += OnLevelStart;
 
             // Wire perk badges + sidebar once hero is known
             var hero = LevelRunner.Instance?.Hero;
@@ -449,6 +459,7 @@ namespace CrowdDefense.UI
             Enemy.OnDeathStatic  -= HandleEnemyDeath;
             Hero.OnHeroDamaged   -= OnHeroDamaged;
             Hero.OnHeroRespawned -= OnHeroRespawnedHandler;
+            Systems.LevelEvents.OnLevelStart -= OnLevelStart;
         }
 
         private void HandleComboUpdated(ComboUpdatedEvent evt)
@@ -506,6 +517,10 @@ namespace CrowdDefense.UI
                 OnWaveStart(WaveManager.Instance.CurrentWaveIdx);
                 OnBreakStateChanged();
             }
+
+            // ESC — skip level start banner cinematic
+            if (Input.GetKeyDown(KeyCode.Escape) && _levelStartBannerActive)
+                DismissLevelStartBanner();
 
             // N hotkey — debounced, shared with click (Q7)
             if (Input.GetKeyDown(KeyCode.N))
@@ -1774,6 +1789,174 @@ namespace CrowdDefense.UI
 
             if (_waveIntroBanner != null) _waveIntroBanner.style.display = DisplayStyle.None;
             _waveIntroCoroutine = null;
+        }
+
+        // ── Level start banner (slide-down cinematic 1.8s) ───────────────────
+
+        private void BuildLevelStartBanner(VisualElement root)
+        {
+            _levelStartBanner = new VisualElement { name = "level-start-banner" };
+            _levelStartBanner.style.position        = Position.Absolute;
+            _levelStartBanner.style.top             = new Length(0f,   LengthUnit.Pixel);
+            _levelStartBanner.style.left            = 0;
+            _levelStartBanner.style.right           = 0;
+            _levelStartBanner.style.height          = new Length(200f, LengthUnit.Pixel);
+            _levelStartBanner.style.flexDirection   = FlexDirection.Column;
+            _levelStartBanner.style.alignItems      = Align.Center;
+            _levelStartBanner.style.justifyContent  = Justify.Center;
+            _levelStartBanner.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.82f));
+            _levelStartBanner.style.borderBottomWidth = 3f;
+            _levelStartBanner.style.borderBottomColor = new StyleColor(new Color(1f, 0.84f, 0f, 0.7f));
+            _levelStartBanner.style.paddingTop      = new Length(16f, LengthUnit.Pixel);
+            _levelStartBanner.style.paddingBottom   = new Length(16f, LengthUnit.Pixel);
+            _levelStartBanner.pickingMode           = PickingMode.Ignore;
+            _levelStartBanner.style.display         = DisplayStyle.None;
+
+            _levelStartWorldLabel = new Label { name = "level-start-world", text = "" };
+            _levelStartWorldLabel.style.color                   = new StyleColor(Color.white);
+            _levelStartWorldLabel.style.fontSize                = new Length(28f, LengthUnit.Pixel);
+            _levelStartWorldLabel.style.unityFontStyleAndWeight = FontStyle.Normal;
+            _levelStartWorldLabel.style.unityTextAlign          = TextAnchor.MiddleCenter;
+            _levelStartWorldLabel.style.marginBottom            = new Length(4f, LengthUnit.Pixel);
+            _levelStartWorldLabel.style.textShadow              = new TextShadow
+            {
+                color      = new Color(0f, 0f, 0f, 0.9f),
+                offset     = new Vector2(2f, 2f),
+                blurRadius = 4f,
+            };
+            _levelStartBanner.Add(_levelStartWorldLabel);
+
+            _levelStartNameLabel = new Label { name = "level-start-name", text = "" };
+            _levelStartNameLabel.style.color                   = new StyleColor(new Color(1f, 0.84f, 0f));
+            _levelStartNameLabel.style.fontSize                = new Length(56f, LengthUnit.Pixel);
+            _levelStartNameLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
+            _levelStartNameLabel.style.unityTextAlign          = TextAnchor.MiddleCenter;
+            _levelStartNameLabel.style.textShadow              = new TextShadow
+            {
+                color      = new Color(0.4f, 0.25f, 0f, 1f),
+                offset     = new Vector2(3f, 3f),
+                blurRadius = 6f,
+            };
+            _levelStartBanner.Add(_levelStartNameLabel);
+
+            _levelStartBriefingLabel = new Label { name = "level-start-briefing", text = "" };
+            _levelStartBriefingLabel.style.color                   = new StyleColor(new Color(0.78f, 0.78f, 0.78f));
+            _levelStartBriefingLabel.style.fontSize                = new Length(18f, LengthUnit.Pixel);
+            _levelStartBriefingLabel.style.unityFontStyleAndWeight = FontStyle.Italic;
+            _levelStartBriefingLabel.style.unityTextAlign          = TextAnchor.MiddleCenter;
+            _levelStartBriefingLabel.style.marginTop               = new Length(8f, LengthUnit.Pixel);
+            _levelStartBriefingLabel.style.maxWidth                = new Length(80f, LengthUnit.Percent);
+            _levelStartBriefingLabel.style.whiteSpace              = WhiteSpace.Normal;
+            _levelStartBriefingLabel.style.textShadow              = new TextShadow
+            {
+                color      = new Color(0f, 0f, 0f, 0.75f),
+                offset     = new Vector2(1f, 1f),
+                blurRadius = 3f,
+            };
+            _levelStartBanner.Add(_levelStartBriefingLabel);
+
+            root.Add(_levelStartBanner);
+            _levelStartBanner.BringToFront();
+        }
+
+        private void OnLevelStart(Data.LevelData levelData, UnityEngine.Bounds _) =>
+            ShowLevelStartBanner(levelData);
+
+        public void ShowLevelStartBanner(Data.LevelData levelData)
+        {
+            if (_levelStartBanner == null) return;
+
+            string worldLine = $"MONDE {levelData.World} - NIVEAU {levelData.Level}";
+            string nameLine  = string.IsNullOrEmpty(levelData.DisplayName) ? levelData.Id : levelData.DisplayName;
+            string briefing  = levelData.Briefing ?? string.Empty;
+
+            if (_levelStartWorldLabel   != null) _levelStartWorldLabel.text   = worldLine;
+            if (_levelStartNameLabel    != null) _levelStartNameLabel.text    = nameLine;
+            if (_levelStartBriefingLabel != null)
+            {
+                _levelStartBriefingLabel.text = briefing;
+                _levelStartBriefingLabel.style.display = string.IsNullOrEmpty(briefing)
+                    ? DisplayStyle.None
+                    : DisplayStyle.Flex;
+            }
+
+            if (_levelStartBannerCoroutine != null) StopCoroutine(_levelStartBannerCoroutine);
+            _levelStartBannerCoroutine = StartCoroutine(LevelStartBannerCoroutine());
+        }
+
+        private void DismissLevelStartBanner()
+        {
+            if (!_levelStartBannerActive) return;
+            if (_levelStartBannerCoroutine != null) { StopCoroutine(_levelStartBannerCoroutine); _levelStartBannerCoroutine = null; }
+            _levelStartBannerActive = false;
+            if (_levelStartBanner != null) _levelStartBanner.style.display = DisplayStyle.None;
+        }
+
+        private System.Collections.IEnumerator LevelStartBannerCoroutine()
+        {
+            if (_levelStartBanner == null) yield break;
+
+            _levelStartBannerActive = true;
+
+            var ac = AudioController.Instance;
+            if (ac != null)
+            {
+                try
+                {
+                    if (ac.GetClip("level_start_horn") != null)
+                        ac.Play("level_start_horn", 0.8f);
+                }
+                catch { /* clip absent — skip silently */ }
+            }
+
+            // Banner starts above screen (Y = -200), animates to Y = 0 (top 30 % by height = 200px)
+            const float slideInDur  = 0.4f;
+            const float holdDur     = 1.0f;
+            const float slideOutDur = 0.4f;
+            const float offscreenY  = -200f;
+            const float onscreenY   =   0f;
+
+            _levelStartBanner.style.top     = new Length(offscreenY, LengthUnit.Pixel);
+            _levelStartBanner.style.opacity = 1f;
+            _levelStartBanner.style.display = DisplayStyle.Flex;
+
+            // Slide down: Y offscreenY → onscreenY, ease-out quadratic
+            float t = 0f;
+            while (t < slideInDur)
+            {
+                if (!_levelStartBannerActive) yield break;
+                t += Time.unscaledDeltaTime;
+                float p     = Mathf.Clamp01(t / slideInDur);
+                float eased = 1f - (1f - p) * (1f - p);
+                _levelStartBanner.style.top = new Length(Mathf.Lerp(offscreenY, onscreenY, eased), LengthUnit.Pixel);
+                yield return null;
+            }
+            _levelStartBanner.style.top = new Length(onscreenY, LengthUnit.Pixel);
+
+            // Hold
+            float hold = 0f;
+            while (hold < holdDur)
+            {
+                if (!_levelStartBannerActive) yield break;
+                hold += Time.unscaledDeltaTime;
+                yield return null;
+            }
+
+            // Slide up: Y onscreenY → offscreenY, ease-in quadratic
+            t = 0f;
+            while (t < slideOutDur)
+            {
+                if (!_levelStartBannerActive) yield break;
+                t += Time.unscaledDeltaTime;
+                float p     = Mathf.Clamp01(t / slideOutDur);
+                float eased = p * p;
+                _levelStartBanner.style.top = new Length(Mathf.Lerp(onscreenY, offscreenY, eased), LengthUnit.Pixel);
+                yield return null;
+            }
+
+            _levelStartBanner.style.display = DisplayStyle.None;
+            _levelStartBannerActive         = false;
+            _levelStartBannerCoroutine      = null;
         }
 
         private void EnsureSibling<T>() where T : Component
