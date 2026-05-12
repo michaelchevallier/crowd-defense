@@ -14,6 +14,8 @@ namespace CrowdDefense.Visual
         private static Material? _toonBase;
         private static Material? _jellyfish;
         private static Material? _hologram;
+        private static Material? _bossJellyfish;
+        private static Material? _bossHologram;
 
         // Cache toon material instances by (tint, transparent, sourceTexture) to avoid leaking
         // a new Material per enemy Init/pool-reuse. Key includes Texture? so textured meshes
@@ -26,6 +28,8 @@ namespace CrowdDefense.Visual
             _toonBase = null;
             _jellyfish = null;
             _hologram = null;
+            _bossJellyfish = null;
+            _bossHologram = null;
             _toonCache.Clear();
         }
 
@@ -102,9 +106,12 @@ namespace CrowdDefense.Visual
         {
             Material? overlayMat = overlayKey switch
             {
-                "jellyfish" => LoadCached(ref _jellyfish, "Jellyfish"),
-                "hologram"  => LoadCached(ref _hologram,  "Hologram"),
-                _           => null
+                "jellyfish"     => LoadCached(ref _jellyfish,     "Jellyfish"),
+                "hologram"      => LoadCached(ref _hologram,      "Hologram"),
+                "bossjellyfish" => LoadCached(ref _bossJellyfish, "BossJellyfish"),
+                "bosshologram"  => LoadCached(ref _bossHologram,  "BossHologram"),
+                "phantom"       => LoadCached(ref _bossHologram,  "BossHologram"),
+                _               => null
             };
 
             if (overlayMat == null) return;
