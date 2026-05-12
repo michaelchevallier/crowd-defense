@@ -1,0 +1,59 @@
+/* === Wave Cleared mini-card (top-center, 400x100) === */
+
+.wave-cleared-root {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: flex-start;
+    pointer-events: none;
+}
+
+.wave-cleared-card {
+    margin-top: 16px;
+    width: 400px;
+    height: 100px;
+    background-color: rgba(0, 0, 0, 0.70);
+    border-color: rgb(212, 175, 55);
+    border-width: 2px;
+    border-radius: 10px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    translate: 0 -120px;
+}
+
+.wave-cleared-title {
+    color: rgb(212, 175, 55);
+    font-size: 22px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 4px;
+    -unity-text-align: middle-center;
+}
+
+.wave-cleared-row {
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+}
+
+.wave-cleared-gold {
+    color: rgb(255, 220, 60);
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-right: 24px;
+    -unity-text-align: middle-center;
+}
+
+.wave-cleared-hp {
+    color: rgb(100, 220, 100);
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+}
