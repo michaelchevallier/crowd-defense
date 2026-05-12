@@ -1956,7 +1956,6 @@ namespace CrowdDefense.Entities
             if (isBoss)
             {
                 JuiceFX.Instance?.Shake(0.6f, 400);
-                JuiceFX.Instance?.SlowMo(0.3f, 800);
                 JuiceFX.Instance?.Flash(Color.white, 250);
                 StartCoroutine(BossCinematic());
             }
@@ -2011,29 +2010,31 @@ namespace CrowdDefense.Entities
         {
             const float CinematicDuration = 1.5f;
 
-            // Big triple-burst explosion — radius ×3, red-orange-gold colors
             var pos = transform.position;
+
+            // Triple-burst explosion — radius ×3, red-orange-gold
             VfxPool.Instance?.SpawnExplosion(pos + Vector3.up * 0.5f, 3f);
             VfxPool.Instance?.SpawnImpact(pos + Vector3.up * 0.8f, new Color(1f, 0.4f, 0f));
             VfxPool.Instance?.SpawnImpact(pos + Vector3.up * 1.2f, new Color(1f, 0.85f, 0f));
 
-            // Screen shake + audio via CameraController
+            // Rainbow confetti x2 intensity (no tint = gradient path)
+            VfxPool.Instance?.SpawnConfetti(pos + Vector3.up * 1f, 2f);
+
+            // Camera zoom on death position
+            CameraController.Instance?.ZoomOnDeathPos(pos, CinematicDuration);
+
+            // Screen shake + audio
             CameraController.Instance?.Shake(1.5f, CinematicDuration);
             AudioController.Instance?.Play("boss_death_roar", 1f);
+            AudioController.Instance?.Play("boss_defeated", 1f);
 
-            // "BOSS VAINCU !" popup — scaled punch
+            // "BOSS VAINCU !" popup
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
                 "BOSS VAINCU !", pos + Vector3.up * 2f, new Color(1f, 0.85f, 0f));
 
-            // Slow time (unscaled coroutine so it still ticks while timeScale is low)
-            Time.timeScale = 0.3f;
-            float elapsed = 0f;
-            while (elapsed < CinematicDuration)
-            {
-                elapsed += Time.unscaledDeltaTime;
-                yield return null;
-            }
-            Time.timeScale = 1f;
+            // SlowMo via JuiceFX (handles ramp-down safely; unscaled wait keeps coroutine alive)
+            JuiceFX.Instance?.SlowMo(0.4f, (int)(CinematicDuration * 1000f));
+            yield return new WaitForSecondsRealtime(CinematicDuration);
         }
 
         // ── Ragdoll ───────────────────────────────────────────────────────────

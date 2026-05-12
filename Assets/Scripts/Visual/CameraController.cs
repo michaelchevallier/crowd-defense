@@ -83,6 +83,9 @@ namespace CrowdDefense.Visual
 
         private void OnBossSpawn(BossEncounteredEvent e) => StartCoroutine(BossZoomIntro(e.BossPos));
 
+        public void ZoomOnDeathPos(Vector3 pos, float holdSeconds = 1.2f) =>
+            StartCoroutine(DeathZoomRoutine(pos, holdSeconds));
+
         private IEnumerator BossZoomIntro(Vector3 bossPos)
         {
             _zooming = true;
@@ -102,6 +105,31 @@ namespace CrowdDefense.Visual
 
             // Lerp back (0.6 s)
             for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.6f)
+            {
+                transform.position = Vector3.Lerp(target, origin, Mathf.SmoothStep(0f, 1f, t));
+                yield return null;
+            }
+            transform.position = origin;
+            _zooming = false;
+        }
+
+        private IEnumerator DeathZoomRoutine(Vector3 pos, float holdSeconds)
+        {
+            _zooming = true;
+            var origin = transform.position;
+            var target = new Vector3(pos.x - 3f, 0f, pos.z - 6f);
+            target.y = Mathf.Clamp(minY, minY, maxY);
+
+            for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.35f)
+            {
+                transform.position = Vector3.Lerp(origin, target, Mathf.SmoothStep(0f, 1f, t));
+                yield return null;
+            }
+            transform.position = target;
+
+            yield return new WaitForSecondsRealtime(holdSeconds);
+
+            for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.4f)
             {
                 transform.position = Vector3.Lerp(target, origin, Mathf.SmoothStep(0f, 1f, t));
                 yield return null;
