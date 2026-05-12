@@ -360,10 +360,21 @@ namespace CrowdDefense.Visual
 
         // ── Pool internals ────────────────────────────────────────────────────
 
-        private ObjectPool<ParticleSystem> MakePool(GameObject prefab, string label)
+        private ObjectPool<ParticleSystem> MakePool(GameObject? prefab, string label)
             => new ObjectPool<ParticleSystem>(
-                createFunc:       () => { var go = Instantiate(prefab, _root); go.name = $"{label}_VFX"; go.SetActive(false);
-                                          return go.GetComponent<ParticleSystem>() ?? go.AddComponent<ParticleSystem>(); },
+                createFunc:       () => {
+                    if (prefab == null)
+                    {
+                        Debug.LogWarning($"[VfxPool] MakePool({label}) prefab is null — creating fallback");
+                        var go = new GameObject($"{label}_VFX_Fallback");
+                        go.transform.SetParent(_root, false);
+                        return go.AddComponent<ParticleSystem>();
+                    }
+                    var go2 = Instantiate(prefab, _root);
+                    go2.name = $"{label}_VFX";
+                    go2.SetActive(false);
+                    return go2.GetComponent<ParticleSystem>() ?? go2.AddComponent<ParticleSystem>();
+                },
                 actionOnGet:      ps => ps.gameObject.SetActive(true),
                 actionOnRelease:  ps => { ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
                                           ps.transform.SetParent(_root, false); ps.transform.localScale = Vector3.one;
@@ -399,6 +410,7 @@ namespace CrowdDefense.Visual
         {
             if (!IsVfxEnabled() || pool == null) return;
             var ps = pool.Get();
+            if (ps == null) return;
             ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
             var sh = ps.shape;
             sh.radius = Mathf.Max(0.3f, radius);
