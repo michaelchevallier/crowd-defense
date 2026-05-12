@@ -356,6 +356,10 @@ namespace CrowdDefense.Systems
             JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.4f), 500);
             JuiceFX.Instance?.SlowMo(0.5f, 1200);
 
+            bool isWorldEnd = currentLevel?.Level == 1; // Level 1-of-world = last level (world gate)
+            float confettiMul = isWorldEnd ? 4f : 1f;
+            VfxPool.Instance?.SpawnConfetti(_castleWorldPos, confettiMul);
+
             string worldAchId = $"world{currentLevel?.World ?? 1}_complete";
             Achievements.Instance?.Unlock(worldAchId);
 

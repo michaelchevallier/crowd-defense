@@ -5,6 +5,7 @@ using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 using CrowdDefense.UI;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
@@ -123,6 +124,10 @@ namespace CrowdDefense.Systems
             _defeatedPublished = true;
             EventManager.Instance?.Publish(new BossDefeatedEvent(_currentDef.DisplayNameFr));
             Toast.Show("Boss Defeated", _currentDef.DisplayNameFr, 4000, null, ToastType.Achievement);
+
+            Vector3 pos = _currentBoss != null ? _currentBoss.transform.position : Vector3.zero;
+            VfxPool.Instance?.SpawnConfetti(pos, 2f);
+            JuiceFX.Instance?.Flash(new Color(1f, 0.9f, 0.2f, 0.55f), 400);
         }
 
         private void ResetBoss()

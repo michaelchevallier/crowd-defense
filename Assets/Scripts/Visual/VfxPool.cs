@@ -171,6 +171,50 @@ namespace CrowdDefense.Visual
 
         public void SpawnCoinPickup(Vector3 worldPos) => SpawnCoinBurst(worldPos);
 
+        // Confetti burst : wave clear = 1f, level complete = 1f, world complete = 4f, boss defeat = 2f.
+        public void SpawnConfetti(Vector3 worldPos, float intensityMul = 1f)
+        {
+            if (!IsVfxEnabled() || _coinBurstPool == null) return;
+            var ps = _coinBurstPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+
+            var main = ps.main;
+            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(50 * intensityMul * _lodMultiplier));
+
+            var emission = ps.emission;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f,
+                (short)Mathf.RoundToInt(10 * intensityMul),
+                (short)Mathf.RoundToInt(30 * intensityMul), 1, 0.05f) });
+
+            var col = ps.colorOverLifetime;
+            col.enabled = true;
+            col.color = new ParticleSystem.MinMaxGradient(BuildConfettiGradient());
+
+            PlayAndAutoRelease(ps, _coinBurstPool);
+        }
+
+        private static Gradient BuildConfettiGradient()
+        {
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(new Color(1f, 0.22f, 0.22f), 0f),
+                    new GradientColorKey(new Color(1f, 0.85f, 0.1f),  0.25f),
+                    new GradientColorKey(new Color(0.2f, 0.85f, 0.3f), 0.5f),
+                    new GradientColorKey(new Color(0.15f, 0.55f, 1f),  0.75f),
+                    new GradientColorKey(new Color(0.8f, 0.2f, 1f),   1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(0.85f, 0.5f),
+                    new GradientAlphaKey(0f, 1f)
+                }
+            );
+            return grad;
+        }
+
         // Trail de coins qui volent depuis fromWorld vers le gold counter HUD (top-left).
         // Chaque coin : Sphere 0.15 yellow emissive, Lerp sur 0.5s, scale fade → 0.
         public void SpawnCoinTrail(Vector3 fromWorld, int count = 5)
