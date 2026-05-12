@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using TMPro;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
@@ -594,6 +595,66 @@ namespace CrowdDefense.Entities
                 foreach (var mat in rend.materials)
                     mat.color = gray;
             }
+        }
+
+        // ── Victory banner ──────────────────────────────────────────────────────
+
+        // Spawns a "Victoire !" TextMeshPro that floats up 3 units over 2 s with
+        // scale punch (0→1.4→1) then fade-out. Billboard toward Camera.main.
+        public void SpawnVictoryBanner()
+            => StartCoroutine(VictoryBannerCoroutine());
+
+        private IEnumerator VictoryBannerCoroutine()
+        {
+            var go = new GameObject("VictoryBanner");
+            go.transform.position = transform.position + Vector3.up * 2.5f;
+
+            var tmp = go.AddComponent<TextMeshPro>();
+            tmp.text             = "Victoire !";
+            tmp.fontSize         = 7f;
+            tmp.fontStyle        = FontStyles.Bold;
+            tmp.alignment        = TextAlignmentOptions.Center;
+            tmp.color            = new Color(1f, 0.92f, 0.15f, 1f);
+            tmp.outlineWidth     = 0.25f;
+            tmp.outlineColor     = new Color32(80, 40, 0, 255);
+            tmp.enableWordWrapping   = false;
+            tmp.rectTransform.sizeDelta = new Vector2(8f, 2f);
+
+            var cam        = Camera.main;
+            const float punchDur  = 0.25f;
+            const float totalDur  = 2.0f;
+            const float riseUnits = 3.0f;
+
+            // Phase 1 — scale punch: 0 → 1.4 → 1 in punchDur
+            float elapsed = 0f;
+            while (elapsed < punchDur)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / punchDur);
+                float s = t < 0.5f ? Mathf.Lerp(0f, 1.4f, t * 2f) : Mathf.Lerp(1.4f, 1f, (t - 0.5f) * 2f);
+                go.transform.localScale = Vector3.one * s;
+                if (cam != null) go.transform.rotation = cam.transform.rotation;
+                yield return null;
+            }
+            go.transform.localScale = Vector3.one;
+
+            // Phase 2 — float up + fade over remaining duration
+            Vector3 startPos  = go.transform.position;
+            float   remaining = totalDur - punchDur;
+            elapsed = 0f;
+            while (elapsed < remaining)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / remaining);
+                go.transform.position = startPos + Vector3.up * (riseUnits * t);
+                var c = tmp.color;
+                c.a = 1f - t;
+                tmp.color = c;
+                if (cam != null) go.transform.rotation = cam.transform.rotation;
+                yield return null;
+            }
+
+            Destroy(go);
         }
 
         // ── MonoBehaviour ───────────────────────────────────────────────────────

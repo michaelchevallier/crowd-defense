@@ -366,6 +366,9 @@ namespace CrowdDefense.Systems
             string worldAchId = $"world{currentLevel?.World ?? 1}_complete";
             Achievements.Instance?.Unlock(worldAchId);
 
+            // Victory banner floats up from castle position (scale+fade 2 s).
+            PrimaryCastle?.SpawnVictoryBanner();
+
             // PerkPickerController subscribes to OnLevelComplete and calls ConfirmLevelComplete() when done.
             OnLevelComplete?.Invoke();
 
