@@ -19,6 +19,9 @@ namespace CrowdDefense.Visual
         float _shakeDuration;
         Vector3 _currentShakeOffset = Vector3.zero;
 
+        // Throttle for crit-hit shake (max 1 per 0.15s)
+        float _critShakeNextAllowed;
+
         // Flash state
         VisualElement? _flashOverlay;
         VisualElement? _hudRoot;
@@ -97,6 +100,15 @@ namespace CrowdDefense.Visual
 
             _flashOverlay.style.backgroundColor = color;
             _flashCoroutine = StartCoroutine(FlashRoutine(_flashOverlay, duration));
+        }
+
+        // Subtle shake on critical enemy hit (amplitude 0.05, throttled to 1 per 0.15s).
+        public void ShakeOnCritHit()
+        {
+            float now = Time.unscaledTime;
+            if (now < _critShakeNextAllowed) return;
+            _critShakeNextAllowed = now + 0.15f;
+            Shake(0.05f, 80);
         }
 
         // Punch-scale a transform (pop bounce: scale up then back to 1).

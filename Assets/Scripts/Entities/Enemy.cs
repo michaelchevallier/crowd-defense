@@ -1686,7 +1686,10 @@ namespace CrowdDefense.Entities
                 if (isBossHit)
                     popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
                 else if (isCrit)
+                {
                     popup?.SpawnCrit(actualDmg, transform.position + Vector3.up * 1.2f, gameObject.GetInstanceID());
+                    JuiceFX.Instance?.ShakeOnCritHit();
+                }
                 else
                     popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
             }
