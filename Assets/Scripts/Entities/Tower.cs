@@ -1020,12 +1020,18 @@ namespace CrowdDefense.Entities
                 {
                     dmg *= bal.CritDmgMul;
                     CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCrit(dmg, t.transform.position);
+                    VfxPool.Instance?.SpawnConfetti(t.transform.position, 0.5f, new Color(1f, 0.9f, 0.1f));
+                    ac?.Play3DPitched("tower_fire", transform.position, 0.45f, firePitch * 1.35f);
                 }
             }
 
             // L3 Ranger Marksman (archer Utility) : crit hit (D1-03)
             if (L3CritChance > 0f && Random.value < L3CritChance)
+            {
                 dmg *= L3CritMul;
+                VfxPool.Instance?.SpawnConfetti(t.transform.position, 0.5f, new Color(1f, 0.9f, 0.1f));
+                ac?.Play3DPitched("tower_fire", transform.position, 0.45f, firePitch * 1.35f);
+            }
 
             if (t.IsFlyer && !t.ImmuneToFlyerBonus)
             {

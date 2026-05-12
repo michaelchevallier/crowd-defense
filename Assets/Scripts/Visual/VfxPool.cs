@@ -201,6 +201,28 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _coinBurstPool);
         }
 
+        // Crit burst : solid tint overrides confetti gradient — used for tower critical hits.
+        public void SpawnConfetti(Vector3 worldPos, float intensityMul, Color tint)
+        {
+            if (!IsVfxEnabled() || _coinBurstPool == null) return;
+            var ps = _coinBurstPool.Get();
+            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+
+            var main = ps.main;
+            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(50 * intensityMul * _lodMultiplier));
+
+            var emission = ps.emission;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f,
+                (short)Mathf.RoundToInt(10 * intensityMul),
+                (short)Mathf.RoundToInt(30 * intensityMul), 1, 0.05f) });
+
+            var col = ps.colorOverLifetime;
+            col.enabled = false;
+            ApplyTint(ps, tint);
+
+            PlayAndAutoRelease(ps, _coinBurstPool);
+        }
+
         private static Gradient BuildConfettiGradient()
         {
             var grad = new Gradient();
