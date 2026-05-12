@@ -642,6 +642,9 @@ namespace CrowdDefense.Entities
             else if (activeSkin != null && activeSkin.UseBodyColorOverride)
                 AssetVariants.ApplySkin(toonRoot, activeSkin);
 
+            // Colorblind Deuteranopia palette swap (no-op when mode is off)
+            Visual.ColorblindPalette.ApplyToGameObject(toonRoot);
+
             // Animations Mechanim: Idle + Walk via bool isWalking
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", type.WalkAnim);
 

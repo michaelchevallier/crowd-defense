@@ -28,6 +28,7 @@ namespace CrowdDefense.UI
         private const string KShowDamageIcons = "cd.gfx.damage_icons";
         private const string KMusicPulse = "cd.gfx.music_pulse_v1";
         private const string KWeather = "cd.gfx.weather";
+        private const string KBloom = "cd.gfx.bloom";
 
         public event Action? OnSettingsChanged;
 
@@ -51,6 +52,7 @@ namespace CrowdDefense.UI
         private bool _showDamageIcons;
         private bool _musicPulseEnabled;
         private bool _weatherEnabled = true;
+        private int _bloomLevel = 1; // 0=Low 1=Med 2=High
         private bool _saveQueued;
         private Coroutine? _saveCoroutine;
 
@@ -183,11 +185,19 @@ namespace CrowdDefense.UI
             set { if (_weatherEnabled == value) return; _weatherEnabled = value; ApplyWeather(); QueueSave(); Notify(); }
         }
 
+        // 0=Low(0.5) 1=Med(1.0) 2=High(1.5)
+        public int BloomLevel
+        {
+            get => _bloomLevel;
+            set { value = Mathf.Clamp(value, 0, 2); if (_bloomLevel == value) return; _bloomLevel = value; ApplyBloom(); QueueSave(); Notify(); }
+        }
+
         protected override void OnAwakeSingleton()
         {
             Load();
             ApplyAudio();
             ApplyQuality();
+            ApplyBloom();
         }
 
         public void Save()
@@ -213,6 +223,7 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetInt(KShowDamageIcons, _showDamageIcons ? 1 : 0);
             PlayerPrefs.SetInt(KMusicPulse, _musicPulseEnabled ? 1 : 0);
             PlayerPrefs.SetInt(KWeather, _weatherEnabled ? 1 : 0);
+            PlayerPrefs.SetInt(KBloom, _bloomLevel);
             PlayerPrefs.Save();
         }
 
@@ -238,6 +249,7 @@ namespace CrowdDefense.UI
             _showDamageIcons = PlayerPrefs.GetInt(KShowDamageIcons, 0) == 1;
             _musicPulseEnabled = PlayerPrefs.GetInt(KMusicPulse, 0) == 1;
             _weatherEnabled = PlayerPrefs.GetInt(KWeather, 1) == 1;
+            _bloomLevel = PlayerPrefs.GetInt(KBloom, 1);
         }
 
         private void ApplyAudio()
@@ -287,6 +299,14 @@ namespace CrowdDefense.UI
             var wc = Visual.WeatherController.Instance;
             if (wc == null) return;
             if (!_weatherEnabled) wc.StopAll();
+        }
+
+        private static readonly float[] BloomIntensities = { 0.5f, 1.0f, 1.5f };
+
+        private void ApplyBloom()
+        {
+            float intensity = BloomIntensities[Mathf.Clamp(_bloomLevel, 0, 2)];
+            Visual.PostProcessController.Instance?.SetBloomIntensity(intensity);
         }
 
         private void Notify() => OnSettingsChanged?.Invoke();

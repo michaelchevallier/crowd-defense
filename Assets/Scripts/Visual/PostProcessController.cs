@@ -92,6 +92,14 @@ namespace CrowdDefense.Visual
             _color.saturation.value   = saturation;
         }
 
+        // ── Bloom intensity ───────────────────────────────────────────────────────
+
+        public void SetBloomIntensity(float intensity)
+        {
+            if (_bloom == null) return;
+            _bloom.intensity.value = intensity;
+        }
+
         // ── Red vignette flash ────────────────────────────────────────────────────
 
         // Flash vignette to <intensity> then fade out over <fadeOut> seconds.

@@ -50,6 +50,7 @@ namespace CrowdDefense.UI
         private Label?  _diffSectionLabel;
 
         private DropdownField? _qualityDropdown;
+        private DropdownField? _bloomDropdown;
         private Toggle? _vfxToggle;
         private Toggle? _shakeToggle;
         private Toggle? _autoPauseToggle;
@@ -88,6 +89,7 @@ namespace CrowdDefense.UI
         private Label? _gameSpeedLabel;
         private Label? _gfxSectionLabel;
         private Label? _qualityLabel;
+        private Label? _bloomLabel;
         private Label? _vfxLabel;
         private Label? _shakeLabel;
         private Label? _a11ySectionLabel;
@@ -105,6 +107,12 @@ namespace CrowdDefense.UI
             L.Get("settings.quality_mobile"),
             L.Get("settings.quality_desktop"),
             L.Get("settings.quality_high"),
+        };
+        private List<string> BloomChoices => new()
+        {
+            L.CurrentLocale == "fr" ? "Bas" : L.CurrentLocale == "es" ? "Bajo" : "Low",
+            L.CurrentLocale == "fr" ? "Moyen" : L.CurrentLocale == "es" ? "Medio" : "Med",
+            L.CurrentLocale == "fr" ? "Haut" : L.CurrentLocale == "es" ? "Alto" : "High",
         };
         private List<string> LangChoices => new()
         {
@@ -155,6 +163,7 @@ namespace CrowdDefense.UI
             _diffSectionLabel = _root.Q<Label>("difficulty-section-title");
 
             _qualityDropdown = _root.Q<DropdownField>("quality-dropdown");
+            _bloomDropdown   = _root.Q<DropdownField>("bloom-dropdown");
             _vfxToggle = _root.Q<Toggle>("vfx-toggle");
             _shakeToggle = _root.Q<Toggle>("shake-toggle");
             _autoPauseToggle = _root.Q<Toggle>("auto-pause-toggle");
@@ -192,6 +201,7 @@ namespace CrowdDefense.UI
             _gameSpeedLabel      = _root.Q<Label>("game-speed-label");
             _gfxSectionLabel     = _root.Q<Label>("gfx-section-title");
             _qualityLabel        = _root.Q<Label>("quality-label");
+            _bloomLabel          = _root.Q<Label>("bloom-label");
             _vfxLabel            = _root.Q<Label>("vfx-label");
             _shakeLabel          = _root.Q<Label>("shake-label");
             _a11ySectionLabel    = _root.Q<Label>("a11y-section-title");
@@ -204,6 +214,10 @@ namespace CrowdDefense.UI
             if (_qualityDropdown != null)
             {
                 _qualityDropdown.choices = QualityChoices;
+            }
+            if (_bloomDropdown != null)
+            {
+                _bloomDropdown.choices = BloomChoices;
             }
             if (_langDropdown != null)
             {
@@ -257,6 +271,8 @@ namespace CrowdDefense.UI
             if (_gameSpeedLabel != null)      _gameSpeedLabel.text      = L.Get("settings.game_speed");
             if (_gfxSectionLabel != null)     _gfxSectionLabel.text     = L.Get("settings.gfx_section");
             if (_qualityLabel != null)        _qualityLabel.text        = L.Get("settings.quality");
+            if (_bloomLabel != null)          _bloomLabel.text          = L.CurrentLocale == "fr" ? "Bloom"
+                : L.CurrentLocale == "es" ? "Bloom" : "Bloom";
             if (_vfxLabel != null)            _vfxLabel.text            = L.Get("settings.vfx");
             if (_shakeLabel != null)          _shakeLabel.text          = L.Get("settings.shake");
             if (_musicPulseLabel != null)
@@ -311,6 +327,7 @@ namespace CrowdDefense.UI
                     : "Hero auto-attack";
 
             if (_qualityDropdown != null) _qualityDropdown.choices = QualityChoices;
+            if (_bloomDropdown != null)   _bloomDropdown.choices   = BloomChoices;
             if (_langDropdown != null)    _langDropdown.choices    = LangChoices;
         }
 
@@ -396,6 +413,13 @@ namespace CrowdDefense.UI
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
                 int idx = QualityChoices.IndexOf(evt.newValue);
                 if (idx >= 0) SettingsRegistry.Instance.QualityLevel = idx;
+            });
+
+            _bloomDropdown?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                int idx = BloomChoices.IndexOf(evt.newValue);
+                if (idx >= 0) SettingsRegistry.Instance.BloomLevel = idx;
             });
 
             _vfxToggle?.RegisterValueChangedCallback(evt =>
@@ -547,6 +571,11 @@ namespace CrowdDefense.UI
                 {
                     int idx = Mathf.Clamp(reg.QualityLevel, 0, QualityChoices.Count - 1);
                     _qualityDropdown.SetValueWithoutNotify(QualityChoices[idx]);
+                }
+                if (_bloomDropdown != null)
+                {
+                    int bidx = Mathf.Clamp(reg.BloomLevel, 0, BloomChoices.Count - 1);
+                    _bloomDropdown.SetValueWithoutNotify(BloomChoices[bidx]);
                 }
                 if (_vfxToggle != null) _vfxToggle.value = reg.VFXEnabled;
                 if (_shakeToggle != null) _shakeToggle.value = reg.ShakeEnabled;
