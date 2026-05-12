@@ -141,6 +141,15 @@
     background-color: rgba(80, 80, 140, 0.65);
 }
 
+.settings-btn-change-name {
+    background-color: rgba(80, 60, 100, 0.5);
+    margin-right: 8px;
+}
+
+.settings-btn-change-name:hover {
+    background-color: rgba(110, 80, 140, 0.65);
+}
+
 .hud-settings-btn {
     padding: 6px 10px;
     background-color: rgba(60, 80, 110, 0.75);

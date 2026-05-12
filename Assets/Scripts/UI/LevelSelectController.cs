@@ -19,6 +19,8 @@ namespace CrowdDefense.UI
             var titleLabel = root.Q<Label>("menu-title-label");
             if (titleLabel != null) titleLabel.text = L.Get("menu.game_title");
 
+            RefreshGreeting(root);
+
             var btnBestiary = root.Q<Button>("btn-open-bestiary");
             if (btnBestiary != null)
                 btnBestiary.clicked += () => BestiaryPanel.Instance?.Show();
@@ -45,6 +47,7 @@ namespace CrowdDefense.UI
             }
 
             AddContinueRow(grid);
+            AddEndlessRow(grid);
             AddDailyRow(grid);
 
             var registry = LevelRegistry.Get();
@@ -92,6 +95,14 @@ namespace CrowdDefense.UI
             }
         }
 
+        private static void RefreshGreeting(VisualElement root)
+        {
+            var greetingLabel = root.Q<Label>("menu-greeting-label");
+            if (greetingLabel == null) return;
+            string name = PlayerProfile.Instance?.GetName() ?? "Joueur";
+            greetingLabel.text = $"Bonjour, {name}";
+        }
+
         private static void AddContinueRow(VisualElement grid)
         {
             if (!SaveSystem.HasRunState()) return;
@@ -121,6 +132,26 @@ namespace CrowdDefense.UI
                 DifficultySelector.Instance.Show(() => LevelLoader.LoadLevel(levelId));
             else
                 LevelLoader.LoadLevel(levelId);
+        }
+
+        private static void AddEndlessRow(VisualElement grid)
+        {
+            var row = new VisualElement();
+            row.AddToClassList("world-row");
+
+            var label = new Label("Sans Fin");
+            label.AddToClassList("world-label");
+            row.Add(label);
+
+            var btn = new Button();
+            int best = EndlessMode.Instance?.BestWave ?? 0;
+            btn.text = best > 0 ? $"Inf. Sans Fin  (Record : vague {best})" : "Inf. Sans Fin";
+            btn.AddToClassList("level-btn");
+            btn.AddToClassList("endless-btn");
+            btn.RegisterCallback<ClickEvent>(_ => EndlessMode.Instance?.StartEndless());
+            row.Add(btn);
+
+            grid.Add(row);
         }
 
         private static void AddDailyRow(VisualElement grid)

@@ -16,6 +16,15 @@
     -unity-text-align: upper-center;
 }
 
+.menu-greeting {
+    color: rgba(200, 220, 255, 0.75);
+    font-size: 15px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-top: -16px;
+    margin-bottom: 14px;
+    -unity-text-align: upper-center;
+}
+
 .level-scroll {
     width: 100%;
     flex-grow: 1;

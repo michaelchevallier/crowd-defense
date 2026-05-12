@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.UI
 {
@@ -23,7 +24,12 @@ namespace CrowdDefense.UI
         private Label? _uiValue;
         private Label? _gameSpeedValue;
         private Toggle? _muteToggle;
+        private Toggle? _sfxMuteToggle;
+        private Toggle? _musicMuteToggle;
+        private Toggle? _followHeroToggle;
+        private Label?  _followHeroLabel;
         private Button? _resetCameraBtn;
+        private Button? _changeNameBtn;
 
         private DropdownField? _qualityDropdown;
         private Toggle? _vfxToggle;
@@ -44,6 +50,8 @@ namespace CrowdDefense.UI
         private Label? _musicLabel;
         private Label? _uiLabel;
         private Label? _muteLabel;
+        private Label? _sfxMuteLabel;
+        private Label? _musicMuteLabel;
         private Label? _gameSpeedLabel;
         private Label? _gfxSectionLabel;
         private Label? _qualityLabel;
@@ -90,7 +98,12 @@ namespace CrowdDefense.UI
             _uiValue = _root.Q<Label>("ui-value");
             _gameSpeedValue = _root.Q<Label>("game-speed-value");
             _muteToggle = _root.Q<Toggle>("mute-toggle");
-            _resetCameraBtn = _root.Q<Button>("settings-reset-camera-btn");
+            _sfxMuteToggle = _root.Q<Toggle>("sfx-mute-toggle");
+            _musicMuteToggle = _root.Q<Toggle>("music-mute-toggle");
+            _followHeroToggle = _root.Q<Toggle>("follow-hero-toggle");
+            _followHeroLabel  = _root.Q<Label>("follow-hero-label");
+            _resetCameraBtn  = _root.Q<Button>("settings-reset-camera-btn");
+            _changeNameBtn   = _root.Q<Button>("settings-change-name-btn");
 
             _qualityDropdown = _root.Q<DropdownField>("quality-dropdown");
             _vfxToggle = _root.Q<Toggle>("vfx-toggle");
@@ -111,6 +124,8 @@ namespace CrowdDefense.UI
             _musicLabel          = _root.Q<Label>("music-label");
             _uiLabel             = _root.Q<Label>("ui-label");
             _muteLabel           = _root.Q<Label>("mute-label");
+            _sfxMuteLabel        = _root.Q<Label>("sfx-mute-label");
+            _musicMuteLabel      = _root.Q<Label>("music-mute-label");
             _gameSpeedLabel      = _root.Q<Label>("game-speed-label");
             _gfxSectionLabel     = _root.Q<Label>("gfx-section-title");
             _qualityLabel        = _root.Q<Label>("quality-label");
@@ -170,6 +185,8 @@ namespace CrowdDefense.UI
             if (_musicLabel != null)          _musicLabel.text          = L.Get("settings.music");
             if (_uiLabel != null)             _uiLabel.text             = L.Get("settings.ui");
             if (_muteLabel != null)           _muteLabel.text           = L.Get("settings.mute");
+            if (_sfxMuteLabel != null)        _sfxMuteLabel.text        = L.Get("settings.sfx_mute");
+            if (_musicMuteLabel != null)      _musicMuteLabel.text      = L.Get("settings.music_mute");
             if (_gameSpeedLabel != null)      _gameSpeedLabel.text      = L.Get("settings.game_speed");
             if (_gfxSectionLabel != null)     _gfxSectionLabel.text     = L.Get("settings.gfx_section");
             if (_qualityLabel != null)        _qualityLabel.text        = L.Get("settings.quality");
@@ -183,6 +200,7 @@ namespace CrowdDefense.UI
             if (_langLabel != null)           _langLabel.text           = L.Get("settings.lang_label");
             if (_closeBtn != null)            _closeBtn.text            = L.Get("settings.close");
             if (_resetCameraBtn != null)      _resetCameraBtn.text      = L.Get("settings.reset_camera");
+            if (_followHeroLabel != null)     _followHeroLabel.text     = L.Get("settings.follow_hero");
 
             if (_qualityDropdown != null) _qualityDropdown.choices = QualityChoices;
             if (_langDropdown != null)    _langDropdown.choices    = LangChoices;
@@ -229,6 +247,25 @@ namespace CrowdDefense.UI
             {
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
                 SettingsRegistry.Instance.Muted = evt.newValue;
+            });
+
+            _sfxMuteToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.SFXMuted = evt.newValue;
+            });
+
+            _musicMuteToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.MusicMuted = evt.newValue;
+            });
+
+            _followHeroToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents) return;
+                var cam = CameraController.Instance;
+                if (cam != null) cam.FollowHero = evt.newValue;
             });
 
             _qualityDropdown?.RegisterValueChangedCallback(evt =>
@@ -280,13 +317,14 @@ namespace CrowdDefense.UI
 
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Hide());
             _fullscreenBtn?.RegisterCallback<ClickEvent>(_ => ToggleFullscreen());
-
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
+            _changeNameBtn?.RegisterCallback<ClickEvent>(_ => OnChangeName());
         }
 
         public void Show()
         {
             SyncFromRegistry();
+            SyncFollowHero();
             UpdateFullscreenLabel();
             _settingsRoot?.RemoveFromClassList("hidden");
         }
@@ -329,6 +367,8 @@ namespace CrowdDefense.UI
                 if (_gameSpeedSlider != null) _gameSpeedSlider.value = reg.GameSpeed;
                 if (_gameSpeedValue != null) _gameSpeedValue.text = "x" + reg.GameSpeed;
                 if (_muteToggle != null) _muteToggle.value = reg.Muted;
+                if (_sfxMuteToggle != null) _sfxMuteToggle.value = reg.SFXMuted;
+                if (_musicMuteToggle != null) _musicMuteToggle.value = reg.MusicMuted;
 
                 if (_qualityDropdown != null)
                 {
@@ -360,6 +400,13 @@ namespace CrowdDefense.UI
             var cam = Camera.main;
             if (cam == null) return;
             cam.transform.SetPositionAndRotation(Vector3.back * 10f, Quaternion.identity);
+        }
+
+        private void OnChangeName()
+        {
+            var popup = FindFirstObjectByType<NameInputPopup>();
+            if (popup != null)
+                popup.Show(() => { });
         }
 
         private static string FormatPct(float v) => Mathf.RoundToInt(v * 100f) + "%";

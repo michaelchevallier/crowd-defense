@@ -81,6 +81,7 @@
             <ui:VisualElement class="settings-footer">
                 <ui:Button text="Reset Camera" name="settings-reset-camera-btn" class="settings-btn settings-btn-reset" />
                 <ui:Button text="Fullscreen ON" name="settings-fullscreen-btn" class="settings-btn settings-btn-fullscreen" />
+                <ui:Button text="Changer nom" name="settings-change-name-btn" class="settings-btn settings-btn-change-name" />
                 <ui:Button text="Close" name="settings-close-btn" class="settings-btn settings-btn-close" />
             </ui:VisualElement>
         </ui:VisualElement>

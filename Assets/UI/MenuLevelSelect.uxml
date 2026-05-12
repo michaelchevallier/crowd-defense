@@ -4,6 +4,7 @@
     <Style src="MenuLevelSelect.uss" />
     <ui:VisualElement name="menu-root" class="menu-root">
         <ui:Label text="CROWD DEFENSE" name="menu-title-label" class="menu-title" />
+        <ui:Label text="Bonjour, Joueur" name="menu-greeting-label" class="menu-greeting" />
         <ui:ScrollView name="level-scroll" class="level-scroll" vertical-scroller-visibility="AlwaysVisible">
             <ui:VisualElement name="level-grid" class="level-grid" />
         </ui:ScrollView>
