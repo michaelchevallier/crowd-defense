@@ -86,5 +86,44 @@ namespace CrowdDefense.Data
             HeroAvatar.Ranger  => "Archer",
             _                  => "?",
         };
+
+        // Stat lines shown on the pick card (localised French).
+        public static string[] AvatarStatLines(HeroAvatar avatar) => avatar switch
+        {
+            HeroAvatar.Warrior => new[] { "+20% PV", "+10% degats melee" },
+            HeroAvatar.Mage    => new[] { "+50% portee sorts", "Recharge acceleree" },
+            HeroAvatar.Ranger  => new[] { "+30% deplacement", "+15% vitesse attaque" },
+            _                  => System.Array.Empty<string>(),
+        };
+
+        // Tooltip description shown on hover.
+        public static string AvatarTooltip(HeroAvatar avatar) => avatar switch
+        {
+            HeroAvatar.Warrior => "Tank de melee solide. Bonus de vie et de degats au corps a corps.",
+            HeroAvatar.Mage    => "Controleur a distance. Grande portee et cadence de sorts elevee.",
+            HeroAvatar.Ranger  => "Tireur mobile. Se deplace et attaque plus vite que les autres.",
+            _                  => "",
+        };
+
+        // Applies archetype multipliers to a Hero's perk fields at game start.
+        // hero.*Mul fields are already initialised to 1f by Hero.cs.
+        public static void ApplyArchetype(HeroAvatar avatar, Entities.Hero hero)
+        {
+            switch (avatar)
+            {
+                case HeroAvatar.Warrior:
+                    hero.DamageMul    *= 1.10f;
+                    hero.CastleHPMaxMul *= 1.20f;
+                    break;
+                case HeroAvatar.Mage:
+                    hero.RangeMul     *= 1.50f;
+                    hero.FireRateMul  *= 1.25f;
+                    break;
+                case HeroAvatar.Ranger:
+                    hero.MoveSpeedMul *= 1.30f;
+                    hero.FireRateMul  *= 1.15f;
+                    break;
+            }
+        }
     }
 }
