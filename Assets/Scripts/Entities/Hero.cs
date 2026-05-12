@@ -208,6 +208,7 @@ namespace CrowdDefense.Entities
         private void RespawnAtCastle()
         {
             _isDead = false;
+            CrowdDefense.UI.HeroPortraitController.Instance?.CleanupUltimateRing();
 
             // Respawn at castle position or fallback to current position
             var castlePos = Castle.Instance != null

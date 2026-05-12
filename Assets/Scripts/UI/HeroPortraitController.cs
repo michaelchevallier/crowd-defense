@@ -32,6 +32,9 @@ namespace CrowdDefense.UI
         private VisualElement? _flameRing;
         private VisualElement? _hpCircle;
         private VisualElement? _tooltip;
+        private VisualElement? _ultimateRing;
+        private bool           _wasUltimateReady;
+        private float          _ultimateRingT;
 
         protected override void OnAwakeSingleton()
         {
@@ -42,12 +45,14 @@ namespace CrowdDefense.UI
         {
             EventManager.Instance?.Subscribe<HeroDamagedEvent>(OnHeroDamaged);
             StartCoroutine(FlameRingRoutine());
+            StartCoroutine(UltimateRingRoutine());
         }
 
         private void OnDisable()
         {
             EventManager.Instance?.Unsubscribe<HeroDamagedEvent>(OnHeroDamaged);
             StopCoroutine(nameof(FlameRingRoutine));
+            StopCoroutine(nameof(UltimateRingRoutine));
         }
 
         private void OnHeroDamaged(HeroDamagedEvent _)
@@ -73,6 +78,32 @@ namespace CrowdDefense.UI
                     _flameRing.style.borderRightColor  = new StyleColor(c);
                     _flameRing.style.borderBottomColor = new StyleColor(c);
                     _flameRing.style.borderLeftColor   = new StyleColor(c);
+                }
+                yield return null;
+            }
+        }
+
+        // Ultimate ring: gold border breathing at 2Hz when ultimate is ready.
+        private IEnumerator UltimateRingRoutine()
+        {
+            while (true)
+            {
+                _ultimateRingT += Time.unscaledDeltaTime;
+                if (_ultimateRing != null)
+                {
+                    float sin  = Mathf.Sin(_ultimateRingT * Mathf.PI * 4f); // 2Hz
+                    float alpha = 0.7f + sin * 0.3f;
+                    var c = new Color(1f, 0.85f, 0.2f, alpha);
+                    _ultimateRing.style.borderTopColor    = new StyleColor(c);
+                    _ultimateRing.style.borderRightColor  = new StyleColor(c);
+                    _ultimateRing.style.borderBottomColor = new StyleColor(c);
+                    _ultimateRing.style.borderLeftColor   = new StyleColor(c);
+                    // Breathing scale via border width: 3px → 5px at peak
+                    float bw = 3f + sin * 1f;
+                    _ultimateRing.style.borderTopWidth    = bw;
+                    _ultimateRing.style.borderRightWidth  = bw;
+                    _ultimateRing.style.borderBottomWidth = bw;
+                    _ultimateRing.style.borderLeftWidth   = bw;
                 }
                 yield return null;
             }
@@ -111,10 +142,37 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
+            UpdateUltimateRingVisibility();
+
             _tickTimer -= Time.unscaledDeltaTime;
             if (_tickTimer > 0f) return;
             _tickTimer = TickInterval;
             Refresh();
+        }
+
+        private void UpdateUltimateRingVisibility()
+        {
+            if (_ultimateRing == null) return;
+            var hero = LevelRunner.Instance?.Hero;
+            bool isReady = hero != null && hero.IsUltimateUnlocked && hero.UltimateCooldownRemaining <= 0f;
+
+            if (isReady != _wasUltimateReady)
+            {
+                _wasUltimateReady = isReady;
+                _ultimateRing.style.display = isReady ? DisplayStyle.Flex : DisplayStyle.None;
+                if (isReady)
+                {
+                    _ultimateRingT = 0f;
+                    AudioController.Instance?.Play("hero_ult", 0.5f);
+                }
+            }
+        }
+
+        public void CleanupUltimateRing()
+        {
+            _wasUltimateReady = false;
+            if (_ultimateRing != null)
+                _ultimateRing.style.display = DisplayStyle.None;
         }
 
         private void Refresh()
@@ -244,6 +302,33 @@ namespace CrowdDefense.UI
             }
         }
 
+        private static VisualElement BuildUltimateRing()
+        {
+            var ring = new VisualElement();
+            ring.style.position              = Position.Absolute;
+            ring.style.top                   = new StyleLength(-8f);
+            ring.style.left                  = new StyleLength(-8f);
+            ring.style.right                 = new StyleLength(-8f);
+            ring.style.bottom                = new StyleLength(-8f);
+            ring.style.borderTopWidth        = 3f;
+            ring.style.borderRightWidth      = 3f;
+            ring.style.borderBottomWidth     = 3f;
+            ring.style.borderLeftWidth       = 3f;
+            ring.style.borderTopLeftRadius     = new StyleLength(62f);
+            ring.style.borderTopRightRadius    = new StyleLength(62f);
+            ring.style.borderBottomLeftRadius  = new StyleLength(62f);
+            ring.style.borderBottomRightRadius = new StyleLength(62f);
+            var gold = new StyleColor(new Color(1f, 0.85f, 0.2f, 0.7f));
+            ring.style.borderTopColor    = gold;
+            ring.style.borderRightColor  = gold;
+            ring.style.borderBottomColor = gold;
+            ring.style.borderLeftColor   = gold;
+            ring.style.backgroundColor   = new StyleColor(Color.clear);
+            ring.style.display           = DisplayStyle.None;
+            ring.pickingMode             = PickingMode.Ignore;
+            return ring;
+        }
+
         // Build VisualElement tree in code (no .uxml dependency).
         private VisualElement BuildTree(StyleSheet? sheet)
         {
@@ -269,6 +354,10 @@ namespace CrowdDefense.UI
             _flameRing.style.backgroundColor  = new StyleColor(Color.clear);
             _flameRing.pickingMode            = PickingMode.Ignore;
             root.Add(_flameRing);
+
+            // Ultimate ring: gold, sits between flame ring and portrait, hidden by default.
+            _ultimateRing = BuildUltimateRing();
+            root.Add(_ultimateRing);
 
             _portrait = new VisualElement();
             _portrait.AddToClassList("portrait");
