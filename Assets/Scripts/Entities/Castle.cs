@@ -38,9 +38,6 @@ namespace CrowdDefense.Entities
 
         private enum DamageStage { Intact, Cracked, Ruined, Critical }
 
-        // Shake throttle — avoid spam when hit repeatedly within 100 ms
-        private float         _lastShakeTime = -1f;
-
         // Overrun detection — 3+ hits in 3 s triggers red vignette + alert, 10 s cooldown
         private const int   OverrunHitThreshold  = 3;
         private const float OverrunWindowSec      = 3f;
@@ -240,57 +237,6 @@ namespace CrowdDefense.Entities
             AudioController.Instance?.Play3D("castle_hit", transform.position);
             VfxPool.Instance?.SpawnHitFlash(transform);
             CheckOverrun();
-
-            // Screen shake — tiered by damage magnitude, throttled to once every 100 ms
-            if (Time.timeScale > 0f && Time.unscaledTime - _lastShakeTime > 0.1f)
-            {
-                _lastShakeTime = Time.unscaledTime;
-                var jc = JuiceConfig.Get();
-
-                float shakeAmp;
-                float shakeDur;
-                float flashAlpha;
-                int   flashMs;
-
-                if (actualDmg > 100)
-                {
-                    // Boss hit — heavy rumble
-                    shakeAmp   = 0.8f;
-                    shakeDur   = 0.6f;
-                    flashAlpha = 0.65f;
-                    flashMs    = 300;
-                    AudioController.Instance?.PlayPitched("castle_impact_heavy", 1.2f, 0.8f);
-                }
-                else if (actualDmg >= 50)
-                {
-                    // Heavy hit
-                    shakeAmp   = 0.4f;
-                    shakeDur   = 0.4f;
-                    flashAlpha = 0.45f;
-                    flashMs    = 250;
-                    AudioController.Instance?.PlayPitched("castle_impact_heavy", 1.2f, 0.8f);
-                }
-                else if (actualDmg >= 10)
-                {
-                    // Medium hit
-                    shakeAmp   = 0.2f;
-                    shakeDur   = 0.25f;
-                    flashAlpha = jc?.CastleHitFlashWarnAlpha ?? 0.3f;
-                    flashMs    = jc?.CastleHitFlashWarnMs ?? 200;
-                    AudioController.Instance?.Play("castle_damaged", 0.85f);
-                }
-                else
-                {
-                    // Light hit (dmg < 10)
-                    shakeAmp   = 0.08f;
-                    shakeDur   = 0.15f;
-                    flashAlpha = jc?.CastleHitFlashAlpha ?? 0.1f;
-                    flashMs    = jc?.CastleHitFlashMs ?? 100;
-                }
-
-                CameraController.Instance?.Shake(shakeAmp, shakeDur);
-                JuiceFX.Instance?.Flash(new Color(1f, 0.2f, 0.2f, flashAlpha), flashMs);
-            }
 
             if (HP == 0)
             {
