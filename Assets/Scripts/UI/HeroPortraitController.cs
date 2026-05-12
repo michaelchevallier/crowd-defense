@@ -399,7 +399,7 @@ namespace CrowdDefense.UI
             }
 
             // Title row: avatar name + level
-            var title = new Label(HeroType.AvatarName(
+            var title = new Label(HeroType.AvatarLabel(
                 System.Enum.TryParse<HeroAvatar>(PlayerPrefs.GetString("hero_avatar", ""), out var av) ? av : HeroAvatar.Warrior));
             title.style.color    = new StyleColor(new Color(1f, 0.75f, 0.2f));
             title.style.fontSize = new StyleLength(11f);
