@@ -58,6 +58,8 @@ namespace CrowdDefense.Data
 
         [Header("Interest bank (D1-01 §3.5)")]
         public float BankInterestRate = 0.05f;
+        [Tooltip("Max gold awarded as interest in a single wave clear (D1-01 V4 parity).")]
+        public int BankInterestGainCap = 500;
 
         [Header("Wave Variance")]
         public float WaveSpawnVariance = 0.15f;

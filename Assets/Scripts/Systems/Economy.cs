@@ -12,7 +12,10 @@ namespace CrowdDefense.Systems
     {
         public int Gold { get; private set; }
 
-        // Interest bank state (D1-01 §3.5)
+        // Interest bank state (D1-01 §3.5 / V4 parity)
+        // Bank is a separate gold pool; interest earned per wave-clear is transferred into it,
+        // then immediately paid out to Gold (bank acts as an accounting ledger, not a locked vault).
+        public int Bank { get; private set; }
         public bool CastleDamagedThisWave { get; private set; }
         public int TotalBankAccumulated { get; private set; }
 
@@ -87,11 +90,29 @@ namespace CrowdDefense.Systems
             CastleDamagedThisWave = false;
         }
 
+        // Moves amount into the bank pool (does not affect Gold).
+        public void TransferToBank(int amount)
+        {
+            if (amount <= 0) return;
+            Bank += amount;
+        }
+
+        // Withdraws amount from Bank into Gold.  Clamps to available balance.
+        public void WithdrawFromBank(int amount)
+        {
+            if (amount <= 0) return;
+            int actual = Mathf.Min(amount, Bank);
+            if (actual <= 0) return;
+            Bank -= actual;
+            AddGold(actual);
+        }
+
         // Called by WaveManager when a wave is cleared
         public void ProcessInterestBank()
         {
             if (CastleDamagedThisWave)
             {
+                Bank = 0;
                 TotalBankAccumulated = 0;
                 OnBankTick?.Invoke(0, 0);
 #if UNITY_EDITOR
@@ -100,18 +121,21 @@ namespace CrowdDefense.Systems
             }
             else
             {
-                // D1-01 §3.5: +5% gold, capped at +50¢ per break
-                int gain = Mathf.Min(Mathf.RoundToInt(Gold * BalanceConfig.Get().BankInterestRate), 50);
+                // D1-01 §3.5 V4: +5% of current gold, capped at BankInterestGainCap per wave
+                var cfg = BalanceConfig.Get();
+                int gain = Mathf.Min(Mathf.RoundToInt(Gold * cfg.BankInterestRate), cfg.BankInterestGainCap);
                 if (gain > 0)
                 {
+                    TransferToBank(gain);
                     TotalBankAccumulated += gain;
-                    AddGold(gain);
+                    // Pay out immediately: bank → gold
+                    WithdrawFromBank(gain);
                     OnBankTick?.Invoke(gain, TotalBankAccumulated);
 
                     Vector3 popupPos = Castle.Instance != null
                         ? Castle.Instance.transform.position + Vector3.up * 1.5f
                         : Vector3.up * 1.5f;
-                    CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(gain, popupPos);
+                    CrowdDefense.UI.FloatingPopupController.Instance?.SpawnBankInterest(gain, popupPos);
 #if UNITY_EDITOR
                     Debug.Log($"[Economy] Interest bank +{gain}¢ (total accumulated={TotalBankAccumulated})");
 #endif

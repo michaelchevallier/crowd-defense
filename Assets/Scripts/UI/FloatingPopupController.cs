@@ -59,6 +59,9 @@ namespace CrowdDefense.UI
         public void SpawnCoin(int amount, Vector3 worldPos)
             => Spawn($"+{amount}g", "popup-coin", worldPos);
 
+        public void SpawnBankInterest(int amount, Vector3 worldPos)
+            => Spawn($"+{amount} interet banque", "popup-bank", worldPos);
+
         public void SpawnHeal(int amount, Vector3 worldPos)
             => Spawn($"+{amount}", "popup-heal", worldPos);
 
