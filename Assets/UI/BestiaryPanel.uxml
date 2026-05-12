@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="BestiaryPanel.uss" />
+    <ui:VisualElement name="bestiary-root" class="bst-root hidden">
+        <ui:VisualElement name="bestiary-panel" class="bst-panel">
+            <ui:Label text="Bestiaire" name="bestiary-title" class="bst-panel-title" />
+            <ui:ScrollView name="bestiary-scroll" class="bst-scroll"
+                           vertical-scroller-visibility="AlwaysVisible"
+                           horizontal-scroller-visibility="Hidden">
+                <ui:VisualElement name="bestiary-grid" class="bst-grid" />
+            </ui:ScrollView>
+            <ui:Button text="Retour" name="btn-bestiary-back" class="bst-back-btn" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

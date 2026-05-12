@@ -89,15 +89,23 @@ namespace CrowdDefense.Systems
                     _warned.Add(clipKey);
                     Debug.LogWarning($"[AudioController] Missing clip: {clipKey}");
                 }
-                StartCoroutine(PlayProceduralBeepCo(volMul));
+                StartCoroutine(PlayProceduralBeepCo(clipKey, volMul));
             }
         }
 
-        private IEnumerator PlayProceduralBeepCo(float volMul)
+        private static float FreqForKey(string key)
+        {
+            // 220–1760 Hz spread across 3 octaves, deterministic per name
+            uint h = 2166136261u;
+            foreach (char c in key) h = (h ^ c) * 16777619u;
+            return 220f * Mathf.Pow(2f, (h % 64u) / 21f);
+        }
+
+        private IEnumerator PlayProceduralBeepCo(string clipKey, float volMul)
         {
             if (this == null) yield break;
             const int sampleRate = 44100;
-            const float freq = 880f;
+            float freq = FreqForKey(clipKey);
             const float duration = 0.07f;
             int samples = Mathf.RoundToInt(sampleRate * duration);
             var data = new float[samples];

@@ -19,6 +19,10 @@ namespace CrowdDefense.UI
             var titleLabel = root.Q<Label>("menu-title-label");
             if (titleLabel != null) titleLabel.text = L.Get("menu.game_title");
 
+            var btnBestiary = root.Q<Button>("btn-open-bestiary");
+            if (btnBestiary != null)
+                btnBestiary.clicked += () => BestiaryPanel.Instance?.Show();
+
             var btnAchievements = root.Q<Button>("btn-open-achievements");
             if (btnAchievements != null)
                 btnAchievements.clicked += () => AchievementsPanel.Instance?.Show();

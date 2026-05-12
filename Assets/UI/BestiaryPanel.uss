@@ -1,0 +1,140 @@
+.bst-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    align-items: center;
+    justify-content: center;
+}
+
+.bst-root.hidden {
+    display: none;
+}
+
+.bst-panel {
+    width: 700px;
+    height: 82%;
+    background-color: rgb(12, 18, 30);
+    border-radius: 12px;
+    border-width: 2px;
+    border-color: rgba(120, 200, 255, 0.35);
+    padding: 28px 32px;
+    align-items: center;
+}
+
+.bst-panel-title {
+    color: rgb(120, 200, 255);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    margin-bottom: 16px;
+}
+
+.bst-scroll {
+    flex-grow: 1;
+    width: 100%;
+    overflow: hidden;
+}
+
+.bst-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 4px;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+/* === Card === */
+.bst-card {
+    width: 140px;
+    height: 160px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.10);
+    margin: 6px;
+    padding: 10px 8px 8px 8px;
+    align-items: center;
+    flex-direction: column;
+}
+
+.bst-card--unlocked {
+    background-color: rgba(120, 200, 255, 0.07);
+    border-color: rgba(120, 200, 255, 0.40);
+}
+
+.bst-card--flash {
+    border-color: rgb(255, 210, 63);
+    background-color: rgba(255, 210, 63, 0.15);
+}
+
+.bst-portrait {
+    width: 56px;
+    height: 56px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.bst-name {
+    color: rgb(220, 230, 245);
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    white-space: normal;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.bst-stats {
+    color: rgba(160, 180, 210, 0.85);
+    font-size: 9px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    white-space: normal;
+    width: 100%;
+    margin-bottom: 4px;
+}
+
+.bst-kills {
+    color: rgba(120, 200, 255, 0.9);
+    font-size: 10px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    margin-top: auto;
+}
+
+.bst-locked {
+    color: rgba(160, 160, 170, 0.55);
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    white-space: normal;
+    width: 100%;
+    flex-grow: 1;
+    margin-top: 8px;
+}
+
+.bst-back-btn {
+    margin-top: 18px;
+    width: 140px;
+    height: 40px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgba(120, 200, 255, 0.45);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: white;
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    cursor: link;
+}
+
+.bst-back-btn:hover {
+    background-color: rgba(120, 200, 255, 0.18);
+    border-color: rgb(120, 200, 255);
+}
