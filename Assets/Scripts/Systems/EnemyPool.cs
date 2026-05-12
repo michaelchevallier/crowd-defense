@@ -68,6 +68,21 @@ namespace CrowdDefense.Systems
         // Legacy: kept so existing code that calls Release(e) still compiles.
         public void Release(Enemy e) => ReleaseTyped(e);
 
+        // Prewarm a per-type sub-pool before a wave starts to avoid mid-wave Instantiate spikes.
+        // count is capped internally: ≤ 2 for boss-tagged types, ≤ 30 for regular mobs.
+        public void PrewarmType(EnemyType type, int requestedCount)
+        {
+            bool isBoss = type.Id.Contains("boss", System.StringComparison.OrdinalIgnoreCase);
+            int cap = isBoss ? 2 : 30;
+            int count = Mathf.Min(requestedCount, cap);
+
+            var pool = GetOrCreatePool(type.Id);
+            // Allocate count instances into the pool without activating them in-scene.
+            var tmp = new Enemy[count];
+            for (int i = 0; i < count; i++) tmp[i] = pool.Get();
+            for (int i = 0; i < count; i++) pool.Release(tmp[i]);
+        }
+
         private ObjectPool<Enemy> GetOrCreatePool(string typeId)
         {
             if (_pools.TryGetValue(typeId, out var existing)) return existing;
@@ -78,7 +93,7 @@ namespace CrowdDefense.Systems
                 actionOnRelease: OnRelease,
                 actionOnDestroy: OnPoolDestroy,
                 collectionCheck: false,
-                defaultCapacity: 20,
+                defaultCapacity: 50,
                 maxSize: 100
             );
             _pools[typeId] = newPool;

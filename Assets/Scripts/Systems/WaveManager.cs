@@ -157,6 +157,16 @@ namespace CrowdDefense.Systems
                 int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul * countMul * _specialCountMul));
                 for (int i = 0; i < count; i++) list.Add(entry.type);
             }
+            // Prewarm per-type sub-pools before wave starts — avoids mid-wave Instantiate spikes.
+            if (EnemyPool.Instance != null)
+            {
+                foreach (var entry in wave.entries)
+                {
+                    if (entry.type == null) continue;
+                    int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * swarmMul * countMul * _specialCountMul));
+                    EnemyPool.Instance.PrewarmType(entry.type, count);
+                }
+            }
             // Fisher-Yates shuffle
             var rng = new System.Random();
             for (int i = list.Count - 1; i > 0; i--)
