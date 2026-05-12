@@ -96,6 +96,11 @@ namespace CrowdDefense.Entities
             new Color(0.7f, 0f,   1f),   // armor break — purple
         };
 
+        // ── Ground decals (slow cyan / burn orange quads at feet) ────────────
+        private GameObject?  _decalSlow;
+        private GameObject?  _decalBurn;
+        private int          _decalFrame = 0;
+
         // ── Boss aura (pulsing ring child GO) ─────────────────────────────────
         private GameObject?  _bossAuraGO;
         private MeshRenderer? _bossAuraMR;
@@ -112,6 +117,7 @@ namespace CrowdDefense.Entities
         private bool  _summonHordePending = false;
         private float _summonHordeTime  = 0f;
         private float _damageMul        = 1f;   // Phase 4 enrage: outgoing castle damage ×2
+        private float _diffRewardMul    = 1f;   // Difficulty inverse reward mul, cached at Init
         private float _aoePulseTimer    = 0f;   // Phase 4: AOE pulse every 3s
 
         // ── HP bar (world-space billboard) ────────────────────────────────────
@@ -326,6 +332,7 @@ namespace CrowdDefense.Entities
             _summonHordePending = false;
             _summonHordeTime  = 0f;
             _damageMul        = 1f;
+            _diffRewardMul    = 1f;
             _aoePulseTimer    = 0f;
             _dustTimer        = 0f;
             _fieryTimer       = 0f;
@@ -343,10 +350,13 @@ namespace CrowdDefense.Entities
             // D1-04 mob pressure: scale HP and speed by world pressure
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
             var pressure = BalanceConfig.Get().GetPressure(currentWorld);
-            hp       = type.Hp * pressure.mobHpMul;
+            float diffMul = BalanceConfig.DifficultyHpDmgMul();
+            hp       = type.Hp * pressure.mobHpMul * diffMul;
             maxHp    = hp;
             pressureSpeedMul = pressure.mobSpeedMul;
-            shieldHp = type.ShieldHP;
+            shieldHp = type.ShieldHP * diffMul;
+            _damageMul     = diffMul;
+            _diffRewardMul = BalanceConfig.DifficultyRewardMul();
             pathIdx  = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
             transform.localScale = Vector3.one * type.Scale;
@@ -798,6 +808,7 @@ namespace CrowdDefense.Entities
             UpdateFireBreath();
             UpdateFreeze();
             UpdateDebuffIcons();
+            UpdateGroundDecals();
 
             if (_dying)
             {
@@ -984,7 +995,7 @@ namespace CrowdDefense.Entities
                 if (_aoePulseTimer <= 0f)
                 {
                     _aoePulseTimer = 3f;
-                    EmitAoePulse();
+                    TelegraphAoePulse();
                 }
             }
 
@@ -1325,6 +1336,47 @@ namespace CrowdDefense.Entities
             pressureSpeedMul *= speedMul;
         }
 
+        private void TelegraphAoePulse()
+        {
+            if (_dying || IsDead) return;
+            StartCoroutine(AoeTelegraphCoroutine());
+        }
+
+        private System.Collections.IEnumerator AoeTelegraphCoroutine()
+        {
+            const float TelegraphDuration = 0.8f;
+            const float AoePulseRadius    = 4f;
+
+            // spawn flat red quad at ground level
+            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            Object.Destroy(quad.GetComponent<Collider>());
+            quad.transform.position = new Vector3(transform.position.x, 0.05f, transform.position.z);
+            quad.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
+            quad.transform.localScale = new Vector3(AoePulseRadius * 2f, AoePulseRadius * 2f, 1f);
+
+            var mr  = quad.GetComponent<MeshRenderer>();
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            mat.color = new Color(1f, 0f, 0f, 0.4f);
+            mat.SetFloat("_Surface", 1f);       // transparent surface type
+            mat.SetFloat("_Blend",   2f);        // alpha blend
+            mat.renderQueue = 3000;
+            mr.material = mat;
+
+            float elapsed = 0f;
+            while (elapsed < TelegraphDuration)
+            {
+                if (_dying || IsDead) { Object.Destroy(quad); yield break; }
+                float t     = (elapsed % 0.2f) / 0.2f;
+                float alpha = Mathf.Lerp(0.4f, 0.7f, Mathf.PingPong(t * 2f, 1f));
+                mat.color = new Color(1f, 0f, 0f, alpha);
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            Object.Destroy(quad);
+            EmitAoePulse();
+        }
+
         private void EmitAoePulse()
         {
             if (_dying || IsDead) return;
@@ -1373,7 +1425,7 @@ namespace CrowdDefense.Entities
                 float coinMul  = CoinPullManager.Instance?.GetCoinMulAt(transform.position) ?? 1f;
                 float streakMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
                 float eliteMul = _isElite ? 3f : 1f;
-                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul * eliteMul));
+                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul * eliteMul * _diffRewardMul));
 #if UNITY_EDITOR
                 Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} streakMul={streakMul:F2} reward={reward}");
 #endif
