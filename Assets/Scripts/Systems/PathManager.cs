@@ -168,37 +168,37 @@ namespace CrowdDefense.Systems
                 }
             }
 
-            // Draw all paths with distinct colors
+            // Draw all paths colored per portal index
             if (Application.isPlaying)
             {
                 for (int pi = 0; pi < Paths.Count; pi++)
                 {
                     var wp = Paths[pi];
-                    Gizmos.color = PathGizmoColor(pi);
+                    int portalIdx = pi < PathsMeta.Count ? PathsMeta[pi].PortalIdx : pi;
+                    Gizmos.color = PortalGizmoColor(portalIdx);
                     for (int i = 0; i < wp.Count - 1; i++)
-                        Gizmos.DrawLine(wp[i] + Vector3.up * 0.1f, wp[i + 1] + Vector3.up * 0.1f);
+                        Gizmos.DrawLine(wp[i] + Vector3.up * 0.2f, wp[i + 1] + Vector3.up * 0.2f);
                     if (wp.Count > 0)
                     {
-                        Gizmos.color = Color.red;
-                        Gizmos.DrawSphere(wp[0] + Vector3.up * 0.1f, grid.CellSize * 0.25f);
-                        Gizmos.color = Color.blue;
-                        Gizmos.DrawSphere(wp[wp.Count - 1] + Vector3.up * 0.1f, grid.CellSize * 0.25f);
+                        Gizmos.DrawSphere(wp[0] + Vector3.up * 0.2f, grid.CellSize * 0.25f);
+                        Gizmos.DrawSphere(wp[wp.Count - 1] + Vector3.up * 0.2f, grid.CellSize * 0.25f);
                     }
                 }
             }
             else
             {
-                // Editor preview : first path only
-                var waypoints = ComputePathEditor(grid, 0, 0);
-                Gizmos.color = Color.yellow;
-                for (int i = 0; i < waypoints.Count - 1; i++)
-                    Gizmos.DrawLine(waypoints[i] + Vector3.up * 0.1f, waypoints[i + 1] + Vector3.up * 0.1f);
-                if (waypoints.Count > 0)
+                // Editor preview : all portals × first castle
+                for (int pi = 0; pi < grid.Portals.Count; pi++)
                 {
-                    Gizmos.color = Color.red;
-                    Gizmos.DrawSphere(waypoints[0], grid.CellSize * 0.3f);
-                    Gizmos.color = Color.blue;
-                    Gizmos.DrawSphere(waypoints[waypoints.Count - 1], grid.CellSize * 0.3f);
+                    var waypoints = ComputePathEditor(grid, pi, 0);
+                    Gizmos.color = PortalGizmoColor(pi);
+                    for (int i = 0; i < waypoints.Count - 1; i++)
+                        Gizmos.DrawLine(waypoints[i] + Vector3.up * 0.2f, waypoints[i + 1] + Vector3.up * 0.2f);
+                    if (waypoints.Count > 0)
+                    {
+                        Gizmos.DrawSphere(waypoints[0] + Vector3.up * 0.2f, grid.CellSize * 0.3f);
+                        Gizmos.DrawSphere(waypoints[waypoints.Count - 1] + Vector3.up * 0.2f, grid.CellSize * 0.3f);
+                    }
                 }
             }
         }
@@ -214,13 +214,14 @@ namespace CrowdDefense.Systems
             return list;
         }
 
-        private static Color PathGizmoColor(int idx) => idx switch
+        private static Color PortalGizmoColor(int portalIdx) => portalIdx switch
         {
-            0 => Color.yellow,
-            1 => Color.cyan,
-            2 => Color.magenta,
-            3 => Color.green,
-            _ => Color.white,
+            0 => Color.red,
+            1 => Color.blue,
+            2 => Color.green,
+            3 => Color.yellow,
+            4 => Color.magenta,
+            _ => Color.cyan,
         };
 
         private static Color CellGizmoColor(char ch) => ch switch
