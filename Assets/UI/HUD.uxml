@@ -254,6 +254,13 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <!-- Skill tooltip (shown on hover, positioned by HeroSkillBarController) -->
+        <ui:VisualElement name="skill-tooltip" class="skill-tooltip hidden">
+            <ui:Label name="skill-tooltip-name" class="skill-tooltip-name" text="" />
+            <ui:Label name="skill-tooltip-cd" class="skill-tooltip-cd" text="" />
+            <ui:Label name="skill-tooltip-desc" class="skill-tooltip-desc" text="" />
+        </ui:VisualElement>
+
         <!-- Virtual Joystick (D5-01 — portrait mobile, moitie gauche au-dessus toolbar) -->
         <!-- Rendu visible par VirtualJoystickController.cs sur Device.IsMobile + portrait -->
         <ui:VisualElement name="joystick-zone" class="joystick-zone hidden">

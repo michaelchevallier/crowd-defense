@@ -335,6 +335,16 @@ namespace CrowdDefense.UI
                     ["tip.12"] = "Place the Fan tower at chokepoints to push enemies back onto the path.",
                     ["tip.13"] = "Hero ultimate charges faster when the hero is close to enemies.",
                     ["tip.14"] = "Bank gold between waves — interest is paid at wave end if the castle took no damage.",
+
+                    // ── Hero skill bar tooltips ────────────────────────────────────
+                    ["skill.q.name"] = "Attack",
+                    ["skill.q.desc"] = "Fires a projectile at the nearest enemy. Cooldown reduces with level.",
+                    ["skill.w.name"] = "—",
+                    ["skill.w.desc"] = "Reserved — future skill slot.",
+                    ["skill.e.name"] = "Ultimate",
+                    ["skill.e.desc"] = "Unleashes a powerful burst. Charges faster near enemies.",
+                    ["skill.tooltip.cooldown"] = "CD: {0:F1}s",
+                    ["skill.tooltip.ready"] = "Ready",
                 },
                 ["fr"] = new()
                 {
@@ -654,6 +664,16 @@ namespace CrowdDefense.UI
                     ["tip.12"] = "Placez la tour Ventilateur aux goulots d'étranglement pour repousser les ennemis sur le chemin.",
                     ["tip.13"] = "L'ultime du héros se charge plus vite quand il est proche des ennemis.",
                     ["tip.14"] = "Accumulez de l'or entre les vagues — les intérêts sont versés en fin de vague si le château n'a pas subi de dégâts.",
+
+                    // ── Hero skill bar tooltips ────────────────────────────────────
+                    ["skill.q.name"] = "Attaque",
+                    ["skill.q.desc"] = "Tire un projectile sur l'ennemi le plus proche. Le délai diminue avec le niveau.",
+                    ["skill.w.name"] = "—",
+                    ["skill.w.desc"] = "Réservé — compétence future.",
+                    ["skill.e.name"] = "Ultime",
+                    ["skill.e.desc"] = "Déclenche une salve puissante. Se charge plus vite près des ennemis.",
+                    ["skill.tooltip.cooldown"] = "CD : {0:F1}s",
+                    ["skill.tooltip.ready"] = "Prêt",
                 },
                 ["es"] = new()
                 {

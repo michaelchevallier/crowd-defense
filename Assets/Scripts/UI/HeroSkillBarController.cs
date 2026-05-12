@@ -19,6 +19,7 @@ namespace CrowdDefense.UI
     {
         private static readonly string[] SlotNames  = { "skill-slot-q", "skill-slot-w", "skill-slot-e" };
         private static readonly string[] KeyLabels  = { "Q", "W", "E" };
+        private static readonly string[] SkillIds   = { "q", "w", "e" };
 
         // Pulse animation constants (golden glow when skill is ready)
         private const float PulseScalePeak  = 1.10f;
@@ -32,11 +33,22 @@ namespace CrowdDefense.UI
         private IVisualElementScheduledItem?[] _pulseItems = new IVisualElementScheduledItem?[3];
         private bool[]                        _wasReady   = new bool[3];
 
+        private VisualElement? _tooltip;
+        private Label?         _tooltipName;
+        private Label?         _tooltipCd;
+        private Label?         _tooltipDesc;
+
         private Hero? _hero;
 
         private void Start()
         {
             var root = GetComponent<UIDocument>().rootVisualElement;
+
+            _tooltip     = root.Q<VisualElement>("skill-tooltip");
+            _tooltipName = _tooltip?.Q<Label>("skill-tooltip-name");
+            _tooltipCd   = _tooltip?.Q<Label>("skill-tooltip-cd");
+            _tooltipDesc = _tooltip?.Q<Label>("skill-tooltip-desc");
+
             for (int i = 0; i < 3; i++)
             {
                 _slots[i]    = root.Q<VisualElement>(SlotNames[i]);
@@ -48,11 +60,13 @@ namespace CrowdDefense.UI
                     _keyLabels[i]!.text = KeyLabels[i];
             }
 
-            // Register click callbacks
+            // Register click + hover callbacks
             for (int idx = 0; idx < 3; idx++)
             {
                 int captured = idx;
                 _slots[captured]?.RegisterCallback<ClickEvent>(_ => TriggerSlot(captured));
+                _slots[captured]?.RegisterCallback<MouseEnterEvent>(_ => ShowTooltip(captured));
+                _slots[captured]?.RegisterCallback<MouseLeaveEvent>(_ => HideTooltip());
             }
         }
 
@@ -125,6 +139,41 @@ namespace CrowdDefense.UI
                 }
                 _wasReady[index] = nowReady;
             }
+        }
+
+        private void ShowTooltip(int index)
+        {
+            if (_tooltip == null) return;
+
+            string id = SkillIds[index];
+            if (_tooltipName != null)
+                _tooltipName.text = L.Get($"skill.{id}.name");
+
+            if (_tooltipCd != null)
+            {
+                float remaining = _hero?.GetCooldownRemaining(index) ?? 0f;
+                _tooltipCd.text = remaining > 0.01f
+                    ? L.Get("skill.tooltip.cooldown", remaining)
+                    : L.Get("skill.tooltip.ready");
+            }
+
+            if (_tooltipDesc != null)
+                _tooltipDesc.text = L.Get($"skill.{id}.desc");
+
+            // Position tooltip above the hovered slot
+            if (_slots[index] != null)
+            {
+                var slotRect = _slots[index]!.worldBound;
+                _tooltip.style.left = new StyleLength(new Length(slotRect.x, LengthUnit.Pixel));
+                _tooltip.style.bottom = new StyleLength(new Length(Screen.height - slotRect.y + 8f, LengthUnit.Pixel));
+            }
+
+            _tooltip.RemoveFromClassList("hidden");
+        }
+
+        private void HideTooltip()
+        {
+            _tooltip?.AddToClassList("hidden");
         }
 
         private void StartPulse(int index)

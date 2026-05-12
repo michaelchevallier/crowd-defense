@@ -1479,6 +1479,40 @@
     bottom: 160px;
 }
 
+/* Skill tooltip (shown on hover over a skill slot) */
+.skill-tooltip {
+    position: absolute;
+    background-color: rgba(12, 12, 20, 0.90);
+    border-width: 1px;
+    border-color: rgba(150, 150, 170, 0.55);
+    border-radius: 6px;
+    padding: 8px 12px;
+    min-width: 160px;
+    max-width: 220px;
+}
+
+.skill-tooltip-name {
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgb(240, 210, 80);
+    margin-bottom: 3px;
+}
+
+.skill-tooltip-cd {
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(200, 200, 220, 0.85);
+    margin-bottom: 4px;
+}
+
+.skill-tooltip-desc {
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(180, 180, 200, 0.80);
+    white-space: normal;
+}
+
 /* Synergy HUD panel — top-right, below boss banner */
 .synergy-hud-panel {
     position: absolute;
