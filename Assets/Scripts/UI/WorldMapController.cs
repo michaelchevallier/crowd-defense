@@ -24,6 +24,24 @@ namespace CrowdDefense.UI
             "worldmap.world8",
         };
 
+        private static readonly Color[] WorldThemeColors =
+        {
+            new Color(0.27f, 0.62f, 0.22f), // W1 Plaine  — vert
+            new Color(0.78f, 0.55f, 0.20f), // W2 Desert  — sable
+            new Color(0.18f, 0.48f, 0.78f), // W3 Ocean   — bleu
+            new Color(0.85f, 0.22f, 0.12f), // W4 Volcan  — rouge
+            new Color(0.58f, 0.38f, 0.68f), // W5 Foret   — mauve
+            new Color(0.75f, 0.88f, 0.95f), // W6 Glace   — bleu pale
+            new Color(0.38f, 0.25f, 0.12f), // W7 Marais  — brun
+            new Color(0.12f, 0.12f, 0.18f), // W8 Nebula  — noir bleu
+        };
+
+        private static readonly string[] WorldThemeNames =
+        {
+            "Plaine", "Desert", "Ocean", "Volcan",
+            "Foret",  "Glace",  "Marais", "Nebula",
+        };
+
         private VisualElement? _root;
         private VisualElement? _levelGrid;
         private Label?         _starsLabel;
@@ -127,7 +145,7 @@ namespace CrowdDefense.UI
                 bool isBoss     = l == LevelsPerWorld;
                 LevelData? data = _registry?.FindById(levelId);
 
-                var tile = BuildLevelTile(levelId, l, unlocked, cleared, stars, isShowcase, isBoss, data);
+                var tile = BuildLevelTile(levelId, l, worldIndex, unlocked, cleared, stars, isShowcase, isBoss, data);
                 _levelGrid.Add(tile);
             }
 
@@ -137,6 +155,7 @@ namespace CrowdDefense.UI
         private VisualElement BuildLevelTile(
             string levelId,
             int levelNum,
+            int worldIndex,
             bool unlocked,
             bool cleared,
             int stars,
@@ -155,6 +174,16 @@ namespace CrowdDefense.UI
             var numLabel = new Label(levelNum.ToString());
             numLabel.AddToClassList("tile-number");
             tile.Add(numLabel);
+
+            var thumb = new VisualElement();
+            thumb.AddToClassList("tile-thumb");
+            int themeIdx = Mathf.Clamp(worldIndex - 1, 0, WorldThemeColors.Length - 1);
+            Color baseColor = unlocked ? WorldThemeColors[themeIdx] : new Color(0.25f, 0.25f, 0.25f);
+            thumb.style.backgroundColor = new StyleColor(baseColor);
+            var themeLabel = new Label(unlocked ? WorldThemeNames[themeIdx] : "???");
+            themeLabel.AddToClassList("tile-thumb-label");
+            thumb.Add(themeLabel);
+            tile.Add(thumb);
 
             if (isBoss)
             {
