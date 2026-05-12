@@ -28,7 +28,7 @@ MonoBehaviour:
   - 000000D00000D00
   cellSize: 4
   startCoins: 125
-  overrideCastleHP: 1
+  overrideCastleHP: 0
   castleHPOverride: 150
   briefing: "Ils avancent par le zigzag ! Couvre chaque virage avec tes tours."
   cutsceneIdAtStart:

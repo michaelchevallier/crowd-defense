@@ -30,7 +30,7 @@ MonoBehaviour:
   - 0000000000000000
   cellSize: 4
   startCoins: 130
-  overrideCastleHP: 1
+  overrideCastleHP: 0
   castleHPOverride: 158
   briefing: "Un mini-boss approche en vague 6 ! Construis avant qu'il arrive."
   cutsceneIdAtStart:

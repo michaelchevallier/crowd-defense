@@ -27,7 +27,7 @@ MonoBehaviour:
   - T0T00T00000T
   cellSize: 4
   startCoins: 94
-  overrideCastleHP: 1
+  overrideCastleHP: 0
   castleHPOverride: 130
   briefing: ""
   cutsceneIdAtStart: world2

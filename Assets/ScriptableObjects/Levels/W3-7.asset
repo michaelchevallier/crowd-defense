@@ -28,7 +28,7 @@ MonoBehaviour:
   - R000D000R00D000R
   cellSize: 4
   startCoins: 159
-  overrideCastleHP: 1
+  overrideCastleHP: 0
   castleHPOverride: 180
   allowMultiMagnet: 0
   waveEvents: []
