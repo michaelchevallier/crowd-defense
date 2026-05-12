@@ -22,30 +22,30 @@ namespace CrowdDefense.Editor
 
             Build("elementaire", "Elementaire",
                 "DPS et magie naturelle. Foudre, feu, glace — la puissance des elements.",
-                new Color(0.20f, 0.75f, 0.30f), 0);
+                new Color(0.20f, 0.75f, 0.30f), 0, "");
 
             Build("mecanique",  "Mecanique",
                 "Ingenerie et fortification. Tours plus robustes, synergies d'aura.",
-                new Color(0.65f, 0.50f, 0.20f), 100);
+                new Color(0.65f, 0.50f, 0.20f), 100, "");
 
             Build("mystique",   "Mystique",
                 "Vide et magie noire. Piercing, ricochet, explosions AoE.",
-                new Color(0.55f, 0.20f, 0.85f), 200);
+                new Color(0.55f, 0.20f, 0.85f), 200, "");
 
             Build("bestiaire",  "Bestiaire",
                 "Sang et instinct. Lifesteal, vitesse, attaques en chaine.",
-                new Color(0.85f, 0.20f, 0.20f), 300);
+                new Color(0.85f, 0.20f, 0.20f), 300, "");
 
             Build("strategie",  "Strategie",
                 "Economie et controle. Gains de pieces, auras de tour, opportunisme.",
-                new Color(0.90f, 0.75f, 0.10f), 400);
+                new Color(0.90f, 0.75f, 0.10f), 400, "");
 
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
             Debug.Log("[BuildSchoolAssets] 5 schools generees dans Assets/Resources/Schools.");
         }
 
-        private static void Build(string id, string displayName, string description, Color theme, int unlockCost)
+        private static void Build(string id, string displayName, string description, Color theme, int unlockCost, string starterTowerType)
         {
             string path = $"{k_Dir}/School_{id}.asset";
             var def = AssetDatabase.LoadAssetAtPath<SchoolDef>(path);
@@ -57,6 +57,7 @@ namespace CrowdDefense.Editor
             def.description  = description;
             def.theme        = theme;
             def.unlockCost   = unlockCost;
+            def.starterTowerType = starterTowerType;
 
             if (isNew) AssetDatabase.CreateAsset(def, path);
             else       EditorUtility.SetDirty(def);
