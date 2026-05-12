@@ -6,7 +6,6 @@ using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using CrowdDefense.Visual;
-using UnityEngine.Rendering.Universal;
 
 namespace CrowdDefense.Entities
 {
@@ -1012,25 +1011,45 @@ namespace CrowdDefense.Entities
             if (_rangeRing != null)
                 Destroy(_rangeRing);
 
-            var go = new GameObject("RangeRing");
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "RangeRing";
             go.transform.SetParent(transform);
-            // Projector shoots along local -Z; rotate 90° on X so it points straight down.
-            go.transform.localPosition = new Vector3(0f, 2f, 0f);
+            go.transform.localPosition = new Vector3(0f, 0.04f, 0f);
             go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            go.transform.localScale    = Vector3.one;
-
-            var dp = go.AddComponent<DecalProjector>();
             float diameter = range * 2f;
-            dp.size        = new Vector3(diameter, diameter, 4f);
-            dp.fadeFactor  = 0.55f;
-            dp.scaleMode   = DecalScaleMode.ScaleInvariant;
+            go.transform.localScale = new Vector3(diameter, diameter, 1f);
+            Object.Destroy(go.GetComponent<Collider>());
 
-            var mat = new Material(Shader.Find("Shader Graphs/Decal") ?? Shader.Find("Universal Render Pipeline/Decal"));
-            if (mat.shader != null)
+            const int texSize = 64;
+            var tex = new Texture2D(texSize, texSize, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color32[texSize * texSize];
+            float half = texSize * 0.5f;
+            for (int y = 0; y < texSize; y++)
+            for (int x = 0; x < texSize; x++)
             {
-                mat.SetColor("_BaseColor", new Color(0.4f, 0.87f, 1f, 0.55f));
-                dp.material = mat;
+                float dx = (x - half) / half;
+                float dy = (y - half) / half;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                // smoothstep fade : opaque near center, transparent at edge
+                float alpha = Mathf.SmoothStep(1f, 0f, dist) * 0.4f;
+                byte a = (byte)Mathf.RoundToInt(Mathf.Clamp01(alpha) * 255f);
+                pixels[y * texSize + x] = new Color32(102, 222, 255, a);
             }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.mainTexture = tex;
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3000;
+            }
+            var rend = go.GetComponent<Renderer>();
+            if (rend != null) rend.material = mat;
 
             go.SetActive(false);
             _rangeRing = go;
