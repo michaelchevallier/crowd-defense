@@ -7,7 +7,6 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     // Mounted on a UIDocument GameObject that holds Shop.uxml.
-    // TODO: WorldMapController should call Show() after level victory, or add a shop button on the map.
     [RequireComponent(typeof(UIDocument))]
     public class ShopController : MonoBehaviour
     {
