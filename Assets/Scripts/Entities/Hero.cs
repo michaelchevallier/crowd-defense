@@ -469,6 +469,7 @@ namespace CrowdDefense.Entities
                 var levelUpPos = transform.position;
                 VfxPool.Instance?.SpawnLevelUp(levelUpPos + Vector3.up * 1.5f);
                 VfxPool.Instance?.SpawnLevelUp(levelUpPos + Vector3.up * 1.8f);
+                VfxPool.Instance?.SpawnConfetti(levelUpPos + Vector3.up * 1.5f, 1.5f);
                 FloatingPopupController.Instance?.SpawnReward("LEVEL UP!", levelUpPos + Vector3.up * 2.5f, new Color(1f, 0.84f, 0f));
                 AudioController.Instance?.Play("hero_levelup", 1f);
                 JuiceFX.Instance?.SlowMo(0.5f, 500);
