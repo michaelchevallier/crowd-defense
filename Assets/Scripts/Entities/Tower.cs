@@ -172,6 +172,11 @@ namespace CrowdDefense.Entities
         // Branche L3 — None jusqu'à L3 signature
         public TowerBranch UpgradeBranch { get; private set; } = TowerBranch.None;
 
+        // Elite L4 : reached when L3 + all research nodes unlocked for this tower type.
+        public bool IsEliteL4 => cfg != null
+            && UpgradeLevel >= 3
+            && TowerResearchTree.UnlockedCount(cfg.Id) >= TowerResearchTree.NodeCount;
+
         // L3 runtime overrides (branch divergence — D1-03)
         // Ces valeurs surchargent cfg.X lors du calcul Fire/Update.
         public float L3DmgMul { get; private set; } = 1f;
@@ -231,6 +236,10 @@ namespace CrowdDefense.Entities
         // L3 glow halo ring (LineRenderer 24-vert circle + 1Hz pulse coroutine)
         private GameObject? _glowRing;
         private Coroutine? _glowPulseRoutine;
+
+        // L4 elite tier (UpgradeLevel >= 3 + all research nodes unlocked)
+        private bool _l4EliteApplied = false;
+        private Coroutine? _sparkleRoutine;
 
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
@@ -380,6 +389,7 @@ namespace CrowdDefense.Entities
             UpgradeBranch = TowerBranch.None;
             CumulativeCost = type.Cost;
             _l3TintApplied = false;
+            _l4EliteApplied = false;
             TowerResearchTree.OnResearchUnlocked -= OnResearchUnlocked;
             TowerResearchTree.OnResearchUnlocked += OnResearchUnlocked;
             Achievements.Instance?.TrackEvent("tower_placed", 1);
@@ -1850,6 +1860,7 @@ namespace CrowdDefense.Entities
                 BuildRangeCircle(cfg.Range);
             }
             ApplyTierSkin(level);
+            if (level >= 3) TryApplyEliteL4();
         }
 
         /// <summary>
@@ -1996,6 +2007,94 @@ namespace CrowdDefense.Entities
             }
         }
 
+        /// <summary>
+        /// Promotes tower to elite L4 tier when UpgradeLevel >= 3 and all research nodes unlocked.
+        /// Idempotent — safe to call multiple times.
+        /// Effects : deeper gold tint, bigger glow halo (radius 1.1), sparkle particles (10/s).
+        /// </summary>
+        private void TryApplyEliteL4()
+        {
+            if (_l4EliteApplied || !IsEliteL4) return;
+            _l4EliteApplied = true;
+
+            // Deep gold tint — stronger than L3 standard gold
+            var tintRoot = _meshChild != null ? _meshChild : gameObject;
+            Color eliteGold = new Color(1f, 0.72f, 0.05f);
+            MaterialController.UpdateTint(tintRoot, eliteGold);
+            foreach (var r in tintRoot.GetComponentsInChildren<Renderer>())
+            {
+                foreach (var m in r.materials)
+                {
+                    if (m == null) continue;
+                    if (m.HasProperty("_EmissionColor"))
+                    {
+                        m.SetColor("_EmissionColor", eliteGold * 0.55f);
+                        m.EnableKeyword("_EMISSION");
+                    }
+                }
+            }
+
+            // Upgrade glow halo : destroy L3 ring, spawn bigger L4 ring
+            if (_glowPulseRoutine != null) { StopCoroutine(_glowPulseRoutine); _glowPulseRoutine = null; }
+            if (_glowRing != null) { Destroy(_glowRing); _glowRing = null; }
+            SpawnEliteGlowRing();
+
+            // Sparkle particles emitted 10/s around the tower
+            _sparkleRoutine = StartCoroutine(SparkleRoutine());
+
+            // VFX fanfare + popup
+            var pos = transform.position + Vector3.up * 1.5f;
+            VfxPool.Instance?.SpawnConfetti(pos, 1.8f, new Color(1f, 0.85f, 0.1f));
+            JuiceFX.Instance?.PunchScale(transform, 1.3f, 0.45f);
+            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                "ELITE", pos, new Color(1f, 0.82f, 0.08f));
+        }
+
+        private void SpawnEliteGlowRing()
+        {
+            const int verts = 32;
+            const float radius = 1.1f; // bigger than L3 (0.75)
+
+            _glowRing = new GameObject("GlowRing_L4");
+            _glowRing.transform.SetParent(transform, false);
+            _glowRing.transform.localPosition = new Vector3(0f, 0.12f, 0f);
+
+            var lr = _glowRing.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;
+            lr.loop = true;
+            lr.positionCount = verts;
+            lr.startWidth = 0.14f;
+            lr.endWidth = 0.14f;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
+            for (int i = 0; i < verts; i++)
+            {
+                float angle = i / (float)verts * Mathf.PI * 2f;
+                lr.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius));
+            }
+
+            var mat = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.color = new Color(1f, 0.78f, 0.05f, 1f);
+            lr.material = mat;
+
+            _glowPulseRoutine = StartCoroutine(GlowPulseRoutine(lr, mat));
+        }
+
+        private IEnumerator SparkleRoutine()
+        {
+            const float interval = 0.1f; // 10 sparkles/s
+            while (true)
+            {
+                yield return new WaitForSeconds(interval);
+                // Random position on a circle around the tower at mid-height
+                float angle = Random.value * Mathf.PI * 2f;
+                float dist = Random.Range(0.4f, 1.0f);
+                var offset = new Vector3(Mathf.Cos(angle) * dist, Random.Range(0.3f, 1.6f), Mathf.Sin(angle) * dist);
+                VfxPool.Instance?.SpawnImpact(transform.position + offset, new Color(1f, 0.92f, 0.25f));
+            }
+        }
+
         // Fired by TowerResearchTree.TryUnlock for any tower type.
         // Only the first live tower of the matching type plays the fanfare.
         private void OnResearchUnlocked(string towerId, int node)
@@ -2006,6 +2105,8 @@ namespace CrowdDefense.Entities
             Toast.Show("Recherche debloquee", $"{cfg.DisplayName} — {TowerResearchTree.NodeLabel(node)}", 3500, null, ToastType.Achievement);
             // Unsubscribe so only one tower fires the fanfare per unlock event.
             TowerResearchTree.OnResearchUnlocked -= OnResearchUnlocked;
+            // All research nodes just unlocked for this tower — check elite L4 promotion.
+            TryApplyEliteL4();
         }
 
         private void OnDestroy()
@@ -2016,6 +2117,7 @@ namespace CrowdDefense.Entities
             TowerResearchTree.OnResearchUnlocked -= OnResearchUnlocked;
             if (_glowPulseRoutine != null) StopCoroutine(_glowPulseRoutine);
             if (_glowRing != null) Destroy(_glowRing);
+            if (_sparkleRoutine != null) StopCoroutine(_sparkleRoutine);
         }
 
 #if UNITY_EDITOR
