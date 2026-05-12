@@ -1693,3 +1693,17 @@
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     white-space: normal;
 }
+
+/* Runtime debug profile overlay (F3) */
+.profile {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    font-size: 10px;
+    -unity-font-style: bold;
+    color: rgba(0, 255, 128, 0.9);
+    background-color: rgba(0, 0, 0, 0.55);
+    padding: 3px 6px;
+    border-radius: 3px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}

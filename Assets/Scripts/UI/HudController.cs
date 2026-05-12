@@ -124,6 +124,7 @@ namespace CrowdDefense.UI
             EnsureSibling<QuickSaveHotkey>();
             EnsureSibling<KeyBindingsPanel>();
             EnsureSibling<CurrentRunPerksPanel>();
+            EnsureSibling<RuntimeProfilePanel>();
             _perksPanel = GetComponent<CurrentRunPerksPanel>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;

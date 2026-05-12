@@ -554,6 +554,7 @@
                     <ui:Button text="Close" name="settings-close-btn" class="settings-btn settings-btn-close" />
                 </ui:VisualElement>
             </ui:VisualElement>
-        </ui:VisualElement>
+        <!-- Debug profile overlay — toggle F3 -->
+        <ui:Label name="profile-overlay" class="profile hidden" />
     </ui:VisualElement>
 </ui:UXML>
