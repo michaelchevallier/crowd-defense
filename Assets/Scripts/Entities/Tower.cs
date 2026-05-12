@@ -25,7 +25,6 @@ namespace CrowdDefense.Entities
         public int MultiShot;
         public bool FinalExplosion;
         public float FinalExplosionAoe;
-        public float FinalExplosionDmg;
         public float CritChance;
         public float CritMul;
         public int ChainLightningJumps;
@@ -545,69 +544,37 @@ namespace CrowdDefense.Entities
 
             if (!isSignature) return;
 
-            switch (cfg.Id)
+            if (_l3StatsTable.TryGetValue((cfg.Id, branch), out var stats))
             {
-                case "archer":
-                    if (branch == TowerBranch.Dps)
-                    {
-                        // Master Hunter : multishot 3 projectiles spread 15 degrees (D1-03)
-                        L3MultiShot = 2;   // 1 main + 2 extra = 3 total; spread wired in Fire
-                    }
-                    else
-                    {
-                        // Ranger Marksman : crit 25% chance x dmg 3 (D1-03)
-                        L3CritChance = 0.25f;
-                        L3CritMul    = 3f;
-                    }
-                    break;
-
-                case "crossbow":
-                    if (branch == TowerBranch.Dps)
-                    {
-                        // Bolt Storm : finalExplosion AoE 2.5m radius on kill (D1-03)
-                        L3FinalExplosion    = true;
-                        L3FinalExplosionAoe = 2.5f;
-                        L3FinalExplosionDmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * 2.5f;
-                    }
-                    else
-                    {
-                        // Heavy Bolt : pierce +3 enemies (D1-03)
-                        L3Pierce = cfg.Pierce + 3;
-                    }
-                    break;
-
-                case "tank":
-                    if (branch == TowerBranch.Dps)
-                    {
-                        // Berserker : damage x2 when castle HP < 50% (D1-03)
-                        L3BerserkerActive      = true;
-                        L3BerserkerDmgMul      = 2f;
-                        L3BerserkerHpThreshold = 0.5f;
-                    }
-                    else
-                    {
-                        // Bulwark : -20% dmg to adjacent towers within 4m (D1-03)
-                        L3BulwarkAura         = true;
-                        L3BulwarkAuraRange    = 4f;
-                        L3BulwarkDmgReduction = 0.20f;
-                    }
-                    break;
-
-                case "mage":
-                    if (branch == TowerBranch.Dps)
-                    {
-                        // Archmage : chain lightning 3 jumps (D1-03)
-                        L3ChainLightningJumps = 3;
-                        L3ChainLightningRange = 5f;
-                    }
-                    else
-                    {
-                        // Frostmage : freeze on hit 0.5s (D1-03)
-                        L3FreezeOnHit = true;
-                        L3FreezeDurMs = 500;
-                    }
-                    break;
+                ApplyL3Stats(stats);
             }
+        }
+
+        /// <summary>
+        /// Applique les stats L3 provenant du lookup table vers les propriétés de la tour.
+        /// </summary>
+        private void ApplyL3Stats(L3Stats stats)
+        {
+            if (stats.MultiShot != 0) L3MultiShot = stats.MultiShot;
+            if (stats.FinalExplosion) L3FinalExplosion = true;
+            if (stats.FinalExplosionAoe != 0) L3FinalExplosionAoe = stats.FinalExplosionAoe;
+            if (stats.FinalExplosion && cfg != null)
+            {
+                L3FinalExplosionDmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * 2.5f;
+            }
+            if (stats.Pierce != 0 && cfg != null) L3Pierce = cfg.Pierce + stats.Pierce;
+            if (stats.CritChance != 0) L3CritChance = stats.CritChance;
+            if (stats.CritMul != 0) L3CritMul = stats.CritMul;
+            if (stats.ChainLightningJumps != 0) L3ChainLightningJumps = stats.ChainLightningJumps;
+            if (stats.ChainLightningRange != 0) L3ChainLightningRange = stats.ChainLightningRange;
+            if (stats.FreezeOnHit) L3FreezeOnHit = true;
+            if (stats.FreezeDurMs != 0) L3FreezeDurMs = stats.FreezeDurMs;
+            if (stats.BerserkerActive) L3BerserkerActive = true;
+            if (stats.BerserkerDmgMul != 0) L3BerserkerDmgMul = stats.BerserkerDmgMul;
+            if (stats.BerserkerHpThreshold != 0) L3BerserkerHpThreshold = stats.BerserkerHpThreshold;
+            if (stats.BulwarkAura) L3BulwarkAura = true;
+            if (stats.BulwarkAuraRange != 0) L3BulwarkAuraRange = stats.BulwarkAuraRange;
+            if (stats.BulwarkDmgReduction != 0) L3BulwarkDmgReduction = stats.BulwarkDmgReduction;
         }
 
         /// <summary>
