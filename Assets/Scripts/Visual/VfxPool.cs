@@ -13,7 +13,7 @@ namespace CrowdDefense.Visual
     // API canon C3. Tint via MainModule.startColor.
     public class VfxPool : MonoSingleton<VfxPool>
     {
-        private const int DefaultCapacity = 20;
+        private const int DefaultCapacity = 24;
         private const int MaxPoolSize = 100;
 
         // Auto-LOD : réduit maxParticles à 50% si FPS rolling avg < 30.
@@ -69,14 +69,14 @@ namespace CrowdDefense.Visual
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
-            _explosionPool = BuildPool(explosionPrefab, "Explosion", 10);
+            _explosionPool = BuildPool(explosionPrefab, "Explosion", DefaultCapacity);
             _coinBurstPool = BuildPool(coinBurstPrefab, "CoinBurst", DefaultCapacity);
             _hitFlashPool  = BuildPool(hitFlashPrefab,  "HitFlash",  DefaultCapacity);
-            _levelUpPool   = BuildPool(levelUpPrefab,   "LevelUp",   8);
+            _levelUpPool   = BuildPool(levelUpPrefab,   "LevelUp",   DefaultCapacity);
             _perkPickupPool = BuildPool(perkPickupPrefab, "PerkPickup", DefaultCapacity);
             _frostPool     = BuildPool(frostPrefab,     "Frost",     DefaultCapacity);
             _portalPool    = BuildPool(portalPrefab,    "Portal",    DefaultCapacity);
-            _fireBreathPool  = BuildPool(fireBreathPrefab,  "FireBreath",  8);
+            _fireBreathPool  = BuildPool(fireBreathPrefab,  "FireBreath",  DefaultCapacity);
             _muzzleFlashPool = BuildPool(muzzleFlashPrefab, "MuzzleFlash", DefaultCapacity);
 
             PreWarm();
@@ -378,16 +378,16 @@ namespace CrowdDefense.Visual
 
         private void PreWarm()
         {
-            PreWarmPool(_impactPool,    DefaultCapacity);
-            PreWarmPool(_deathPool,     DefaultCapacity);
-            PreWarmPool(_explosionPool, 10);
-            PreWarmPool(_coinBurstPool, DefaultCapacity);
-            PreWarmPool(_hitFlashPool,  DefaultCapacity);
-            PreWarmPool(_levelUpPool,   8);
+            PreWarmPool(_impactPool,     DefaultCapacity);
+            PreWarmPool(_deathPool,      DefaultCapacity);
+            PreWarmPool(_explosionPool,  DefaultCapacity);
+            PreWarmPool(_coinBurstPool,  DefaultCapacity);
+            PreWarmPool(_hitFlashPool,   DefaultCapacity);
+            PreWarmPool(_levelUpPool,    DefaultCapacity);
             PreWarmPool(_perkPickupPool, DefaultCapacity);
             PreWarmPool(_frostPool,      DefaultCapacity);
             PreWarmPool(_portalPool,     DefaultCapacity);
-            PreWarmPool(_fireBreathPool,  4);
+            PreWarmPool(_fireBreathPool,  DefaultCapacity);
             PreWarmPool(_muzzleFlashPool, DefaultCapacity);
         }
 
@@ -464,7 +464,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(2.5f, 5.5f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.08f, 0.22f);
             main.startColor     = Color.white;
-            main.maxParticles   = 20;
+            main.maxParticles   = 160;
             main.duration       = 0.1f;
             main.gravityModifier = 0.6f;
 
@@ -488,7 +488,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(3.5f, 8f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.12f, 0.38f);
             main.startColor     = Color.white;
-            main.maxParticles   = 35;
+            main.maxParticles   = 280;
             main.duration       = 0.1f;
             main.gravityModifier = 1.2f;
 
@@ -512,7 +512,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(5f, 12f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.2f, 0.6f);
             main.startColor     = new Color(1f, 0.65f, 0.15f);
-            main.maxParticles   = 60;
+            main.maxParticles   = 400;
             main.duration       = 0.15f;
             main.gravityModifier = 0.3f;
 
@@ -536,7 +536,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 6f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.07f, 0.18f);
             main.startColor     = new Color(1f, 0.88f, 0.15f);
-            main.maxParticles   = 20;
+            main.maxParticles   = 160;
             main.duration       = 0.1f;
             main.gravityModifier = 2f;
 
@@ -561,7 +561,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(0.5f, 2f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.15f, 0.3f);
             main.startColor     = Color.white;
-            main.maxParticles   = 12;
+            main.maxParticles   = 100;
             main.duration       = 0.05f;
             main.gravityModifier = 0f;
 
@@ -585,7 +585,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(3f, 9f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.12f, 0.42f);
             main.startColor     = new Color(1f, 0.84f, 0f);
-            main.maxParticles   = 60;
+            main.maxParticles   = 400;
             main.duration       = 0.2f;
             main.gravityModifier = -0.4f;
 
@@ -609,7 +609,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 5f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.08f, 0.25f);
             main.startColor     = Color.white;
-            main.maxParticles   = 25;
+            main.maxParticles   = 200;
             main.duration       = 0.1f;
             main.gravityModifier = 0.2f;
 
@@ -634,7 +634,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(0.5f, 1.5f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.3f, 0.6f);
             main.startColor     = new Color(0.5f, 0.9f, 1f);
-            main.maxParticles   = 60;
+            main.maxParticles   = 400;
             main.duration       = 0.8f;
             main.gravityModifier = 0.05f;
 
@@ -658,7 +658,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(1f, 3f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.1f, 0.3f);
             main.startColor     = new Color(0.4f, 0.2f, 0.6f);
-            main.maxParticles   = 40;
+            main.maxParticles   = 320;
             main.duration       = 0.5f;
             main.gravityModifier = -0.3f;
             // Simulate in world space so particles stay put after spawn.
@@ -697,7 +697,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(6f, 10f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.4f, 0.8f);
             main.startColor     = new Color(1f, 0.5f, 0.1f);
-            main.maxParticles   = 300;
+            main.maxParticles   = 400;
             main.duration       = 0.7f;
             main.gravityModifier = 0.05f;
 
@@ -744,7 +744,7 @@ namespace CrowdDefense.Visual
             main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 5f);
             main.startSize      = new ParticleSystem.MinMaxCurve(0.10f, 0.20f);
             main.startColor     = new Color(1f, 0.55f, 0.05f);
-            main.maxParticles   = 16;
+            main.maxParticles   = 128;
             main.duration       = 0.05f;
             main.gravityModifier = 0.2f;
 
