@@ -935,26 +935,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Visual.VfxPool
   impactPrefab: {fileID: 407788081387377539, guid: 89637bf1b5fe348dd88c2a7ebfd70e1f, type: 3}
   deathPrefab: {fileID: 2258627021153961714, guid: 177370200a4774562b6198f1ed39f02d, type: 3}
-  explosionPrefab: {fileID: 0}
-  coinBurstPrefab: {fileID: 0}
-  hitFlashPrefab: {fileID: 0}
-  levelUpPrefab: {fileID: 0}
-  perkPickupPrefab: {fileID: 0}
-  frostPrefab: {fileID: 0}
-  portalPrefab: {fileID: 0}
-  fireBreathPrefab: {fileID: 0}
-  muzzleFlashPrefab: {fileID: 0}
-  upgradeBurstPrefab: {fileID: 0}
-  sparkPrefab: {fileID: 0}
-  upgradeConfettiPrefab: {fileID: 0}
-  electricCloudPrefab: {fileID: 0}
-  explosionSmallPrefab: {fileID: 0}
-  glyphDarkPrefab: {fileID: 0}
-  healAuraPrefab: {fileID: 0}
-  lightningBoltPrefab: {fileID: 0}
-  poisonCloudPrefab: {fileID: 0}
-  shieldAuraPrefab: {fileID: 0}
-  slowAuraPrefab: {fileID: 0}
+  explosionPrefab: {fileID: 1234567890, guid: 79fb81362c024ac4a621cf121bc4e0d7, type: 3}
+  coinBurstPrefab: {fileID: 1234567890, guid: e0aac8f4311f4220af823744c661d276, type: 3}
+  hitFlashPrefab: {fileID: 1234567890, guid: 0626274e435047bbb819328e4db21356, type: 3}
+  levelUpPrefab: {fileID: 1234567890, guid: 646e429defbc44f88477102abf32191e, type: 3}
+  perkPickupPrefab: {fileID: 1234567890, guid: 48b287ce2585448882a87cff388d6a25, type: 3}
+  frostPrefab: {fileID: 1234567890, guid: 234e6010acfd4a598d01cf6a1be728e0, type: 3}
+  portalPrefab: {fileID: 1234567890, guid: 5adef16ee3074824842f25ab6dd1aada, type: 3}
+  fireBreathPrefab: {fileID: 1234567890, guid: 0d6221f449bf430db376068dcdee9043, type: 3}
+  muzzleFlashPrefab: {fileID: 1234567890, guid: d4c3d2dbb7864e8b9abd6ec142a2acde, type: 3}
+  upgradeBurstPrefab: {fileID: 1234567890, guid: 666769438ffd4fddbc36ff4139a6c016, type: 3}
+  sparkPrefab: {fileID: 1234567890, guid: d06bb1b9667041e2a698e3db6436347e, type: 3}
+  upgradeConfettiPrefab: {fileID: 1234567890, guid: 18b80e2441e840999b112a2ae4f8d895, type: 3}
+  electricCloudPrefab: {fileID: 1234567890, guid: 47080b3f215e4ff2b7167befd855be77, type: 3}
+  explosionSmallPrefab: {fileID: 1234567890, guid: ac7ae0e42d2b4b5aa333f491de014ba9, type: 3}
+  glyphDarkPrefab: {fileID: 1234567890, guid: 133dc1d435db40c58f4dddebcd6a4658, type: 3}
+  healAuraPrefab: {fileID: 1234567890, guid: 0f39e5b889794ebd8f4856c919c325d2, type: 3}
+  lightningBoltPrefab: {fileID: 1234567890, guid: 1b8b445812fd43f9b99866d14944b2e4, type: 3}
+  poisonCloudPrefab: {fileID: 1234567890, guid: c3f509dbb739418eb2a33551fdfe78da, type: 3}
+  shieldAuraPrefab: {fileID: 1234567890, guid: 1d51e4e084094d8485730cbbd49af200, type: 3}
+  slowAuraPrefab: {fileID: 1234567890, guid: 0af7cdca3c1e40eeae544d60d614acbf, type: 3}
 --- !u!1 &571099989
 GameObject:
   m_ObjectHideFlags: 0
