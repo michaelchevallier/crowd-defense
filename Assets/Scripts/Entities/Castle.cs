@@ -48,6 +48,10 @@ namespace CrowdDefense.Entities
         private readonly System.Collections.Generic.Queue<float> _hitTimestamps = new();
         private float _overrunCooldownUntil = -1f;
 
+        // Gate door (cube child, animated on wave start/end)
+        private Transform?    _gateDoor;
+        private Coroutine?    _gateCoroutine;
+
         // Visual state
         private bool          _smokeActive;
         private Coroutine?    _smokeCoroutine;
@@ -96,6 +100,8 @@ namespace CrowdDefense.Entities
             BuildHpBar();
             ApplyWorldDecoration(world);
             SpawnCandleParticles();
+            BuildGate();
+            SubscribeWaveEvents();
             OnHPChanged?.Invoke(HP, HPMax);
         }
 
@@ -759,6 +765,53 @@ namespace CrowdDefense.Entities
             }
 
             Destroy(go);
+        }
+
+        // ── Gate animation ──────────────────────────────────────────────────────
+
+        private void BuildGate()
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = "CastleGate";
+            Destroy(go.GetComponent<BoxCollider>());
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = new Vector3(0f, 0.5f, 0.55f);
+            go.transform.localScale    = new Vector3(0.7f, 0.9f, 0.08f);
+            var rend = go.GetComponent<MeshRenderer>();
+            rend.material = BuildUnlitMaterial(new Color(0.38f, 0.22f, 0.08f), transparent: false);
+            _gateDoor = go.transform;
+        }
+
+        private void SubscribeWaveEvents()
+        {
+            var wm = WaveManager.Instance;
+            if (wm == null) return;
+            wm.OnWaveStart   += _ => AnimateGate(open: true);
+            wm.OnWaveCleared += _ => AnimateGate(open: false);
+        }
+
+        private void AnimateGate(bool open)
+        {
+            if (_gateDoor == null) return;
+            if (_gateCoroutine != null) StopCoroutine(_gateCoroutine);
+            _gateCoroutine = StartCoroutine(RotateGate(open ? 90f : 0f, 0.5f));
+        }
+
+        private IEnumerator RotateGate(float targetYDeg, float dur)
+        {
+            float startY  = _gateDoor!.localEulerAngles.y;
+            // Normalize to avoid 270 vs -90 wrap issues
+            if (startY > 180f) startY -= 360f;
+            float t = 0f;
+            while (t < dur)
+            {
+                t += Time.deltaTime;
+                float y = Mathf.LerpAngle(startY, targetYDeg, Mathf.Clamp01(t / dur));
+                _gateDoor.localEulerAngles = new Vector3(0f, y, 0f);
+                yield return null;
+            }
+            _gateDoor.localEulerAngles = new Vector3(0f, targetYDeg, 0f);
+            _gateCoroutine = null;
         }
 
         // ── MonoBehaviour ───────────────────────────────────────────────────────
