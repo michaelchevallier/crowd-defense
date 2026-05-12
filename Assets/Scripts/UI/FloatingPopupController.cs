@@ -244,14 +244,18 @@ namespace CrowdDefense.UI
             go.SetActive(false);
 
             var tmp = go.AddComponent<TextMeshPro>();
-            tmp.fontSize              = 4f;
-            tmp.fontStyle             = FontStyles.Bold;
-            tmp.alignment             = TextAlignmentOptions.Center;
-            tmp.outlineWidth          = 0.2f;
-            tmp.outlineColor          = new Color32(0, 0, 0, 255);
-            tmp.textWrappingMode      = TMPro.TextWrappingModes.NoWrap;
-            tmp.autoSizeTextContainer = false;
-            tmp.rectTransform.sizeDelta = new Vector2(4f, 1.5f);
+            if (tmp != null)
+            {
+                tmp.fontSize              = 4f;
+                tmp.fontStyle             = FontStyles.Bold;
+                tmp.alignment             = TextAlignmentOptions.Center;
+                tmp.textWrappingMode      = TMPro.TextWrappingModes.NoWrap;
+                tmp.autoSizeTextContainer = false;
+                tmp.rectTransform.sizeDelta = new Vector2(4f, 1.5f);
+                // Safe outline setup — skip if shader doesn't support it
+                try { tmp.outlineWidth = 0.2f; } catch { }
+                try { tmp.outlineColor = new Color32(0, 0, 0, 255); } catch { }
+            }
 
             return new WorldPopup { Go = go, Tmp = tmp, Alive = false };
         }
