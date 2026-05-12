@@ -115,6 +115,7 @@ namespace CrowdDefense.Systems
 #endif
             if (idx == 4) Achievements.Instance?.Unlock("wave_5_reached");
             OnWaveStart?.Invoke(idx);
+            SpawnPressureMob(idx, currentWorld);
         }
 
         private void Update()
@@ -269,18 +270,48 @@ namespace CrowdDefense.Systems
             return spawnCounter % pathCount;
         }
 
-        // D1-04 Q11 — no-regen W6+ hook. POC: amount=0 (regen not yet implemented).
-        // W1-W5: regen would apply if Castle.Regen(amount) existed.
-        // W6+: skip entirely (silent).
+        // D1-04: +5 HP/wave W1-5, no regen W6+ (threshold in BalanceConfig)
         private void HandleWaveClearedRegen()
         {
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
-            int regenAmount = 0; // POC — Phase 3 implémentera la valeur réelle
             if (currentWorld < BalanceConfig.Get().NoRegenWorldThreshold)
+                LevelRunner.Instance?.PrimaryCastle?.Regen(5);
+        }
+
+        // D1-04: pressure mob — linear rate 0% W1 → 60% W10, spawned 3s after wave start, speed ×1.5
+        private void SpawnPressureMob(int waveIdx, int worldId)
+        {
+            float pressureRate = Mathf.Clamp01((worldId - 1) / 9f * 0.6f);
+            if (UnityEngine.Random.value > pressureRate) return;
+            StartCoroutine(SpawnPressureDelayed(3f, 1.5f));
+        }
+
+        private System.Collections.IEnumerator SpawnPressureDelayed(float delaySec, float speedMul)
+        {
+            yield return new WaitForSeconds(delaySec);
+            if (!waveActive) yield break;
+            var wave = levelData?.Waves[currentWaveIdx];
+            if (wave == null) yield break;
+
+            // Pick a random non-null enemy type from the wave
+            EnemyType? pick = null;
+            foreach (var entry in wave.entries)
             {
-                LevelRunner.Instance?.PrimaryCastle?.Regen(regenAmount);
+                if (entry.type != null) { pick = entry.type; break; }
             }
-            // W6+ : skip regen (Q11)
+            if (pick == null) yield break;
+
+            int resolvedPathIdx = ResolvePathIdx(wave.portalIdx);
+            if (PathManager.Instance == null || EnemyPool.Instance == null) yield break;
+            Vector3 spawnPos = PathManager.Instance.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
+            var enemy = EnemyPool.Instance.SpawnFromType(pick, spawnPos, resolvedPathIdx, _currentWaveScaleMul);
+            enemy.ApplySpeedMultiplier(speedMul);
+            activeEnemies.Add(enemy);
+            _waveTotalSpawned++;
+            EventManager.Instance?.Publish(new EnemySpawnedEvent(enemy));
+#if UNITY_EDITOR
+            Debug.Log($"[WaveManager] PressureMob spawned {pick.Id} speed×{speedMul} W{worldId} wave{waveIdx + 1}");
+#endif
         }
 
         public WaveDef? GetNextWaveDef()
