@@ -19,10 +19,10 @@ namespace CrowdDefense.UI
         private const int BASE_H = 200;
         private const int PAD    = 6;
 
-        // Zoom: 1.0 = 100 %, range [0.5, 3.0], scroll-wheel driven
         private const float ZOOM_MIN  = 0.5f;
-        private const float ZOOM_MAX  = 3.0f;
+        private const float ZOOM_MAX  = 2.0f;
         private const float ZOOM_STEP = 0.15f;
+        private const string PREFS_ZOOM = "Minimap_ZoomLevel";
         private float _zoom = 1f;
 
         private VisualElement? _hudRoot;
@@ -32,6 +32,7 @@ namespace CrowdDefense.UI
         private DynamicLayer?   _dynamicLayer;
         private IVisualElementScheduledItem? _scheduledPaint;
 
+        private Slider?         _zoomSlider;
         private bool _boundsReady;
         private bool _visible;
 
@@ -50,6 +51,8 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
+            _zoom = Mathf.Clamp(PlayerPrefs.GetFloat(PREFS_ZOOM, 1f), ZOOM_MIN, ZOOM_MAX);
+
             var doc = GetComponent<UIDocument>();
             if (doc == null)
             {
@@ -97,6 +100,19 @@ namespace CrowdDefense.UI
             if (_toggleBtn != null)
                 _toggleBtn.clicked += OnToggleClicked;
 
+            // Zoom slider (0.5×–2.0×) embedded below the map canvas
+            _zoomSlider = new Slider(ZOOM_MIN, ZOOM_MAX) { value = _zoom };
+            _zoomSlider.style.width = BASE_W;
+            _zoomSlider.style.marginTop = 4;
+            _zoomSlider.RegisterValueChangedCallback(evt =>
+            {
+                _zoom = evt.newValue;
+                ApplyZoom();
+                PlayerPrefs.SetFloat(PREFS_ZOOM, _zoom);
+                PlayerPrefs.Save();
+            });
+            containerEl.Add(_zoomSlider);
+
             SetVisible(false);
 
             // Only the dynamic layer repaints at 10 Hz
@@ -122,9 +138,16 @@ namespace CrowdDefense.UI
             if (!worldBound.Contains(mousePos)) return;
 
             _zoom = Mathf.Clamp(_zoom + scroll * ZOOM_STEP, ZOOM_MIN, ZOOM_MAX);
+            if (_zoomSlider != null)
+                _zoomSlider.SetValueWithoutNotify(_zoom);
+            PlayerPrefs.SetFloat(PREFS_ZOOM, _zoom);
+            PlayerPrefs.Save();
+            ApplyZoom();
+        }
 
-            // Resize both layers to reflect zoom (BASE_W/H is the "1× size" at container level)
-            // We scale the container itself so both layers scale together
+        private void ApplyZoom()
+        {
+            if (_container == null) return;
             _container.style.transformOrigin = new TransformOrigin(Length.Percent(50), Length.Percent(50), 0f);
             _container.style.scale = new Scale(new Vector3(_zoom, _zoom, 1f));
         }
