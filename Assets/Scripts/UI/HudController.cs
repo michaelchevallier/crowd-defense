@@ -103,6 +103,18 @@ namespace CrowdDefense.UI
         private VisualElement? _waveDotsRow;
         private int _wavesCompleted = 0;
 
+        // Wave preview panel (between waves — enemy roster chips)
+        private VisualElement? _wavePreviewPanel;
+        private VisualElement? _wavePreviewRoster;
+
+        // Enemy intel popup (hover on chip in wave preview)
+        private VisualElement? _enemyIntelPopup;
+        private Label?         _enemyIntelName;
+        private Label?         _enemyIntelStats;
+        private Coroutine?     _enemyIntelFadeCoroutine;
+        private static readonly Color _kIntelGold  = new Color(1f, 0.80f, 0.20f);
+        private static readonly Color _kIntelWhite = new Color(0.92f, 0.92f, 0.92f);
+
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
 

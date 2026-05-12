@@ -159,6 +159,7 @@ namespace CrowdDefense.Entities
         {
             if (_isDead || _invulTimer > 0f || dmg <= 0f) return;
             _hp -= dmg;
+            OnHeroDamaged?.Invoke(dmg);
             if (_hp <= 0f)
             {
                 _hp = 0f;
@@ -234,6 +235,7 @@ namespace CrowdDefense.Entities
             FloatingPopupController.Instance?.SpawnReward(
                 "RESPAWN!", transform.position + Vector3.up * 2f, Color.green);
             StartCoroutine(InvulFlashRoutine());
+            OnHeroRespawned?.Invoke();
         }
 
         private System.Collections.IEnumerator InvulFlashRoutine()
@@ -293,6 +295,8 @@ namespace CrowdDefense.Entities
         // ── Events ────────────────────────────────────────────────────────────
         public event System.Action<int, int, int>? OnLevelUp;   // (level, xp, xpToNext)
         public event System.Action?                OnUltFired;
+        public static event System.Action<float>?  OnHeroDamaged;  // (dmg) — fired on each effective hit
+        public static event System.Action?         OnHeroRespawned; // fired after RespawnAtCastle completes
 
         // ─────────────────────────────────────────────────────────────────────
 
