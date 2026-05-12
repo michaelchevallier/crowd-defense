@@ -132,3 +132,7 @@ auto-build-*.log
 /Assets/Resources/PerformanceTestRunInfo.json.meta
 /Assets/Resources/PerformanceTestRunSettings.json
 /Assets/Resources/PerformanceTestRunSettings.json.meta
+
+# Unity Editor mono crash dumps (Burst compiler / GC crashes — Unity bug, not project state)
+mono_crash.*.json
+mono_crash.*.json.meta
