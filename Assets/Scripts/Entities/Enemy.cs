@@ -1056,6 +1056,9 @@ namespace CrowdDefense.Entities
             if (_regenPerSec > 0f)
                 hp = Mathf.Min(hp + _regenPerSec * Time.deltaTime, maxHp);
 
+            // Lock movement during spawn pop-in animation
+            if (_popInCoroutine != null) return;
+
             if (cfg.IsFlyer)
             {
                 UpdateFlyer();
