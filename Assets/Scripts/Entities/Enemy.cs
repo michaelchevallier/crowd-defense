@@ -61,7 +61,6 @@ namespace CrowdDefense.Entities
         private float _variantSpeedMul    = 1f;
         private float _regenPerSec        = 0f;
         private float _dmgReduction       = 0f;
-        private TrailRenderer? _variantTrail;
 
         // Child GO holding the spawned GLTF mesh (null = using capsule primitive)
         private GameObject? _meshChild;
@@ -344,51 +343,21 @@ namespace CrowdDefense.Entities
                 case CrowdDefense.Data.EnemyVariant.Fast:
                     _variantSpeedMul *= 1.5f;
                     SetTint(Color.yellow);
-                    SpawnVariantTrail(new Color(0.2f, 0.5f, 1f, 0.8f));   // blue
                     break;
                 case CrowdDefense.Data.EnemyVariant.Tough:
                     maxHp = maxHp * 1.5f;
                     hp    = maxHp;
                     SetTint(new Color(0.6f, 0.3f, 0.1f));
-                    SpawnVariantTrail(new Color(0.45f, 0.25f, 0.1f, 0.8f)); // brown
                     break;
                 case CrowdDefense.Data.EnemyVariant.Regen:
                     _regenPerSec = 2f;
                     SetTint(Color.green);
-                    SpawnVariantTrail(new Color(0.1f, 0.8f, 0.2f, 0.8f));  // green
                     break;
                 case CrowdDefense.Data.EnemyVariant.Armored:
                     _dmgReduction = 0.3f;
                     SetTint(new Color(0.7f, 0.7f, 0.8f));
-                    SpawnVariantTrail(new Color(0.6f, 0.6f, 0.65f, 0.8f)); // grey
                     break;
             }
-        }
-
-        private void SpawnVariantTrail(Color color)
-        {
-            if (_variantTrail != null)
-                Destroy(_variantTrail.gameObject);
-
-            var go = new GameObject("VariantTrail");
-            go.transform.SetParent(transform, false);
-            go.transform.localPosition = Vector3.zero;
-
-            _variantTrail               = go.AddComponent<TrailRenderer>();
-            _variantTrail.time          = 0.15f;
-            _variantTrail.startWidth    = 0.18f;
-            _variantTrail.endWidth      = 0f;
-            _variantTrail.minVertexDistance = 0.05f;
-
-            var grad = new Gradient();
-            grad.SetKeys(
-                new[] { new GradientColorKey(color, 0f), new GradientColorKey(color, 1f) },
-                new[] { new GradientAlphaKey(color.a, 0f), new GradientAlphaKey(0f, 1f) }
-            );
-            _variantTrail.colorGradient = grad;
-
-            // Use default unlit material to avoid shader errors on trail
-            _variantTrail.material = new Material(Shader.Find("Sprites/Default"));
         }
 
         // Called by EnemyPool after Init when the 10% elite roll succeeds (W5+, non-boss).
