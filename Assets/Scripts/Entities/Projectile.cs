@@ -19,6 +19,43 @@ namespace CrowdDefense.Entities
         private static readonly int _colorId     = Shader.PropertyToID("_BaseColor");
         private static readonly int _smoothnessId = Shader.PropertyToID("_Smoothness");
 
+        private TrailRenderer? _trail;
+
+        private void Awake()
+        {
+            _trail = GetComponent<TrailRenderer>() ?? gameObject.AddComponent<TrailRenderer>();
+            _trail.time = 0.15f;
+            _trail.startWidth = 0.1f;
+            _trail.endWidth = 0f;
+            _trail.material = BuildAdditiveMat();
+            _trail.startColor = new Color(1f, 0.7f, 0.3f, 0.8f);
+            _trail.endColor   = new Color(1f, 0.7f, 0.3f, 0f);
+            _trail.emitting = false;
+        }
+
+        private static Material BuildAdditiveMat()
+        {
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit") ?? Shader.Find("Sprites/Default"));
+            mat.SetFloat("_BlendOp", (float)UnityEngine.Rendering.BlendOp.Add);
+            mat.SetFloat("_SrcBlend",  (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend",  (float)UnityEngine.Rendering.BlendMode.One);
+            mat.SetFloat("_ZWrite", 0f);
+            mat.renderQueue = 3000;
+            return mat;
+        }
+
+        public void EnableTrail()
+        {
+            if (_trail == null) return;
+            _trail.Clear();
+            _trail.emitting = true;
+        }
+
+        public void DisableTrail()
+        {
+            if (_trail != null) _trail.emitting = false;
+        }
+
         // Source tower — used to apply synergy on-hit effects (slow / freeze)
         private Tower? sourceTower;
 
@@ -75,6 +112,11 @@ namespace CrowdDefense.Entities
                 _mpb.SetFloat(_smoothnessId, 0.9f);
                 rend.SetPropertyBlock(_mpb);
             }
+
+            if (speed > 12f || isParabolic)
+                EnableTrail();
+            else
+                DisableTrail();
         }
 
         private void Update()
@@ -276,6 +318,7 @@ namespace CrowdDefense.Entities
 
         private void ReleaseToPool()
         {
+            DisableTrail();
             if (pool != null)
                 pool.Release(this);
             else
