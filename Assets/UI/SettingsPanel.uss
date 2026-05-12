@@ -150,6 +150,34 @@
     background-color: rgba(110, 80, 140, 0.65);
 }
 
+.settings-danger-row {
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 8px 12px 4px 12px;
+    border-top-width: 1px;
+    border-top-color: rgba(200, 60, 60, 0.3);
+    margin-top: 4px;
+}
+
+.reset-progress-warn {
+    color: rgba(255, 140, 140, 0.8);
+    font-size: 11px;
+    margin-right: 10px;
+    flex-grow: 1;
+}
+
+.settings-btn-danger {
+    background-color: rgba(160, 40, 40, 0.6);
+    color: white;
+    border-color: rgba(220, 80, 80, 0.5);
+    border-width: 1px;
+}
+
+.settings-btn-danger:hover {
+    background-color: rgba(200, 50, 50, 0.8);
+}
+
 .hud-settings-btn {
     padding: 6px 10px;
     background-color: rgba(60, 80, 110, 0.75);

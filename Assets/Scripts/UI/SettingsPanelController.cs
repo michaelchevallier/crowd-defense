@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using CrowdDefense.Visual;
 
@@ -30,10 +31,14 @@ namespace CrowdDefense.UI
         private Label?  _followHeroLabel;
         private Button? _resetCameraBtn;
         private Button? _changeNameBtn;
+        private Button? _resetProgressBtn;
+        private Label?  _resetProgressWarnLabel;
 
         private DropdownField? _qualityDropdown;
         private Toggle? _vfxToggle;
         private Toggle? _shakeToggle;
+        private Toggle? _autoPauseToggle;
+        private Label?  _autoPauseLabel;
 
         private Toggle? _colorblindToggle;
         private Toggle? _reduceMotionToggle;
@@ -102,12 +107,16 @@ namespace CrowdDefense.UI
             _musicMuteToggle = _root.Q<Toggle>("music-mute-toggle");
             _followHeroToggle = _root.Q<Toggle>("follow-hero-toggle");
             _followHeroLabel  = _root.Q<Label>("follow-hero-label");
-            _resetCameraBtn  = _root.Q<Button>("settings-reset-camera-btn");
-            _changeNameBtn   = _root.Q<Button>("settings-change-name-btn");
+            _resetCameraBtn      = _root.Q<Button>("settings-reset-camera-btn");
+            _changeNameBtn       = _root.Q<Button>("settings-change-name-btn");
+            _resetProgressBtn    = _root.Q<Button>("settings-reset-progress-btn");
+            _resetProgressWarnLabel = _root.Q<Label>("reset-progress-warn");
 
             _qualityDropdown = _root.Q<DropdownField>("quality-dropdown");
             _vfxToggle = _root.Q<Toggle>("vfx-toggle");
             _shakeToggle = _root.Q<Toggle>("shake-toggle");
+            _autoPauseToggle = _root.Q<Toggle>("auto-pause-toggle");
+            _autoPauseLabel  = _root.Q<Label>("auto-pause-label");
 
             _colorblindToggle = _root.Q<Toggle>("colorblind-toggle");
             _reduceMotionToggle = _root.Q<Toggle>("reduce-motion-toggle");
@@ -193,6 +202,7 @@ namespace CrowdDefense.UI
             if (_qualityLabel != null)        _qualityLabel.text        = L.Get("settings.quality");
             if (_vfxLabel != null)            _vfxLabel.text            = L.Get("settings.vfx");
             if (_shakeLabel != null)          _shakeLabel.text          = L.Get("settings.shake");
+            if (_autoPauseLabel != null)      _autoPauseLabel.text      = L.Get("settings.auto_pause_blur");
             if (_a11ySectionLabel != null)    _a11ySectionLabel.text    = L.Get("settings.a11y_section");
             if (_colorblindLabel != null)     _colorblindLabel.text     = L.Get("settings.colorblind");
             if (_reduceMotionLabel != null)   _reduceMotionLabel.text   = L.Get("settings.reduce_motion");
@@ -201,6 +211,8 @@ namespace CrowdDefense.UI
             if (_langLabel != null)           _langLabel.text           = L.Get("settings.lang_label");
             if (_closeBtn != null)            _closeBtn.text            = L.Get("settings.close");
             if (_resetCameraBtn != null)      _resetCameraBtn.text      = L.Get("settings.reset_camera");
+            if (_resetProgressBtn != null)    _resetProgressBtn.text    = L.Get("settings.reset_progress");
+            if (_resetProgressWarnLabel != null) _resetProgressWarnLabel.text = L.Get("settings.reset_progress_warn");
             if (_followHeroLabel != null)
                 _followHeroLabel.text = L.CurrentLocale == "fr" ? "Caméra suit le Hero"
                     : L.CurrentLocale == "es" ? "Cámara sigue al Héroe"
@@ -291,6 +303,12 @@ namespace CrowdDefense.UI
                 SettingsRegistry.Instance.ShakeEnabled = evt.newValue;
             });
 
+            _autoPauseToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.AutoPauseOnBlur = evt.newValue;
+            });
+
             _colorblindToggle?.RegisterValueChangedCallback(evt =>
             {
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
@@ -323,6 +341,7 @@ namespace CrowdDefense.UI
             _fullscreenBtn?.RegisterCallback<ClickEvent>(_ => ToggleFullscreen());
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
             _changeNameBtn?.RegisterCallback<ClickEvent>(_ => OnChangeName());
+            _resetProgressBtn?.RegisterCallback<ClickEvent>(_ => OnResetProgressClicked());
         }
 
         public void Show()
@@ -381,6 +400,7 @@ namespace CrowdDefense.UI
                 }
                 if (_vfxToggle != null) _vfxToggle.value = reg.VFXEnabled;
                 if (_shakeToggle != null) _shakeToggle.value = reg.ShakeEnabled;
+                if (_autoPauseToggle != null) _autoPauseToggle.value = reg.AutoPauseOnBlur;
 
                 if (_colorblindToggle != null) _colorblindToggle.value = reg.ColorblindMode;
                 if (_reduceMotionToggle != null) _reduceMotionToggle.value = reg.ReduceMotion;
@@ -420,6 +440,19 @@ namespace CrowdDefense.UI
             var popup = FindFirstObjectByType<NameInputPopup>();
             if (popup != null)
                 popup.Show(() => { });
+        }
+
+        private void OnResetProgressClicked()
+        {
+            Confirm.Show(
+                L.Get("confirm.reset_progress_title"),
+                L.Get("confirm.reset_progress_msg"),
+                onConfirm: () =>
+                {
+                    PlayerPrefs.DeleteAll();
+                    PlayerPrefs.Save();
+                    SceneManager.LoadScene(0);
+                });
         }
 
         private static string FormatPct(float v) => Mathf.RoundToInt(v * 100f) + "%";

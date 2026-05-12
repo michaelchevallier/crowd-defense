@@ -84,6 +84,10 @@
                 <ui:Button text="Changer nom" name="settings-change-name-btn" class="settings-btn settings-btn-change-name" />
                 <ui:Button text="Close" name="settings-close-btn" class="settings-btn settings-btn-close" />
             </ui:VisualElement>
+            <ui:VisualElement class="settings-danger-row">
+                <ui:Label text="Cette action est irréversible." name="reset-progress-warn" class="reset-progress-warn" />
+                <ui:Button text="Réinitialiser la progression" name="settings-reset-progress-btn" class="settings-btn settings-btn-danger" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
