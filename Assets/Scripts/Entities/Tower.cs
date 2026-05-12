@@ -81,6 +81,10 @@ namespace CrowdDefense.Entities
         private float _idlePhase;
         private float _lastFireAt;
 
+        // DPS rolling window — entries are (timestamp, damage) pairs stored flat
+        private readonly List<float> _damageLogTimes  = new();
+        private readonly List<float> _damageLogValues = new();
+
         // Cluster (Mine) : timer spawn
         private float _clusterTimer;
 
@@ -159,6 +163,24 @@ namespace CrowdDefense.Entities
 
         public TowerType? Config => cfg;
 
+        /// <summary>
+        /// Returns the average DPS over the last 5 seconds based on actual damage events.
+        /// </summary>
+        public float GetLiveDps()
+        {
+            float cutoff = Time.time - 5f;
+            // Purge stale entries
+            while (_damageLogTimes.Count > 0 && _damageLogTimes[0] < cutoff)
+            {
+                _damageLogTimes.RemoveAt(0);
+                _damageLogValues.RemoveAt(0);
+            }
+            float total = 0f;
+            for (int i = 0; i < _damageLogValues.Count; i++)
+                total += _damageLogValues[i];
+            return total / 5f;
+        }
+
         // Child GO holding the spawned GLTF mesh (null = using placeholder primitives)
         private GameObject? _meshChild;
 
@@ -171,6 +193,9 @@ namespace CrowdDefense.Entities
 
         // Recoil state — prevents TickIdleAnim from overriding during recoil.
         private bool _recoiling;
+
+        // Global throttle — skip cam shake if another tower shook within 50 ms (multi-cannon spam guard).
+        private static float _lastCamShakeAt = -1f;
 
         // AimLine : thin red laser tower → target (togglable via PlayerPrefs "show_aim_lines_v1")
         private LineRenderer? _aimLine;
@@ -691,7 +716,7 @@ namespace CrowdDefense.Entities
             // Stage B integration hooks (audio + juice + vfx + anim)
             AudioController.Instance?.Play3D("tower_shoot", transform.position, 0.55f);
             AudioController.Instance?.Play3D("tower_fire", transform.position, 0.60f);
-            JuiceFX.Instance?.Shake(0.05f, 100);
+            TriggerCannonShake();
             Vector3 muzzlePos = _barrelTip != null
                 ? _barrelTip.position
                 : transform.position + Vector3.up * 0.5f;
@@ -721,6 +746,10 @@ namespace CrowdDefense.Entities
                 float flyMul = Mathf.Max(cfg.FlyerDmgMul, _flyerDmgBonus);
                 if (flyMul > 1f) dmg *= flyMul;
             }
+
+            // Track damage for live DPS window (5s rolling)
+            _damageLogTimes.Add(Time.time);
+            _damageLogValues.Add(dmg);
 
             // Pierce : L3Pierce overrides cfg.Pierce ; add _pierceBonus from synergy
             int effectivePierce = L3Pierce > 0 ? L3Pierce : cfg.Pierce + _pierceBonus;
@@ -1118,6 +1147,27 @@ namespace CrowdDefense.Entities
                 if (found != null) return found;
             }
             return null;
+        }
+
+        // ── Cannon Camera Shake ───────────────────────────────────────────────
+
+        // Only cannon / ballista L3 multishot trigger a camera shake; all other towers stay silent.
+        // Global 50 ms throttle prevents spam when multiple cannons fire the same frame.
+        private void TriggerCannonShake()
+        {
+            if (cfg == null) return;
+            bool isCannon = cfg.Id.Contains("cannon");
+            bool isHeavy  = isCannon && (UpgradeLevel >= 3 || cfg.Id != "cannon");
+            bool isBallistaL3Multishot = cfg.Id == "ballista" && UpgradeLevel >= 3 && L3MultiShot > 0;
+            if (!isCannon && !isBallistaL3Multishot) return;
+
+            if (Time.unscaledTime - _lastCamShakeAt < 0.05f) return;
+            _lastCamShakeAt = Time.unscaledTime;
+
+            if (isHeavy || isBallistaL3Multishot)
+                JuiceFX.Instance?.Shake(0.30f, 150);
+            else
+                JuiceFX.Instance?.Shake(0.15f, 100);
         }
 
         // ── Fire Angled ───────────────────────────────────────────────────────

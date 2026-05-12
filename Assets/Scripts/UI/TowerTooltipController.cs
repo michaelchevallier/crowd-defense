@@ -24,6 +24,9 @@ namespace CrowdDefense.UI
         private Label? _tooltipSynergies;
 
         private bool _visible;
+        private Tower? _currentTower;
+        private float _refreshTimer;
+        private const float RefreshInterval = 0.2f;
         private readonly StringBuilder _sb = new();
 
         private void Awake()
@@ -62,11 +65,24 @@ namespace CrowdDefense.UI
 
             _tooltipRoot.style.left = new Length(uiX, LengthUnit.Pixel);
             _tooltipRoot.style.top  = new Length(uiY, LengthUnit.Pixel);
+
+            // Refresh live DPS every 0.2s
+            if (_currentTower != null)
+            {
+                _refreshTimer -= Time.deltaTime;
+                if (_refreshTimer <= 0f)
+                {
+                    _refreshTimer = RefreshInterval;
+                    PopulateTooltip(_currentTower);
+                }
+            }
         }
 
         public void Show(Tower tower)
         {
             if (_tooltipRoot == null) return;
+            _currentTower = tower;
+            _refreshTimer = 0f;
             PopulateTooltip(tower);
             _tooltipRoot.RemoveFromClassList("hidden");
             _visible = true;
@@ -75,6 +91,7 @@ namespace CrowdDefense.UI
         public void Hide()
         {
             _tooltipRoot?.AddToClassList("hidden");
+            _currentTower = null;
             _visible = false;
         }
 
@@ -125,6 +142,11 @@ namespace CrowdDefense.UI
 
             _sb.Append("Cible: ");
             _sb.Append(tower.CurrentTargetPriority.ToString());
+            _sb.Append('\n');
+
+            float liveDps = tower.GetLiveDps();
+            _sb.Append("DPS Live: ");
+            _sb.Append(liveDps.ToString("F1"));
 
             if (_tooltipStats != null) _tooltipStats.text = _sb.ToString();
 
