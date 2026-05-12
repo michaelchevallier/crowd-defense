@@ -18,6 +18,7 @@ namespace CrowdDefense.UI
         private Label? _title;
         private Button?[] _nodeBtns = new Button[TowerResearchTree.NodeCount];
         private Label?[] _nodeLabels = new Label[TowerResearchTree.NodeCount];
+        private VisualElement?[] _nodeTooltips = new VisualElement[TowerResearchTree.NodeCount];
         private Label? _pointsLabel;
         private Button? _closeBtn;
 
@@ -46,7 +47,20 @@ namespace CrowdDefense.UI
                 int idx = i;
                 _nodeBtns[i] = root.Q<Button>($"research-node-{i}");
                 _nodeLabels[i] = root.Q<Label>($"research-node-{i}-label");
-                _nodeBtns[i]?.RegisterCallback<ClickEvent>(_ => OnNodeClicked(idx));
+
+                // Build tooltip element parented to the node button
+                if (_nodeBtns[i] != null)
+                {
+                    var tooltip = new VisualElement();
+                    tooltip.AddToClassList("node-tooltip");
+                    tooltip.AddToClassList("hidden");
+                    _nodeBtns[i]!.Add(tooltip);
+                    _nodeTooltips[i] = tooltip;
+
+                    _nodeBtns[i]!.RegisterCallback<MouseEnterEvent>(_ => ShowTooltip(idx));
+                    _nodeBtns[i]!.RegisterCallback<MouseLeaveEvent>(_ => HideTooltip(idx));
+                    _nodeBtns[i]!.RegisterCallback<ClickEvent>(_ => OnNodeClicked(idx));
+                }
             }
 
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Close());
@@ -94,9 +108,50 @@ namespace CrowdDefense.UI
                 if (_nodeLabels[i] != null)
                     _nodeLabels[i]!.text = label;
 
-                _nodeBtns[i]?.SetEnabled(!unlocked && canUnlock);
+                var btn = _nodeBtns[i];
+                if (btn != null)
+                {
+                    btn.SetEnabled(!unlocked && canUnlock);
+
+                    // Visual state: greyed-out class for disabled/unavailable nodes
+                    if (unlocked)
+                    {
+                        btn.RemoveFromClassList("node-disabled");
+                        btn.RemoveFromClassList("node-available");
+                        btn.AddToClassList("node-unlocked");
+                    }
+                    else if (canUnlock)
+                    {
+                        btn.RemoveFromClassList("node-disabled");
+                        btn.RemoveFromClassList("node-unlocked");
+                        btn.AddToClassList("node-available");
+                    }
+                    else
+                    {
+                        btn.RemoveFromClassList("node-available");
+                        btn.RemoveFromClassList("node-unlocked");
+                        btn.AddToClassList("node-disabled");
+                    }
+                }
             }
         }
+
+        private void ShowTooltip(int node)
+        {
+            var tooltip = _nodeTooltips[node];
+            if (tooltip == null) return;
+
+            bool unlocked = TowerResearchTree.IsUnlocked(_towerId, node);
+            string desc = TowerResearchTree.NodeDescription(_towerId, node);
+            string cost = unlocked ? "Deja debloque" : "Cout : 1 point de talent";
+            tooltip.Clear();
+            tooltip.Add(new Label(desc) { name = "tooltip-desc" });
+            tooltip.Add(new Label(cost) { name = "tooltip-cost" });
+            tooltip.RemoveFromClassList("hidden");
+        }
+
+        private void HideTooltip(int node) =>
+            _nodeTooltips[node]?.AddToClassList("hidden");
 
         private void OnNodeClicked(int node)
         {
@@ -105,7 +160,40 @@ namespace CrowdDefense.UI
 #if UNITY_EDITOR
             Debug.Log($"[Research] {_towerId} node {node} unlocked. Points left: {TalentSystem.AvailablePoints}");
 #endif
+            SpawnUnlockPopup(node);
             Refresh();
+        }
+
+        // Spawns a "+1" label that floats upward then fades over ~600 ms.
+        private void SpawnUnlockPopup(int node)
+        {
+            var btn = _nodeBtns[node];
+            if (btn == null || _panel == null) return;
+
+            var popup = new Label("+1");
+            popup.AddToClassList("unlock-popup");
+            // Start position: centered above the button, animated via inline style
+            popup.style.position = Position.Absolute;
+            popup.style.left = btn.worldBound.center.x - _panel.worldBound.xMin - 16f;
+            popup.style.top = btn.worldBound.yMin - _panel.worldBound.yMin - 10f;
+            popup.style.opacity = 1f;
+            _panel.Add(popup);
+
+            // Animate: move up 30px and fade to 0 over 600 ms using IVisualElementScheduler
+            const int steps = 20;
+            const int intervalMs = 30;
+            int step = 0;
+            float startTop = popup.style.top.value.value;
+
+            popup.schedule.Execute(() =>
+            {
+                step++;
+                float t = step / (float)steps;
+                popup.style.top = startTop - 30f * t;
+                popup.style.opacity = 1f - t;
+                if (step >= steps)
+                    popup.RemoveFromHierarchy();
+            }).Every(intervalMs).Until(() => step >= steps);
         }
     }
 }
