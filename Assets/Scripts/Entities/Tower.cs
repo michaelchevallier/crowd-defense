@@ -908,8 +908,26 @@ namespace CrowdDefense.Entities
             }
 
             // Stage B integration hooks (audio + juice + vfx + anim)
-            AudioController.Instance?.Play3D("tower_shoot", transform.position, 0.55f);
-            AudioController.Instance?.Play3D("tower_fire", transform.position, 0.60f);
+            // L1 = default pitch, L2 = deeper (0.9), L3 = deep + reverb key distinct
+            string fireSfxKey = UpgradeLevel switch
+            {
+                2 => "tower_fire_l2",
+                3 => "tower_fire_l3",
+                _ => "tower_fire_l1",
+            };
+            float firePitch = UpgradeLevel switch { 2 => 0.9f, 3 => 0.8f, _ => 1.0f };
+            // Try tier-specific key; fall back to generic "tower_fire" if missing
+            var ac = AudioController.Instance;
+            if (ac != null)
+            {
+                bool hasTierClip = ac.GetClip(fireSfxKey) != null;
+                ac.Play3DPitched(
+                    hasTierClip ? fireSfxKey : "tower_fire",
+                    transform.position,
+                    0.60f,
+                    firePitch);
+                ac.Play3D("tower_shoot", transform.position, 0.55f);
+            }
             TriggerCannonShake();
             Vector3 muzzlePos = _barrelTip != null
                 ? _barrelTip.position

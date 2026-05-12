@@ -145,6 +145,28 @@ namespace CrowdDefense.Systems
             AudioSource.PlayClipAtPoint(clip, worldPos, Mathf.Clamp01(volMul));
         }
 
+        // Plays a 3D clip with pitch shift. Falls back silently if clip missing.
+        public void Play3DPitched(string clipKey, Vector3 worldPos, float volMul = 1f, float pitch = 1f)
+        {
+            if (registry == null) LoadAudioRegistry();
+            var clip = registry?.Get(clipKey);
+            if (clip == null)
+            {
+                if (!_warned.Contains(clipKey))
+                {
+                    _warned.Add(clipKey);
+                    Debug.LogWarning($"[AudioController] Missing clip: {clipKey}");
+                }
+                return;
+            }
+            var src = _sfxPool[_nextIdx++ % PoolSize];
+            src.transform.position = worldPos;
+            src.clip  = clip;
+            src.pitch  = pitch;
+            src.volume = Mathf.Clamp01(volMul);
+            src.Play();
+        }
+
         public AudioClip? GetClip(string clipKey)
         {
             if (registry == null) LoadAudioRegistry();
