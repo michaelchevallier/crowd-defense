@@ -122,6 +122,14 @@
                 <!-- panel-gameplay -->
                 <ui:ScrollView name="panel-gameplay" class="settings-scroll hidden">
                     <ui:VisualElement class="settings-section">
+                        <ui:Label text="Difficulty" name="difficulty-section-title" class="section-title" />
+                        <ui:VisualElement class="setting-row">
+                            <ui:Button text="Easy" name="difficulty-btn-easy" class="settings-btn diff-radio" />
+                            <ui:Button text="Normal" name="difficulty-btn-normal" class="settings-btn diff-radio diff-radio-active" />
+                            <ui:Button text="Hard" name="difficulty-btn-hard" class="settings-btn diff-radio" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement class="settings-section">
                         <ui:Label text="Accessibility" name="a11y-section-title" class="section-title" />
                         <ui:VisualElement class="setting-row">
                             <ui:Label text="Colorblind mode" name="colorblind-label" class="setting-label" />

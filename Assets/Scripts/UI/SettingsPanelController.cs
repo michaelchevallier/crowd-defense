@@ -44,6 +44,11 @@ namespace CrowdDefense.UI
         private Button? _exportSaveBtn;
         private Button? _importSaveBtn;
 
+        private Button? _diffEasyBtn;
+        private Button? _diffNormalBtn;
+        private Button? _diffHardBtn;
+        private Label?  _diffSectionLabel;
+
         private DropdownField? _qualityDropdown;
         private Toggle? _vfxToggle;
         private Toggle? _shakeToggle;
@@ -143,6 +148,11 @@ namespace CrowdDefense.UI
             _resetProgressWarnLabel = _root.Q<Label>("reset-progress-warn");
             _exportSaveBtn       = _root.Q<Button>("settings-export-save-btn");
             _importSaveBtn       = _root.Q<Button>("settings-import-save-btn");
+
+            _diffEasyBtn    = _root.Q<Button>("difficulty-btn-easy");
+            _diffNormalBtn  = _root.Q<Button>("difficulty-btn-normal");
+            _diffHardBtn    = _root.Q<Button>("difficulty-btn-hard");
+            _diffSectionLabel = _root.Q<Label>("difficulty-section-title");
 
             _qualityDropdown = _root.Q<DropdownField>("quality-dropdown");
             _vfxToggle = _root.Q<Toggle>("vfx-toggle");
@@ -254,6 +264,18 @@ namespace CrowdDefense.UI
                     : L.CurrentLocale == "es" ? "Pulso musical"
                     : "Music pulse";
             if (_autoPauseLabel != null)      _autoPauseLabel.text      = L.Get("settings.auto_pause_blur");
+            if (_diffSectionLabel != null)
+                _diffSectionLabel.text = L.CurrentLocale == "fr" ? "Difficulte"
+                    : L.CurrentLocale == "es" ? "Dificultad" : "Difficulty";
+            if (_diffEasyBtn != null)
+                _diffEasyBtn.text = L.CurrentLocale == "fr" ? "Facile"
+                    : L.CurrentLocale == "es" ? "Facil" : "Easy";
+            if (_diffNormalBtn != null)
+                _diffNormalBtn.text = L.CurrentLocale == "fr" ? "Normal"
+                    : L.CurrentLocale == "es" ? "Normal" : "Normal";
+            if (_diffHardBtn != null)
+                _diffHardBtn.text = L.CurrentLocale == "fr" ? "Difficile"
+                    : L.CurrentLocale == "es" ? "Dificil" : "Hard";
             if (_a11ySectionLabel != null)    _a11ySectionLabel.text    = L.Get("settings.a11y_section");
             if (_colorblindLabel != null)     _colorblindLabel.text     = L.Get("settings.colorblind");
             if (_reduceMotionLabel != null)   _reduceMotionLabel.text   = L.Get("settings.reduce_motion");
@@ -428,6 +450,10 @@ namespace CrowdDefense.UI
                 L.SetLocale(code);
             });
 
+            _diffEasyBtn?.RegisterCallback<ClickEvent>(_   => OnDifficultyPicked(0));
+            _diffNormalBtn?.RegisterCallback<ClickEvent>(_ => OnDifficultyPicked(1));
+            _diffHardBtn?.RegisterCallback<ClickEvent>(_   => OnDifficultyPicked(2));
+
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Hide());
             _fullscreenBtn?.RegisterCallback<ClickEvent>(_ => ToggleFullscreen());
             _keybindingsBtn?.RegisterCallback<ClickEvent>(_ => OpenKeyBindings());
@@ -537,6 +563,8 @@ namespace CrowdDefense.UI
                     if (li < 0) li = 0;
                     _langDropdown.SetValueWithoutNotify(LangChoices[li]);
                 }
+
+                SyncDifficultyButtons(reg.Difficulty);
             }
             finally
             {
@@ -605,6 +633,20 @@ namespace CrowdDefense.UI
         {
             var panel = GetComponent<KeyBindingsPanel>();
             panel?.Show();
+        }
+
+        private void OnDifficultyPicked(int level)
+        {
+            if (SettingsRegistry.Instance == null) return;
+            SettingsRegistry.Instance.Difficulty = level;
+            SyncDifficultyButtons(level);
+        }
+
+        private void SyncDifficultyButtons(int level)
+        {
+            if (_diffEasyBtn   != null) _diffEasyBtn.EnableInClassList("diff-radio-active",   level == 0);
+            if (_diffNormalBtn != null) _diffNormalBtn.EnableInClassList("diff-radio-active", level == 1);
+            if (_diffHardBtn   != null) _diffHardBtn.EnableInClassList("diff-radio-active",   level == 2);
         }
 
         private static string FormatPct(float v) => Mathf.RoundToInt(v * 100f) + "%";

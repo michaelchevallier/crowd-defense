@@ -248,3 +248,23 @@
 .hud-mute-btn:hover {
     background-color: rgba(80, 110, 160, 0.85);
 }
+
+.diff-radio {
+    flex-grow: 1;
+    margin-right: 6px;
+    background-color: rgba(50, 60, 80, 0.6);
+    color: rgb(180, 200, 230);
+    border-radius: 6px;
+    border-width: 1px;
+    border-color: rgba(120, 150, 200, 0.3);
+}
+
+.diff-radio:hover {
+    background-color: rgba(70, 90, 120, 0.8);
+}
+
+.diff-radio-active {
+    background-color: rgba(60, 130, 200, 0.75);
+    color: rgb(255, 255, 255);
+    border-color: rgba(100, 180, 255, 0.7);
+}

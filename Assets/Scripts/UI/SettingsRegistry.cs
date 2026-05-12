@@ -23,6 +23,7 @@ namespace CrowdDefense.UI
         private const string KLargeText = "cd.a11y.large_text";
         private const string KLocale = "cd.locale";
         private const string KGameSpeed = "cd.gameplay.speed";
+        private const string KDifficulty = "cd.difficulty";
         private const string KAutoPauseOnBlur = "cd.gameplay.auto_pause_blur";
         private const string KShowDamageIcons = "cd.gfx.damage_icons";
         private const string KMusicPulse = "cd.gfx.music_pulse_v1";
@@ -45,6 +46,7 @@ namespace CrowdDefense.UI
         private bool _largeText;
         private string _locale = "en";
         private int _gameSpeed = 1;
+        private int _difficulty = 1; // 0=Easy 1=Normal 2=Hard
         private bool _autoPauseOnBlur = true;
         private bool _showDamageIcons;
         private bool _musicPulseEnabled;
@@ -142,6 +144,21 @@ namespace CrowdDefense.UI
             set { value = value < 0 ? 0 : value > 3 ? 3 : value; if (_gameSpeed == value) return; _gameSpeed = value; QueueSave(); Notify(); }
         }
 
+        // 0=Easy 1=Normal 2=Hard — mirrors "difficulty_v1" for BalanceConfig helpers.
+        public int Difficulty
+        {
+            get => _difficulty;
+            set
+            {
+                value = Mathf.Clamp(value, 0, 2);
+                if (_difficulty == value) return;
+                _difficulty = value;
+                PlayerPrefs.SetInt("difficulty_v1", value);
+                QueueSave();
+                Notify();
+            }
+        }
+
         public bool AutoPauseOnBlur
         {
             get => _autoPauseOnBlur;
@@ -190,6 +207,8 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetInt(KLargeText, _largeText ? 1 : 0);
             PlayerPrefs.SetString(KLocale, _locale);
             PlayerPrefs.SetInt(KGameSpeed, _gameSpeed);
+            PlayerPrefs.SetInt(KDifficulty, _difficulty);
+            PlayerPrefs.SetInt("difficulty_v1", _difficulty);
             PlayerPrefs.SetInt(KAutoPauseOnBlur, _autoPauseOnBlur ? 1 : 0);
             PlayerPrefs.SetInt(KShowDamageIcons, _showDamageIcons ? 1 : 0);
             PlayerPrefs.SetInt(KMusicPulse, _musicPulseEnabled ? 1 : 0);
@@ -214,6 +233,7 @@ namespace CrowdDefense.UI
             _largeText = PlayerPrefs.GetInt(KLargeText, 0) == 1;
             _locale = PlayerPrefs.GetString(KLocale, "en");
             _gameSpeed = PlayerPrefs.GetInt(KGameSpeed, 1);
+            _difficulty = PlayerPrefs.GetInt(KDifficulty, PlayerPrefs.GetInt("difficulty_v1", 1));
             _autoPauseOnBlur = PlayerPrefs.GetInt(KAutoPauseOnBlur, 1) == 1;
             _showDamageIcons = PlayerPrefs.GetInt(KShowDamageIcons, 0) == 1;
             _musicPulseEnabled = PlayerPrefs.GetInt(KMusicPulse, 0) == 1;
