@@ -112,6 +112,10 @@
                             <ui:Label text="Reset camera" name="reset-camera-label" class="setting-label" />
                             <ui:Button text="Reset Camera" name="settings-reset-camera-btn" class="settings-btn settings-btn-reset" />
                         </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Keyboard defaults" name="key-reset-label" class="setting-label" />
+                            <ui:Button text="Reset Defaults" name="key-reset-btn" class="settings-btn settings-btn-reset" />
+                        </ui:VisualElement>
                     </ui:VisualElement>
                 </ui:ScrollView>
 

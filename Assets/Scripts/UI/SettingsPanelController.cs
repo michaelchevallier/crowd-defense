@@ -37,6 +37,7 @@ namespace CrowdDefense.UI
         private Toggle? _heroAutoAttackToggle;
         private Label?  _heroAutoAttackLabel;
         private Button? _resetCameraBtn;
+        private Button? _keyResetBtn;
         private Button? _changeNameBtn;
         private Button? _resetProgressBtn;
         private Label?  _resetProgressWarnLabel;
@@ -136,6 +137,7 @@ namespace CrowdDefense.UI
             _heroAutoAttackToggle = _root.Q<Toggle>("hero-auto-attack-toggle");
             _heroAutoAttackLabel  = _root.Q<Label>("hero-auto-attack-label");
             _resetCameraBtn      = _root.Q<Button>("settings-reset-camera-btn");
+            _keyResetBtn         = _root.Q<Button>("key-reset-btn");
             _changeNameBtn       = _root.Q<Button>("settings-change-name-btn");
             _resetProgressBtn    = _root.Q<Button>("settings-reset-progress-btn");
             _resetProgressWarnLabel = _root.Q<Label>("reset-progress-warn");
@@ -262,6 +264,9 @@ namespace CrowdDefense.UI
             if (_keybindingsBtn != null)      _keybindingsBtn.text      = L.CurrentLocale == "fr" ? "Raccourcis"
                 : L.CurrentLocale == "es" ? "Atajos" : "Keybindings";
             if (_resetCameraBtn != null)      _resetCameraBtn.text      = L.Get("settings.reset_camera");
+            if (_keyResetBtn != null)         _keyResetBtn.text         = L.CurrentLocale == "fr" ? "Reinitialiser les touches"
+                : L.CurrentLocale == "es" ? "Restablecer teclas"
+                : "Reset Keyboard Defaults";
             if (_resetProgressBtn != null)    _resetProgressBtn.text    = L.Get("settings.reset_progress");
             if (_resetProgressWarnLabel != null) _resetProgressWarnLabel.text = L.Get("settings.reset_progress_warn");
             if (_exportSaveBtn != null)       _exportSaveBtn.text       = L.CurrentLocale == "fr" ? "Exporter la sauvegarde"
@@ -427,6 +432,7 @@ namespace CrowdDefense.UI
             _fullscreenBtn?.RegisterCallback<ClickEvent>(_ => ToggleFullscreen());
             _keybindingsBtn?.RegisterCallback<ClickEvent>(_ => OpenKeyBindings());
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
+            _keyResetBtn?.RegisterCallback<ClickEvent>(_ => OnKeyReset());
             _changeNameBtn?.RegisterCallback<ClickEvent>(_ => OnChangeName());
             _resetProgressBtn?.RegisterCallback<ClickEvent>(_ => OnResetProgressClicked());
             _exportSaveBtn?.RegisterCallback<ClickEvent>(_ => OnExportSave());
@@ -572,6 +578,8 @@ namespace CrowdDefense.UI
             if (cam == null) return;
             cam.transform.SetPositionAndRotation(Vector3.back * 10f, Quaternion.identity);
         }
+
+        private static void OnKeyReset() => Systems.KeyBindings.ResetAll();
 
         private void OnChangeName()
         {
