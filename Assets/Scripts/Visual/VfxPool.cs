@@ -35,6 +35,7 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? portalPrefab;
         [SerializeField] private GameObject? fireBreathPrefab;
         [SerializeField] private GameObject? muzzleFlashPrefab;
+        [SerializeField] private GameObject? upgradeBurstPrefab;
 
         private ObjectPool<ParticleSystem>? _impactPool;
         private ObjectPool<ParticleSystem>? _deathPool;
@@ -47,6 +48,7 @@ namespace CrowdDefense.Visual
         private ObjectPool<ParticleSystem>? _portalPool;
         private ObjectPool<ParticleSystem>? _fireBreathPool;
         private ObjectPool<ParticleSystem>? _muzzleFlashPool;
+        private ObjectPool<ParticleSystem>? _upgradeBurstPool;
 
         private Transform? _root;
         private Material? _additiveMat;
@@ -67,7 +69,8 @@ namespace CrowdDefense.Visual
             frostPrefab     ??= BuildProceduralPrefab("Frost",     BuildFrostModule);
             portalPrefab    ??= BuildProceduralPrefab("Portal",    BuildPortalModule);
             fireBreathPrefab ??= BuildProceduralPrefab("FireBreath", BuildFireBreathModule);
-            muzzleFlashPrefab ??= BuildProceduralPrefab("MuzzleFlash", BuildMuzzleFlashModule);
+            muzzleFlashPrefab    ??= BuildProceduralPrefab("MuzzleFlash",    BuildMuzzleFlashModule);
+            upgradeBurstPrefab   ??= BuildProceduralPrefab("UpgradeBurst",   BuildUpgradeBurstModule);
 
             _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
             _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
@@ -79,7 +82,8 @@ namespace CrowdDefense.Visual
             _frostPool     = BuildPool(frostPrefab,     "Frost",     DefaultCapacity);
             _portalPool    = BuildPool(portalPrefab,    "Portal",    DefaultCapacity);
             _fireBreathPool  = BuildPool(fireBreathPrefab,  "FireBreath",  DefaultCapacity);
-            _muzzleFlashPool = BuildPool(muzzleFlashPrefab, "MuzzleFlash", DefaultCapacity);
+            _muzzleFlashPool  = BuildPool(muzzleFlashPrefab,  "MuzzleFlash",  DefaultCapacity);
+            _upgradeBurstPool = BuildPool(upgradeBurstPrefab, "UpgradeBurst", DefaultCapacity);
 
             PreWarm();
         }
@@ -252,6 +256,32 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _muzzleFlashPool);
         }
 
+        // Radial burst on tower upgrade. level: 2=cyan, 3=rainbow gradient.
+        public void SpawnUpgradeBurst(Vector3 pos, int level)
+        {
+            if (!IsVfxEnabled() || _upgradeBurstPool == null) return;
+            var ps = _upgradeBurstPool.Get();
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+
+            if (level >= 3)
+            {
+                // Rainbow: override colorOverLifetime with confetti gradient
+                var col = ps.colorOverLifetime;
+                col.enabled = true;
+                col.color = new ParticleSystem.MinMaxGradient(BuildConfettiGradient());
+            }
+            else
+            {
+                // L2 = cyan, L1 fallback = white (should not happen via UpgradeTo)
+                Color tint = level == 2 ? new Color(0.2f, 0.9f, 1f) : Color.white;
+                ApplyTint(ps, tint);
+                var col = ps.colorOverLifetime;
+                col.enabled = false;
+            }
+
+            PlayAndAutoRelease(ps, _upgradeBurstPool);
+        }
+
         public void SpawnFrost(Vector3 worldPos, float radius)
         {
             if (!IsVfxEnabled() || _frostPool == null) return;
@@ -387,7 +417,8 @@ namespace CrowdDefense.Visual
             PreWarmPool(_frostPool,      DefaultCapacity);
             PreWarmPool(_portalPool,     DefaultCapacity);
             PreWarmPool(_fireBreathPool,  DefaultCapacity);
-            PreWarmPool(_muzzleFlashPool, DefaultCapacity);
+            PreWarmPool(_muzzleFlashPool,  DefaultCapacity);
+            PreWarmPool(_upgradeBurstPool, DefaultCapacity);
         }
 
         private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
@@ -758,6 +789,32 @@ namespace CrowdDefense.Visual
             shape.shapeType = ParticleSystemShapeType.Cone;
             shape.angle     = 15f;
             shape.radius    = 0.05f;
+
+            SetSizeOverLifetimeFade(ps);
+            SetColorAlphaFade(ps);
+        }
+
+        // Radial outward sphere burst — 30 particles, lifetime 0.5s, speed 3.
+        // Color overridden at spawn time by SpawnUpgradeBurst (cyan / rainbow).
+        private static void BuildUpgradeBurstModule(ParticleSystem ps)
+        {
+            var main = ps.main;
+            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.4f, 0.6f);
+            main.startSpeed     = new ParticleSystem.MinMaxCurve(2.5f, 3.5f);
+            main.startSize      = new ParticleSystem.MinMaxCurve(0.12f, 0.28f);
+            main.startColor     = new Color(0.2f, 0.9f, 1f);
+            main.maxParticles   = 60;
+            main.duration       = 0.1f;
+            main.gravityModifier = -0.1f;
+
+            var emission = ps.emission;
+            emission.rateOverTime = 0;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 25, 35, 1, 0.01f) });
+
+            var shape = ps.shape;
+            shape.enabled   = true;
+            shape.shapeType = ParticleSystemShapeType.Sphere;
+            shape.radius    = 0.25f;
 
             SetSizeOverLifetimeFade(ps);
             SetColorAlphaFade(ps);

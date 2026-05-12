@@ -510,8 +510,8 @@ namespace CrowdDefense.Entities
 
             PostUpgradeVisuals(level);
 
-            // Upgrade VFX : burst doré + audio + punch scale + popup niveau
-            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 1.5f, Color.yellow);
+            // Upgrade VFX : radial burst teinté par niveau (L2=cyan, L3=rainbow) + audio + punch scale + popup
+            VfxPool.Instance?.SpawnUpgradeBurst(transform.position + Vector3.up * 1.5f, level);
             AudioController.Instance?.Play3D("tower_upgrade", transform.position);
             AudioController.Instance?.Play3D("powerup", transform.position);
             JuiceFX.Instance?.PunchScale(transform, 1.25f, 0.4f);
