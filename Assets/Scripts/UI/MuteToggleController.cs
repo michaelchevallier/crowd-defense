@@ -8,7 +8,7 @@ namespace CrowdDefense.UI
     [RequireComponent(typeof(UIDocument))]
     public class MuteToggleController : MonoBehaviour
     {
-        private const string PrefKey = "muted_v1";
+        private const string PrefKey = "cd.audio.muted";
 
         private Button? _btn;
         private bool _muted;
@@ -36,6 +36,7 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetInt(PrefKey, _muted ? 1 : 0);
             PlayerPrefs.Save();
             ApplyMute(_muted);
+            Toast.Show(_muted ? "Audio coupé" : "Audio activé", "", 1800, _muted ? "🔇" : "🔊", ToastType.Info);
         }
 
         private void ApplyMute(bool muted)
