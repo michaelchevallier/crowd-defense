@@ -84,6 +84,30 @@ namespace CrowdDefense.Systems
         public int    runPerksAcquired = 0;
     }
 
+    // ── Mid-level resume state ─────────────────────────────────────────────
+
+    [Serializable]
+    public class PlacedTowerEntry
+    {
+        public string typeId   = "";
+        public float  posX     = 0f;
+        public float  posY     = 0f;
+        public float  posZ     = 0f;
+        public int    level    = 1;
+        public string branch   = "None";
+    }
+
+    [Serializable]
+    public class MidLevelStateData
+    {
+        public string        levelId    = "";
+        public int           waveIdx    = 0;
+        public int           gold       = 0;
+        public int           castleHP   = 0;
+        public List<string>  heroPerks  = new();
+        public List<PlacedTowerEntry> towers = new();
+    }
+
     public enum DiagnoseResult { Ok, Corrupted, MigrationAvailable, BackupCreated }
 
     public static class SaveSystem
@@ -624,6 +648,36 @@ namespace CrowdDefense.Systems
             int s = CurrentSlot;
             _cachedRunMaps[s] = null;
             PlayerPrefs.DeleteKey(RunMapKey(s));
+            PlayerPrefs.Save();
+        }
+
+        // ── Mid-level resume (P1) ─────────────────────────────────────────────
+
+        private const string MID_LEVEL_KEY_PREFIX = "cd_midlevel_v1_slot";
+        private static string MidLevelKey(int slot) => $"{MID_LEVEL_KEY_PREFIX}{slot}";
+
+        public static bool HasRunState()
+        {
+            return !string.IsNullOrEmpty(PlayerPrefs.GetString(MidLevelKey(CurrentSlot), ""));
+        }
+
+        public static void SaveRunState(MidLevelStateData data)
+        {
+            PlayerPrefs.SetString(MidLevelKey(CurrentSlot), JsonUtility.ToJson(data));
+            PlayerPrefs.Save();
+        }
+
+        public static MidLevelStateData? LoadRunState()
+        {
+            string json = PlayerPrefs.GetString(MidLevelKey(CurrentSlot), "");
+            if (string.IsNullOrEmpty(json)) return null;
+            try { return JsonUtility.FromJson<MidLevelStateData>(json); }
+            catch { return null; }
+        }
+
+        public static void ClearMidLevelState()
+        {
+            PlayerPrefs.DeleteKey(MidLevelKey(CurrentSlot));
             PlayerPrefs.Save();
         }
 

@@ -320,6 +320,7 @@ namespace CrowdDefense.Systems
 
         private void EnterSummary(bool isVictory)
         {
+            SaveSystem.ClearMidLevelState();
             var result = BuildResult(isVictory);
             PersistResult(result);
             // Switch to Summary state (may already be there if called from HandleLostEntry)
@@ -356,6 +357,41 @@ namespace CrowdDefense.Systems
             int waveNumber = waveIdx + 1;
             if (waveNumber % 5 == 0)
                 Toast.Show($"Vague {waveNumber} franchie !", string.Empty, 3000, null, ToastType.Generic);
+
+            SnapshotMidLevel(waveIdx);
+        }
+
+        private void SnapshotMidLevel(int waveIdx)
+        {
+            var data = new MidLevelStateData
+            {
+                levelId  = currentLevel?.Id ?? "",
+                waveIdx  = waveIdx + 1,
+                gold     = Economy.Instance?.Gold ?? 0,
+                castleHP = TotalCastleHP,
+                heroPerks = new System.Collections.Generic.List<string>(SaveSystem.GetRunState().heroPerks),
+            };
+
+            var placed = PlacementController.Instance?.PlacedTowers;
+            if (placed != null)
+            {
+                foreach (var t in placed)
+                {
+                    if (t == null || t.Config == null) continue;
+                    var pos = t.transform.position;
+                    data.towers.Add(new PlacedTowerEntry
+                    {
+                        typeId = t.Config.Id,
+                        posX   = pos.x,
+                        posY   = pos.y,
+                        posZ   = pos.z,
+                        level  = t.UpgradeLevel,
+                        branch = t.UpgradeBranch.ToString(),
+                    });
+                }
+            }
+
+            SaveSystem.SaveRunState(data);
         }
 
         private void HandleAllWavesCompleted()
