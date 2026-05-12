@@ -1,34 +1,30 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 05:06
+## 2026-05-12 05:35
 
 ### Snapshot
 
-- Actifs (<8 min) : 4 (Monitors r13/r14/r15 + current)
-- Stalled (8-30 min) : 3 (b* anciens Monitors r10/r11/r12 dead)
+- Actifs (<8 min) : 2 (Monitor r19 + current scan)
+- Stalled (8-30 min) : 5 (b* Monitors anciens dead r16/r17/r18 + autres)
 - Worktrees : 16
-- Unity batch : **YES** PID 6129 (r16 phase gles3 shader compile)
+- Unity batch : **YES** PID 9600 (r19 phase CopyFiles 536/571, near WASM compile)
 - Lockfile : assumed present
-- r16 log silence : 4s — HEALTHY
+- r19 log silence : 2s — HEALTHY
 
 ### Killed
 
-0. Aucun. r16 progresse.
+0. Aucun. r19 progresse rapidement.
 
-### Build cycle this hour
+### Sonnet en flight
 
-- r10 ✅ deployed 0948921
-- r11 ❌ static class fix → r12
-- r12 ✅ deployed acf7e93
-- r13 ❌ Comparer + VisualElement.GetComponent → r14
-- r14 ❌ ComboResetEvent using → r15
-- r15 ❌ same (concurrent edit reverted) → r16 re-apply
-- r16 in flight (10057ad fix re-applied)
+0. Tous Sonnet polish done (a011/aab8/a58f).
 
-### Notes
+### Commits accumulent
 
-Build failures cycle = agents qui font des inversions concurrentes sur HudController.cs. Watch for r16 success then deploy. Si r16 fail encore : check si autre agent a touché HudController.cs.
+- `60d0206` JuiceConfig SO scaffold
+- `4d3cb37` Enemy debug gizmos
+- 7+ commits depuis r18 deploy (98cef7e)
 
 ### Stdout
 
-`Actifs:4 Stalled:3 Killed:0 Worktrees:16 UnityBatch:YES(PID6129,r16,gles3) BuildCycle:r10-r16`
+`Actifs:2 Stalled:5 Killed:0 Worktrees:16 UnityBatch:YES(PID9600,r19,CopyFiles-536/571) Sonnet:0InFlight`

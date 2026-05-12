@@ -38,6 +38,45 @@
     color: rgb(255, 210, 63);
 }
 
+/* === Bank pill tooltip (D1-01 §3.5) === */
+.bank-pill-wrap {
+    position: relative;
+    align-self: center;
+}
+
+.bank-tooltip {
+    position: absolute;
+    top: 36px;
+    left: 0;
+    background-color: rgba(10, 14, 20, 0.96);
+    border-color: rgba(255, 210, 63, 0.55);
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 220px;
+    flex-direction: column;
+}
+
+.bank-tooltip-title {
+    color: rgb(255, 210, 63);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 5px;
+}
+
+.bank-tooltip-row {
+    color: rgba(210, 220, 240, 0.88);
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+    margin-bottom: 2px;
+}
+
+.bank-tooltip-warn {
+    color: rgb(255, 140, 100);
+}
+
 .bank-pill {
     background-color: rgba(180, 130, 0, 0.85);
     border-radius: 14px;

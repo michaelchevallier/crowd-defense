@@ -756,5 +756,29 @@ namespace CrowdDefense.Systems
             PlayerPrefs.Save();
         }
 
+        // ── Export / Import (player backup) ───────────────────────────────────
+
+        public static string ExportToJson()
+        {
+            var data = Load();
+            return JsonUtility.ToJson(data, prettyPrint: true);
+        }
+
+        public static bool ImportFromJson(string json)
+        {
+            if (string.IsNullOrWhiteSpace(json)) return false;
+            try
+            {
+                var data = JsonUtility.FromJson<ProgressData>(json);
+                if (data == null) return false;
+                if (data.Version > CurrentSaveVersion) return false;
+                data = MigrateIfNeeded(data);
+                _cachedSlots[CurrentSlot] = data;
+                Save();
+                return true;
+            }
+            catch { return false; }
+        }
+
     }
 }

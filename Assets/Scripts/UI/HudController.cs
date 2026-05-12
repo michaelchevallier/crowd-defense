@@ -62,6 +62,7 @@ namespace CrowdDefense.UI
 
         // Bank pill (D1-01 §3.5)
         private Label? _bankLabel;
+        private VisualElement? _bankTooltip;
 
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
@@ -170,6 +171,7 @@ namespace CrowdDefense.UI
             bluePillBtn = root.Q<Button>("bluepill-btn");
             _comboMultiplierLabel = root.Q<Label>("combo-multiplier-label");
             _bankLabel = root.Q<Label>("bank-label");
+            _bankTooltip = root.Q<VisualElement>("bank-tooltip");
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -190,6 +192,9 @@ namespace CrowdDefense.UI
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
             root.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
             root.Q<Button>("btn-settings")?.RegisterCallback<ClickEvent>(_ => _settingsCtrl?.Show());
+
+            _bankLabel?.RegisterCallback<MouseEnterEvent>(_ => ShowBankTooltip());
+            _bankLabel?.RegisterCallback<MouseLeaveEvent>(_ => HideBankTooltip());
         }
 
         private void SubscribeSystems()

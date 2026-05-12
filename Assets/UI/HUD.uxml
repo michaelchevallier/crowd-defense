@@ -42,7 +42,14 @@
                 <ui:Button text="×3" name="speed-3" class="speed-btn" tooltip="Vitesse x3 [Space]" />
             </ui:VisualElement>
 
-            <ui:Label name="bank-label" class="bank-pill hidden" text="&#x1F3E6; 0&#162;" />
+            <ui:VisualElement name="bank-pill-wrap" class="bank-pill-wrap">
+                <ui:Label name="bank-label" class="bank-pill hidden" text="&#x1F3E6; 0&#162;" />
+                <ui:VisualElement name="bank-tooltip" class="bank-tooltip hidden">
+                    <ui:Label name="bank-tooltip-title" class="bank-tooltip-title" text="Banque" />
+                    <ui:Label name="bank-tooltip-interest" class="bank-tooltip-row" text="Interet : +5% par vague" />
+                    <ui:Label name="bank-tooltip-reset" class="bank-tooltip-row bank-tooltip-warn" text="Reset si chateau touche cette vague" />
+                </ui:VisualElement>
+            </ui:VisualElement>
 
             <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines [D]" />
             <ui:Button text="&#x2699;" name="btn-settings" class="hud-settings-btn" tooltip="Settings" />

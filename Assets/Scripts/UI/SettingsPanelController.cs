@@ -40,6 +40,8 @@ namespace CrowdDefense.UI
         private Button? _changeNameBtn;
         private Button? _resetProgressBtn;
         private Label?  _resetProgressWarnLabel;
+        private Button? _exportSaveBtn;
+        private Button? _importSaveBtn;
 
         private DropdownField? _qualityDropdown;
         private Toggle? _vfxToggle;
@@ -137,6 +139,8 @@ namespace CrowdDefense.UI
             _changeNameBtn       = _root.Q<Button>("settings-change-name-btn");
             _resetProgressBtn    = _root.Q<Button>("settings-reset-progress-btn");
             _resetProgressWarnLabel = _root.Q<Label>("reset-progress-warn");
+            _exportSaveBtn       = _root.Q<Button>("settings-export-save-btn");
+            _importSaveBtn       = _root.Q<Button>("settings-import-save-btn");
 
             _qualityDropdown = _root.Q<DropdownField>("quality-dropdown");
             _vfxToggle = _root.Q<Toggle>("vfx-toggle");
@@ -260,6 +264,12 @@ namespace CrowdDefense.UI
             if (_resetCameraBtn != null)      _resetCameraBtn.text      = L.Get("settings.reset_camera");
             if (_resetProgressBtn != null)    _resetProgressBtn.text    = L.Get("settings.reset_progress");
             if (_resetProgressWarnLabel != null) _resetProgressWarnLabel.text = L.Get("settings.reset_progress_warn");
+            if (_exportSaveBtn != null)       _exportSaveBtn.text       = L.CurrentLocale == "fr" ? "Exporter la sauvegarde"
+                : L.CurrentLocale == "es" ? "Exportar guardado"
+                : "Export Save";
+            if (_importSaveBtn != null)       _importSaveBtn.text       = L.CurrentLocale == "fr" ? "Importer une sauvegarde"
+                : L.CurrentLocale == "es" ? "Importar guardado"
+                : "Import Save";
             if (_followHeroLabel != null)
                 _followHeroLabel.text = L.CurrentLocale == "fr" ? "Caméra suit le Hero"
                     : L.CurrentLocale == "es" ? "Cámara sigue al Héroe"
@@ -419,6 +429,8 @@ namespace CrowdDefense.UI
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
             _changeNameBtn?.RegisterCallback<ClickEvent>(_ => OnChangeName());
             _resetProgressBtn?.RegisterCallback<ClickEvent>(_ => OnResetProgressClicked());
+            _exportSaveBtn?.RegisterCallback<ClickEvent>(_ => OnExportSave());
+            _importSaveBtn?.RegisterCallback<ClickEvent>(_ => OnImportSave());
 
             _tabAudio?.RegisterCallback<ClickEvent>(_    => SwitchTab(_tabAudio, _panelAudio));
             _tabVideo?.RegisterCallback<ClickEvent>(_    => SwitchTab(_tabVideo, _panelVideo));
@@ -588,5 +600,30 @@ namespace CrowdDefense.UI
         }
 
         private static string FormatPct(float v) => Mathf.RoundToInt(v * 100f) + "%";
+
+        private static void OnExportSave()
+        {
+            string json = Systems.SaveSystem.ExportToJson();
+            GUIUtility.systemCopyBuffer = json;
+#if UNITY_EDITOR
+            Debug.Log("[Settings] Save exported to clipboard (" + json.Length + " chars)");
+#endif
+        }
+
+        private void OnImportSave()
+        {
+            string json = GUIUtility.systemCopyBuffer;
+            bool ok = Systems.SaveSystem.ImportFromJson(json);
+            string msg = ok
+                ? (L.CurrentLocale == "fr" ? "Sauvegarde importee avec succes."
+                    : L.CurrentLocale == "es" ? "Guardado importado correctamente."
+                    : "Save imported successfully.")
+                : (L.CurrentLocale == "fr" ? "Echec de l'import : JSON invalide ou version incompatible."
+                    : L.CurrentLocale == "es" ? "Error al importar: JSON invalido o version incompatible."
+                    : "Import failed: invalid JSON or incompatible version.");
+            Confirm.Show(L.CurrentLocale == "fr" ? "Import sauvegarde"
+                : L.CurrentLocale == "es" ? "Importar guardado"
+                : "Import Save", msg, onConfirm: () => { });
+        }
     }
 }

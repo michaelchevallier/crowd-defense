@@ -212,17 +212,47 @@ namespace CrowdDefense.Entities
             AudioController.Instance?.Play3D("castle_hit", transform.position);
             VfxPool.Instance?.SpawnHitFlash(transform);
 
-            // Screen shake — throttled to once every 100 ms to prevent spam
+            // Screen shake & flash — tiered by HP%, throttled to once every 100 ms to prevent spam
             if (Time.unscaledTime - _lastShakeTime > 0.1f)
             {
                 _lastShakeTime = Time.unscaledTime;
-                CameraController.Instance?.Shake(0.3f, 0.2f);
-            }
+                float hpRatio = HPMax > 0 ? (float)HP / HPMax : 0f;
 
-            // Red vignette flash only when HP < 33 %
-            float hpRatio = HPMax > 0 ? (float)HP / HPMax : 0f;
-            if (hpRatio < 0.33f)
-                PostProcessController.Instance?.FlashRedVignette(0.6f, 0.4f);
+                float shakeAmp;
+                int shakeMs;
+                float flashAlpha;
+                int flashMs;
+
+                if (hpRatio < 0.25f)
+                {
+                    // Heavy: 0.8 amp / 400 ms + critical audio + red vignette
+                    shakeAmp = 0.8f;
+                    shakeMs = 400;
+                    flashAlpha = 0.65f;
+                    flashMs = 300;
+                    AudioController.Instance?.Play("castle_critical", 1f);
+                }
+                else if (hpRatio < 0.5f)
+                {
+                    // Medium: 0.5 amp / 250 ms + warning audio
+                    shakeAmp = 0.5f;
+                    shakeMs = 250;
+                    flashAlpha = 0.4f;
+                    flashMs = 200;
+                    AudioController.Instance?.Play("castle_damaged", 0.85f);
+                }
+                else
+                {
+                    // Light: 0.3 amp / 150 ms
+                    shakeAmp = 0.3f;
+                    shakeMs = 150;
+                    flashAlpha = 0.1f;
+                    flashMs = 100;
+                }
+
+                CameraController.Instance?.Shake(shakeAmp, shakeMs / 1000f);
+                JuiceFX.Instance?.Flash(new Color(1f, 0.2f, 0.2f, flashAlpha), flashMs);
+            }
 
             if (HP == 0)
             {
