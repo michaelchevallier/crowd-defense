@@ -244,6 +244,7 @@ namespace CrowdDefense.UI
 
         IEnumerator Fade(float from, float to, float duration)
         {
+            if (duration <= 0f) { SetAlpha(to); yield break; }
             float elapsed = 0f;
             while (elapsed < duration)
             {

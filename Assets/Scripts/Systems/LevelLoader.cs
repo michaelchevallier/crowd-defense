@@ -44,6 +44,15 @@ namespace CrowdDefense.Systems
             Fade("Main");
         }
 
+        // Skip avatar/hero pick screens — instant reload for Quick Retry.
+        public static void LoadLevelFast(string levelId)
+        {
+            SaveSystem.IsHardcoreRun = false;
+            NextLevelId = levelId;
+            NextDailySpec = null;
+            Fade("Main", default, 0f);
+        }
+
         public static void LoadDailyLevel()
         {
             NextDailySpec     = Daily.BuildDailyLevel();

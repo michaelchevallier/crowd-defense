@@ -23,6 +23,7 @@ namespace CrowdDefense.UI
         private Text?      _subtitleText;
         private Button?    _btnPrimary;
         private Button?    _btnSecondary;
+        private Button?    _btnQuickRetry;
         private Text?      _btnPrimaryLabel;
         private Text?      _btnSecondaryLabel;
 
@@ -435,6 +436,18 @@ namespace CrowdDefense.UI
                 SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
 
+        private void OnQuickRetryClicked()
+        {
+            Time.timeScale = 1f;
+            _panel?.SetActive(false);
+
+            var id = LevelRunner.Instance?.CurrentLevel?.Id;
+            if (!string.IsNullOrEmpty(id))
+                LevelLoader.LoadLevelFast(id!);
+            else
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
         private void OnSecondaryClicked()
         {
             if (!_isVictory)
@@ -800,16 +813,24 @@ namespace CrowdDefense.UI
                 fontSize: 16, color: ToastColor);
             _toastText.gameObject.SetActive(false);
 
-            // Primary button (Rejouer) — left
+            // Primary button (Rejouer) — left third
             (_btnPrimary, _btnPrimaryLabel) = CreateButton(panelGo.transform, "BtnPrimary",
-                anchorMin: new Vector2(0.05f, 0.02f),
-                anchorMax: new Vector2(0.47f, 0.11f));
+                anchorMin: new Vector2(0.04f, 0.02f),
+                anchorMax: new Vector2(0.36f, 0.11f));
             _btnPrimary.onClick.AddListener(OnPrimaryClicked);
 
-            // Secondary button (Continuer / Menu) — right
+            // Quick Retry button — centre, accent orange, no fade-out animation
+            (_btnQuickRetry, _) = CreateColoredButton(panelGo.transform, "BtnQuickRetry",
+                anchorMin: new Vector2(0.39f, 0.02f),
+                anchorMax: new Vector2(0.61f, 0.11f),
+                bgColor: new Color(0.85f, 0.45f, 0.05f, 1f),
+                labelText: "Quick Retry");
+            _btnQuickRetry.onClick.AddListener(OnQuickRetryClicked);
+
+            // Secondary button (Continuer / Menu) — right third
             (_btnSecondary, _btnSecondaryLabel) = CreateButton(panelGo.transform, "BtnSecondary",
-                anchorMin: new Vector2(0.53f, 0.02f),
-                anchorMax: new Vector2(0.95f, 0.11f));
+                anchorMin: new Vector2(0.64f, 0.02f),
+                anchorMax: new Vector2(0.96f, 0.11f));
             _btnSecondary.onClick.AddListener(OnSecondaryClicked);
 
             // Confirm modal — fullscreen overlay inside the canvas (not the panel)
