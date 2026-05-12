@@ -1654,14 +1654,20 @@ namespace CrowdDefense.Entities
 
             string deathClip = isBoss ? "enemy_die_boss" : (isMedium ? "enemy_die_medium" : "enemy_die_basic");
             AudioController.Instance?.Play(deathClip, isBoss ? 1f : 0.5f);
-            VfxPool.Instance?.SpawnDeath(transform.position, baseColor, isBoss);
+
+            float vfxIntensity = isBoss ? 5f : (isMedium ? 2f : 1f);
+            VfxPool.Instance?.SpawnDeath(transform.position, baseColor, vfxIntensity);
 
             if (isBoss)
             {
-                JuiceFX.Instance?.Shake(0.3f, 400);
+                JuiceFX.Instance?.Shake(0.6f, 400);
                 JuiceFX.Instance?.SlowMo(0.3f, 800);
                 JuiceFX.Instance?.Flash(Color.white, 250);
                 StartCoroutine(BossCinematic());
+            }
+            else if (isMedium)
+            {
+                JuiceFX.Instance?.Shake(0.3f, 200);
             }
 
             // Boss reward = 0× (D1-01 §3.3)

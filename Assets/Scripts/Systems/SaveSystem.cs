@@ -37,9 +37,20 @@ namespace CrowdDefense.Systems
         public string playerName  = "";
     }
 
+    // Alias for v3 leaderboard entries (same shape as LeaderboardEntry, separate type for forward-compat)
+    [Serializable]
+    public class EndlessRunRecord
+    {
+        public int    waveReached;
+        public int    score;
+        public string date       = "";
+        public string playerName = "";
+    }
+
     [Serializable]
     public class ProgressData
     {
+        public int Version = 2;
         public List<string> clearedLevels = new();
         public List<string> unlockedLevels = new() { "world1-1" };
         public List<LevelStars> levelStars = new();
@@ -65,6 +76,9 @@ namespace CrowdDefense.Systems
         // Active equipped skin per (targetType+targetId) key — flat list for JsonUtility
         public List<SkinEquipEntry> equippedSkins = new();
         public List<LeaderboardEntry> endlessLeaderboard = new();
+        // v3 fields
+        public List<string> heroFavorites = new();
+        public List<EndlessRunRecord> endlessLeaderboardV3 = new();
     }
 
     [Serializable]

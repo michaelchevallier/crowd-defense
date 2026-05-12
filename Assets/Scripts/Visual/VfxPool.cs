@@ -114,12 +114,20 @@ namespace CrowdDefense.Visual
             PlayAndAutoRelease(ps, _impactPool);
         }
 
-        public void SpawnDeath(Vector3 worldPos, Color tint, bool isBoss = false)
+        public void SpawnDeath(Vector3 worldPos, Color tint, float intensityMul = 1f)
         {
             if (!IsVfxEnabled() || _deathPool == null) return;
             var ps = _deathPool.Get();
             ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ps.transform.localScale = isBoss ? Vector3.one * 2.5f : Vector3.one;
+            ps.transform.localScale = Vector3.one * intensityMul;
+
+            var main = ps.main;
+            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(280 * intensityMul));
+            var emission = ps.emission;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f,
+                Mathf.RoundToInt(16 * intensityMul),
+                Mathf.RoundToInt(28 * intensityMul), 1, 0.01f) });
+
             ApplyTint(ps, tint);
             PlayAndAutoRelease(ps, _deathPool);
         }
@@ -132,7 +140,13 @@ namespace CrowdDefense.Visual
                 1 => new Color(0.9f, 0.3f, 0.9f),
                 _ => Color.white
             };
-            SpawnDeath(worldPos, tint, isBoss: tier >= 2);
+            float intensity = tier switch
+            {
+                2 => 5f,
+                1 => 2f,
+                _ => 1f
+            };
+            SpawnDeath(worldPos, tint, intensity);
         }
 
         public void SpawnExplosion(Vector3 worldPos, float radius = 2f)
