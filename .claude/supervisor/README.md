@@ -10,8 +10,11 @@ orchestrateur crowd-defense** (cette session).
 .claude/supervisor/
   README.md                       # ce fichier
   charter.md                      # règles permanentes scope R6 (read-only pour exec)
+  delegation.md                   # règles routing : quoi déléguer superviseur vs Mike
   active-sprint.md                # scope sprint en cours + time cap (écrit par Mike OU superviseur)
   instructions-to-exec.md         # canal SUPERVISEUR → EXEC (ordres ad-hoc)
+  questions-to-supervisor.md      # canal EXEC → SUPERVISEUR (Q&A async)
+  answers-from-supervisor.md      # canal SUPERVISEUR → EXEC (réponses Q&A)
   drift-reports/                  # rapports périodiques superviseur
     _clean-log.md                 # log silencieux (1 ligne par check OK)
     YYYY-MM-DD-HHhMM.md           # rapport quand drift détecté

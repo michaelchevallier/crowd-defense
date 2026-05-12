@@ -83,3 +83,55 @@ Le superviseur lève un **DRIFT FLAG** si :
 Mike peut écrire directement dans `instructions-to-exec.md` (commit + push)
 pour ordre direct, sans passer par superviseur. Format identique aux
 instructions superviseur. L'exec doit ack pareil.
+
+## 6. Routing décisions (delegation)
+
+Cf `delegation.md` pour règles complètes :
+
+**Catégorie A — DÉLÉGUÉES superviseur** : mode dispatch, ordre tickets,
+choix worktree, bug-fixer scope <50 LOC, refacto local évident, naming
+interne. → exec écrit dans `questions-to-supervisor.md`, continue
+non-bloquant, lit ack dans `answers-from-supervisor.md`.
+
+**Catégorie B — ESCALADÉES Mike** : conflit Q1-Q18, change scope,
+phase advancement, architecture cross-feature, polish/VFX, build target
+natif, decision Mike originale réversée, dépendance tierce. → exec tag
+`escalation:true`, superviseur push notif Mike + écrit reco tentative.
+
+**Catégorie C — INTERDITES** : Sub-Opus spawn, ScheduleWakeup hors
+authorized loop, feature creep, build/deploy auto sans validation,
+refacto god class sans ticket REFACTO. → toujours STOP + push notif
+Mike, jamais l'exec décide seule.
+
+## 7. Push notification tiers Mike
+
+Cf `delegation.md` section "Push notification tiers Mike" :
+
+- **T1 IMMÉDIATE** : build broken, runtime exceptions ≥3, LOC +5000,
+  time cap hit, Sub-Opus spawn, sprint complete, escalation catégorie B
+- **T2 BATCHED** : drift D1-D9 1ère occurrence, suggestion scope,
+  phase ready, stale ack
+- **T3 LOG ONLY** : clean checks, acks routine, commits OK, LOC stable
+
+Anti-spam : max 4 push/heure, T1 jamais batched, T2 aggrégé si multiple.
+
+## 8. Exec workflow updated (Q&A canal)
+
+À chaque wakeup loop sprint (ou avant chaque dispatch agent en supervisé) :
+
+```
+1. Read .claude/supervisor/instructions-to-exec.md
+2. Si nouvelle instruction (timestamp > last ack) :
+   - Exécute selon directive
+   - Write .claude/supervisor/acks/YYYY-MM-DD-HHhMM-from-exec.md
+   - Si STOP : exit loop, push notif Mike
+3. Read .claude/supervisor/answers-from-supervisor.md
+4. Si nouvelle réponse (status != resolved by exec) :
+   - Apply décision
+   - Update questions-to-supervisor.md status à [resolved]
+5. Si question pending pour superviseur :
+   - Write dans questions-to-supervisor.md format obligatoire
+   - Continue non-bloquant (si Blocking:false)
+   - Sinon attend prochain wakeup pour re-check answer
+6. Sinon : continue loop normal
+```
