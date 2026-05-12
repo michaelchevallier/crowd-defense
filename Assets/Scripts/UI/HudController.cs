@@ -56,6 +56,9 @@ namespace CrowdDefense.UI
         // Perk badges — sibling component wired after UIDocument root is ready
         private HudPerkBadges? _perkBadges;
 
+        // Sidebar showing all active perks of the current run
+        private CurrentRunPerksPanel? _perksPanel;
+
         // Keyboard hints footer label
         private Label? keyboardHintsLabel;
 
@@ -102,6 +105,8 @@ namespace CrowdDefense.UI
             EnsureSibling<HelpOverlayController>();
             EnsureSibling<QuickSaveHotkey>();
             EnsureSibling<KeyBindingsPanel>();
+            EnsureSibling<CurrentRunPerksPanel>();
+            _perksPanel = GetComponent<CurrentRunPerksPanel>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;
             ApplyDeviceClasses(root);
@@ -192,10 +197,12 @@ namespace CrowdDefense.UI
                 OnBreakStateChanged();
             }
 
-            // Wire perk badges once hero is known
+            // Wire perk badges + sidebar once hero is known
             var hero = LevelRunner.Instance?.Hero;
             if (_perkBadges != null && hero != null)
                 _perkBadges.Init(root, hero);
+            if (_perksPanel != null && hero != null)
+                _perksPanel.Init(root, hero);
         }
 
         private void OnDestroy()
