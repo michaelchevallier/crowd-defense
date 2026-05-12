@@ -215,7 +215,9 @@
 
         <!-- Minimap (top-right, 10 Hz update via MinimapController) -->
         <ui:Button name="minimap-toggle-btn" class="minimap-toggle-btn" text="M" tooltip="Minimap [M]" />
-        <ui:VisualElement name="minimap-container" class="minimap-container hidden" />
+        <ui:VisualElement name="minimap-container" class="minimap-container hidden">
+            <ui:VisualElement name="minimap-content" />
+        </ui:VisualElement>
 
         <!-- BluePill button (bottom-left, above hero panel, visible when hero alive) -->
         <ui:Button name="bluepill-btn" class="bluepill-btn hidden" text="BluePill [B]" />
