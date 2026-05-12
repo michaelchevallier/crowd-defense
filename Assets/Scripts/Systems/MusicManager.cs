@@ -16,8 +16,8 @@ namespace CrowdDefense.Systems
     /// </summary>
     public class MusicManager : MonoSingleton<MusicManager>
     {
-        private const float CrossfadeDuration = 0.8f;
-        private const float BossCrossfadeDuration = 1.5f;
+        private const float CrossfadeDuration = 2f;
+        private const float BossCrossfadeDuration = 2f;
         private const float BossFallbackVolBoost = 1.2f;
         private const float DuckMultiplier = 0.35f;
         private const float StingDuckDuration = 4.5f;
@@ -69,6 +69,8 @@ namespace CrowdDefense.Systems
             SceneManager.activeSceneChanged += HandleSceneChange;
             HandleSceneChange(default, SceneManager.GetActiveScene());
 
+            LevelEvents.OnLevelStart += OnLevelStart;
+
             var em = EventManager.Instance;
             if (em == null) return;
             em.Subscribe<LevelThemeChangedEvent>(OnLevelThemeChanged);
@@ -80,6 +82,8 @@ namespace CrowdDefense.Systems
         {
             SceneManager.activeSceneChanged -= HandleSceneChange;
 
+            LevelEvents.OnLevelStart -= OnLevelStart;
+
             var em = EventManager.Instance;
             if (em == null) return;
             em.Unsubscribe<LevelThemeChangedEvent>(OnLevelThemeChanged);
@@ -88,6 +92,23 @@ namespace CrowdDefense.Systems
         }
 
         // ── Public API ──────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Crossfade to a clip loaded from Resources/Audio/Music/. Maps well-known
+        /// names: "menu_theme" → menu, "wave_combat" → calm, "boss_fight" → boss.
+        /// Falls back to the named track key if no mapping exists.
+        /// </summary>
+        public void CrossfadeTo(string clipName, float fadeDur = 2f)
+        {
+            string track = clipName switch
+            {
+                "menu_theme"  => "menu",
+                "wave_combat" => "calm",
+                "boss_fight"  => "boss",
+                _             => clipName,
+            };
+            PlayWithCrossfade(track, fadeDur);
+        }
 
         /// <summary>
         /// Select and crossfade to a named track ("menu", "calm", "intense", "boss").
@@ -397,6 +418,8 @@ namespace CrowdDefense.Systems
         }
 
         // ── EventManager subscriptions ───────────────────────────────────────
+
+        private void OnLevelStart(CrowdDefense.Data.LevelData _, Bounds __)  => CrossfadeTo("wave_combat");
 
         private void OnLevelThemeChanged(LevelThemeChangedEvent evt) => PlayLevel(evt.ThemeName);
 
