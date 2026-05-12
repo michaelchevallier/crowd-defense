@@ -778,8 +778,37 @@ namespace CrowdDefense.Entities
             go.transform.localPosition = new Vector3(0f, 0.5f, 0.55f);
             go.transform.localScale    = new Vector3(0.7f, 0.9f, 0.08f);
             var rend = go.GetComponent<MeshRenderer>();
-            rend.material = BuildUnlitMaterial(new Color(0.38f, 0.22f, 0.08f), transparent: false);
+            rend.material = BuildGateMetallicMaterial();
             _gateDoor = go.transform;
+        }
+
+        // URP Lit — metallic 0.8, smoothness 0.6, dark bronze tint (#4A2C0A)
+        private static Material BuildGateMetallicMaterial()
+        {
+            // Dark bronze: R=0.29 G=0.17 B=0.04
+            var bronzeDark = new Color(0.29f, 0.17f, 0.04f, 1f);
+
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
+            if (shader != null)
+            {
+                var mat = new Material(shader);
+                mat.SetColor("_BaseColor", bronzeDark);
+                mat.SetFloat("_Metallic",    0.8f);
+                mat.SetFloat("_Smoothness",  0.6f);
+                mat.SetFloat("_Surface",     0f);   // Opaque
+                return mat;
+            }
+
+            // Fallback: Standard shader
+            var fallback = Shader.Find("Standard") ?? Shader.Find("Unlit/Color");
+            var fmat = new Material(fallback!);
+            fmat.color = bronzeDark;
+            if (fallback != null && fallback.name == "Standard")
+            {
+                fmat.SetFloat("_Metallic",   0.8f);
+                fmat.SetFloat("_Glossiness", 0.6f);
+            }
+            return fmat;
         }
 
         private void SubscribeWaveEvents()
