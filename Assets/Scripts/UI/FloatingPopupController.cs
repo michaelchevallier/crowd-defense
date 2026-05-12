@@ -144,6 +144,8 @@ namespace CrowdDefense.UI
                 var c = wp.Tmp.color;
                 c.a = 1f;
                 wp.Tmp.color = c;
+                wp.Go.transform.position = Vector3.zero;
+                wp.Go.transform.localScale = Vector3.one;
                 return wp;
             }
 
