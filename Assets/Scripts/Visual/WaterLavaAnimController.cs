@@ -23,6 +23,13 @@ namespace CrowdDefense.Visual
         // -------------------------------------------------------------------------
         // 8-frame colour palettes (placeholder — swap to texture frames later)
         // -------------------------------------------------------------------------
+        // TODO (C1-VISUAL-004): Replace colour animation with texture frame loading
+        //   - Create Editor tool: Assets/Editor/BuildWaterLavaFrames.cs MenuItem
+        //   - Generate 8 PNG water frames (deep blue → cyan oscillation)
+        //   - Generate 8 PNG lava frames (orange-red flicker)
+        //   - Save to Assets/Resources/Textures/Water_Frames/ + Lava_Frames/
+        //   - Update here: Load Resources textures + swap via MaterialPropertyBlock.SetTexture("_BaseMap", frame)
+        //   - Or: Accept placeholder colour (works, just less visual quality)
 
         // Water: gentle oscillation from deep blue → cyan-teal
         private static readonly Color[] _waterFrames =
