@@ -726,6 +726,8 @@ namespace CrowdDefense.Systems
             Hero.OnLevelUp += (_, _, _) =>
                 VfxPool.Instance?.SpawnLevelUp(Hero.transform.position + Vector3.up * 1.2f);
 
+            UI.PerkChoiceOverlay.EnsureInstance();
+
             var rs = SaveSystem.GetRunState();
             Hero.ApplyRunContext(
                 rs?.heroPerks ?? new List<string>(),
