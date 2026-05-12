@@ -951,7 +951,7 @@ namespace CrowdDefense.Entities
             // Static mode: animate in place, no movement
             if (_static)
             {
-                AnimationController.SetWalking(_animator, false);
+                if (_wasWalking) { AnimationController.SetWalking(_animator, false); _wasWalking = false; }
                 transform.rotation = Quaternion.Euler(0f, _staticRotY, 0f);
                 return;
             }
