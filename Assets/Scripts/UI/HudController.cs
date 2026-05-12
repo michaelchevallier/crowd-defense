@@ -75,14 +75,6 @@ namespace CrowdDefense.UI
         private static readonly Color _hpIconDefaultColor = new Color(0.86f, 0.20f, 0.13f);
         private static readonly Color _hpIconPulseColor   = Color.red;
 
-        // Hero damage red edge vignette flash
-        private VisualElement? _damageVignette;
-        private float _vignetteAlpha     = 0f;
-        private float _vignetteTarget    = 0f;
-        private float _vignetteFadeTimer = 0f; // elapsed since last hit trigger
-        private const float VignetteFadeInDur  = 0.05f;
-        private const float VignetteFadeOutDur = 0.4f;
-
         // Bank pill (D1-01 §3.5)
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
@@ -381,7 +373,6 @@ namespace CrowdDefense.UI
             BuildWaveProgressDots(root);
             BuildWaveIntroBanner(root);
             BuildWaveSummaryPanel(root);
-            BuildDamageVignette(root);
             BindWavePreview(root);
             BuildEnemyIntelPopup(root);
             BuildTutorialPopup(root);
@@ -456,8 +447,6 @@ namespace CrowdDefense.UI
             EventManager.Instance?.Subscribe<ComboResetEvent>(HandleComboReset);
             EventManager.Instance?.Subscribe<EnemySpawnedEvent>(HandleEnemySpawned);
             Enemy.OnDeathStatic += HandleEnemyDeath;
-            Hero.OnHeroDamaged  += OnHeroDamaged;
-            Hero.OnHeroRespawned += OnHeroRespawnedHandler;
             Systems.LevelEvents.OnLevelStart += OnLevelStart;
 
             // Wire perk badges + sidebar once hero is known
@@ -495,8 +484,6 @@ namespace CrowdDefense.UI
             EventManager.Instance?.Unsubscribe<ComboResetEvent>(HandleComboReset);
             EventManager.Instance?.Unsubscribe<EnemySpawnedEvent>(HandleEnemySpawned);
             Enemy.OnDeathStatic  -= HandleEnemyDeath;
-            Hero.OnHeroDamaged   -= OnHeroDamaged;
-            Hero.OnHeroRespawned -= OnHeroRespawnedHandler;
             Systems.LevelEvents.OnLevelStart -= OnLevelStart;
         }
 
@@ -1485,70 +1472,6 @@ namespace CrowdDefense.UI
             _castleRegenIcon.AddToClassList("hidden");
             _castleRegenIcon.RemoveFromClassList("castle-regen-pulse");
             _regenIconCoroutine = null;
-        }
-
-        // ── Hero damage vignette ──────────────────────────────────────────────
-
-        private void BuildDamageVignette(VisualElement root)
-        {
-            _damageVignette = new VisualElement { name = "hero-damage-vignette" };
-            _damageVignette.style.position = Position.Absolute;
-            _damageVignette.style.left   = 0; _damageVignette.style.right  = 0;
-            _damageVignette.style.top    = 0; _damageVignette.style.bottom = 0;
-            _damageVignette.style.backgroundColor = new StyleColor(new Color(1f, 0f, 0f, 0f));
-            _damageVignette.pickingMode = PickingMode.Ignore;
-            _damageVignette.style.opacity = 0f;
-            root.Add(_damageVignette);
-        }
-
-        private void OnHeroDamaged(float dmg)
-        {
-            float intensity = Mathf.Min(0.6f, dmg / 30f);
-            _vignetteTarget    = Mathf.Max(_vignetteAlpha, intensity);
-            _vignetteFadeTimer = 0f;
-
-            var ac = AudioController.Instance;
-            if (ac != null)
-            {
-                try
-                {
-                    if (ac.GetClip("hero_hurt") != null)
-                        ac.PlayPitched("hero_hurt", 0.5f, UnityEngine.Random.Range(0.95f, 1.05f));
-                }
-                catch { /* clip absent — skip silently */ }
-            }
-        }
-
-        private void OnHeroRespawnedHandler()
-        {
-            _vignetteAlpha     = 0f;
-            _vignetteTarget    = 0f;
-            _vignetteFadeTimer = VignetteFadeInDur + VignetteFadeOutDur + 1f;
-            if (_damageVignette != null)
-                _damageVignette.style.opacity = 0f;
-        }
-
-        private void TickDamageVignette()
-        {
-            if (_damageVignette == null) return;
-            if (_vignetteTarget <= 0f && _vignetteAlpha <= 0f) return;
-
-            _vignetteFadeTimer += Time.unscaledDeltaTime;
-
-            if (_vignetteFadeTimer < VignetteFadeInDur)
-            {
-                float t = _vignetteFadeTimer / VignetteFadeInDur;
-                _vignetteAlpha = Mathf.Lerp(0f, _vignetteTarget, t);
-            }
-            else
-            {
-                float t = Mathf.Clamp01((_vignetteFadeTimer - VignetteFadeInDur) / VignetteFadeOutDur);
-                _vignetteAlpha = Mathf.Lerp(_vignetteTarget, 0f, t);
-                if (t >= 1f) { _vignetteAlpha = 0f; _vignetteTarget = 0f; }
-            }
-
-            _damageVignette.style.opacity = _vignetteAlpha;
-            _damageVignette.style.backgroundColor = new StyleColor(new Color(1f, 0f, 0f, _vignetteAlpha));
         }
 
         private void ApplyResponsiveClass()

@@ -167,15 +167,6 @@ namespace CrowdDefense.Entities
             if (_isDead) return;
             _isDead = true;
 
-            // Zero out weapon glow on death to avoid stale emission when re-enabling
-            if (_weaponRenderer != null && _weaponMpb != null)
-            {
-                _weaponGlowIntensity = 0f;
-                _weaponRenderer.GetPropertyBlock(_weaponMpb);
-                _weaponMpb.SetColor(EmissionColorId, Color.black);
-                _weaponRenderer.SetPropertyBlock(_weaponMpb);
-            }
-
             gameObject.SetActive(false);
             JuiceFX.Instance?.Flash(new Color(1f, 0f, 0f, 0.45f), 600);
             AudioController.Instance?.Play("hero_death", 1.2f);
@@ -217,131 +208,20 @@ namespace CrowdDefense.Entities
 
         private void RespawnAtCastle()
         {
-            StartCoroutine(RespawnCinematic());
-        }
-
-        // ── Respawn cinematic (1.5s) ──────────────────────────────────────────
-        // Phase 1 (0–0.5s)  : light beam from sky builds in intensity
-        // Phase 2 (0.5–1.0s): hero materializes scale 0→1, alpha 0→1
-        // Phase 3 (1.0–1.5s): beam fades, hero settled
-        // Post (1.5–6.5s)   : gold point-light glow aura fades out
-        private System.Collections.IEnumerator RespawnCinematic()
-        {
             _isDead = false;
+            CrowdDefense.UI.HeroPortraitController.Instance?.CleanupUltimateRing();
 
             var castlePos = Castle.Instance != null
                 ? Castle.Instance.transform.position
                 : transform.position;
-            var spawnPos = castlePos + Vector3.up * 0.1f;
-            transform.position = spawnPos;
-
-            _hp           = _maxHp * 0.5f;
-            _invulTimer   = InvulDuration + 1.5f; // cinematic is also invuln
-
-            // Hero hidden until phase 2
-            gameObject.SetActive(true);
-            var renderers = GetComponentsInChildren<Renderer>(includeInactive: true);
-            var mpb = new MaterialPropertyBlock();
-            foreach (var r in renderers)
-            {
-                r.GetPropertyBlock(mpb);
-                mpb.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0f));
-                mpb.SetColor("_Color",     new Color(1f, 1f, 1f, 0f));
-                r.SetPropertyBlock(mpb);
-            }
-            transform.localScale = Vector3.zero;
-
-            // Audio kick-off (skip silently if clip not loaded)
-            AudioController.Instance?.Play("hero_respawn_horn", 1.0f);
-
-            // ── Sky beam setup (LineRenderer, 2 verts, world space) ───────────
-            const float BeamHeight    = 12f;
-            const float BeamWidth     = 0.25f;
-            var beamGo = new GameObject("RespawnBeam_VFX");
-            beamGo.transform.SetParent(null);
-
-            var lr = beamGo.AddComponent<LineRenderer>();
-            lr.positionCount  = 2;
-            lr.useWorldSpace  = true;
-            lr.loop           = false;
-            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            lr.receiveShadows = false;
-            lr.startWidth     = BeamWidth;
-            lr.endWidth       = BeamWidth;
-            lr.SetPosition(0, spawnPos + Vector3.up * BeamHeight);
-            lr.SetPosition(1, spawnPos);
-
-            var beamMat = new Material(
-                Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                ?? Shader.Find("Sprites/Default")
-                ?? Shader.Find("Standard")!);
-            beamMat.SetFloat("_Surface", 1f);
-            beamMat.SetInt("_ZWrite",   0);
-            beamMat.renderQueue = 3000;
-            lr.material = beamMat;
-
-            // ── Phase 1: beam builds (0–0.5s) ────────────────────────────────
-            const float Phase1 = 0.5f;
-            var beamColorFull  = new Color(1f, 0.95f, 0.6f, 1f);
-            var beamColorClear = new Color(1f, 0.95f, 0.6f, 0f);
-            float t1 = 0f;
-            while (t1 < Phase1)
-            {
-                t1 += Time.deltaTime;
-                float pct = Mathf.Clamp01(t1 / Phase1);
-                lr.startColor = Color.Lerp(beamColorClear, beamColorFull, pct);
-                lr.endColor   = lr.startColor;
-                float w = Mathf.Lerp(0f, BeamWidth, pct);
-                lr.startWidth = w;
-                lr.endWidth   = w;
-                yield return null;
-            }
-
-            // ── Phase 2: hero materializes (0.5–1.0s) ────────────────────────
-            const float Phase2 = 0.5f;
-            var heroColorFull  = new Color(1f, 1f, 1f, 1f);
-            float t2 = 0f;
-            while (t2 < Phase2)
-            {
-                t2 += Time.deltaTime;
-                float pct = Mathf.Clamp01(t2 / Phase2);
-                // scale 0 → 1
-                transform.localScale = Vector3.one * pct;
-                // alpha 0 → 1
-                var col = Color.Lerp(new Color(1f, 1f, 1f, 0f), heroColorFull, pct);
-                foreach (var r in renderers)
-                {
-                    r.GetPropertyBlock(mpb);
-                    mpb.SetColor("_BaseColor", col);
-                    mpb.SetColor("_Color",     col);
-                    r.SetPropertyBlock(mpb);
-                }
-                yield return null;
-            }
-            // Ensure full alpha + scale
+            transform.position   = castlePos + Vector3.up * 0.1f;
             transform.localScale = Vector3.one;
-            foreach (var r in renderers)
-            {
-                r.GetPropertyBlock(mpb);
-                mpb.SetColor("_BaseColor", heroColorFull);
-                mpb.SetColor("_Color",     heroColorFull);
-                r.SetPropertyBlock(mpb);
-            }
 
-            // ── Phase 3: beam fades (1.0–1.5s) ───────────────────────────────
-            const float Phase3 = 0.5f;
-            float t3 = 0f;
-            while (t3 < Phase3)
-            {
-                t3 += Time.deltaTime;
-                float pct = Mathf.Clamp01(t3 / Phase3);
-                lr.startColor = Color.Lerp(beamColorFull, beamColorClear, pct);
-                lr.endColor   = lr.startColor;
-                yield return null;
-            }
-            Destroy(beamGo);
+            _hp         = _maxHp * 0.5f;
+            _invulTimer = InvulDuration;
 
-            // ── Post-cinematic gameplay feedback ──────────────────────────────
+            gameObject.SetActive(true);
+
             JuiceFX.Instance?.Flash(new Color(0.3f, 1f, 0.4f, 0.35f), 400);
             VfxPool.Instance?.SpawnLevelUp(transform.position + Vector3.up * 1f);
             AudioController.Instance?.Play("hero_levelup", 0.9f);
@@ -350,35 +230,6 @@ namespace CrowdDefense.Entities
                 "RESPAWN!", transform.position + Vector3.up * 2f, Color.green);
             StartCoroutine(InvulFlashRoutine());
             OnHeroRespawned?.Invoke();
-
-            // ── Glow aura: gold point light, 5s fade ─────────────────────────
-            StartCoroutine(RespawnGlowAuraRoutine());
-        }
-
-        private System.Collections.IEnumerator RespawnGlowAuraRoutine()
-        {
-            const float AuraDuration  = 5f;
-            const float AuraIntensity = 2f;
-            const float AuraRange     = 3f;
-
-            var auraGo = new GameObject("RespawnAura_VFX");
-            auraGo.transform.SetParent(transform);
-            auraGo.transform.localPosition = Vector3.up * 0.8f;
-
-            var auraLight = auraGo.AddComponent<Light>();
-            auraLight.type      = LightType.Point;
-            auraLight.color     = new Color(1f, 0.84f, 0.1f);
-            auraLight.intensity = AuraIntensity;
-            auraLight.range     = AuraRange;
-
-            float elapsed = 0f;
-            while (elapsed < AuraDuration)
-            {
-                elapsed += Time.deltaTime;
-                auraLight.intensity = Mathf.Lerp(AuraIntensity, 0f, elapsed / AuraDuration);
-                yield return null;
-            }
-            Destroy(auraGo);
         }
 
         private System.Collections.IEnumerator InvulFlashRoutine()
@@ -398,12 +249,6 @@ namespace CrowdDefense.Entities
         // ── Nth-projectile AoE counter ────────────────────────────────────────
         private int _projFiredCount;
 
-        // ── Swing arc VFX (cached material, allocated once) ───────────────────
-        private Material? _swingArcMat;
-
-        // ── Ultimate cast window (skip swing arc while ult animation plays) ───
-        private float _ultCastWindow;
-
         // ── Ultimate (slot 2 / E — existing) ─────────────────────────────────
         private float _ultCooldown;
 
@@ -414,27 +259,10 @@ namespace CrowdDefense.Entities
         private const int   UltimateUnlockLevel = 10;
         private float _ultimateCooldown;
 
-        // ── Ultimate charge-up windup (0.5s) ──────────────────────────────────
-        private const float ChargeUpDuration    = 0.5f;
-        private const float ChargeUpFadeDuration = 0.3f;
-        private const int   ChargeParticleCount  = 16;
-        private const float ChargeGatherRadius   = 3f;
-        private bool _ultChargingUp;
-        private Coroutine? _ultChargeRoutine;
-        // Pre-allocated particle GOs — created once on first charge, reused
-        private readonly GameObject?[] _chargeParticles = new GameObject?[ChargeParticleCount];
-        private Light? _chargeLight;
-
         // ── Aura pulse ────────────────────────────────────────────────────────
         private float _heroPulseT;
         private Renderer? _auraRenderer;
         private Renderer? _haloRenderer;
-
-        // ── Weapon idle glow pulse ────────────────────────────────────────────
-        private Renderer?            _weaponRenderer;
-        private MaterialPropertyBlock? _weaponMpb;
-        private static readonly int  EmissionColorId = Shader.PropertyToID("_EmissionColor");
-        private float                _weaponGlowIntensity;
 
         // ── Animator ──────────────────────────────────────────────────────────
         private Animator? _animator;
@@ -469,9 +297,6 @@ namespace CrowdDefense.Entities
             _ultCooldown      = 0f;
             _ultimateCooldown = 0f;
 
-            if (_ultChargeRoutine != null) { StopCoroutine(_ultChargeRoutine); _ultChargeRoutine = null; }
-            _ultChargingUp = false;
-            for (int i = 0; i < ChargeParticleCount; i++) _chargeParticles[i]?.SetActive(false);
             _autoAttack  = PlayerPrefs.GetInt(AutoAttackPrefsKey, 1) != 0;
             _maxHp       = DefaultMaxHp;
             _hp          = _maxHp;
@@ -481,8 +306,6 @@ namespace CrowdDefense.Entities
 
             transform.position = spawnPos;
             transform.localScale = Vector3.one * type.ModelScale;
-            _lastPos          = spawnPos;
-            _lastFootstepTime = -1f;
 
             MaxLevel = type.MaxLevel;
             Level    = 1;
@@ -506,64 +329,9 @@ namespace CrowdDefense.Entities
             BuildAuraDecals();
             BuildPerkIcons();
             BuildCrownQuad();
-            CacheWeaponRenderer();
         }
 
         // ── Weapon renderer cache (called after mesh spawn in Init) ──────────
-        private void CacheWeaponRenderer()
-        {
-            _weaponRenderer = null;
-            _weaponMpb ??= new MaterialPropertyBlock();
-            _weaponGlowIntensity = 0f;
-
-            // Priority: named weapon/sword/blade child
-            foreach (var r in GetComponentsInChildren<Renderer>(includeInactive: true))
-            {
-                string n = r.gameObject.name.ToLowerInvariant();
-                if (n.Contains("sword") || n.Contains("weapon") || n.Contains("blade")
-                    || n.Contains("staff") || n.Contains("wand") || n.Contains("bow"))
-                {
-                    _weaponRenderer = r;
-                    return;
-                }
-            }
-
-            // Fallback: first MeshRenderer/SkinnedMeshRenderer that isn't a known overlay
-            foreach (var r in GetComponentsInChildren<Renderer>(includeInactive: true))
-            {
-                string n = r.gameObject.name.ToLowerInvariant();
-                if (n.StartsWith("heroarea") || n.StartsWith("herohalo")
-                    || n.StartsWith("perkicon") || n.StartsWith("crown")
-                    || n.StartsWith("capecollidr") || n.StartsWith("outline"))
-                    continue;
-                if (r is MeshRenderer or SkinnedMeshRenderer)
-                {
-                    _weaponRenderer = r;
-                    return;
-                }
-            }
-        }
-
-        // ── Weapon idle glow tick (called from Update) ────────────────────────
-        private void TickWeaponGlow()
-        {
-            if (_weaponRenderer == null || _weaponMpb == null) return;
-
-            bool inCombat = _attackAnimTimer > 0f;
-            float targetIntensity = inCombat
-                ? 0f
-                : 0.3f + Mathf.Sin(Time.time * 1.5f) * 0.2f;   // 1.5 Hz pulse, range [0.1, 0.5]
-
-            // Smooth transition in/out (0→idle over ~0.4s, idle→0 immediately)
-            _weaponGlowIntensity = inCombat
-                ? Mathf.MoveTowards(_weaponGlowIntensity, 0f, Time.deltaTime * 4f)
-                : targetIntensity;
-
-            _weaponRenderer.GetPropertyBlock(_weaponMpb);
-            _weaponMpb.SetColor(EmissionColorId, Color.white * _weaponGlowIntensity);
-            _weaponRenderer.SetPropertyBlock(_weaponMpb);
-        }
-
         // ── Mesh spawn (mirrors Tower.SpawnMeshChild) ─────────────────────────
         private GameObject? SpawnMeshChild(string assetKey)
         {
@@ -944,7 +712,6 @@ namespace CrowdDefense.Entities
             if (cfg == null) return false;
 
             _ultCooldown    = cfg.UltCooldownMs / 1000f;
-            _ultCastWindow  = 0.5f;
             FireUltFan();
             FireUltAoe();
             TriggerUltVfx();
@@ -1156,113 +923,21 @@ namespace CrowdDefense.Entities
         {
             if (!IsUltimateUnlocked) return false;
             if (_ultimateCooldown > 0f) return false;
-            if (_ultChargingUp) return false;
             if (WaveManager.Instance == null) return false;
 
             _ultimateCooldown = UltimateCooldown;
-            _ultChargeRoutine = StartCoroutine(UltimateChargeUp());
-            return true;
-        }
-
-        private System.Collections.IEnumerator UltimateChargeUp()
-        {
-            _ultChargingUp = true;
-
-            // Ensure particle pool exists (allocated once, reused)
-            EnsureChargeParticles();
-
-            // Snapshot origin for the entire charge-up (hero may not move during this)
-            var originPos = transform.position;
-            var baseScale = transform.localScale;
-
-            // Phase 1: 0 → ChargeUpDuration (0.5s) charge-up
-            // - Hero crouches (scale Y → 0.85)
-            // - 16 gold particles converge from radius 3m
-            // - Point light intensity 0 → 4
-            // - Audio pitch sweep 0.8 → 1.3
-            if (_chargeLight == null)
-            {
-                var lightGo = new GameObject("UltChargeLight");
-                lightGo.transform.SetParent(transform);
-                lightGo.transform.localPosition = Vector3.up * 1.5f;
-                _chargeLight = lightGo.AddComponent<Light>();
-                _chargeLight.type  = LightType.Point;
-                _chargeLight.color = new Color(1f, 0.85f, 0.15f);
-                _chargeLight.range = 6f;
-            }
-            _chargeLight.intensity = 0f;
-            _chargeLight.gameObject.SetActive(true);
-
-            // Position particles at gather-radius offsets around hero
-            for (int i = 0; i < ChargeParticleCount; i++)
-            {
-                var p = _chargeParticles[i];
-                if (p == null) continue;
-                float angle = i * (2f * Mathf.PI / ChargeParticleCount);
-                float startX = originPos.x + Mathf.Cos(angle) * ChargeGatherRadius;
-                float startZ = originPos.z + Mathf.Sin(angle) * ChargeGatherRadius;
-                p.transform.position = new Vector3(startX, originPos.y + 0.5f, startZ);
-                p.SetActive(true);
-            }
-
-            float elapsed = 0f;
-            while (elapsed < ChargeUpDuration)
-            {
-                elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / ChargeUpDuration);
-
-                // Crouch: scale Y lerp 1 → 0.85
-                var s = baseScale;
-                s.y = Mathf.Lerp(baseScale.y, baseScale.y * 0.85f, t);
-                transform.localScale = s;
-
-                // Light intensity 0 → 4
-                if (_chargeLight != null)
-                    _chargeLight.intensity = Mathf.Lerp(0f, 4f, t);
-
-                // Particles converge toward hero center
-                for (int i = 0; i < ChargeParticleCount; i++)
-                {
-                    var p = _chargeParticles[i];
-                    if (p == null) continue;
-                    float angle = i * (2f * Mathf.PI / ChargeParticleCount);
-                    float startX = originPos.x + Mathf.Cos(angle) * ChargeGatherRadius;
-                    float startZ = originPos.z + Mathf.Sin(angle) * ChargeGatherRadius;
-                    var startPt = new Vector3(startX, originPos.y + 0.5f, startZ);
-                    var endPt   = originPos + Vector3.up * 1f;
-                    p.transform.position = Vector3.Lerp(startPt, endPt, t);
-
-                    // Pulse scale with time
-                    float pulse = 1f + 0.3f * Mathf.Sin(elapsed * 20f + i);
-                    p.transform.localScale = Vector3.one * pulse * 0.18f;
-                }
-
-                // Audio pitch sweep via repeated plays with interpolated pitch — play once
-                // AudioController doesn't expose pitch-sweep, so we drive a repeating
-                // "ultimate_charge" trigger only if it hasn't been started yet.
-                if (elapsed <= Time.deltaTime * 1.5f)
-                    AudioController.Instance?.Play("ultimate_charge", Mathf.Lerp(0.8f, 1.3f, t));
-
-                yield return null;
-            }
-
-            // Phase 2: t=0.5s — fire the actual AoE
-            _ultCastWindow = 0.5f;
 
             var pos = transform.position;
             float baseDmg = cfg != null ? cfg.UltAoeDamage : 15f;
             float dmg = baseDmg * UltimateDmgMul * DamageMul;
             float r2  = UltimateAoeRadius * UltimateAoeRadius;
-            if (WaveManager.Instance != null)
+            var active = WaveManager.Instance.ActiveEnemies;
+            for (int i = active.Count - 1; i >= 0; i--)
             {
-                var active = WaveManager.Instance.ActiveEnemies;
-                for (int i = active.Count - 1; i >= 0; i--)
-                {
-                    var e = active[i];
-                    if (e == null || e.IsDead) continue;
-                    if ((e.transform.position - pos).sqrMagnitude < r2)
-                        e.TakeDamage(dmg);
-                }
+                var e = active[i];
+                if (e == null || e.IsDead) continue;
+                if ((e.transform.position - pos).sqrMagnitude < r2)
+                    e.TakeDamage(dmg);
             }
 
             VfxPool.Instance?.SpawnDeath(pos + Vector3.up, new Color(0.9f, 0.3f, 1f), intensityMul: 3.0f);
@@ -1271,153 +946,8 @@ namespace CrowdDefense.Entities
             JuiceFX.Instance?.Flash(new Color(0.8f, 0.2f, 1f, 0.45f), 450);
             JuiceFX.Instance?.Shake(0.3f, 400);
             FloatingPopupController.Instance?.SpawnReward("ULTIMATE!", pos + Vector3.up * 2.5f, new Color(0.9f, 0.3f, 1f));
-            SpawnUltimateShockwave(pos, UltimateAoeRadius);
             OnUltFired?.Invoke();
-
-            // Hide particles immediately after firing
-            for (int i = 0; i < ChargeParticleCount; i++)
-                _chargeParticles[i]?.SetActive(false);
-
-            // Phase 3: 0 → ChargeUpFadeDuration (0.3s) — hero un-crouches, light fades
-            float fadeElapsed = 0f;
-            float scaleYAtFire = transform.localScale.y;
-            while (fadeElapsed < ChargeUpFadeDuration)
-            {
-                fadeElapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(fadeElapsed / ChargeUpFadeDuration);
-
-                var s = transform.localScale;
-                s.y = Mathf.Lerp(scaleYAtFire, baseScale.y, t);
-                transform.localScale = s;
-
-                if (_chargeLight != null)
-                    _chargeLight.intensity = Mathf.Lerp(4f, 0f, t);
-
-                yield return null;
-            }
-
-            // Cleanup
-            transform.localScale = baseScale;
-            if (_chargeLight != null)
-            {
-                _chargeLight.intensity = 0f;
-                _chargeLight.gameObject.SetActive(false);
-            }
-
-            _ultChargingUp    = false;
-            _ultChargeRoutine = null;
-        }
-
-        private void EnsureChargeParticles()
-        {
-            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                      ?? Shader.Find("Sprites/Default")
-                      ?? Shader.Find("Standard");
-
-            for (int i = 0; i < ChargeParticleCount; i++)
-            {
-                if (_chargeParticles[i] != null) continue;
-
-                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.name = $"UltChargeParticle_{i}";
-                // Remove collider — purely visual
-                Object.Destroy(go.GetComponent<Collider>());
-
-                var rend = go.GetComponent<Renderer>();
-                var mat = new Material(shader!)
-                {
-                    color = new Color(1f, 0.85f, 0.15f, 0.9f)
-                };
-                mat.SetFloat("_Surface", 1f);
-                mat.SetInt("_ZWrite", 0);
-                mat.renderQueue = 3000;
-                rend.material   = mat;
-                rend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-                rend.receiveShadows    = false;
-
-                go.transform.localScale = Vector3.one * 0.18f;
-                go.SetActive(false);
-                _chargeParticles[i] = go;
-            }
-        }
-
-        // ── Ultimate shockwave VFX ────────────────────────────────────────────
-        private static readonly Color ShockwaveColorStart = new(1f, 0.95f, 0.5f, 0.9f);
-        private static readonly Color ShockwaveColorEnd   = new(1f, 0.95f, 0.5f, 0f);
-
-        private void SpawnUltimateShockwave(Vector3 center, float radius)
-        {
-            AudioController.Instance?.Play("hero_ultimate_shockwave", 1.5f);
-
-            StartCoroutine(ShockwaveRingRoutine(center, radius, 0.6f, 0.9f, outerRing: true));
-            StartCoroutine(ShockwaveRingRoutine(center, radius * 0.6f, 0.3f, 1.0f, outerRing: false));
-        }
-
-        private System.Collections.IEnumerator ShockwaveRingRoutine(
-            Vector3 center, float finalRadius, float duration, float startAlpha, bool outerRing)
-        {
-            const int Segments = 64;
-            float groundY = center.y + 0.1f;
-
-            var go = new GameObject("UltimateShockwave");
-            go.transform.SetParent(null);
-            go.transform.position = center;
-
-            var lr = go.AddComponent<LineRenderer>();
-            lr.loop              = true;
-            lr.positionCount     = Segments;
-            lr.useWorldSpace     = true;
-            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            lr.receiveShadows    = false;
-
-            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                      ?? Shader.Find("Sprites/Default")
-                      ?? Shader.Find("Standard");
-            var mat = new Material(shader!)
-            {
-                color = outerRing ? ShockwaveColorStart : Color.white
-            };
-            mat.SetFloat("_Surface", 1f);
-            mat.SetInt("_ZWrite", 0);
-            mat.renderQueue = 3000;
-            lr.material = mat;
-
-            // Pre-allocate position array — reused each frame, no GC per-frame
-            var positions = new Vector3[Segments];
-
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                float t      = Mathf.Clamp01(elapsed / duration);
-                float eased  = 1f - (1f - t) * (1f - t);          // ease-out quad
-                float radius = eased * finalRadius;
-                float alpha  = Mathf.Lerp(startAlpha, 0f, t);
-                float width  = Mathf.Lerp(outerRing ? 0.5f : 0.3f, 0f, t);
-
-                lr.startWidth = width;
-                lr.endWidth   = width;
-
-                var ringColor = outerRing
-                    ? new Color(1f, 0.95f, 0.5f, alpha)
-                    : new Color(1f, 1f, 1f, alpha);
-                lr.startColor = ringColor;
-                lr.endColor   = ringColor;
-
-                for (int i = 0; i < Segments; i++)
-                {
-                    float angle = i * (2f * Mathf.PI / Segments);
-                    positions[i] = new Vector3(
-                        center.x + Mathf.Cos(angle) * radius,
-                        groundY,
-                        center.z + Mathf.Sin(angle) * radius);
-                }
-                lr.SetPositions(positions);
-
-                yield return null;
-            }
-
-            Destroy(go);
+            return true;
         }
 
         // ── Tower aura query (used by Synergies.cs) ───────────────────────────
@@ -1451,7 +981,6 @@ namespace CrowdDefense.Entities
 
             _ultCooldown      = Mathf.Max(0f, _ultCooldown - dt);
             _ultimateCooldown = Mathf.Max(0f, _ultimateCooldown - dt);
-            _ultCastWindow    = Mathf.Max(0f, _ultCastWindow - dt);
             _cooldown         = Mathf.Max(0f, _cooldown - dt);
             if (_invulTimer > 0f) _invulTimer = Mathf.Max(0f, _invulTimer - dt);
 
@@ -1459,10 +988,8 @@ namespace CrowdDefense.Entities
             UpdatePerkIconsBillboard();
             UpdateAttackAnimTimer(dt);
             UpdateMovement(dt);
-            UpdateFootstepDust();
             UpdateCombat();
             UpdateProjectiles(dt);
-            if (!_isDead) TickWeaponGlow();
         }
 
         // ── Aura pulse ────────────────────────────────────────────────────────
@@ -1489,7 +1016,6 @@ namespace CrowdDefense.Entities
         private void UpdateMovement(float dt)
         {
             if (cfg == null) return;
-            if (_ultChargingUp) return;
 
             _smoothedMoveDir = Vector2.MoveTowards(_smoothedMoveDir, _moveDir, MoveAccel * dt);
             bool moving = _smoothedMoveDir.sqrMagnitude > 0.01f;
@@ -1544,56 +1070,6 @@ namespace CrowdDefense.Entities
                 if (fwd != Vector3.zero)
                     transform.rotation = Quaternion.LookRotation(fwd);
             }
-        }
-
-        // ── Footstep dust ─────────────────────────────────────────────────────
-        private void UpdateFootstepDust()
-        {
-            var currentPos = transform.position;
-            var delta      = currentPos - _lastPos;
-            _lastPos = currentPos;
-
-            // XZ speed in world units/s — Y ignored (ground movement only)
-            float speed = new Vector2(delta.x, delta.z).magnitude / Mathf.Max(Time.deltaTime, 0.0001f);
-
-            bool running  = speed > 3f;
-            float interval = running ? 0.2f : 0.3f;
-
-            if (speed > 0.5f && (Time.time - _lastFootstepTime) >= interval)
-            {
-                _lastFootstepTime = Time.time;
-
-                var spawnPos = currentPos + new Vector3(0f, 0.05f, 0f);
-                var vfx = VfxPool.Instance;
-                if (vfx != null)
-                {
-                    int bursts = running ? 2 : 1;
-                    for (int i = 0; i < bursts; i++)
-                        vfx.SpawnSpark(spawnPos, _footstepDustTint);
-                }
-
-                AudioController.Instance?.PlayPitched(_footstepAudioKey, 0.2f,
-                    UnityEngine.Random.Range(0.9f, 1.1f));
-            }
-        }
-
-        private void OnLevelStarted(LevelData data, Bounds _) =>
-            UpdateFootstepDustTheme(data.LevelTheme);
-
-        // No allocations — called once per level load, not per frame.
-        private void UpdateFootstepDustTheme(LevelTheme theme)
-        {
-            (_footstepDustTint, _footstepAudioKey) = theme switch
-            {
-                LevelTheme.Foret      => (new Color(0.5f, 0.6f,  0.3f,  0.6f), "footstep_grass"),
-                LevelTheme.Desert     => (new Color(0.95f, 0.85f, 0.6f,  0.7f), "footstep_sand"),
-                LevelTheme.Volcan     => (new Color(0.4f,  0.3f,  0.25f, 0.7f), "footstep_lava"),
-                LevelTheme.Submarin   => (new Color(0.3f,  0.5f,  0.6f,  0.6f), "footstep_water"),
-                LevelTheme.Medieval   => (new Color(0.55f, 0.5f,  0.4f,  0.6f), "footstep_stone"),
-                LevelTheme.Apocalypse => (new Color(0.4f,  0.38f, 0.35f, 0.7f), "footstep_dirt"),
-                LevelTheme.Cyberpunk  => (new Color(0.2f,  0.25f, 0.35f, 0.6f), "footstep_stone"),
-                _                     => (new Color(0.7f,  0.65f, 0.55f, 0.6f), "footstep_dirt"),
-            };
         }
 
         // Returns false if the world position falls on a non-walkable blocking cell (W or L)
@@ -1710,10 +1186,6 @@ namespace CrowdDefense.Entities
             // Muzzle VFX
             VfxPool.Instance?.SpawnImpact(start + baseDir * 0.4f, new Color(1f, 0.957f, 0.835f));
 
-            // Swing arc trail (skip during ult cast window)
-            if (_ultCastWindow <= 0f)
-                SpawnSwingArc(transform.position + Vector3.up * 0.9f, baseDir);
-
             // Audio canonical key from Audio.js: "hero_shoot"
             AudioController.Instance?.Play("hero_shoot", 0.7f);
         }
@@ -1750,99 +1222,6 @@ namespace CrowdDefense.Entities
                     t.transform.position + Vector3.up * 1.2f,
                     new Color(0.659f, 0.878f, 1f));
             }
-        }
-
-        // ── Swing arc trail VFX ───────────────────────────────────────────────
-        private void SpawnSwingArc(Vector3 swingCenter, Vector3 dir)
-        {
-            // Lazy-init material once (no per-call allocation)
-            if (_swingArcMat == null)
-            {
-                var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                          ?? Shader.Find("Sprites/Default")
-                          ?? Shader.Find("Standard");
-                _swingArcMat = new Material(shader!)
-                {
-                    color = Color.white
-                };
-                _swingArcMat.SetFloat("_Surface", 1f);
-                _swingArcMat.SetInt("_ZWrite", 0);
-                _swingArcMat.renderQueue = 3000;
-            }
-
-            StartCoroutine(SwingArcRoutine(swingCenter, dir));
-        }
-
-        private System.Collections.IEnumerator SwingArcRoutine(Vector3 swingCenter, Vector3 dir)
-        {
-            const int   ArcPoints    = 8;
-            const float Radius       = 1.5f;
-            const float ScaleInTime  = 0.08f;
-            const float TotalTime    = 0.3f;
-            const float FadeStart    = 0.05f; // alpha starts fading after this
-
-            var go = new GameObject("SwingArc_VFX");
-            go.transform.SetParent(null);
-            go.transform.position = swingCenter;
-
-            var lr = go.AddComponent<LineRenderer>();
-            lr.positionCount    = ArcPoints;
-            lr.useWorldSpace    = true;
-            lr.loop             = false;
-            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            lr.receiveShadows   = false;
-            lr.material         = _swingArcMat;
-
-            // Build gradient: white (start) → cyan (end)
-            var gradient = new Gradient();
-            gradient.SetKeys(
-                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.cyan, 1f) },
-                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) });
-            lr.colorGradient = gradient;
-
-            // Compute arc center angle from dir (horizontal plane)
-            float centerAngle = Mathf.Atan2(dir.x, dir.z); // angle in XZ plane
-            float halfArc     = Mathf.PI * 0.5f;            // 90° half-arc = 180° total
-
-            float elapsed = 0f;
-            while (elapsed < TotalTime)
-            {
-                elapsed += Time.deltaTime;
-
-                float scaleT  = Mathf.Clamp01(elapsed / ScaleInTime);
-                float scaledR = Radius * scaleT;
-
-                float fadeT = Mathf.InverseLerp(FadeStart, TotalTime, elapsed);
-                float alpha = Mathf.Lerp(1f, 0f, fadeT);
-
-                float width = Mathf.Lerp(0.12f, 0.04f, fadeT);
-                lr.startWidth = width;
-                lr.endWidth   = width;
-
-                // Update gradient alpha only (color stays white→cyan)
-                gradient.SetKeys(
-                    new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.cyan, 1f) },
-                    new[] { new GradientAlphaKey(alpha, 0f), new GradientAlphaKey(alpha * 0.4f, 1f) });
-                lr.colorGradient = gradient;
-
-                // Place 8 arc points in semi-circle on horizontal plane
-                for (int i = 0; i < ArcPoints; i++)
-                {
-                    float t     = (float)i / (ArcPoints - 1);
-                    float angle = centerAngle - halfArc + t * halfArc * 2f;
-                    lr.SetPosition(i, new Vector3(
-                        swingCenter.x + Mathf.Sin(angle) * scaledR,
-                        swingCenter.y,
-                        swingCenter.z + Mathf.Cos(angle) * scaledR));
-                }
-
-                yield return null;
-            }
-
-            Destroy(go);
-
-            // Swing audio (best-effort: skip if clip absent)
-            AudioController.Instance?.PlayPitched("hero_swing", 0.6f, Random.Range(0.95f, 1.1f));
         }
 
         // ── Projectile helpers ────────────────────────────────────────────────
@@ -2038,7 +1417,6 @@ namespace CrowdDefense.Entities
         {
             Current = this;
             Enemy.OnDeathStatic      += OnEnemyKilled;
-            LevelEvents.OnLevelStart += OnLevelStarted;
         }
 
         private void OnEnemyKilled(Enemy enemy, bool isBoss)
@@ -2105,7 +1483,6 @@ namespace CrowdDefense.Entities
         private void OnDestroy()
         {
             Enemy.OnDeathStatic      -= OnEnemyKilled;
-            LevelEvents.OnLevelStart -= OnLevelStarted;
             if (_respawnRoutine != null) StopCoroutine(_respawnRoutine);
             if (Current == this) Current = null;
             for (int i = _projectiles.Count - 1; i >= 0; i--)
@@ -2238,7 +1615,6 @@ namespace CrowdDefense.Entities
             MaterialController.ApplyToon(toonRoot, cfg?.BodyColor ?? Color.white);
             Outline.ApplyToHierarchy(toonRoot.transform);
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", "Walk");
-            CacheWeaponRenderer();
         }
 
 #if UNITY_EDITOR
