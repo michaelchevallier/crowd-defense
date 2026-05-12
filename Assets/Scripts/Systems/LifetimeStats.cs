@@ -11,6 +11,7 @@ namespace CrowdDefense.Systems
         private const string KeyGold    = "total_gold_lifetime_v1";
         private const string KeyTime    = "total_time_played_seconds_v1";
         private const string KeyWins    = "levels_won_lifetime_v1";
+        private const string KeyRuns    = "total_runs_lifetime_v1";
 
         // Per-world storage — world ids 1..10
         private static string StarKey(int world)  => $"world_{world}_best_stars_v1";
@@ -32,6 +33,7 @@ namespace CrowdDefense.Systems
         public int   TotalGold        => PlayerPrefs.GetInt(KeyGold, 0);
         public float TotalTimePlayed  => PlayerPrefs.GetFloat(KeyTime, 0f);
         public int   LevelsWon        => PlayerPrefs.GetInt(KeyWins, 0);
+        public int   TotalRuns        => PlayerPrefs.GetInt(KeyRuns, 0);
         public int   AchievementsUnlocked => Achievements.Instance?.UnlockedCount ?? 0;
 
         public void AddKill(int n)

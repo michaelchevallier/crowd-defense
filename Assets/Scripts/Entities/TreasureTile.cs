@@ -60,7 +60,7 @@ namespace CrowdDefense.Entities
                 transform.position + Vector3.up * 1.2f,
                 new Color(1f, 0.85f, 0.1f));
             FloatingPopupController.Instance?.SpawnCoin(_breakValue, transform.position + Vector3.up * 1.2f);
-            VfxPool.Instance?.SpawnCoinTrail(transform.position + Vector3.up * 0.5f, 5);
+            VfxPool.Instance?.SpawnCoinBurst(transform.position + Vector3.up * 0.5f);
 
             gameObject.SetActive(false);
             Destroy(gameObject, 0.1f);

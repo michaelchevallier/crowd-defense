@@ -31,8 +31,10 @@ namespace CrowdDefense.UI
         private Action? _onDone;
         private bool _typewriting;
         private Coroutine? _typewriteCoroutine;
+        private Coroutine? _fadeCoroutine;
 
-        private const float TypewriteSpeed = 40f;
+        private const float TypewriteDelay = 0.03f;  // 30ms per char
+        private const float FadeInDuration  = 0.3f;
 
         private void Awake()
         {
@@ -83,7 +85,13 @@ namespace CrowdDefense.UI
                 _titleLabel.text = L.Get(def.TitleKey);
 
             AudioController.Instance?.Play("cutscene_start", 0.7f);
-            _panel?.RemoveFromClassList("hidden");
+            if (_panel != null)
+            {
+                _panel.RemoveFromClassList("hidden");
+                _panel.style.opacity = 0f;
+                if (_fadeCoroutine != null) StopCoroutine(_fadeCoroutine);
+                _fadeCoroutine = StartCoroutine(FadeIn());
+            }
             ShowLine(_lineIndex);
         }
 

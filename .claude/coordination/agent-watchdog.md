@@ -1,32 +1,31 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 05:45
+## 2026-05-12 05:51
 
 ### Snapshot
 
-- Actifs (<8 min) : 2 (Monitor r19 + current scan)
-- Stalled (8-30 min) : 5 (b* anciens Monitors r17/r18/r19/r20 dead)
+- Actifs (<8 min) : 2 (Monitor r20 + current scan)
+- Stalled (8-30 min) : 5 (b* anciens Monitors dead)
 - Worktrees : 16
-- Unity batch : **CLEAN** (VBCSCompiler zombies harmless, lockfile stale)
-- Deploy LIVE : `d309eb0` (r19)
+- Unity batch : **YES** PID 10928 (r20 phase ILPP context unloading)
+- r20 log silence : 68s — normal IL2CPP transition
 
 ### Killed
 
-0. Aucun. Lockfile stale persistera jusqu'au prochain Unity start (auto-cleanup).
+0. Aucun. r20 progresse en phase IL2CPP/Linking.
 
 ### Sonnet en flight
 
-- ad2fd2428a4de8107 (ParticleSystem cache audit)
-- a4721ed69ab2bb0c8 (BossIntroBanner camera zoom)
+- Aucun (3 polish batch tous livrés : TimeFormatter 51b72bd, Achievement reqs 51b72bd, EnemyPool pending)
 
-### Commits post-r19 deploy : **3**
+### Recent commits
 
-- `b13849b` Castle damage tiers
-- `3cf24b9` Economy bank tooltip
-- `efa9732` VirtualJoystick deadzone + haptic
+- `51b72bd` TimeFormatter + AchievementsPanel counter progress
 
-Threshold 4+ approche. r20 candidat très prochain.
+### Notes
+
+V4 diff cron complete : 95-96% parity. r20 build going. EnemyPool agent encore en flight peut-être.
 
 ### Stdout
 
-`Actifs:2 Stalled:5 Killed:0 Worktrees:16 UnityBatch:CLEAN-stale-lockfile DeployLIVE:d309eb0 CommitsPostR19:3 Sonnet:2InFlight`
+`Actifs:2 Stalled:5 Killed:0 Worktrees:16 UnityBatch:YES(PID10928,r20,IL2CPP) Sonnet:1InFlight Parity:95-96%`

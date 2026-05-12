@@ -168,7 +168,7 @@ namespace CrowdDefense.Systems
                 total += gain;
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(
                     gain, tile.CellCenter + Vector3.up * 1.2f);
-                VfxPool.Instance?.SpawnCoinTrail(tile.CellCenter + Vector3.up * 0.5f, 5);
+                VfxPool.Instance?.SpawnCoinBurst(tile.CellCenter + Vector3.up * 0.5f);
             }
 
             if (total > 0)
