@@ -18,7 +18,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[LeaderboardController] UIDocument not found");
+                return;
+            }
+            _root = uiDoc.rootVisualElement;
+            if (_root == null)
+            {
+                Debug.LogError("[LeaderboardController] rootVisualElement is null — UXML failed to load");
+                return;
+            }
             _panelRoot = _root.Q<VisualElement>("leaderboard-root");
             _titleLabel = _root.Q<Label>("leaderboard-title");
             _listContainer = _root.Q<VisualElement>("leaderboard-list");

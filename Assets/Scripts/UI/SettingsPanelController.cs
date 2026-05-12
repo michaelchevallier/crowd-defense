@@ -134,7 +134,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[SettingsPanelController] UIDocument not found");
+                return;
+            }
+            _root = uiDoc.rootVisualElement;
+            if (_root == null)
+            {
+                Debug.LogError("[SettingsPanelController] rootVisualElement is null — UXML failed to load");
+                return;
+            }
             _settingsRoot = _root.Q<VisualElement>("settings-root");
 
             _masterSlider = _root.Q<Slider>("master-slider");

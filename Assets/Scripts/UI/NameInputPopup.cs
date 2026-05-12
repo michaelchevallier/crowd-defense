@@ -16,7 +16,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[NameInputPopup] UIDocument not found");
+                return;
+            }
+            _root = uiDoc.rootVisualElement;
+            if (_root == null)
+            {
+                Debug.LogError("[NameInputPopup] rootVisualElement is null — UXML failed to load");
+                return;
+            }
             _nameField  = _root.Q<TextField>("name-input");
             _confirmBtn = _root.Q<Button>("name-confirm-btn");
 

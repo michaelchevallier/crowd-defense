@@ -17,7 +17,13 @@ namespace CrowdDefense.UI
 
         protected override void OnAwakeSingleton()
         {
-            var doc = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var doc = uiDoc.rootVisualElement;
+
+            if (doc == null) return;
             _root = doc.Q<VisualElement>("bestiary-root");
             _grid = doc.Q<VisualElement>("bestiary-grid");
 

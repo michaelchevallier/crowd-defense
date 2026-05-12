@@ -27,7 +27,13 @@ namespace CrowdDefense.UI
 
         protected override void OnAwakeSingleton()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var root = uiDoc.rootVisualElement;
+
+            if (root == null) return;
             BuildBanner(root);
         }
 

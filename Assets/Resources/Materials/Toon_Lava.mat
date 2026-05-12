@@ -27,22 +27,14 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _NoiseTex:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _CrackContrast: 1.4
     - _CrackScale: 8
     - _EmissionStrength: 1.5
-    - _FlickerAmp: 0.15
-    - _FlickerSpeed: 7
-    - _FlowSpeed: 0.12
     - _GlowBase: 0.8
     - _GlowPulseAmp: 0.6
     - _GlowPulseFreq: 1.2
-    - _NoiseStrength: 0.45
     - _ScrollSpeedX: 0.08
     - _ScrollSpeedY: 0.04
     m_Colors:

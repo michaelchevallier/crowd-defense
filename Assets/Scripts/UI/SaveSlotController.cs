@@ -44,7 +44,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[SaveSlotController] UIDocument not found");
+                return;
+            }
+            _root = uiDoc.rootVisualElement;
+            if (_root == null)
+            {
+                Debug.LogError("[SaveSlotController] rootVisualElement is null — UXML failed to load");
+                return;
+            }
             _slotRoot = _root.Q<VisualElement>("saveslot-root");
 
             _confirmDialog = _root.Q<VisualElement>("confirm-dialog");

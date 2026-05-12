@@ -30,7 +30,16 @@ namespace CrowdDefense.UI
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
 
-            var doc = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+
+            if (uiDoc == null) return;
+
+
+            var doc = uiDoc.rootVisualElement;
+
+
+            if (doc == null) return;
             _root    = doc.Q<VisualElement>("credits-root");
             _scroll  = doc.Q<ScrollView>("credits-scroll");
             _btnBack = doc.Q<Button>("btn-credits-back");

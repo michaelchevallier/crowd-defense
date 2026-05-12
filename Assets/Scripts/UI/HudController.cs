@@ -280,7 +280,18 @@ namespace CrowdDefense.UI
 
         private void WireCallbacks()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[HudController] UIDocument component not found in WireCallbacks");
+                return;
+            }
+            var root = uiDoc.rootVisualElement;
+            if (root == null)
+            {
+                Debug.LogError("[HudController] rootVisualElement is null in WireCallbacks — UXML failed to load");
+                return;
+            }
 
             ultBtn?.RegisterCallback<ClickEvent>(_ => TryCastUlt());
             bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
@@ -917,7 +928,10 @@ namespace CrowdDefense.UI
 
         private void ApplyResponsiveClass()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null) return;
+            var root = uiDoc.rootVisualElement;
+            if (root == null) return;
             root.RemoveFromClassList("hud-mobile");
             root.RemoveFromClassList("hud-tablet");
             root.RemoveFromClassList("hud-desktop");

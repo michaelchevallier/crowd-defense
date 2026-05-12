@@ -21,7 +21,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var root = uiDoc.rootVisualElement;
+
+            if (root == null) return;
             _doctrineRoot  = root.Q<VisualElement>("doctrine-root");
             _titleLabel    = root.Q<Label>("doctrine-title");
             _activeLabel   = root.Q<Label>("doctrine-active-label");

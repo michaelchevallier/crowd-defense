@@ -20,7 +20,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var root = uiDoc.rootVisualElement;
+
+            if (root == null) return;
             _label = root.Q<Label>("profile-overlay");
             _spawnLabel = root.Q<Label>("spawn-overlay");
 

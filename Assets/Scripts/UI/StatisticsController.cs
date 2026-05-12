@@ -63,7 +63,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[StatisticsController] UIDocument not found");
+                return;
+            }
+            _root = uiDoc.rootVisualElement;
+            if (_root == null)
+            {
+                Debug.LogError("[StatisticsController] rootVisualElement is null — UXML failed to load");
+                return;
+            }
             _statsRoot = _root.Q<VisualElement>("stats-root");
 
             _titleLabel = _root.Q<Label>("stats-title");

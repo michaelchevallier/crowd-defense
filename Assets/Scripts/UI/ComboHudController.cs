@@ -41,7 +41,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var root = uiDoc.rootVisualElement;
+
+            if (root == null) return;
             _comboDisplay = root.Q<VisualElement>("combo-display");
             _comboLabel = root.Q<Label>("combo-label");
             _comboBanner = root.Q<Label>("combo-banner");

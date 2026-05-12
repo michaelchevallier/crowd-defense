@@ -21,7 +21,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[LevelSelectController] UIDocument not found");
+                return;
+            }
+            _root = uiDoc.rootVisualElement;
+            if (_root == null)
+            {
+                Debug.LogError("[LevelSelectController] rootVisualElement is null — UXML failed to load");
+                return;
+            }
             var root = _root;
             PlayerProfile.OnNameChanged += OnPlayerNameChanged;
 

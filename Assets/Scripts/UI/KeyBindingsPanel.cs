@@ -34,7 +34,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var docRoot = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var docRoot = uiDoc.rootVisualElement;
+
+            if (docRoot == null) return;
             _root = BuildPanel(docRoot);
         }
 

@@ -41,7 +41,16 @@ namespace CrowdDefense.UI
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
 
-            var doc = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+
+            if (uiDoc == null) return;
+
+
+            var doc = uiDoc.rootVisualElement;
+
+
+            if (doc == null) return;
             _root        = doc.Q<VisualElement>("achievements-root");
             _scoreLabel  = doc.Q<Label>("achievements-score");
             _grid        = doc.Q<VisualElement>("achievements-grid");

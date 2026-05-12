@@ -28,7 +28,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var root = uiDoc.rootVisualElement;
+
+            if (root == null) return;
 
             _panel    = root.Q<VisualElement>("run-summary-panel");
             _title    = root.Q<Label>("rs-title");

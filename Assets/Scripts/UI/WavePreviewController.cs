@@ -22,7 +22,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var root = uiDoc.rootVisualElement;
+
+            if (root == null) return;
             wavePreview = root.Q<VisualElement>("wave-preview");
             wavePreviewTitle = root.Q<Label>("wave-preview-title");
             wavePreviewRoster = root.Q<VisualElement>("wave-preview-roster");

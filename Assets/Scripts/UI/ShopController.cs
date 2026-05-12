@@ -25,7 +25,13 @@ namespace CrowdDefense.UI
 
         private void Awake()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var root = uiDoc.rootVisualElement;
+
+            if (root == null) return;
             _overlay   = root.Q<VisualElement>("shop-overlay");
             _gemsValue = root.Q<Label>("shop-gems-value");
             _closeBtn  = root.Q<Button>("shop-close-btn");

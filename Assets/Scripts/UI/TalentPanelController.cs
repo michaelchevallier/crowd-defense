@@ -39,7 +39,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[TalentPanelController] UIDocument not found");
+                return;
+            }
+            _root = uiDoc.rootVisualElement;
+            if (_root == null)
+            {
+                Debug.LogError("[TalentPanelController] rootVisualElement is null — UXML failed to load");
+                return;
+            }
 
             _lblPoints   = _root.Q<Label>("lbl-talent-points");
             _lblTowerLvl = _root.Q<Label>("lbl-tower-lvl");

@@ -24,7 +24,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var root = uiDoc.rootVisualElement;
+
+            if (root == null) return;
             _banner = root.Q<VisualElement>("boss-banner");
             _bannerName = root.Q<Label>("boss-banner-name");
             _bannerFill = root.Q<VisualElement>("boss-banner-fill");

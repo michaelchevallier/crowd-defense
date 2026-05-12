@@ -36,7 +36,13 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var doc = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+            if (uiDoc == null) return;
+
+            var doc = uiDoc.rootVisualElement;
+
+            if (doc == null) return;
             _root      = doc.Q<VisualElement>("tutorial-root");
             _arrow     = doc.Q<VisualElement>("tutorial-arrow");
             _textLabel = doc.Q<Label>("tutorial-text");

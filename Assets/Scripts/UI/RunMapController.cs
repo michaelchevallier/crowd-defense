@@ -47,7 +47,16 @@ namespace CrowdDefense.UI
                 _runMap?.Generate(1, 42);
             }
 
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+
+            if (uiDoc == null) return;
+
+
+            var root = uiDoc.rootVisualElement;
+
+
+            if (root == null) return;
             _graphContainer = root.Q<VisualElement>("runmap-graph");
             _hintLabel = root.Q<Label>("runmap-node-hint");
 

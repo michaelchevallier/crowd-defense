@@ -42,7 +42,16 @@ namespace CrowdDefense.UI
         {
             _active = IsDebugEnabled();
 
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+
+            if (uiDoc == null) return;
+
+
+            var root = uiDoc.rootVisualElement;
+
+
+            if (root == null) return;
             _panel = root.Q<VisualElement>("debug-hud") ?? BuildPanel(root);
 
             _lblFps      = _panel.Q<Label>("dbg-fps");

@@ -17,7 +17,16 @@ namespace CrowdDefense.UI
         {
             _muted = PlayerPrefs.GetInt(PrefKey, 0) == 1;
 
-            var root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+
+
+            if (uiDoc == null) return;
+
+
+            var root = uiDoc.rootVisualElement;
+
+
+            if (root == null) return;
             _btn = root.Q<Button>("btn-mute");
             if (_btn == null) return;
 
