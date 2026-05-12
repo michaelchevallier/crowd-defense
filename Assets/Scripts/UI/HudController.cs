@@ -151,6 +151,11 @@ namespace CrowdDefense.UI
         private float _waveStartTime = -1f;
         private float _lastWaveTickTime = -1f;
 
+        // Skip-window countdown pulse state
+        private float _prevSkipRemaining = -1f;
+        private static readonly Color _skipTimerDefaultColor = new Color(0.95f, 0.95f, 0.95f);
+        private static readonly Color _skipTimerWarningColor = Color.red;
+
         // Responsive breakpoints
         private int _lastWidth = -1;
 
@@ -453,15 +458,78 @@ namespace CrowdDefense.UI
         private void TickBreakPill()
         {
             var wm = WaveManager.Instance;
-            if (wm == null || !wm.IsWaitingForPlayerStart) return;
+            if (wm == null || !wm.IsWaitingForPlayerStart)
+            {
+                ResetSkipTimerWarning();
+                _prevSkipRemaining = -1f;
+                return;
+            }
             float secondsLeft = wm.SkipWindowSecondsRemaining;
-            if (secondsLeft <= 0f) return;
+            if (secondsLeft <= 0f)
+            {
+                ResetSkipTimerWarning();
+                _prevSkipRemaining = -1f;
+                return;
+            }
 
             if (waveLaunchPill != null && waveLaunchPillText != null)
                 waveLaunchPillText.text = L.Get("hud.pill_skip_text", secondsLeft, Mathf.RoundToInt(wm.StreakCount * 5));
 
             if (waveLaunchLabel != null)
                 waveLaunchLabel.text = L.Get("hud.wave_launch_countdown", wm.NextWaveDisplayNumber, secondsLeft);
+
+            // Pulse red warning + tick audio when < 5 s remain
+            if (secondsLeft < 5.0f)
+            {
+                // Tick audio on each integer second boundary (no allocation per frame)
+                if (_prevSkipRemaining >= 0f && Mathf.Floor(_prevSkipRemaining) != Mathf.Floor(secondsLeft))
+                    PlayCountdownTick();
+
+                // Scale pulse on the pill text label (no allocation: StyleScale reuses struct)
+                float s = 1.0f + Mathf.Sin(Time.time * 8f) * 0.1f;
+                if (waveLaunchPillText != null)
+                {
+                    waveLaunchPillText.style.color = new StyleColor(_skipTimerWarningColor);
+                    waveLaunchPillText.style.scale = new StyleScale(new Vector3(s, s, 1f));
+                }
+                if (waveLaunchLabel != null)
+                {
+                    waveLaunchLabel.style.color = new StyleColor(_skipTimerWarningColor);
+                    waveLaunchLabel.style.scale = new StyleScale(new Vector3(s, s, 1f));
+                }
+            }
+            else
+            {
+                ResetSkipTimerWarning();
+            }
+
+            _prevSkipRemaining = secondsLeft;
+        }
+
+        private void ResetSkipTimerWarning()
+        {
+            if (waveLaunchPillText != null)
+            {
+                waveLaunchPillText.style.color = new StyleColor(_skipTimerDefaultColor);
+                waveLaunchPillText.style.scale = new StyleScale(new Vector3(1f, 1f, 1f));
+            }
+            if (waveLaunchLabel != null)
+            {
+                waveLaunchLabel.style.color = new StyleColor(_skipTimerDefaultColor);
+                waveLaunchLabel.style.scale = new StyleScale(new Vector3(1f, 1f, 1f));
+            }
+        }
+
+        private static void PlayCountdownTick()
+        {
+            var ac = AudioController.Instance;
+            if (ac == null) return;
+            try
+            {
+                if (ac.GetClip("countdown_tick") != null)
+                    ac.Play("countdown_tick", 0.5f);
+            }
+            catch { /* clip absent — skip silently */ }
         }
 
         private void TickWaveTime()
