@@ -13,5 +13,6 @@
             <ui:Button text="Achievements" name="btn-open-achievements" class="menu-credits-btn" />
             <ui:Button text="Credits" name="btn-open-credits" class="menu-credits-btn" />
         </ui:VisualElement>
+        <ui:Label name="menu-version-footer" class="menu-version-footer" />
     </ui:VisualElement>
 </ui:UXML>

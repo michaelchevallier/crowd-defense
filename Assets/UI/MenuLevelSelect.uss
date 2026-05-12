@@ -119,3 +119,12 @@
     border-color: rgba(255, 210, 63, 0.5);
     color: rgb(255, 210, 63);
 }
+
+.menu-version-footer {
+    color: rgba(140, 150, 170, 0.65);
+    font-size: 10px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    margin-top: 8px;
+    margin-bottom: 0;
+}

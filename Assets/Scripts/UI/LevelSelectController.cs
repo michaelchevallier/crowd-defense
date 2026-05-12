@@ -37,6 +37,13 @@ namespace CrowdDefense.UI
             if (btnStats != null)
                 btnStats.clicked += () => StatsLifetimePanel.Instance?.Show();
 
+            var versionFooter = root.Q<Label>("menu-version-footer");
+            if (versionFooter != null)
+            {
+                string buildHash = string.IsNullOrEmpty(Application.version) ? "dev" : Application.version;
+                versionFooter.text = $"Crowd Defense v6.0 — Unity {Application.unityVersion} — {buildHash}";
+            }
+
             var grid = root.Q<VisualElement>("level-grid");
             if (grid == null)
             {
