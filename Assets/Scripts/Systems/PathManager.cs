@@ -47,7 +47,9 @@ namespace CrowdDefense.Systems
                 return;
             }
 
-            Grid = GridData.Parse(levelData);
+            int variantIdx = RunMap.Instance?.CurrentVariant ?? 0;
+            var variantRows = PathVariant.PickVariant(levelData, variantIdx);
+            Grid = GridData.ParseWithRows(variantRows, levelData.CellSize);
             var paths = new List<IReadOnlyList<Vector3>>();
             var meta = new List<PathMeta>();
 

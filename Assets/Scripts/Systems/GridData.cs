@@ -33,14 +33,19 @@ namespace CrowdDefense.Systems
         public bool IsWalkable(int col, int row) => GridCoords.Walkable.Contains(At(col, row));
         public bool IsBuildable(int col, int row) => GridCoords.Buildable.Contains(At(col, row));
 
-        public static GridData Parse(LevelData level)
+        public static GridData Parse(LevelData level) =>
+            ParseRows(level.MapRows, level.CellSize);
+
+        public static GridData ParseWithRows(string[] rows, float cellSize) =>
+            ParseRows(rows, cellSize);
+
+        private static GridData ParseRows(System.Collections.Generic.IReadOnlyList<string> rows, float cellSize)
         {
-            var rows = level.MapRows;
             int h = rows.Count;
             int w = 0;
             for (int i = 0; i < rows.Count; i++) if (rows[i].Length > w) w = rows[i].Length;
 
-            var gd = new GridData(w, h, level.CellSize);
+            var gd = new GridData(w, h, cellSize);
 
             for (int r = 0; r < h; r++)
             {

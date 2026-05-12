@@ -20,6 +20,9 @@ namespace CrowdDefense.Data
         [SerializeField] private string[] mapRows = new string[0];
         [SerializeField] private float cellSize = 1f;
 
+        [Header("Path Variants (newline-separated rows per entry; empty = use mapRows)")]
+        [SerializeField] private string[] gridVariants = new string[0];
+
         [Header("Economy")]
         [SerializeField] private int startCoins = 120;
 
@@ -46,6 +49,7 @@ namespace CrowdDefense.Data
         public int World => world;
         public int Level => level;
         public IReadOnlyList<string> MapRows => mapRows;
+        public string[]? GridVariants => gridVariants.Length > 0 ? gridVariants : null;
         public float CellSize => cellSize;
         public int StartCoins => startCoins;
         public bool OverrideCastleHP => overrideCastleHP;
