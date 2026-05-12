@@ -494,6 +494,19 @@ namespace CrowdDefense.UI
             if (goldValue != null) goldValue.text = gold.ToString();
         }
 
+        // gain=0 means bank reset (castle damaged); gain>0 means interest ticked
+        private void HandleBankTick(int gain, int totalAccumulated)
+        {
+            if (_bankLabel == null) return;
+            if (gain <= 0)
+            {
+                _bankLabel.AddToClassList("hidden");
+                return;
+            }
+            _bankLabel.RemoveFromClassList("hidden");
+            _bankLabel.text = $"\U0001F3E6 {totalAccumulated}¢ (+5%)";
+        }
+
         private void OnHPChanged(int hp, int hpMax)
         {
             if (hpValue != null) hpValue.text = $"{hp}/{hpMax}";
