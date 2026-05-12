@@ -4,11 +4,26 @@ A tower defense game built with **Unity 6 LTS** targeting Steam (Mac/Win/Linux),
 
 > Status: pre-release — active development. See `LICENSE` for usage terms.
 
+## Features
+
+- **12 towers** with L3 branching (DPS branch / Utility branch per tower)
+- **30 enemy types** including multi-phase boss (Apocalypse phases 1-4)
+- **Endless mode** — infinite scaling waves post-campaign
+- **Daily challenge** — seeded run with leaderboard score
+- **Bestiary** — unlock enemy lore entries on first encounter
+- **Achievements** — 40+ in-game achievements with lifetime stats
+- **Hero system** — playable hero with multiple skin variants
+- **Animated shaders** — procedural water and lava (URP ShaderGraph)
+- **Weather system** — per-theme dynamic weather (rain, embers, snow, fog)
+- **Multi-slot save** — 3 save slots + Continue mid-level resume
+- **i18n** — FR / EN / ES, responsive UI (mobile + desktop)
+
 ## Stack
 
-- **Engine** — Unity 6 LTS
+- **Engine** — Unity 6 LTS (`6000.0.74f1`)
 - **Language** — C# (.NET Standard 2.1)
-- **Render pipeline** — URP
+- **Render pipeline** — URP + ShaderGraph (procedural shaders)
+- **UI** — UI Toolkit (runtime + Editor)
 - **Target platforms** — Steam standalone (Mac/Win/Linux), iOS, Android, WebGL
 
 ## Build
