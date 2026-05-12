@@ -28,6 +28,16 @@ namespace CrowdDefense.UI
         private VisualElement? _showcaseRow;
         private bool _splashDone;
 
+        // ── Background gradient ──────────────────────────────────────────────
+        private static readonly Color[] GradientColors =
+        {
+            new Color(0.15f, 0.20f, 0.35f), // deep blue night
+            new Color(0.30f, 0.15f, 0.30f), // purple twilight
+            new Color(0.35f, 0.18f, 0.10f), // warm sunset
+            new Color(0.10f, 0.25f, 0.20f), // forest dawn
+        };
+        private Color _seasonalTint;
+
         // ── Demo mode ────────────────────────────────────────────────────────
         private const float IdleTimeoutSeconds = 60f;
         private const string DemoLevelId = "L1-1";
@@ -64,6 +74,7 @@ namespace CrowdDefense.UI
             if (_btnHardcore != null) _btnHardcore.clicked += OnHardcore;
 
             ApplySeasonalTint();
+            StartCoroutine(AnimateBackgroundGradient());
 
             RefreshHardcoreButton();
 
@@ -156,10 +167,10 @@ namespace CrowdDefense.UI
             if (_splashDone) return;
             _splashDone = true;
             StopAllCoroutines();
-            FinishSplash();
+            FinishSplash(restartGradient: true);
         }
 
-        private void FinishSplash()
+        private void FinishSplash(bool restartGradient = false)
         {
             _splashDone = true;
             if (_splashOverlay != null)
@@ -169,6 +180,9 @@ namespace CrowdDefense.UI
             }
             if (_menuButtons != null && _menuButtons != _root)
                 _menuButtons.style.display = DisplayStyle.Flex;
+            // Only restart if StopAllCoroutines was called (skip path)
+            if (restartGradient)
+                StartCoroutine(AnimateBackgroundGradient());
         }
 
         private void Update()
@@ -247,6 +261,41 @@ namespace CrowdDefense.UI
             LevelLoader.GoToMenu();
         }
 
+        // ── Background gradient ──────────────────────────────────────────────
+
+        private IEnumerator AnimateBackgroundGradient()
+        {
+            const float stepDuration = 7.5f; // 4 steps × 7.5s = 30s cycle
+            int index = 0;
+            float elapsed = 0f;
+
+            while (gameObject.activeInHierarchy)
+            {
+                Color from = GradientColors[index % GradientColors.Length];
+                Color to   = GradientColors[(index + 1) % GradientColors.Length];
+
+                elapsed += Time.unscaledDeltaTime;
+                float tRaw = Mathf.Clamp01(elapsed / stepDuration);
+                float t    = tRaw * tRaw * (3f - 2f * tRaw); // smoothstep
+
+                Color animated = Color.Lerp(from, to, t);
+                Color final    = animated * 0.6f + new Color(
+                    _seasonalTint.r, _seasonalTint.g, _seasonalTint.b, 1f) * 0.4f;
+                final.a = 1f;
+
+                if (_root != null)
+                    _root.style.backgroundColor = new StyleColor(final);
+
+                if (elapsed >= stepDuration)
+                {
+                    elapsed = 0f;
+                    index   = (index + 1) % GradientColors.Length;
+                }
+
+                yield return null;
+            }
+        }
+
         // ── Seasonal tint ────────────────────────────────────────────────────
 
         private void ApplySeasonalTint()
@@ -261,6 +310,7 @@ namespace CrowdDefense.UI
                 6 or 7 or 8  => new Color(0.95f, 0.70f, 0.22f, 0.15f), // summer — warm orange/yellow
                 _            => new Color(0.80f, 0.48f, 0.15f, 0.16f)  // autumn  — orange/brown
             };
+            _seasonalTint = tint;
 
             var overlay = new VisualElement
             {
