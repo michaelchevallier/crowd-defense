@@ -29,6 +29,7 @@ namespace CrowdDefense.Visual
             WeatherController.ApplySkyGradient(theme);
             PostProcessController.Instance?.ApplyTheme(theme);
             SceneDecor.Instance?.SpawnForLevel(theme, level.Id, gridBounds);
+            EnsureParallax().Init(theme);
 
             var pm = Systems.PathManager.Instance;
             if (pm?.Grid == null || PathTiles.Instance == null) return;
@@ -44,6 +45,17 @@ namespace CrowdDefense.Visual
             WeatherController.Instance?.StopAll();
             SceneDecor.Instance?.ClearAll();
             PathTiles.Instance?.ClearAll();
+            if (_parallax != null) _parallax.ClearAll();
+        }
+
+        private static ParallaxBackground? _parallax;
+
+        private static ParallaxBackground EnsureParallax()
+        {
+            if (_parallax != null) return _parallax;
+            var go = new GameObject("ParallaxBackgroundGO");
+            _parallax = go.AddComponent<ParallaxBackground>();
+            return _parallax;
         }
     }
 }
