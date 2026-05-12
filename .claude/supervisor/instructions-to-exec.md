@@ -1598,3 +1598,122 @@ Mike feedback critique 23h15 : "l'autre session est en attente de travail c'est 
 
 Pas de time cap — tu pioches tant qu'il y a du travail. **Tu ne dois JAMAIS être idle.**
 
+
+---
+
+## 2026-05-12 23h40 — WAVE 3 BACKLOG (player loop gaps + Inspector wires)
+
+**Mike feedback 23h25 + 23h30** : V6 user-facing pas du tout parité V4. Touches différentes, pas de menu, pas de nav, caméra déconne, pas de texture/asset wired, pas d'animation, pas de musique, pas de HUD visible côté joueur. Mike rappelle V4 player loop : Menu → Hero WASD move → walk in BuildPoint circle → tower picker → place tower → wave spawn → kill → next level + debug level world1-showcase.
+
+**4 bug-fixers Opus tournent en parallèle wave-3** sur :
+- qa-tester audit V4 vs V6 visible (Chrome MCP /v4/ + UnityMCP screenshots)
+- MenuScene + SceneNavigation
+- Camera + Input bindings
+- Music + Audio + Animation wiring
+- Player loop (BuildPoint + Hero move + level transition + debug)
+
+**Toi tu prends WAVE 3 BACKLOG orthogonal** (zone safe sans collision avec bug-fixers en flight) :
+
+### TASK W3-V1 — VfxPool wire 20 unassigned prefabs
+
+bug-fixer #2 audit (`/Users/mike/Work/crowd-defense/.claude/audit/2026-05-12-scene-wires-audit.md`) listait 20 VFX prefabs unassigned dans VfxPool component. Procedural fallback fonctionne mais ideal = wire real VFX assets.
+
+Steps :
+1. `find Assets -name "*.prefab" | grep -i vfx` → trouve les prefabs VFX
+2. Si vrais VFX prefabs existent, wire dans VfxPool component sur Main.unity ou VfxPool.prefab
+3. Si pas trouvés, créer placeholder VFX prefabs minimal (`new GameObject + ParticleSystem` via SetupTool script, sauvegarder en prefab)
+4. Commit : `fix(parity): VfxPool wire 20 prefabs (audit cleanup, procedural fallback → real assets)`
+
+### TASK W3-V2 — Cutscenes 10 worlds wired confirmation
+
+V4 a 10 cutscenes ASCII (1 par monde, intro narrative). V6 audit dit `parity-v4-NNN` shippé mais wiring runtime non vérifié.
+
+Steps :
+1. `find Assets -name "*Cutscene*.asset"` → 10 cutscene assets expected
+2. CutsceneController.cs : verify il consomme bien CutsceneRegistry ou similar
+3. LevelRunner.TryPlayWorldCutscene → trace dans console au début level
+4. Test via UnityMCP : load W1-1 → cutscene plays ? (4-line text overlay 3s)
+5. Si broken : fix + commit `fix(parity): cutscenes 10 worlds wired runtime`
+
+### TASK W3-V3 — Achievements 56 wired
+
+V6 audit dit 56 achievements existent. Verify ils sont registered + tracked + display.
+
+Steps :
+1. `find Assets -name "Achievement*.asset"` → 56 expected
+2. AchievementRegistry.asset → verify expose all 56
+3. AchievementTracker.cs → verify subscribes to events + persists
+4. UnityMCP test : trigger kill 10 enemies → check `_kills` counter + `OnFirstBlood` achievement
+5. Fix wiring si broken, commit `fix(parity): Achievements 56 wired + tracked`
+
+### TASK W3-V4 — Meta-upgrades 10 wired
+
+V4 had 10 meta-upgrades (Trophies system : +5¢ start per trophy etc.).
+
+Steps :
+1. `find Assets -name "MetaUpgrade*.asset"` → 10
+2. MetaUpgradeController.cs verify + Persist save
+3. UnityMCP test : LevelRunner.Start → query Meta.Instance.GetBonus("startGold") returns expected sum
+4. Fix wiring + commit
+
+### TASK W3-V5 — Modifiers (8 curses+blessings) runtime test
+
+V4/V6 audit dit 8 modifiers FULL. Verify runtime.
+
+Steps :
+1. `find Assets -name "Modifier*.asset"` → 8
+2. Verify each is applied via PerkSystem or DynamicEventManager
+3. UnityMCP test : pick modifier → check global state change
+
+### TASK W3-V6 — Code dedup + dead code audit
+
+Use quality-maintainer agent (you can spawn one yourself via Sonnet feature-dev or direct).
+Output : `.claude/audit/2026-05-12-23h45-code-dedup.md`
+
+### TASK W3-V7 — STATUS.md crowd-defense create + update
+
+`/Users/mike/Work/crowd-defense` n'a pas de `.claude/status/STATUS.md`. Create one matching pattern de `milan project`.
+
+Sections :
+- Current sprint : R6-PARITY-V4-FINAL
+- V4 baseline vs V6 effectif percentage
+- Recent commits list
+- Pending tickets (top 10)
+- Instructions next session opus (what to read first)
+
+Commit : `docs(status): create crowd-defense STATUS.md tracker`
+
+### TASK W3-V8 — Build Settings audit + ProjectSettings polish
+
+- `cat ProjectSettings/EditorBuildSettings.asset` → verify scenes in build list
+- `cat ProjectSettings/InputManager.asset` → verify input axes
+- `cat ProjectSettings/QualitySettings.asset` → verify URP quality levels
+- Output : `.claude/audit/2026-05-12-23h45-projectsettings.md`
+- Commit : `chore(audit): ProjectSettings polish review`
+
+### Process
+
+- 4 slots simultanés parallèles
+- Pioche dans l'ordre V1 → V2 → V3 → ... 
+- Push autonome chaque commit
+- **NEVER IDLE**. Si all 8 done, lance ton propre audit "où peut-on encore pousser" et continue.
+
+### Coordination avec bug-fixers wave-3 Opus
+
+Conflits possibles :
+- MenuScene+SceneNav (acce90c0) touche Build Settings : si tu fais W3-V8, attendre ou git pull --rebase
+- Player loop (aeab3c25) touche Hero.cs + BuildPoint : tu skip Hero/BuildPoint
+- Camera+Input (a1e7367e) touche KeyBindings.cs : tu skip InputManager
+- Music+Audio (aeb8fb3b) touche MusicManager : tu skip Music wiring
+- qa-tester (acce90c0) lit Main.unity + screenshots : pas de write conflict
+
+Zone safe pour toi :
+- VfxPool (W3-V1)
+- Cutscenes runtime (W3-V2)
+- Achievements (W3-V3)
+- MetaUpgrades (W3-V4)
+- Modifiers (W3-V5)
+- Code dedup audit (W3-V6)
+- STATUS.md create (W3-V7)
+- ProjectSettings audit (W3-V8)
+
