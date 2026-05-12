@@ -20,9 +20,8 @@ namespace CrowdDefense.Entities
         public event Action<int, int>? OnHPChanged;
         public event Action<Castle>?   OnCastleDied;
 
-        // World index used for no-regen threshold (D1-04) and candle theme
+        // World index used for no-regen threshold (D1-04)
         private int _world = 1;
-        private int _currentWorld = 0;  // 0 = not yet configured
 
         // Armor break — temporary damage taken multiplier (siege enemies / armor break effect)
         private float _dmgTakenMul        = 1f;
@@ -54,10 +53,6 @@ namespace CrowdDefense.Entities
         private Transform?    _gateDoor;
         private Coroutine?    _gateCoroutine;
 
-        // Repair animation between waves
-        private Coroutine?    _repairCoroutine;
-        private static readonly int _emissionColorId = Shader.PropertyToID("_EmissionColor");
-
         // Visual state
         private bool          _smokeActive;
         private Coroutine?    _smokeCoroutine;
@@ -70,11 +65,6 @@ namespace CrowdDefense.Entities
         private ParticleSystem? _smokePs;
         private ParticleSystem? _firePs;
         private bool            _firePsSpawned;
-
-        // Blood splatter decals — max 10 concurrent, FIFO eviction
-        private const int MaxSplatters = 10;
-        private readonly System.Collections.Generic.Queue<GameObject> _splatters = new();
-        private static Material? _splatterMat;
 
         // Ambient candle flames — 4 corner PS, always on while alive
         private readonly ParticleSystem?[] _candlePs = new ParticleSystem?[4];
@@ -109,137 +99,10 @@ namespace CrowdDefense.Entities
             }
 
             BuildHpBar();
-            ApplyWorldDecoration(world);
             SpawnCandleParticles();
-            ConfigureCandlesForWorld(world);
             BuildGate();
             SubscribeWaveEvents();
             OnHPChanged?.Invoke(HP, HPMax);
-        }
-
-        private void ApplyWorldDecoration(int worldId)
-        {
-            if (worldId >= 1 && worldId <= 2)
-            {
-                // W1-2 forêt/jardin — petite sphère verte (feuillage)
-                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.name = "CastleDecor_Foliage";
-                Destroy(go.GetComponent<SphereCollider>());
-                go.transform.SetParent(transform, false);
-                go.transform.localPosition = new Vector3(0f, 1.8f, 0f);
-                go.transform.localScale    = new Vector3(0.45f, 0.45f, 0.45f);
-                var rend = go.GetComponent<MeshRenderer>();
-                rend.material = BuildUnlitMaterial(new Color(0.18f, 0.62f, 0.18f), transparent: false);
-            }
-            else if (worldId >= 3 && worldId <= 4)
-            {
-                // W3-4 rocky/desert — petit cube brun (pierre)
-                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                go.name = "CastleDecor_Stone";
-                Destroy(go.GetComponent<BoxCollider>());
-                go.transform.SetParent(transform, false);
-                go.transform.localPosition = new Vector3(0f, 1.7f, 0f);
-                go.transform.localScale    = new Vector3(0.35f, 0.35f, 0.35f);
-                var rend = go.GetComponent<MeshRenderer>();
-                rend.material = BuildUnlitMaterial(new Color(0.55f, 0.38f, 0.22f), transparent: false);
-            }
-            else if (worldId >= 5 && worldId <= 6)
-            {
-                // W5-6 ice — 3 cylindres blancs effilés (stalactites de glace)
-                Vector3[] spikePos =
-                {
-                    new Vector3( 0.0f, 1.6f,  0.0f),
-                    new Vector3(-0.3f, 1.4f,  0.2f),
-                    new Vector3( 0.3f, 1.3f, -0.2f),
-                };
-                Vector3[] spikeScale =
-                {
-                    new Vector3(0.12f, 0.55f, 0.12f),
-                    new Vector3(0.09f, 0.40f, 0.09f),
-                    new Vector3(0.08f, 0.32f, 0.08f),
-                };
-                for (int i = 0; i < spikePos.Length; i++)
-                {
-                    var spike = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                    spike.name = $"CastleDecor_IceSpike_{i}";
-                    Destroy(spike.GetComponent<CapsuleCollider>());
-                    spike.transform.SetParent(transform, false);
-                    spike.transform.localPosition = spikePos[i];
-                    spike.transform.localScale    = spikeScale[i];
-                    // Lean slightly inward on side spikes
-                    spike.transform.localEulerAngles = i == 0
-                        ? Vector3.zero
-                        : new Vector3(0f, 0f, i == 1 ? -12f : 12f);
-                    var rend = spike.GetComponent<MeshRenderer>();
-                    rend.material = BuildUnlitMaterial(new Color(0.82f, 0.94f, 1f), transparent: false);
-                }
-            }
-            else if (worldId >= 7 && worldId <= 8)
-            {
-                // W7-8 lava — 2 torches (cylinders) + lava flame ParticleSystem inline
-                Vector3[] torchPos =
-                {
-                    new Vector3(-0.55f, 0.3f, 0.55f),
-                    new Vector3( 0.55f, 0.3f, 0.55f),
-                };
-                for (int i = 0; i < torchPos.Length; i++)
-                {
-                    // Stick
-                    var stick = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                    stick.name = $"CastleDecor_TorchStick_{i}";
-                    Destroy(stick.GetComponent<CapsuleCollider>());
-                    stick.transform.SetParent(transform, false);
-                    stick.transform.localPosition = torchPos[i];
-                    stick.transform.localScale    = new Vector3(0.07f, 0.45f, 0.07f);
-                    var sr = stick.GetComponent<MeshRenderer>();
-                    sr.material = BuildUnlitMaterial(new Color(0.35f, 0.22f, 0.09f), transparent: false);
-
-                    // Flame head (small sphere)
-                    var head = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    head.name = $"CastleDecor_TorchHead_{i}";
-                    Destroy(head.GetComponent<SphereCollider>());
-                    head.transform.SetParent(transform, false);
-                    head.transform.localPosition = torchPos[i] + new Vector3(0f, 0.5f, 0f);
-                    head.transform.localScale    = new Vector3(0.15f, 0.15f, 0.15f);
-                    var hr = head.GetComponent<MeshRenderer>();
-                    hr.material = BuildUnlitMaterial(new Color(1f, 0.25f, 0f), transparent: false);
-
-                    // Lava flame particle — orange cone, small, always on
-                    var flameGo = new GameObject($"CastleDecor_TorchFlame_{i}");
-                    flameGo.transform.SetParent(transform, false);
-                    flameGo.transform.localPosition = torchPos[i] + new Vector3(0f, 0.58f, 0f);
-                    var ps = flameGo.AddComponent<ParticleSystem>();
-
-                    var main = ps.main;
-                    main.loop            = true;
-                    main.startLifetime   = new ParticleSystem.MinMaxCurve(0.4f, 0.7f);
-                    main.startSpeed      = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
-                    main.startSize       = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
-                    main.startColor      = new ParticleSystem.MinMaxGradient(
-                                               new Color(1f, 0.5f, 0.02f),
-                                               new Color(1f, 0.15f, 0f));
-                    main.gravityModifier = -0.2f;
-                    main.simulationSpace = ParticleSystemSimulationSpace.World;
-
-                    var emission = ps.emission;
-                    emission.rateOverTime = 18f;
-
-                    var shape = ps.shape;
-                    shape.shapeType = ParticleSystemShapeType.Cone;
-                    shape.angle     = 10f;
-                    shape.radius    = 0.04f;
-
-                    var sol = ps.sizeOverLifetime;
-                    sol.enabled = true;
-                    sol.size = new ParticleSystem.MinMaxCurve(1f,
-                        new AnimationCurve(
-                            new Keyframe(0f, 0.6f, 0f, 1f),
-                            new Keyframe(0.5f, 1f, 1f, -1f),
-                            new Keyframe(1f, 0f, -1f, 0f)));
-
-                    ps.Play();
-                }
-            }
         }
 
         // ── HP bar ──────────────────────────────────────────────────────────────
@@ -377,13 +240,6 @@ namespace CrowdDefense.Entities
             AudioController.Instance?.Play3D("castle_hit", transform.position);
             VfxPool.Instance?.SpawnHitFlash(transform);
             CheckOverrun();
-
-            // Siege debris — brown chunks burst when HP < 30 % and hit is significant
-            if (actualDmg > 5 && HPMax > 0 && (float)HP / HPMax < 0.3f)
-                SpawnSiegeDebris();
-
-            if (actualDmg >= 5)
-                SpawnBloodSplatter();
 
             // Screen shake — tiered by damage magnitude, throttled to once every 100 ms
             if (Time.timeScale > 0f && Time.unscaledTime - _lastShakeTime > 0.1f)
@@ -640,7 +496,7 @@ namespace CrowdDefense.Entities
             return ps;
         }
 
-        // 4 ambient candle flames at base corners — always on while castle alive
+        // 4 ambient candle flames at base corners — always on while alive
         private void SpawnCandleParticles()
         {
             Vector3[] corners =
@@ -709,128 +565,6 @@ namespace CrowdDefense.Entities
             }
         }
 
-        // Called by LevelRunner when the active world changes (e.g. level 1→11 = W1→W2).
-        public void SetWorld(int world)
-        {
-            if (_currentWorld == world) return;
-            _world = world;
-            ConfigureCandlesForWorld(world);
-        }
-
-        // Reconfigures the 4 ambient candle ParticleSystems for the given world theme.
-        // Zero allocation — mutates existing PS module structs in-place.
-        private void ConfigureCandlesForWorld(int world)
-        {
-            if (_currentWorld == world) return;
-            _currentWorld = world;
-
-            // Per-world theme data: (colorA, colorB, startSize min/max, emissionRate, flickerSpeed)
-            // colorA = base flame tip, colorB = flame core
-            Color colorA, colorB;
-            float sizeMin, sizeMax, emissionRate, flickerMul;
-
-            switch (world)
-            {
-                case 2:  // Marais — green-yellow
-                    colorA     = new Color(0.7f,  0.9f,  0.4f);
-                    colorB     = new Color(0.5f,  0.75f, 0.1f);
-                    sizeMin    = 0.06f; sizeMax = 0.13f;
-                    emissionRate = 10f; flickerMul = 1.0f;
-                    break;
-                case 3:  // Désert — orange torch
-                    colorA     = new Color(1f,    0.5f,  0.1f);
-                    colorB     = new Color(0.9f,  0.3f,  0.0f);
-                    sizeMin    = 0.08f; sizeMax = 0.18f;
-                    emissionRate = 14f; flickerMul = 1.3f;
-                    break;
-                case 4:  // Glacier — cyan cold
-                    colorA     = new Color(0.4f,  0.85f, 1.0f);
-                    colorB     = new Color(0.2f,  0.6f,  0.9f);
-                    sizeMin    = 0.05f; sizeMax = 0.11f;
-                    emissionRate = 9f;  flickerMul = 1.5f;  // rapid cold flicker
-                    break;
-                case 5:  // Mer — blue-cyan
-                    colorA     = new Color(0.3f,  0.7f,  1.0f);
-                    colorB     = new Color(0.1f,  0.45f, 0.85f);
-                    sizeMin    = 0.07f; sizeMax = 0.15f;
-                    emissionRate = 12f; flickerMul = 1.1f;
-                    break;
-                case 6:  // Volcan — red brazier intense
-                    colorA     = new Color(1f,    0.3f,  0.1f);
-                    colorB     = new Color(0.85f, 0.1f,  0.0f);
-                    sizeMin    = 0.10f; sizeMax = 0.22f;
-                    emissionRate = 20f; flickerMul = 1.4f;
-                    break;
-                case 7:  // Ruines — purple mystical
-                    colorA     = new Color(0.7f,  0.5f,  1.0f);
-                    colorB     = new Color(0.5f,  0.2f,  0.85f);
-                    sizeMin    = 0.05f; sizeMax = 0.12f;
-                    emissionRate = 8f;  flickerMul = 0.7f;  // slow, eerie
-                    break;
-                case 8:  // Ciel — white bright
-                    colorA     = new Color(1f,    1f,    0.95f);
-                    colorB     = new Color(0.9f,  0.95f, 0.8f);
-                    sizeMin    = 0.07f; sizeMax = 0.16f;
-                    emissionRate = 12f; flickerMul = 1.0f;
-                    break;
-                case 9:  // Astral — violet
-                    colorA     = new Color(0.8f,  0.4f,  1.0f);
-                    colorB     = new Color(0.6f,  0.15f, 0.9f);
-                    sizeMin    = 0.07f; sizeMax = 0.17f;
-                    emissionRate = 13f; flickerMul = 1.2f;
-                    break;
-                case 10: // Apocalypse — red-orange extreme
-                    colorA     = new Color(1f,    0.2f,  0.05f);
-                    colorB     = new Color(0.9f,  0.05f, 0.0f);
-                    sizeMin    = 0.12f; sizeMax = 0.26f;
-                    emissionRate = 24f; flickerMul = 2.0f;  // extreme flicker
-                    break;
-                default: // W1 Forêt — warm yellow (also fallback for unknown worlds)
-                    colorA     = new Color(1f,    0.8f,  0.3f);
-                    colorB     = new Color(1f,    0.45f, 0.05f);
-                    sizeMin    = 0.06f; sizeMax = 0.14f;
-                    emissionRate = 10f; flickerMul = 1.0f;
-                    break;
-            }
-
-            // Intensity maps to startSpeed: higher intensity worlds get faster rising particles
-            float speedMin = 0.4f * flickerMul;
-            float speedMax = 0.9f * flickerMul;
-
-            for (int i = 0; i < _candlePs.Length; i++)
-            {
-                var ps = _candlePs[i];
-                if (ps == null) continue;
-
-                var main        = ps.main;
-                main.startColor = new ParticleSystem.MinMaxGradient(colorA, colorB);
-                main.startSize  = new ParticleSystem.MinMaxCurve(sizeMin, sizeMax);
-                main.startSpeed = new ParticleSystem.MinMaxCurve(speedMin, speedMax);
-
-                var emission          = ps.emission;
-                emission.rateOverTime = emissionRate;
-
-                // Rebuild colorOverLifetime gradient to match new palette
-                var col = ps.colorOverLifetime;
-                col.enabled = true;
-                var grad = new Gradient();
-                grad.SetKeys(
-                    new[]
-                    {
-                        new GradientColorKey(colorA,                                              0f),
-                        new GradientColorKey(Color.Lerp(colorA, colorB, 0.5f),                   0.5f),
-                        new GradientColorKey(new Color(colorB.r * 0.6f, colorB.g * 0.1f, 0f),   1f),
-                    },
-                    new[]
-                    {
-                        new GradientAlphaKey(0.9f, 0f),
-                        new GradientAlphaKey(0.7f, 0.5f),
-                        new GradientAlphaKey(0f,   1f),
-                    });
-                col.color = new ParticleSystem.MinMaxGradient(grad);
-            }
-        }
-
         // Occasional spark burst every 2 s while HP < 33 %
         private IEnumerator SparksLoop()
         {
@@ -849,74 +583,6 @@ namespace CrowdDefense.Entities
                 yield return wait;
             }
             _sparksCoroutine = null;
-        }
-
-        private void SpawnBloodSplatter()
-        {
-            // FIFO eviction — destroy oldest when pool full
-            while (_splatters.Count >= MaxSplatters)
-            {
-                var old = _splatters.Dequeue();
-                if (old != null) Destroy(old);
-            }
-
-            _splatterMat ??= BuildUnlitMaterial(new Color(0.5f, 0.05f, 0.05f, 0.8f), transparent: true);
-
-            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            go.name = "BloodSplatter";
-            Destroy(go.GetComponent<MeshCollider>());
-
-            float scale = UnityEngine.Random.Range(0.3f, 0.8f);
-            var wallFront = transform.position
-                + transform.forward * 0.5f
-                + UnityEngine.Random.insideUnitSphere * 0.8f;
-            go.transform.position    = wallFront;
-            go.transform.localScale  = new Vector3(scale, scale, scale);
-            go.transform.eulerAngles = new Vector3(0f, UnityEngine.Random.Range(0f, 360f), 0f);
-
-            // Instance material per splatter so each can fade independently
-            var rend = go.GetComponent<MeshRenderer>();
-            rend.material = new Material(_splatterMat);
-            rend.sortingOrder = 3;
-
-            _splatters.Enqueue(go);
-            StartCoroutine(FadeSplatter(go, rend.material, 8f));
-        }
-
-        private IEnumerator FadeSplatter(GameObject go, Material mat, float dur)
-        {
-            const float startAlpha = 0.8f;
-            float elapsed = 0f;
-            while (elapsed < dur && go != null)
-            {
-                elapsed += Time.deltaTime;
-                float a = Mathf.Lerp(startAlpha, 0f, elapsed / dur);
-                var c = mat.color;
-                c.a = a;
-                mat.color = c;
-                yield return null;
-            }
-            if (go != null)
-            {
-                // Remove from queue if still present (may have been evicted by FIFO already)
-                if (_splatters.Count > 0 && _splatters.Peek() == go)
-                    _splatters.Dequeue();
-                Destroy(go);
-            }
-        }
-
-        // 5 brown debris chunks burst outward — HP < 30 %, damage > 5
-        private void SpawnSiegeDebris()
-        {
-            var brown = new Color(0.55f, 0.35f, 0.18f, 1f);
-            for (int i = 0; i < 5; i++)
-            {
-                var offset = new Vector3(
-                    UnityEngine.Random.Range(-0.6f, 0.6f),
-                    UnityEngine.Random.Range(0.8f, 2.2f),
-                    UnityEngine.Random.Range(-0.6f, 0.6f));
-                VfxPool.Instance?.SpawnImpact(transform.position + offset, brown);
-            }
         }
 
         // Overrun: 3+ hits in 3 s window → red vignette 0.5 s + "overrun_alert" audio, 10 s cooldown
@@ -1074,37 +740,8 @@ namespace CrowdDefense.Entities
             go.transform.localPosition = new Vector3(0f, 0.5f, 0.55f);
             go.transform.localScale    = new Vector3(0.7f, 0.9f, 0.08f);
             var rend = go.GetComponent<MeshRenderer>();
-            rend.material = BuildGateMetallicMaterial();
+            rend.material = BuildUnlitMaterial(new Color(0.29f, 0.17f, 0.04f, 1f), transparent: false);
             _gateDoor = go.transform;
-        }
-
-        // URP Lit — metallic 0.8, smoothness 0.6, dark bronze tint (#4A2C0A)
-        private static Material BuildGateMetallicMaterial()
-        {
-            // Dark bronze: R=0.29 G=0.17 B=0.04
-            var bronzeDark = new Color(0.29f, 0.17f, 0.04f, 1f);
-
-            var shader = Shader.Find("Universal Render Pipeline/Lit");
-            if (shader != null)
-            {
-                var mat = new Material(shader);
-                mat.SetColor("_BaseColor", bronzeDark);
-                mat.SetFloat("_Metallic",    0.8f);
-                mat.SetFloat("_Smoothness",  0.6f);
-                mat.SetFloat("_Surface",     0f);   // Opaque
-                return mat;
-            }
-
-            // Fallback: Standard shader
-            var fallback = Shader.Find("Standard") ?? Shader.Find("Unlit/Color");
-            var fmat = new Material(fallback!);
-            fmat.color = bronzeDark;
-            if (fallback != null && fallback.name == "Standard")
-            {
-                fmat.SetFloat("_Metallic",   0.8f);
-                fmat.SetFloat("_Glossiness", 0.6f);
-            }
-            return fmat;
         }
 
         private void SubscribeWaveEvents()
@@ -1112,85 +749,7 @@ namespace CrowdDefense.Entities
             var wm = WaveManager.Instance;
             if (wm == null) return;
             wm.OnWaveStart   += _ => { WasHitThisWave = false; AnimateGate(open: true); };
-            wm.OnWaveCleared += _ =>
-            {
-                AnimateGate(open: false);
-                if (!IsDead && HP < HPMax)
-                {
-                    if (_repairCoroutine != null) StopCoroutine(_repairCoroutine);
-                    _repairCoroutine = StartCoroutine(PlayRepairAnimation());
-                }
-            };
-        }
-
-        private IEnumerator PlayRepairAnimation()
-        {
-            const float duration   = 2.0f;
-            const float shimmerHz  = 0.5f;       // 0.5 Hz pulse → full cycle every 2 s
-            const float emitPeak   = 0.2f;       // _EmissionColor white * 0.2 peak
-            const int   dustCount  = 12;
-
-            // Sand-tinted dust rising from castle base
-            if (VfxPool.Instance != null)
-            {
-                var sandTint = new Color(0.85f, 0.76f, 0.55f, 0.9f);
-                var basePos  = transform.position;
-                for (int i = 0; i < dustCount; i++)
-                {
-                    var offset = new Vector3(
-                        UnityEngine.Random.Range(-0.65f, 0.65f),
-                        UnityEngine.Random.Range(0.1f, 0.5f),
-                        UnityEngine.Random.Range(-0.65f, 0.65f));
-                    VfxPool.Instance.SpawnSpark(basePos + offset, sandTint);
-                }
-            }
-
-            // "stone_grind_repair" — skip silently if clip absent
-            AudioController.Instance?.PlayPitched("stone_grind_repair", 0.5f, 0.9f);
-
-            // Gather renderers once — no per-frame allocation
-            var renderers = GetComponentsInChildren<Renderer>();
-
-            _castleMpb ??= new MaterialPropertyBlock();
-
-            float elapsed = 0f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-
-                // 0.5 Hz sine pulse → 0..1 over time
-                float sin    = Mathf.Sin(elapsed * shimmerHz * Mathf.PI * 2f) * 0.5f + 0.5f;
-                float emit   = sin * emitPeak;
-                var   emitC  = Color.white * emit;
-
-                _castleMpb.SetColor(_emissionColorId, emitC);
-                _castleMpb.SetColor(_baseColorId,     _currentCastleTint);
-                _castleMpb.SetColor(_colorId,         _currentCastleTint);
-
-                for (int i = 0; i < renderers.Length; i++)
-                {
-                    var r = renderers[i];
-                    if (r == null) continue;
-                    if (r.gameObject.name.StartsWith("CastleHPBar")) continue;
-                    r.SetPropertyBlock(_castleMpb);
-                }
-
-                yield return null;
-            }
-
-            // Reset emission to zero, preserve tint
-            _castleMpb.SetColor(_emissionColorId, Color.black);
-            _castleMpb.SetColor(_baseColorId,     _currentCastleTint);
-            _castleMpb.SetColor(_colorId,         _currentCastleTint);
-            for (int i = 0; i < renderers.Length; i++)
-            {
-                var r = renderers[i];
-                if (r == null) continue;
-                if (r.gameObject.name.StartsWith("CastleHPBar")) continue;
-                r.SetPropertyBlock(_castleMpb);
-            }
-
-            _repairCoroutine = null;
+            wm.OnWaveCleared += _ => AnimateGate(open: false);
         }
 
         private void AnimateGate(bool open)
@@ -1217,77 +776,20 @@ namespace CrowdDefense.Entities
             _gateCoroutine = null;
         }
 
-        // Close: 90° → 0° over 1.2 s, ease-out-bounce (overshoot −5° at 80 % then settle),
-        // wood creak at 0.6 s, gate thud at 1.1 s, dust burst at end.
+        // Close: 90° → 0°, linear over 0.5 s
         private IEnumerator CloseGateCoroutine()
         {
-            const float dur          = 1.2f;
-            const float creakTime    = 0.6f;
-            const float thudTime     = 1.1f;
-            const float overshootDeg = -5f;    // bounce past closed position
-            const float overshootAt  = 0.80f;  // normalised time of peak overshoot
-
+            const float dur = 0.5f;
             float startY = NormalizeAngle(_gateDoor!.localEulerAngles.y);
-            bool  creakPlayed = false;
-            bool  thudPlayed  = false;
             float t = 0f;
-
             while (t < dur)
             {
                 t += Time.deltaTime;
-                float elapsed = Mathf.Min(t, dur);
-
-                // Audio cues — fire once at their respective timestamps
-                if (!creakPlayed && elapsed >= creakTime)
-                {
-                    creakPlayed = true;
-                    AudioController.Instance?.PlayPitched("wood_creak", 0.7f, 0.85f);
-                }
-                if (!thudPlayed && elapsed >= thudTime)
-                {
-                    thudPlayed = true;
-                    AudioController.Instance?.PlayPitched("gate_thud", 1.0f, 0.7f);
-                }
-
-                // Ease-out-bounce curve: linear drop with an overshoot then settle
-                float n = Mathf.Clamp01(elapsed / dur);
-                float target;
-                if (n < overshootAt)
-                {
-                    // Ease-in approaching overshoot angle — smooth deceleration via quadratic ease-out
-                    float p = n / overshootAt;
-                    float eased = 1f - (1f - p) * (1f - p);   // ease-out quad
-                    target = Mathf.LerpAngle(startY, overshootDeg, eased);
-                }
-                else
-                {
-                    // Bounce back from overshoot to 0°
-                    float p = (n - overshootAt) / (1f - overshootAt);
-                    float eased = 1f - (1f - p) * (1f - p);   // ease-out quad
-                    target = Mathf.LerpAngle(overshootDeg, 0f, eased);
-                }
-
-                _gateDoor.localEulerAngles = new Vector3(0f, target, 0f);
+                float y = Mathf.LerpAngle(startY, 0f, Mathf.Clamp01(t / dur));
+                _gateDoor.localEulerAngles = new Vector3(0f, y, 0f);
                 yield return null;
             }
-
             _gateDoor.localEulerAngles = new Vector3(0f, 0f, 0f);
-
-            // 5 dust particles at gate base
-            if (VfxPool.Instance != null)
-            {
-                var dustColor = new Color(0.72f, 0.60f, 0.42f, 0.85f);
-                var basePos   = transform.position + new Vector3(0f, 0.1f, 0.55f);
-                for (int i = 0; i < 5; i++)
-                {
-                    var offset = new Vector3(
-                        UnityEngine.Random.Range(-0.35f, 0.35f),
-                        0f,
-                        UnityEngine.Random.Range(-0.15f, 0.15f));
-                    VfxPool.Instance.SpawnSpark(basePos + offset, dustColor);
-                }
-            }
-
             _gateCoroutine = null;
         }
 
