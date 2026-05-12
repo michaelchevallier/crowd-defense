@@ -172,6 +172,18 @@ namespace CrowdDefense.UI
             _portrait.AddToClassList("portrait");
             root.Add(_portrait);
 
+            _damageFlashOverlay = new VisualElement();
+            _damageFlashOverlay.style.position   = Position.Absolute;
+            _damageFlashOverlay.style.top        = 0; _damageFlashOverlay.style.left   = 0;
+            _damageFlashOverlay.style.right      = 0; _damageFlashOverlay.style.bottom  = 0;
+            _damageFlashOverlay.style.borderTopLeftRadius     = new StyleLength(50f);
+            _damageFlashOverlay.style.borderTopRightRadius    = new StyleLength(50f);
+            _damageFlashOverlay.style.borderBottomLeftRadius  = new StyleLength(50f);
+            _damageFlashOverlay.style.borderBottomRightRadius = new StyleLength(50f);
+            _damageFlashOverlay.style.backgroundColor = new StyleColor(new Color(1f, 0f, 0f, 0f));
+            _damageFlashOverlay.pickingMode = PickingMode.Ignore;
+            _portrait.Add(_damageFlashOverlay);
+
             var info = new VisualElement();
             info.AddToClassList("hero-portrait-info");
             root.Add(info);
