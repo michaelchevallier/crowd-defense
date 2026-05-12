@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W3-8
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world3-8
-  displayName: "D\u00e9sert \u2014 \u00c9preuve Finale"
+  displayName: "Désert — Épreuve Finale"
   theme: desert
   world: 3
   level: 8
@@ -33,7 +33,6 @@ MonoBehaviour:
   startCoins: 187
   overrideCastleHP: 1
   castleHPOverride: 200
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

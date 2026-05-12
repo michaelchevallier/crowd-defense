@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W2-6
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world2-6
-  displayName: "Foret \u2014 Embuscade"
+  displayName: "Foret — Embuscade"
   theme: foret
   world: 2
   level: 6
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 116
   overrideCastleHP: 1
   castleHPOverride: 155
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

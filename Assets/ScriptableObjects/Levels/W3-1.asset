@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W3-1
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world3-1
-  displayName: "D\u00e9sert \u2014 Dunes"
+  displayName: "Désert — Dunes"
   theme: desert
   world: 3
   level: 1
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 109
   overrideCastleHP: 1
   castleHPOverride: 150
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

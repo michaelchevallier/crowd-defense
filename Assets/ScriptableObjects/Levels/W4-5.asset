@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W4-5
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world4-5
-  displayName: "Volcan \u2014 Labyrinthe de Lave"
+  displayName: "Volcan — Labyrinthe de Lave"
   theme: volcan
   world: 4
   level: 5
@@ -31,7 +31,6 @@ MonoBehaviour:
   startCoins: 187
   overrideCastleHP: 1
   castleHPOverride: 205
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

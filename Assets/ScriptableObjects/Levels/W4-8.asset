@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W4-8
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world4-8
-  displayName: "Volcan \u2014 Dragon BOSS"
+  displayName: "Volcan — Dragon BOSS"
   theme: volcan
   world: 4
   level: 8
@@ -33,7 +33,6 @@ MonoBehaviour:
   startCoins: 272
   overrideCastleHP: 1
   castleHPOverride: 280
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W2-3
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world2-3
-  displayName: "Foret \u2014 Clairiere"
+  displayName: "Foret — Clairiere"
   theme: foret
   world: 2
   level: 3
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 101
   overrideCastleHP: 1
   castleHPOverride: 140
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

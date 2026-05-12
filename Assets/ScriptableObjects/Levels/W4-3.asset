@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W4-3
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world4-3
-  displayName: "Volcan \u2014 Premier Pont"
+  displayName: "Volcan — Premier Pont"
   theme: volcan
   world: 4
   level: 3
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 123
   overrideCastleHP: 1
   castleHPOverride: 190
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W4-1
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world4-1
-  displayName: "Volcan \u2014 Sentier de la Pente"
+  displayName: "Volcan — Sentier de la Pente"
   theme: volcan
   world: 4
   level: 1
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 111
   overrideCastleHP: 1
   castleHPOverride: 180
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

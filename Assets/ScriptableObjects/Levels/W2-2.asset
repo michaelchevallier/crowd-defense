@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W2-2
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world2-2
-  displayName: "For\u00eat \u2014 Sentier"
+  displayName: "Forêt — Sentier"
   theme: foret
   world: 2
   level: 2
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 98
   overrideCastleHP: 1
   castleHPOverride: 135
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

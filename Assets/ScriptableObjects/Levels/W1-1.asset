@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: W1-1
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world1-1
-  displayName: "Plaine \u2014 1"
+  displayName: "Plaine — 1"
   theme: plaine
+  world: 1
+  level: 1
   mapRows:
   - 00000W0000000DL
   - P1111~111110D0L
@@ -25,13 +27,20 @@ MonoBehaviour:
   - 0DD0DWD0D0C0DDL
   cellSize: 4
   startCoins: 120
-  castleHP: 200
+  overrideCastleHP: 1
+  castleHPOverride: 150
+  briefing: ""
+  cutsceneIdAtStart:
+  isEndless: 0
+  allowMultiMagnet: 0
+  gridVariants: []
   waves:
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
       count: 35
     spawnRateMs: 900
     breakMs: 4500
+    portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
       count: 62
@@ -39,6 +48,7 @@ MonoBehaviour:
       count: 14
     spawnRateMs: 650
     breakMs: 4500
+    portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
       count: 62
@@ -48,6 +58,7 @@ MonoBehaviour:
       count: 4
     spawnRateMs: 600
     breakMs: 4500
+    portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
       count: 55
@@ -57,6 +68,7 @@ MonoBehaviour:
       count: 7
     spawnRateMs: 550
     breakMs: 5000
+    portalIdx: -1
   - entries:
     - type: {fileID: 11400000, guid: 7739f7da682048448f3198f53002e7b2, type: 2}
       count: 1
@@ -64,3 +76,4 @@ MonoBehaviour:
       count: 1
     spawnRateMs: 2000
     breakMs: 0
+    portalIdx: -1

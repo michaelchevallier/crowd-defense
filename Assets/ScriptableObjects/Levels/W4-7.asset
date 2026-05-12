@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W4-7
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world4-7
-  displayName: "Volcan \u2014 Choix de Route"
+  displayName: "Volcan — Choix de Route"
   theme: volcan
   world: 4
   level: 7
@@ -31,7 +31,6 @@ MonoBehaviour:
   startCoins: 221
   overrideCastleHP: 1
   castleHPOverride: 240
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

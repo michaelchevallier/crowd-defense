@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W4-4
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world4-4
-  displayName: "Volcan \u2014 Choix Tactique"
+  displayName: "Volcan — Choix Tactique"
   theme: volcan
   world: 4
   level: 4
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 204
   overrideCastleHP: 1
   castleHPOverride: 195
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

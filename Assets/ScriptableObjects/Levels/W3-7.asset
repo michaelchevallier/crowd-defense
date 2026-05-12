@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W3-7
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world3-7
-  displayName: "D\u00e9sert \u2014 Caravans\u00e9rail"
+  displayName: "Désert — Caravansérail"
   theme: desert
   world: 3
   level: 7
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 159
   overrideCastleHP: 1
   castleHPOverride: 180
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

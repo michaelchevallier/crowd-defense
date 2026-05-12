@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W5-8
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world5-8
-  displayName: "Foire \u2014 Apoth\u00e9ose Carnaval"
+  displayName: "Foire — Apothéose Carnaval"
   theme: foire
   world: 5
   level: 8
@@ -33,7 +33,6 @@ MonoBehaviour:
   startCoins: 323
   overrideCastleHP: 1
   castleHPOverride: 260
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

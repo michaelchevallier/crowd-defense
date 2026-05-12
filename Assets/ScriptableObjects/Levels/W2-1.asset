@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W2-1
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world2-1
-  displayName: "For\u00eat \u2014 Lisi\u00e8re"
+  displayName: "Forêt — Lisière"
   theme: foret
   world: 2
   level: 1
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 94
   overrideCastleHP: 1
   castleHPOverride: 130
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W5-3
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world5-3
-  displayName: "Foire \u2014 Stand de Tir"
+  displayName: "Foire — Stand de Tir"
   theme: foire
   world: 5
   level: 3
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 204
   overrideCastleHP: 1
   castleHPOverride: 180
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

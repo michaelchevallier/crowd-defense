@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W1-7
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world1-7
-  displayName: "Plaine \u2014 7"
+  displayName: "Plaine — 7"
   theme: plaine
   world: 1
   level: 7
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 150
   overrideCastleHP: 1
   castleHPOverride: 150
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W2-4
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world2-4
-  displayName: "Foret \u2014 Marecage"
+  displayName: "Foret — Marecage"
   theme: foret
   world: 2
   level: 4
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 119
   overrideCastleHP: 1
   castleHPOverride: 145
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

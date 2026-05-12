@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W3-2
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world3-2
-  displayName: "D\u00e9sert \u2014 Bifurcation"
+  displayName: "Désert — Bifurcation"
   theme: desert
   world: 3
   level: 2
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 112
   overrideCastleHP: 1
   castleHPOverride: 155
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

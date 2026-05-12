@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W5-2
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world5-2
-  displayName: "Foire \u2014 Man\u00e8ge Maudit"
+  displayName: "Foire — Manège Maudit"
   theme: foire
   world: 5
   level: 2
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 187
   overrideCastleHP: 1
   castleHPOverride: 150
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

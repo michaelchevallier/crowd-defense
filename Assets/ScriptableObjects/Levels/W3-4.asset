@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W3-4
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world3-4
-  displayName: "D\u00e9sert \u2014 Vall\u00e9e des Ruines"
+  displayName: "Désert — Vallée des Ruines"
   theme: desert
   world: 3
   level: 4
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 141
   overrideCastleHP: 1
   castleHPOverride: 165
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

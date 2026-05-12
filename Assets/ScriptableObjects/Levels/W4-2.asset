@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W4-2
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world4-2
-  displayName: "Volcan \u2014 Coul\u00e9e \u00e0 \u00c9viter"
+  displayName: "Volcan — Coulée à Éviter"
   theme: volcan
   world: 4
   level: 2
@@ -29,7 +29,6 @@ MonoBehaviour:
   startCoins: 113
   overrideCastleHP: 1
   castleHPOverride: 185
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

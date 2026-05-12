@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W5-6
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world5-6
-  displayName: "Foire \u2014 Tunnel des Horreurs"
+  displayName: "Foire — Tunnel des Horreurs"
   theme: foire
   world: 5
   level: 6
@@ -31,7 +31,6 @@ MonoBehaviour:
   startCoins: 238
   overrideCastleHP: 1
   castleHPOverride: 200
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

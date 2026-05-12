@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W4-6
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world4-6
-  displayName: "Volcan \u2014 Caldera"
+  displayName: "Volcan — Caldera"
   theme: volcan
   world: 4
   level: 6
@@ -30,7 +30,6 @@ MonoBehaviour:
   startCoins: 196
   overrideCastleHP: 1
   castleHPOverride: 215
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:

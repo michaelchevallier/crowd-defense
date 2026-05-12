@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: W2-5
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.LevelData
   id: world2-5
-  displayName: "Foret \u2014 Sous-Bois"
+  displayName: "Foret — Sous-Bois"
   theme: foret
   world: 2
   level: 5
@@ -31,7 +31,6 @@ MonoBehaviour:
   startCoins: 109
   overrideCastleHP: 1
   castleHPOverride: 150
-  lossMode: 0
   allowMultiMagnet: 0
   waves:
   - entries:
