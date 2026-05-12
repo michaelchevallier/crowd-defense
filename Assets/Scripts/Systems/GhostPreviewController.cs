@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using CrowdDefense.Common;
@@ -20,6 +21,8 @@ namespace CrowdDefense.Systems
         private static readonly Color LabelAfford  = new Color(0.20f, 0.90f, 0.20f, 1.00f);
         private static readonly Color LabelTooExp  = new Color(0.95f, 0.20f, 0.20f, 1.00f);
 
+        private static readonly Color DotColor = new Color(1f, 0.85f, 0f, 0.90f);
+
         private Camera?     cam;
         private GameObject? ghost;
         private GameObject? rangeRing;
@@ -27,6 +30,10 @@ namespace CrowdDefense.Systems
         private TowerType?  lastTowerType;
         private TextMeshPro? costLabel;
         private Material?   ghostMatTransparent;
+        private Material?   dotMaterial;
+
+        // Path indicator dots — shown during placement mode
+        private readonly List<GameObject> _pathDots = new();
 
         // Reusable property block — avoids per-frame GC
         private readonly MaterialPropertyBlock _mpb = new();
@@ -39,6 +46,7 @@ namespace CrowdDefense.Systems
         {
             cam = Camera.main;
             ghostMatTransparent = BuildTransparentMaterial();
+            dotMaterial         = BuildDotMaterial();
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnHoverPlacementCell += OnHoverCell;
         }
@@ -216,12 +224,67 @@ namespace CrowdDefense.Systems
 
             ghost.SetActive(true);
             if (rangeRing != null) rangeRing.SetActive(true);
+            ShowPathDots();
         }
 
         private void HideGhost()
         {
             if (ghost     != null) ghost.SetActive(false);
             if (rangeRing != null) rangeRing.SetActive(false);
+            HidePathDots();
+        }
+
+        private void ShowPathDots()
+        {
+            var pm = PathManager.Instance;
+            if (pm == null || pm.Paths.Count == 0) return;
+
+            // Collect all unique waypoint positions across all paths
+            var seen = new HashSet<Vector3>();
+            foreach (var path in pm.Paths)
+                foreach (var wp in path)
+                    seen.Add(wp);
+
+            // Expand pool if needed, reuse existing dots
+            int idx = 0;
+            foreach (var wp in seen)
+            {
+                if (idx >= _pathDots.Count)
+                {
+                    var dot = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    dot.name = "PathIndicatorDot";
+                    Object.Destroy(dot.GetComponent<Collider>());
+                    var rend = dot.GetComponent<Renderer>();
+                    if (rend != null) rend.sharedMaterial = dotMaterial;
+                    dot.transform.SetParent(transform, false);
+                    _pathDots.Add(dot);
+                }
+                var d = _pathDots[idx];
+                d.transform.position   = new Vector3(wp.x, 0.01f, wp.z);
+                d.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+                d.SetActive(true);
+                idx++;
+            }
+
+            // Hide excess dots from previous larger path
+            for (int i = idx; i < _pathDots.Count; i++)
+                _pathDots[i].SetActive(false);
+        }
+
+        private void HidePathDots()
+        {
+            foreach (var d in _pathDots) d.SetActive(false);
+        }
+
+        private static Material BuildDotMaterial()
+        {
+            var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            var mat = new Material(shader);
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", DotColor);
+            else if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", DotColor);
+            return mat;
         }
 
         private void BuildRangeRing(float range)
