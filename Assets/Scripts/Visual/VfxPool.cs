@@ -16,6 +16,12 @@ namespace CrowdDefense.Visual
         private const int DefaultCapacity = 20;
         private const int MaxPoolSize = 100;
 
+        // Auto-LOD : réduit maxParticles à 50% si FPS rolling avg < 30.
+        private static float _lodMultiplier = 1f;
+        private float _fpsAccum;
+        private int   _fpsFrames;
+        private float _lodRecheckTimer;
+
         [SerializeField] private GameObject? impactPrefab;
         [SerializeField] private GameObject? deathPrefab;
         [SerializeField] private GameObject? explosionPrefab;
@@ -74,6 +80,25 @@ namespace CrowdDefense.Visual
             _muzzleFlashPool = BuildPool(muzzleFlashPrefab, "MuzzleFlash", DefaultCapacity);
 
             PreWarm();
+        }
+
+        private void Update()
+        {
+            _fpsAccum  += Time.deltaTime;
+            _fpsFrames += 1;
+            _lodRecheckTimer += Time.deltaTime;
+
+            if (_lodRecheckTimer >= 2f)
+            {
+                _lodRecheckTimer = 0f;
+                if (_fpsFrames > 0)
+                {
+                    float avgFps = _fpsFrames / _fpsAccum;
+                    _lodMultiplier = avgFps < 30f ? 0.5f : (avgFps > 50f ? 1f : _lodMultiplier);
+                }
+                _fpsAccum  = 0f;
+                _fpsFrames = 0;
+            }
         }
 
         // ── API canon ─────────────────────────────────────────────────────────
@@ -380,8 +405,16 @@ namespace CrowdDefense.Visual
             main.startColor = new ParticleSystem.MinMaxGradient(tint);
         }
 
+        private static void ApplyLod(ParticleSystem ps)
+        {
+            if (_lodMultiplier >= 1f) return;
+            var main = ps.main;
+            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(main.maxParticles * _lodMultiplier));
+        }
+
         private void PlayAndAutoRelease(ParticleSystem ps, ObjectPool<ParticleSystem> pool)
         {
+            ApplyLod(ps);
             ps.Play(true);
             StartCoroutine(AutoReleaseRoutine(ps, pool, _root));
         }
