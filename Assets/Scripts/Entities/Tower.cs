@@ -1488,9 +1488,23 @@ namespace CrowdDefense.Entities
 
         public void SetSelected(bool selected)
         {
+            bool wasSelected = _isSelected;
             _isSelected = selected;
             if (_selectionRing != null)
                 _selectionRing.gameObject.SetActive(selected && !_destroyStarted);
+
+            if (selected && !wasSelected)
+            {
+                float pitch = Random.Range(0.95f, 1.05f);
+                AudioController.Instance?.Play3DPitched("tower_select_click", transform.position, 0.5f, pitch);
+                var sparkPos = transform.position + Vector3.up * 0.1f;
+                for (int i = 0; i < 3; i++)
+                    VfxPool.Instance?.SpawnSpark(sparkPos, Color.cyan);
+            }
+            else if (!selected && wasSelected)
+            {
+                AudioController.Instance?.Play3D("tower_deselect_click", transform.position, 0.3f);
+            }
         }
 
         private void BuildSelectionRing()
