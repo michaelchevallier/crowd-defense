@@ -95,6 +95,18 @@ namespace CrowdDefense.UI
         private static readonly Color _goldFlashColor    = new Color(1f, 0.92f, 0.2f);
         private static readonly Color _goldDefaultColor  = new Color(0.95f, 0.95f, 0.95f);
 
+        // Coin icon rotation animation
+        private Label?  _coinIcon;
+        private float   _coinIconAngle    = 0f;   // degrees, Y-axis simulated via scaleX
+        private float   _coinIconSpeedMul = 1f;   // 3× on gain, decays to 1× over 0.5 s
+        private float   _coinIconBoostTimer = 0f;
+        private float   _coinIconPunchTimer = 0f;
+        private const float CoinBaseDegreesPerSec = 72f;  // 360°/5 s
+        private const float CoinBoostMul          = 3f;
+        private const float CoinBoostDuration     = 0.5f;
+        private const float CoinPunchDuration     = 0.2f;
+        private const float CoinPunchPeak         = 1.15f;
+
         // Wave countdown overlay (3-2-1-GO)
         private Label? _waveCountdownLabel;
         private Coroutine? _countdownCoroutine;
@@ -289,6 +301,7 @@ namespace CrowdDefense.UI
             ApplyDeviceClasses(root);
             goldLabel = root.Q<Label>("gold-label");
             goldValue = root.Q<Label>("gold-value");
+            _coinIcon = root.Q<Label>("coin-icon");
             waveLabel = root.Q<Label>("wave-label");
             waveValue = root.Q<Label>("wave-value");
             hpLabel = root.Q<Label>("hp-label");
@@ -549,6 +562,7 @@ namespace CrowdDefense.UI
             UpdateHeroPanel();
             TickBossHpBar();
             TickGoldRoll();
+            TickCoinIcon();
             TickCastleHpPulse();
         }
 
@@ -1091,6 +1105,11 @@ namespace CrowdDefense.UI
                 if (_goldFlashCoroutine != null) StopCoroutine(_goldFlashCoroutine);
                 _goldFlashCoroutine = StartCoroutine(FlashGoldLabel());
             }
+
+            // Coin icon: speed boost 3× for 0.5 s + scale punch
+            _coinIconSpeedMul  = CoinBoostMul;
+            _coinIconBoostTimer = CoinBoostDuration;
+            _coinIconPunchTimer = CoinPunchDuration;
         }
 
         private void TickGoldRoll()
@@ -1116,6 +1135,47 @@ namespace CrowdDefense.UI
                     PlayCoinTick();
                 }
             }
+        }
+
+        private void TickCoinIcon()
+        {
+            if (_coinIcon == null) return;
+
+            float dt = Time.unscaledDeltaTime;
+
+            // Speed boost decay
+            if (_coinIconBoostTimer > 0f)
+            {
+                _coinIconBoostTimer -= dt;
+                if (_coinIconBoostTimer <= 0f)
+                {
+                    _coinIconBoostTimer = 0f;
+                    _coinIconSpeedMul = 1f;
+                }
+            }
+
+            // Advance angle
+            _coinIconAngle = (_coinIconAngle + CoinBaseDegreesPerSec * _coinIconSpeedMul * dt) % 360f;
+
+            // Map angle to cosine for Y-axis flip illusion via scaleX: cos(angle)
+            float cosA = Mathf.Cos(_coinIconAngle * Mathf.Deg2Rad);
+
+            // Scale punch decay (0 → peak → 0 over CoinPunchDuration using sine arch)
+            float uniformScale;
+            if (_coinIconPunchTimer > 0f)
+            {
+                _coinIconPunchTimer -= dt;
+                if (_coinIconPunchTimer < 0f) _coinIconPunchTimer = 0f;
+                float t = 1f - _coinIconPunchTimer / CoinPunchDuration; // 0→1 over duration
+                float punchMag = Mathf.Sin(t * Mathf.PI);               // arch 0→1→0
+                uniformScale = 1f + (CoinPunchPeak - 1f) * punchMag;
+            }
+            else
+            {
+                uniformScale = 1f;
+            }
+
+            _coinIcon.style.scale = new StyleScale(new Scale(new Vector3(cosA * uniformScale, uniformScale, 1f)));
         }
 
         private static void PlayCoinTick()

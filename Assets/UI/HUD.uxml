@@ -15,6 +15,7 @@
         <!-- Top bar pills -->
         <ui:VisualElement class="top-bar">
             <ui:VisualElement class="pill pill-gold" name="pill-gold">
+                <ui:Label text="&#x1FA99;" name="coin-icon" class="coin-icon" />
                 <ui:Label text="GOLD" name="gold-label" class="pill-label" />
                 <ui:Label text="120" name="gold-value" class="pill-value" />
             </ui:VisualElement>

@@ -38,6 +38,13 @@
     color: rgb(255, 210, 63);
 }
 
+.coin-icon {
+    font-size: 20px;
+    margin-right: 4px;
+    align-self: center;
+    transform-origin: center;
+}
+
 /* === Bank pill tooltip (D1-01 §3.5) === */
 .bank-pill-wrap {
     position: relative;
