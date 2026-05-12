@@ -3,6 +3,8 @@ using UnityEngine;
 
 namespace CrowdDefense.Data
 {
+    public enum HeroAvatar { Warrior, Mage, Ranger }
+
     [CreateAssetMenu(fileName = "HeroType", menuName = "CrowdDefense/HeroType")]
     public class HeroType : ScriptableObject
     {
@@ -68,5 +70,21 @@ namespace CrowdDefense.Data
             if (idx < 0 || idx >= xpCurve.Length) return int.MaxValue;
             return xpCurve[idx];
         }
+
+        public static Color AvatarColor(HeroAvatar avatar) => avatar switch
+        {
+            HeroAvatar.Warrior => new Color(0.784f, 0.235f, 0.235f, 1f),  // rouge
+            HeroAvatar.Mage    => new Color(0.412f, 0.235f, 0.784f, 1f),  // violet
+            HeroAvatar.Ranger  => new Color(0.235f, 0.627f, 0.235f, 1f),  // vert
+            _                  => Color.white,
+        };
+
+        public static string AvatarLabel(HeroAvatar avatar) => avatar switch
+        {
+            HeroAvatar.Warrior => "Guerrier",
+            HeroAvatar.Mage    => "Mage",
+            HeroAvatar.Ranger  => "Archer",
+            _                  => "?",
+        };
     }
 }

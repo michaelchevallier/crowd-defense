@@ -21,8 +21,17 @@ namespace CrowdDefense.Systems
         public static bool HasHeroChoice()
             => !string.IsNullOrEmpty(UnityEngine.PlayerPrefs.GetString(HeroPickScreen.PrefsKey, ""));
 
+        static bool HasAvatarChoice()
+            => !string.IsNullOrEmpty(UnityEngine.PlayerPrefs.GetString(UI.AvatarPickPanel.PrefsKey, ""));
+
         public static void LoadLevel(string levelId)
         {
+            if (!HasAvatarChoice())
+            {
+                UI.AvatarPickPanel.Instance?.Show(() => LoadLevel(levelId));
+                return;
+            }
+
             if (!HasHeroChoice())
             {
                 HeroPickScreen.Instance?.Show(levelId, () => LoadLevel(levelId));

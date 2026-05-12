@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Common;
+using CrowdDefense.Data;
 using CrowdDefense.Entities;
 using CrowdDefense.Systems;
 
@@ -91,10 +92,20 @@ namespace CrowdDefense.UI
             _root.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
             if (!visible) return;
 
-            // Portrait color from HeroType
-            var heroDef = LevelRunner.Instance?.HeroTypeDef;
-            if (_portrait != null && heroDef != null)
-                _portrait.style.backgroundColor = new StyleColor(heroDef.BodyColor);
+            // Portrait color: avatar selection overrides HeroType.BodyColor
+            if (_portrait != null)
+            {
+                var avatarKey = PlayerPrefs.GetString("hero_avatar", "");
+                Color portraitColor;
+                if (!string.IsNullOrEmpty(avatarKey) && System.Enum.TryParse<HeroAvatar>(avatarKey, out var avatar))
+                    portraitColor = HeroType.AvatarColor(avatar);
+                else
+                {
+                    var heroDef = LevelRunner.Instance?.HeroTypeDef;
+                    portraitColor = heroDef != null ? heroDef.BodyColor : Color.white;
+                }
+                _portrait.style.backgroundColor = new StyleColor(portraitColor);
+            }
 
             // XP bar (treated as "HP" — ratio 0..1); clamp int.MaxValue at max level.
             bool atMaxLevel = hero!.Level >= hero.MaxLevel;
