@@ -9,7 +9,6 @@ namespace CrowdDefense.Common
         private static Shader? _toonShader;
         private static Shader? _toonWaterShader;
         private static Shader? _toonLavaShader;
-        private static Shader? _toonSnowShader;
 
         public static Shader GetLitShader()
         {
@@ -41,23 +40,6 @@ namespace CrowdDefense.Common
             if (_toonLavaShader == null)
                 _toonLavaShader = Shader.Find("CrowdDefense/Toon/Lava") ?? GetLitShader();
             return _toonLavaShader!;
-        }
-
-        public static Shader GetToonSnowShader()
-        {
-            if (_toonSnowShader == null)
-                _toonSnowShader = Shader.Find("CrowdDefense/Toon/Snow") ?? GetLitShader();
-            return _toonSnowShader!;
-        }
-
-        // Réinitialise le cache (hot-reload Editor)
-        public static void ResetCache()
-        {
-            _litShader = null;
-            _toonShader = null;
-            _toonWaterShader = null;
-            _toonLavaShader = null;
-            _toonSnowShader = null;
         }
     }
 }

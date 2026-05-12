@@ -71,7 +71,9 @@ namespace CrowdDefense.Systems
 
                     if (cells == null || cells.Count < 2)
                     {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                         Debug.LogWarning($"[PathManager] No path from portal[{pi}]={start} to castle[{ci}]={end}");
+#endif
                         continue;
                     }
 

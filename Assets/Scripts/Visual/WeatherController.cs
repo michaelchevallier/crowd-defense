@@ -253,9 +253,6 @@ namespace CrowdDefense.Visual
             return Resources.Load<GameObject>(path);
         }
 
-        // Phase-4 stubs — ambient audio layer (not yet wired)
-        public void PlayAmbientAudio(WeatherType wt) { /* TODO Phase 4 */ }
-        public void StopAmbientAudio() { /* TODO Phase 4 */ }
     }
 
     public enum WeatherType

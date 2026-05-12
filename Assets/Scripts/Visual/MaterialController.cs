@@ -22,17 +22,6 @@ namespace CrowdDefense.Visual
         // also hit the cache rather than allocating on every spawn.
         private static readonly Dictionary<(Color, bool, Texture?), Material> _toonCache = new();
 
-        // Réinitialiser la ref cached si nécessaire (tests / hot-reload Editor)
-        public static void ResetCache()
-        {
-            _toonBase = null;
-            _jellyfish = null;
-            _hologram = null;
-            _bossJellyfish = null;
-            _bossHologram = null;
-            _toonCache.Clear();
-        }
-
         /// <summary>
         /// Applique le shader ToonCelShading à tous les Renderer du subtree root.
         /// Conserve la texture mainTexture originale du material source si présente.
