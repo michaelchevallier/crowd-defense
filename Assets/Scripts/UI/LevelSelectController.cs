@@ -149,14 +149,6 @@ namespace CrowdDefense.UI
             grid.Add(row);
         }
 
-        private static void OnLevelClicked(string levelId)
-        {
-            if (DifficultySelector.Instance != null)
-                DifficultySelector.Instance.Show(() => LevelLoader.LoadLevel(levelId));
-            else
-                LevelLoader.LoadLevel(levelId);
-        }
-
         private static void ShowPreviewModal(VisualElement root, string levelId, LevelData levelData)
         {
             // Remove any existing modal first
@@ -213,9 +205,6 @@ namespace CrowdDefense.UI
                 card.Add(info);
             }
 
-            // Difficulty selector row
-            card.Add(BuildDifficultyRow());
-
             // Button row
             var btnRow = new VisualElement();
             btnRow.style.flexDirection  = FlexDirection.Row;
@@ -237,7 +226,7 @@ namespace CrowdDefense.UI
             btnPlay.RegisterCallback<ClickEvent>(_ =>
             {
                 overlay.RemoveFromHierarchy();
-                OnLevelClicked(id);
+                LevelLoader.LoadLevel(id);
             });
             btnRow.Add(btnPlay);
 
@@ -252,87 +241,6 @@ namespace CrowdDefense.UI
             });
 
             root.Add(overlay);
-        }
-
-        private static VisualElement BuildDifficultyRow()
-        {
-            var container = new VisualElement();
-            container.style.flexDirection   = FlexDirection.Column;
-            container.style.alignItems      = Align.Center;
-            container.style.marginTop       = 10;
-            container.style.marginBottom    = 6;
-
-            var label = new Label("DIFFICULTE");
-            label.style.fontSize    = 12;
-            label.style.color       = new StyleColor(new Color(0.65f, 0.65f, 0.65f));
-            label.style.marginBottom = 6;
-            container.Add(label);
-
-            var row = new VisualElement();
-            row.style.flexDirection  = FlexDirection.Row;
-            row.style.justifyContent = Justify.Center;
-
-            int savedIndex = PlayerPrefs.GetInt(DifficultySelector.PrefKey, (int)Difficulty.Normal);
-            var btns = new Button[DifficultySelector.Options.Length];
-
-            for (int i = 0; i < DifficultySelector.Options.Length; i++)
-            {
-                var (diff, diffLabel, bg) = DifficultySelector.Options[i];
-                var btn = new Button();
-                // Short name only (first line before \n)
-                int nl = diffLabel.IndexOf('\n');
-                btn.text = nl > 0 ? diffLabel.Substring(0, nl) : diffLabel;
-                btn.style.marginLeft  = 4;
-                btn.style.marginRight = 4;
-                btn.style.paddingTop    = 6;
-                btn.style.paddingBottom = 6;
-                btn.style.paddingLeft   = 10;
-                btn.style.paddingRight  = 10;
-                btn.style.fontSize      = 13;
-                btn.style.borderTopLeftRadius     = 5;
-                btn.style.borderTopRightRadius    = 5;
-                btn.style.borderBottomLeftRadius  = 5;
-                btn.style.borderBottomRightRadius = 5;
-                bool sel = (int)diff == savedIndex;
-                ApplyDiffBtnStyle(btn, bg, sel);
-
-                var capturedDiff = diff;
-                var capturedBg   = bg;
-                var capturedBtns = btns;
-                btn.RegisterCallback<ClickEvent>(_ =>
-                {
-                    PlayerPrefs.SetInt(DifficultySelector.PrefKey, (int)capturedDiff);
-                    PlayerPrefs.Save();
-                    for (int j = 0; j < capturedBtns.Length; j++)
-                        if (capturedBtns[j] != null)
-                            ApplyDiffBtnStyle(capturedBtns[j], DifficultySelector.Options[j].bg,
-                                (int)DifficultySelector.Options[j].diff == (int)capturedDiff);
-                });
-                btns[i] = btn;
-                row.Add(btn);
-            }
-
-            container.Add(row);
-            return container;
-        }
-
-        private static void ApplyDiffBtnStyle(Button btn, Color bg, bool selected)
-        {
-            btn.style.backgroundColor = new StyleColor(bg);
-            btn.style.color           = new StyleColor(Color.white);
-            float bw = selected ? 2.5f : 1f;
-            btn.style.borderTopWidth    = bw;
-            btn.style.borderBottomWidth = bw;
-            btn.style.borderLeftWidth   = bw;
-            btn.style.borderRightWidth  = bw;
-            var bc = selected ? Color.white : new Color(1f, 1f, 1f, 0.2f);
-            btn.style.borderTopColor    = new StyleColor(bc);
-            btn.style.borderBottomColor = new StyleColor(bc);
-            btn.style.borderLeftColor   = new StyleColor(bc);
-            btn.style.borderRightColor  = new StyleColor(bc);
-            btn.style.scale = selected
-                ? new StyleScale(new Scale(new Vector2(1.05f, 1.05f)))
-                : new StyleScale(new Scale(Vector2.one));
         }
 
         private static void AddEndlessRow(VisualElement grid)

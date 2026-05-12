@@ -695,8 +695,7 @@ namespace CrowdDefense.Entities
             // D1-04 mob pressure: scale HP and speed by world pressure
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
             var pressure = BalanceConfig.Get().GetPressure(currentWorld);
-            float diffMul = BalanceConfig.DifficultyHpDmgMul();
-            hp       = type.Hp * pressure.mobHpMul * diffMul * endlessMul;
+            hp       = type.Hp * pressure.mobHpMul * endlessMul;
             maxHp    = hp;
             pressureSpeedMul = pressure.mobSpeedMul;
 
@@ -705,9 +704,9 @@ namespace CrowdDefense.Entities
             bool isMechanic = typeIdLower.Contains("skeleton") || typeIdLower.Contains("mech") || typeIdLower.Contains("robot");
             _hitSplashColor = isMechanic ? new Color(0.7f, 0.6f, 0.5f) : new Color(0.6f, 0.1f, 0.1f);
             _lastHitSplashTime = -1f;
-            shieldHp = type.ShieldHP * diffMul * endlessMul;
-            _damageMul     = diffMul * endlessMul;
-            _diffRewardMul = BalanceConfig.DifficultyRewardMul();
+            shieldHp = type.ShieldHP * endlessMul;
+            _damageMul     = endlessMul;
+            _diffRewardMul = 1.0f;
             pathIdx  = assignedPathIdx;
             currentWaypoint = 1; // 0 = spawn point, start moving toward 1
             float typeScale  = type.Scale;
