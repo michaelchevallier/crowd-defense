@@ -411,6 +411,7 @@ namespace CrowdDefense.Entities
             }
             // Yellow scintillating trail particle
             SpawnEliteTrail();
+            StartCoroutine(SpawnGroundCrack(isBoss: false));
         }
 
         private void SpawnEliteTrail()
@@ -763,7 +764,82 @@ namespace CrowdDefense.Entities
             }
 
             if (type.IsBoss)
+            {
                 StartCoroutine(BossSpawnCinematic());
+                StartCoroutine(SpawnGroundCrack(isBoss: true));
+            }
+        }
+
+        // ── Ground crack VFX — boss (scale 4) or elite (scale 2) ─────────────
+        private System.Collections.IEnumerator SpawnGroundCrack(bool isBoss)
+        {
+            const float ScaleInDuration  = 0.3f;
+            const float HoldDuration     = 1.0f;
+            const float FadeOutDuration  = 1.5f;
+
+            float targetScale = isBoss ? 4f : 2f;
+
+            var crackGo = new GameObject("GroundCrack");
+            crackGo.transform.SetParent(null);
+            crackGo.transform.SetPositionAndRotation(
+                transform.position + Vector3.up * 0.05f,
+                Quaternion.Euler(90f, 0f, 0f));
+            crackGo.transform.localScale = Vector3.zero;
+
+            var mf  = crackGo.AddComponent<MeshFilter>();
+            mf.mesh = Resources.GetBuiltinResource<Mesh>("Quad.fbx");
+
+            var shader = Shader.Find("Universal Render Pipeline/Unlit")
+                      ?? Shader.Find("Sprites/Default")
+                      ?? Shader.Find("Hidden/InternalErrorShader")!;
+            var mat = new Material(shader)
+            {
+                name       = "GroundCrack_Mat",
+                renderQueue = 3000
+            };
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend",   3f);
+            mat.SetInt("_ZWrite",    0);
+            mat.SetInt("_SrcBlend",  5);
+            mat.SetInt("_DstBlend",  10);
+            var crackColor = new Color(1f, 0.3f, 0.1f, 0.8f);
+            mat.color = crackColor;
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", crackColor);
+
+            var mr = crackGo.AddComponent<MeshRenderer>();
+            mr.material = mat;
+
+            // Scale-in ease-out
+            float elapsed = 0f;
+            while (elapsed < ScaleInDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t  = Mathf.Clamp01(elapsed / ScaleInDuration);
+                float s  = Mathf.Sin(t * Mathf.PI * 0.5f) * targetScale; // ease-out sine
+                crackGo.transform.localScale = new Vector3(s, s, s);
+                yield return null;
+            }
+            crackGo.transform.localScale = Vector3.one * targetScale;
+
+            // Hold
+            yield return new WaitForSeconds(HoldDuration);
+
+            // Fade-out alpha 0.8 → 0
+            elapsed = 0f;
+            while (elapsed < FadeOutDuration)
+            {
+                if (crackGo == null) yield break;
+                elapsed += Time.deltaTime;
+                float alpha   = Mathf.Lerp(0.8f, 0f, elapsed / FadeOutDuration);
+                var   fadeCol = new Color(1f, 0.3f, 0.1f, alpha);
+                mat.color = fadeCol;
+                if (mat.HasProperty("_BaseColor"))
+                    mat.SetColor("_BaseColor", fadeCol);
+                yield return null;
+            }
+
+            if (crackGo != null) Destroy(crackGo);
         }
 
         // ── Boss spawn cinematic (1.2 s spotlight rays + bass drone) ─────────
