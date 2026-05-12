@@ -249,6 +249,10 @@ namespace CrowdDefense.Entities
             AudioController.Instance?.Play3D("castle_hit", transform.position);
             VfxPool.Instance?.SpawnHitFlash(transform);
 
+            // Siege debris — brown chunks burst when HP < 30 % and hit is significant
+            if (actualDmg > 5 && HPMax > 0 && (float)HP / HPMax < 0.3f)
+                SpawnSiegeDebris();
+
             // Screen shake & flash — tiered by HP%, throttled to once every 100 ms to prevent spam
             if (Time.unscaledTime - _lastShakeTime > 0.1f)
             {
@@ -514,6 +518,20 @@ namespace CrowdDefense.Entities
                 yield return wait;
             }
             _sparksCoroutine = null;
+        }
+
+        // 5 brown debris chunks burst outward — HP < 30 %, damage > 5
+        private void SpawnSiegeDebris()
+        {
+            var brown = new Color(0.55f, 0.35f, 0.18f, 1f);
+            for (int i = 0; i < 5; i++)
+            {
+                var offset = new Vector3(
+                    UnityEngine.Random.Range(-0.6f, 0.6f),
+                    UnityEngine.Random.Range(0.8f, 2.2f),
+                    UnityEngine.Random.Range(-0.6f, 0.6f));
+                VfxPool.Instance?.SpawnImpact(transform.position + offset, brown);
+            }
         }
 
         // Smoke below 50 %, danger light below 20 %
