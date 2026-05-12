@@ -77,7 +77,10 @@ namespace CrowdDefense.UI
 
         private static void OnLevelClicked(string levelId)
         {
-            LevelLoader.LoadLevel(levelId);
+            if (DifficultySelector.Instance != null)
+                DifficultySelector.Instance.Show(() => LevelLoader.LoadLevel(levelId));
+            else
+                LevelLoader.LoadLevel(levelId);
         }
 
         private static void AddDailyRow(VisualElement grid)

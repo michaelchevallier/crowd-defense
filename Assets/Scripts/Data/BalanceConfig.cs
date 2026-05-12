@@ -66,6 +66,34 @@ namespace CrowdDefense.Data
 
         // --- Helpers ---
 
+        private const string DifficultyPrefKey = "difficulty_v1";
+
+        // HP / Damage multiplier for the current difficulty setting.
+        public static float DifficultyHpDmgMul()
+        {
+            var d = (Difficulty)UnityEngine.PlayerPrefs.GetInt(DifficultyPrefKey, (int)Difficulty.Normal);
+            return d switch
+            {
+                Difficulty.Easy   => 0.7f,
+                Difficulty.Normal => 1.0f,
+                Difficulty.Hard   => 1.5f,
+                _                 => 1.0f,
+            };
+        }
+
+        // Inverse multiplier applied to gold rewards (Easy gives more, Hard gives less).
+        public static float DifficultyRewardMul()
+        {
+            var d = (Difficulty)UnityEngine.PlayerPrefs.GetInt(DifficultyPrefKey, (int)Difficulty.Normal);
+            return d switch
+            {
+                Difficulty.Easy   => 1.2f,
+                Difficulty.Normal => 1.0f,
+                Difficulty.Hard   => 0.8f,
+                _                 => 1.0f,
+            };
+        }
+
         public float DifficultyMulFor(int world)
         {
             if (world <= 10) return 1f;
