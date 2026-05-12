@@ -15,14 +15,17 @@ namespace CrowdDefense.UI
     /// </summary>
     public class BossIntroBannerController : MonoSingleton<BossIntroBannerController>
     {
-        private const float SlideInDuration = 0.4f;
-        private const float HoldDuration    = 2.0f;
+        private const float SlideInDuration  = 0.4f;
+        private const float HoldDuration     = 2.0f;
+        private const float HoldDurationSeen = 0.5f;
         private const float SlideOutDuration = 0.4f;
 
         private Canvas?     _canvas;
         private RectTransform? _panel;
         private TextMeshProUGUI? _label;
+        private Button?     _skipBtn;
         private Coroutine?  _animCo;
+        private string      _prefsKey = string.Empty;
 
         protected override void OnAwakeSingleton()
         {
@@ -43,10 +46,27 @@ namespace CrowdDefense.UI
         {
             if (_animCo != null) StopCoroutine(_animCo);
             if (_label != null) _label.text = $"BOSS APPROCHE\n{bossName.ToUpper()}";
-            _animCo = StartCoroutine(AnimateBanner());
+            _prefsKey = $"boss_intro_seen_{bossName.ToLower().Replace(" ", "_")}_v1";
+            bool seen = PlayerPrefs.GetInt(_prefsKey, 0) == 1;
+            if (_skipBtn != null) _skipBtn.gameObject.SetActive(true);
+            _animCo = StartCoroutine(AnimateBanner(seen));
 
             // AudioController log-warns + joue un beep si la clé manque — pas de crash
             AudioController.Instance?.Play("boss_intro_roar", 1f);
+        }
+
+        private void SkipBanner()
+        {
+            if (_animCo != null) StopCoroutine(_animCo);
+            CloseBanner();
+        }
+
+        private void CloseBanner()
+        {
+            if (!string.IsNullOrEmpty(_prefsKey)) PlayerPrefs.SetInt(_prefsKey, 1);
+            if (_skipBtn != null) _skipBtn.gameObject.SetActive(false);
+            if (_canvas != null) _canvas.gameObject.SetActive(false);
+            _animCo = null;
         }
 
         // Canvas UGUI créé à la main — pas de Prefab requis dans la scène
@@ -89,29 +109,59 @@ namespace CrowdDefense.UI
             labelRt.offsetMin = Vector2.zero;
             labelRt.offsetMax = Vector2.zero;
 
+            // Click anywhere = skip
+            var panelBtn = panelGo.AddComponent<Button>();
+            panelBtn.onClick.AddListener(SkipBanner);
+
+            // Bouton Skip explicite en bas-droite
+            var skipGo = new GameObject("SkipBtn");
+            skipGo.transform.SetParent(panelGo.transform, false);
+            var skipImg = skipGo.AddComponent<Image>();
+            skipImg.color = new Color(1f, 1f, 1f, 0.15f);
+            _skipBtn = skipGo.AddComponent<Button>();
+            _skipBtn.onClick.AddListener(SkipBanner);
+            var skipRt = skipGo.GetComponent<RectTransform>();
+            skipRt.anchorMin = new Vector2(1f, 0f);
+            skipRt.anchorMax = new Vector2(1f, 0f);
+            skipRt.pivot     = new Vector2(1f, 0f);
+            skipRt.anchoredPosition = new Vector2(-20f, 20f);
+            skipRt.sizeDelta = new Vector2(120f, 40f);
+            var skipLabel = new GameObject("Text").AddComponent<TextMeshProUGUI>();
+            skipLabel.transform.SetParent(skipGo.transform, false);
+            skipLabel.text = "Skip ▶";
+            skipLabel.fontSize = 22f;
+            skipLabel.alignment = TextAlignmentOptions.Center;
+            skipLabel.color = Color.white;
+            var skipLabelRt = skipLabel.GetComponent<RectTransform>();
+            skipLabelRt.anchorMin = Vector2.zero;
+            skipLabelRt.anchorMax = Vector2.one;
+            skipLabelRt.offsetMin = Vector2.zero;
+            skipLabelRt.offsetMax = Vector2.zero;
+            _skipBtn.gameObject.SetActive(false);
+
             // Masqué par défaut — le panel commence hors-écran (offset X = Screen.width)
             SetPanelOffsetX(Screen.width);
             go.SetActive(false);
         }
 
-        private IEnumerator AnimateBanner()
+        private IEnumerator AnimateBanner(bool alreadySeen)
         {
             if (_canvas == null || _panel == null) yield break;
             _canvas.gameObject.SetActive(true);
 
             float screenW = Screen.width;
+            float hold = alreadySeen ? HoldDurationSeen : HoldDuration;
 
             // Slide-in depuis droite
             yield return SlidePanel(screenW, 0f, SlideInDuration);
 
             // Hold
-            yield return new WaitForSecondsRealtime(HoldDuration);
+            yield return new WaitForSecondsRealtime(hold);
 
             // Slide-out vers gauche
             yield return SlidePanel(0f, -screenW, SlideOutDuration);
 
-            _canvas.gameObject.SetActive(false);
-            _animCo = null;
+            CloseBanner();
         }
 
         private IEnumerator SlidePanel(float fromX, float toX, float duration)
