@@ -11,12 +11,14 @@ namespace CrowdDefense.Systems
     public class Achievements : MonoSingleton<Achievements>
     {
         private bool _legendaryPerkGranted;
-        private const string PrefsKey = "cd.achievements.unlocked";
+        private const string PrefsKey       = "cd.achievements.unlocked";
+        private const string PrefsOrderKey  = "cd.achievements.order";
 
         [Header("Registry (auto-loaded from Resources/AchievementRegistry if null)")]
         [SerializeField] private AchievementRegistry? registry;
 
-        private readonly HashSet<string> _unlocked = new();
+        private readonly HashSet<string>  _unlocked = new();
+        private readonly List<string>     _unlockOrder = new();
 
         public static event Action<string>? OnUnlocked;
 
@@ -46,11 +48,28 @@ namespace CrowdDefense.Systems
                 if (!string.IsNullOrEmpty(trimmed))
                     _unlocked.Add(trimmed);
             }
+
+            // Load chronological order (separate key, appended on each unlock).
+            string orderCsv = PlayerPrefs.GetString(PrefsOrderKey, "");
+            _unlockOrder.Clear();
+            if (!string.IsNullOrEmpty(orderCsv))
+            {
+                foreach (string id in orderCsv.Split(','))
+                {
+                    string trimmed = id.Trim();
+                    if (!string.IsNullOrEmpty(trimmed) && _unlocked.Contains(trimmed))
+                        _unlockOrder.Add(trimmed);
+                }
+            }
+            // Fallback: if order list missing, seed from unlocked set (no ordering guarantee).
+            if (_unlockOrder.Count == 0 && _unlocked.Count > 0)
+                _unlockOrder.AddRange(_unlocked);
         }
 
         private void SaveToPrefs()
         {
-            PlayerPrefs.SetString(PrefsKey, string.Join(",", _unlocked));
+            PlayerPrefs.SetString(PrefsKey,      string.Join(",", _unlocked));
+            PlayerPrefs.SetString(PrefsOrderKey, string.Join(",", _unlockOrder));
             PlayerPrefs.Save();
         }
 
@@ -60,6 +79,7 @@ namespace CrowdDefense.Systems
             if (_unlocked.Contains(id)) return;
 
             _unlocked.Add(id);
+            _unlockOrder.Add(id);
             SaveToPrefs();
 
             var def = registry?.Get(id);
@@ -123,6 +143,13 @@ namespace CrowdDefense.Systems
 
         public int GetEventCount(string eventKey) =>
             PlayerPrefs.GetInt($"cd.ach.counter.{eventKey}", 0);
+
+        // Returns up to `count` most-recently-unlocked achievement ids (newest last in list).
+        public IReadOnlyList<string> GetRecentUnlocked(int count)
+        {
+            int start = Math.Max(0, _unlockOrder.Count - count);
+            return _unlockOrder.GetRange(start, _unlockOrder.Count - start);
+        }
 
 #if UNITY_EDITOR
         public void ResetAllForTesting()

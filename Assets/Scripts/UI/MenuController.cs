@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections;
+using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -22,6 +23,7 @@ namespace CrowdDefense.UI
         private VisualElement? _root;
         private VisualElement? _menuButtons;
         private VisualElement? _splashOverlay;
+        private VisualElement? _showcaseRow;
         private bool _splashDone;
 
         private void Awake()
@@ -55,6 +57,8 @@ namespace CrowdDefense.UI
 
             // Collect all direct menu children to hide during splash
             _menuButtons = _root.Q<VisualElement>("menu-buttons") ?? _root;
+
+            BuildAchievementsShowcase();
 
             StartCoroutine(PlayLogoSplash());
         }
@@ -155,6 +159,51 @@ namespace CrowdDefense.UI
         private void OnDestroy()
         {
             if (Instance == this) Instance = null;
+        }
+
+        // ── Achievement showcase ─────────────────────────────────────────────
+
+        private void BuildAchievementsShowcase()
+        {
+            if (_root == null) return;
+
+            var ach      = Achievements.Instance;
+            var registry = Resources.Load<AchievementRegistry>("AchievementRegistry");
+
+            // Need at least one unlock to display the row.
+            if (ach == null || registry == null || ach.UnlockedCount == 0) return;
+
+            var recent = ach.GetRecentUnlocked(5);
+            if (recent.Count == 0) return;
+
+            _showcaseRow = new VisualElement { name = "achievements-showcase-row" };
+            _showcaseRow.style.flexDirection  = FlexDirection.Row;
+            _showcaseRow.style.justifyContent = Justify.Center;
+            _showcaseRow.style.alignItems     = Align.Center;
+            _showcaseRow.style.marginBottom   = 12;
+            _showcaseRow.style.marginTop      = 8;
+
+            // Iterate from most-recent (end of list) to oldest.
+            for (int i = recent.Count - 1; i >= 0; i--)
+            {
+                string achId = recent[i];
+                var def = registry.Get(achId);
+                if (def == null) continue;
+
+                var icon = new Label(def.IconEmoji);
+                icon.AddToClassList("ach-showcase-icon");
+                icon.style.fontSize  = 28;
+                icon.style.marginLeft  = 6;
+                icon.style.marginRight = 6;
+                icon.tooltip = string.IsNullOrEmpty(def.titleKey) ? def.id : L.Get(def.titleKey);
+
+                // Click on any icon → open achievements panel.
+                icon.RegisterCallback<ClickEvent>(_ => AchievementsPanel.Instance?.Show());
+                _showcaseRow.Add(icon);
+            }
+
+            // Insert at top of _root (before all other children).
+            _root.Insert(0, _showcaseRow);
         }
 
         private void RefreshContinueButton()
