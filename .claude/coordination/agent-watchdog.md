@@ -1,37 +1,31 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 04:14
+## 2026-05-12 04:19
 
 ### Snapshot
 
-- Actifs (<8 min) : 1 (current watchdog scan)
-- Stalled (8-30 min) : 6 (b* anciennes sessions, inertes)
+- Actifs (<8 min) : 1 (current scan)
+- Stalled (8-30 min) : 1 (b* anciennes session, inerte)
 - Worktrees : 16
-- Unity batch : **AMBIGU** (Lockfile present, mais ps grep ne montre pas PID — peut-être r3 dead encore not cleaned, ou r4 démarre)
-
-### 🚨 Build state
-
-- **r2 FAIL** : CS0246 PathTiles + VfxPool — fixé `0d77bb8`
-- **r3 FAIL** : 3 errors (Hero.Instance, CrowdDefense.Editor namespace, MemoryExtensions.Contains StringComparison) — bug-fixer en flight `a0cc47166076bd43a`
-- **r4** : pas encore lancé par l'agent — log n'existe pas
-
-### Sonnet en flight
-
-- aafa0326f308a7f56 (RunContext + Audio split + MetaUpgrade enum polish)
-- a0cc47166076bd43a (Fix r3 3 errors + relaunch r4)
+- Unity batch : **YES** PID 99202 (r6 build, wasm 547/570 .o files compiling)
+- Lockfile : present (normal)
+- Build r6 log silence : 2s — **HEALTHY active compile**
 
 ### Killed
 
-0. Aucun. Bug-fixer en travail.
+0. Aucun. r6 en pleine compilation WASM phase, log fresh.
 
-### Stalled outputs
+### Build progress
 
-b6fvxpo8v (29m), b7qv8x35l (27m), bbissrkip (25m), bcfdtqjt1 (27m), blq3tmdg2 (27m), bo011oebo (22m). Tous artifacts inertes.
+`[547/570 1s] C_WebGL_wasm` — IL2CPP → WASM transcoding 96% done. Estimated 5 min to Build success.
 
-### Notes
+### Sonnet en flight
 
-Lockfile présent sans PID → cleanup nécessaire si bug-fixer pas auto-clean. Watchdog next iter check : r4 log existe + Unity batch actif.
+- ad605d752acfc6bd9 (V4 diff cron)
+- a90112b2281d821f2 (Tower L3 dict refactor)
+- a6b281fbb0f6e6104 (SettingsRegistry debounce)
+- a8c83514788c0726c (Enemy mesh cache assetKey)
 
 ### Stdout
 
-`Actifs:1 Stalled:6 Killed:0 Worktrees:16 UnityBatch:AMBIGU LockfileStale BuildStatus:r3-failed-r4-pending`
+`Actifs:1 Stalled:1 Killed:0 Worktrees:16 UnityBatch:YES(PID99202,r6,wasm-547/570) Sonnet:4InFlight`

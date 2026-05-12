@@ -594,11 +594,16 @@ namespace CrowdDefense.Entities
             }
 
             // Re-use existing GLTF child if same prefab (pool reuse: same cfg → keep mesh)
-            if (_meshChild != null)
+            if (_meshChild != null && _meshChild.name == "Mesh_" + assetKey)
             {
                 _meshChild.SetActive(true);
                 return _meshChild;
             }
+
+            // Mismatch: destroy stale mesh from previous EnemyType
+            if (_meshChild != null)
+                Object.Destroy(_meshChild);
+            _meshChild = null;
 
             var instance = Object.Instantiate(prefab, transform);
             instance.name = "Mesh_" + assetKey;
@@ -635,11 +640,17 @@ namespace CrowdDefense.Entities
 #endif
                 return null;
             }
-            if (_meshChild != null)
+            if (_meshChild != null && _meshChild.name == "Skin_" + skinPrefab.name)
             {
                 _meshChild.SetActive(true);
                 return _meshChild;
             }
+
+            // Mismatch: destroy stale mesh from previous skin
+            if (_meshChild != null)
+                Object.Destroy(_meshChild);
+            _meshChild = null;
+
             var inst = Object.Instantiate(skinPrefab, transform);
             inst.name = "Skin_" + skinPrefab.name;
             inst.transform.localPosition = Vector3.zero;

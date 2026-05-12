@@ -15,6 +15,31 @@ namespace CrowdDefense.Entities
     /// </summary>
     public enum TowerBranch { None, Dps, Utility }
 
+    /// <summary>
+    /// L3 stats pour une branche donnée d'une tour signature.
+    /// Rend le switch 77-lignes de ApplyL3Branch data-driven.
+    /// </summary>
+    private struct L3Stats
+    {
+        public int Pierce;
+        public int MultiShot;
+        public bool FinalExplosion;
+        public float FinalExplosionAoe;
+        public float FinalExplosionDmg;
+        public float CritChance;
+        public float CritMul;
+        public int ChainLightningJumps;
+        public float ChainLightningRange;
+        public bool FreezeOnHit;
+        public int FreezeDurMs;
+        public bool BerserkerActive;
+        public float BerserkerDmgMul;
+        public float BerserkerHpThreshold;
+        public bool BulwarkAura;
+        public float BulwarkAuraRange;
+        public float BulwarkDmgReduction;
+    }
+
     public enum TargetPriority { First, Last, Strongest, Weakest, Closest }
 
     public enum GuardMode { All, AirOnly, GroundOnly }
@@ -76,6 +101,26 @@ namespace CrowdDefense.Entities
         private Renderer? _synergyHaloRenderer;
         private MaterialPropertyBlock? _haloMpb;
         private static readonly int _haloColorId = Shader.PropertyToID("_BaseColor");
+
+        // L3 stats lookup table : (towerId, branch) → stats (D1-03)
+        private static readonly Dictionary<(string, TowerBranch), L3Stats> _l3StatsTable = new()
+        {
+            // Archer
+            ("archer", TowerBranch.Dps) => new L3Stats { MultiShot = 2 },
+            ("archer", TowerBranch.Utility) => new L3Stats { CritChance = 0.25f, CritMul = 3f },
+
+            // Crossbow
+            ("crossbow", TowerBranch.Dps) => new L3Stats { FinalExplosion = true, FinalExplosionAoe = 2.5f },
+            ("crossbow", TowerBranch.Utility) => new L3Stats { Pierce = 3 }, // +3 to cfg.Pierce
+
+            // Tank
+            ("tank", TowerBranch.Dps) => new L3Stats { BerserkerActive = true, BerserkerDmgMul = 2f, BerserkerHpThreshold = 0.5f },
+            ("tank", TowerBranch.Utility) => new L3Stats { BulwarkAura = true, BulwarkAuraRange = 4f, BulwarkDmgReduction = 0.20f },
+
+            // Mage
+            ("mage", TowerBranch.Dps) => new L3Stats { ChainLightningJumps = 3, ChainLightningRange = 5f },
+            ("mage", TowerBranch.Utility) => new L3Stats { FreezeOnHit = true, FreezeDurMs = 500 },
+        };
 
         // Affordable upgrade highlight ring (gold pulsing quad when player can afford next level)
         private GameObject? _affordableHighlight;
