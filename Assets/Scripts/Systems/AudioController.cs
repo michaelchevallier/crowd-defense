@@ -105,11 +105,11 @@ namespace CrowdDefense.Systems
             return 220f * Mathf.Pow(2f, (h % 64u) / 21f);
         }
 
-        private IEnumerator PlayProceduralBeepCo(string clipKey, float volMul)
+        private IEnumerator PlayProceduralBeepCo(string clipKey, float volMul, float pitch = 1f)
         {
             if (this == null) yield break;
             const int sampleRate = 44100;
-            float freq = FreqForKey(clipKey);
+            float freq = FreqForKey(clipKey) * pitch;
             const float duration = 0.07f;
             int samples = Mathf.RoundToInt(sampleRate * duration);
             var data = new float[samples];
@@ -127,6 +127,31 @@ namespace CrowdDefense.Systems
             source.Play();
             yield return new WaitForSeconds(duration + 0.05f);
             if (this != null) Destroy(beep);
+        }
+
+        // 2-D pitched play — falls back to procedural beep at shifted freq if clip missing
+        public void PlayPitched(string clipKey, float volMul = 1f, float pitch = 1f)
+        {
+            if (registry == null) LoadAudioRegistry();
+            var clip = registry?.Get(clipKey);
+
+            if (_lastPlayedAt.TryGetValue(clipKey, out float last) &&
+                last + MinReplayInterval > Time.unscaledTime)
+                return;
+            _lastPlayedAt[clipKey] = Time.unscaledTime;
+
+            if (clip != null)
+            {
+                var source = _sfxPool[_nextIdx++ % PoolSize];
+                source.clip   = clip;
+                source.pitch  = pitch;
+                source.volume = Mathf.Clamp01(volMul);
+                source.Play();
+                return;
+            }
+
+            // Fallback: procedural beep, pitch applied as freq multiplier
+            StartCoroutine(PlayProceduralBeepCo(clipKey, volMul, pitch));
         }
 
         public void Play3D(string clipKey, Vector3 worldPos, float volMul = 1f)

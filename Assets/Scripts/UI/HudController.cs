@@ -590,10 +590,25 @@ namespace CrowdDefense.UI
             if (waveLaunchBtn != null) SetVisible(waveLaunchBtn, false);
             if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
 
-            string[] steps = { "3", "2", "1", "GO!" };
-            foreach (var step in steps)
+            // (step, pitch, volMul)
+            var steps = new (string text, float pitch, float vol)[]
             {
-                ShowWaveCountdown(step);
+                ("3",   0.8f, 1.0f),
+                ("2",   0.9f, 1.0f),
+                ("1",   1.0f, 1.0f),
+                ("GO!", 1.2f, 1.2f),
+            };
+            foreach (var (text, pitch, vol) in steps)
+            {
+                ShowWaveCountdown(text);
+                var ac = AudioController.Instance;
+                if (ac != null)
+                {
+                    if (ac.GetClip("countdown_beep") != null)
+                        ac.PlayPitched("countdown_beep", vol, pitch);
+                    else
+                        ac.PlayPitched("ui_click", vol, pitch);
+                }
                 yield return new WaitForSecondsRealtime(1f);
             }
             HideWaveCountdown();
