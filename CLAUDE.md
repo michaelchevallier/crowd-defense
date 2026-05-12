@@ -23,7 +23,15 @@ Jeu **tower defense** Unity 6 LTS (`6000.0.74f1`), C#, cible multi-platform (Ste
 
 ## État
 
-Sprint MIGRATE en cours (post-pivot 2026-05-11). Voir `STATUS.md` pour status multi-session.
+Sprint **R6-PARITY-V4-FINAL** livré (2026-05-12) — **95-99% parité V4** sur les axes visibles et runtime stable. Highlights post-pivot :
+- 35 UI controllers migrés sur `UIControllerBase` (factorisation init / refs / lifecycle).
+- Hero / Enemy / Tower / Castle splittés en **partial classes** par responsabilité (Combat, Movement, Anim, Stats, Init, Lifecycle, …).
+- 8 dynamic events V4 wired sur 61 / 90 levels (D1-04 castle pressure + events runtime).
+- 30+ textures Flux Schnell wired ground / path / sky / castle (cf `tools/gen_textures.py`).
+- AudioClipRegistry 76 entries sémantiquement clean (clip keys canon).
+- Audit reports détaillés dans `.claude/audit/*` (parity gap, perf, dedup, scene wires, schools mapping).
+
+Voir `STATUS.md` pour le tracker session-par-session et le backlog priorisé.
 
 ## Workflow Opus orchestre, Sonnet exécute
 
@@ -115,44 +123,43 @@ Via Unity-MCP depuis Claude Code :
 - `mcp__unity-mcp__batch_execute` — bulk ops
 - `mcp__unity-mcp__manage_scriptable_object` — CRUD SO
 
-## Cible architecture (à confirmer par le `/plan` formel migration)
+## Architecture actuelle (état post-R6-PARITY-V4-FINAL)
 
 ```
 Assets/
   Scripts/
-    Entities/            # MonoBehaviour : Tower, Enemy, Hero
-    Data/                # ScriptableObject : TowerType, EnemyType, LevelData
-    Systems/             # Singleton : LevelRunner, Economy, Synergies, Pacing
-    UI/                  # MonoBehaviour : HudController, WaveButton, RadialMenu
-    Build/               # Editor scripts : BuildScript, TestRunner
-  Prefabs/
-    Towers/              # 12 tower prefabs
-    Enemies/             # 30 enemy prefabs
-    UI/                  # button, panel, toast
-  ScriptableObjects/
-    Towers/              # 12 SO assets
-    Enemies/             # 30 SO assets
-    Levels/              # 80 SO assets
-    Balance/             # 1 SO BalanceConfig (Q1-Q14)
-  Scenes/
-    Main.unity           # Menu + LevelRunner + HUD
-    Loader.unity         # First scene, splash
+    Entities/            # MonoBehaviour split en partial classes :
+                         #   Hero.cs + Hero.{Anim,Combat,Movement,Abilities,Perks}.cs
+                         #   Enemy.cs + Enemy.{Anim,Behaviors,Combat,Init,Lifecycle,Movement,Stats,Update}.cs
+                         #   Tower.cs + Tower.{Anim,Combat,Effects,Placement,Upgrade}.cs
+                         #   Castle.cs + Castle.{HP,VFX}.cs
+    Data/                # ScriptableObject : TowerType, EnemyType, LevelData, BalanceConfig, AudioClipRegistry
+    Systems/             # Singleton : LevelRunner, Economy, Synergies, Pacing, WaveManager, AudioController
+    UI/                  # 35 controllers basés sur UIControllerBase (HUD, RadialMenu, WorldMap, etc.)
+    Build/               # Editor scripts : BuildScript, TestRunner, BuildAnimatorControllers
+  Prefabs/Towers,Enemies,UI/
+  ScriptableObjects/Towers,Enemies,Levels,Balance/
+  Scenes/Main.unity, Loader.unity
   Settings/              # URP, Input, Build profiles
-docs/                    # Cf README — specs, research, decisions
-.claude/                 # Personas + status
+docs/                    # specs, research, decisions
+.claude/                 # personas, plans, specs, audit reports, status tracker
 ```
 
 ## Backlog actuel
 
-🚧 **Sprint MIGRATE en cours**. Voir `STATUS.md` pour détail des phases.
+✅ **Sprint R6-PARITY-V4-FINAL livré** (2026-05-12) — 95-99% parité V4 visible + runtime stable.
 
-Specs D1 (target design moteur-agnostique) ramenées dans `docs/specs/design/` :
+Phases livrées : POC (Phase 1) → Migrate (Phases 2-4) → Sprint R6-PARITY-V4 (waves 1-4 + tickets N1-N33) → R6-PARITY-V4-FINAL. WebGL live `/v6/`. Voir tracker session-par-session : `STATUS.md` (root) + `.claude/status/STATUS.md` (status interne).
+
+**Spécifications D1** (target design moteur-agnostique) `docs/specs/design/` — toutes wired runtime :
 - D1-01 économie (`_upgradeCost` ×5, interest bank, magnet rework, treasure tiles, boss 0×)
 - D1-02 pacing (bouton "Lancer la vague (N)" + skip bonus 5s/30¢ + streak +5%/+25%)
 - D1-03 L3 hybride (4 tours signature × 2 branches DPS/utility, sell 80%)
 - D1-04 castle HP (formule `100 + 50 × √world × difficultyMul` + pressure mob W1-W10 + no-regen W6+)
 
 Decisions Q1-Q18 arbitrées dans `docs/decisions/Q1-Q18-arbitrages.md`.
+
+**Reste 1-5% gap V4** : anim state machines runtime polish, real SFX clip pass, Castle .fbx art final, perf-3fix non shippé. Détail prioritisé dans audit `.claude/audit/SPRINT-R6-PARITY-V4-FINAL-completion.md`.
 
 ## Références
 
