@@ -18,6 +18,8 @@ namespace CrowdDefense.Systems
     {
         private const float CrossfadeDuration = 2f;
         private const float BossCrossfadeDuration = 2f;
+        private const float CombatFadeIn = 1.5f;
+        private const float CombatFadeOut = 2f;
         private const float BossFallbackVolBoost = 1.2f;
         private const float DuckMultiplier = 0.35f;
         private const float StingDuckDuration = 4.5f;
@@ -71,6 +73,13 @@ namespace CrowdDefense.Systems
 
             LevelEvents.OnLevelStart += OnLevelStart;
 
+            var wm = WaveManager.Instance;
+            if (wm != null)
+            {
+                wm.OnWaveStart  += OnWaveStarted;
+                wm.OnWaveCleared += OnWaveCleared;
+            }
+
             var em = EventManager.Instance;
             if (em == null) return;
             em.Subscribe<LevelThemeChangedEvent>(OnLevelThemeChanged);
@@ -83,6 +92,13 @@ namespace CrowdDefense.Systems
             SceneManager.activeSceneChanged -= HandleSceneChange;
 
             LevelEvents.OnLevelStart -= OnLevelStart;
+
+            var wm = WaveManager.Instance;
+            if (wm != null)
+            {
+                wm.OnWaveStart  -= OnWaveStarted;
+                wm.OnWaveCleared -= OnWaveCleared;
+            }
 
             var em = EventManager.Instance;
             if (em == null) return;
@@ -269,6 +285,20 @@ namespace CrowdDefense.Systems
             _currentTrack != null && _sources.TryGetValue(_currentTrack, out var src) && src.isPlaying ? src : null;
 
         /// <summary>
+        /// Crossfade to combat layer (intense) or back to ambient (calm).
+        /// active=true : 1.5 s fade-in; active=false : 2 s fade-out.
+        /// No-op when a boss track is already playing.
+        /// </summary>
+        public void SetCombatLayer(bool active)
+        {
+            if (_currentTrack == "boss") return;
+            if (active)
+                PlayWithCrossfade("intense", CombatFadeIn);
+            else
+                PlayWithCrossfade("calm", CombatFadeOut);
+        }
+
+        /// <summary>
         /// Adaptive layer intensity: 0 = calm (base), 1 = intense (drums), 2 = boss (full ensemble).
         /// Called each wave start with currentWave/10 clamped to [0,2].
         /// </summary>
@@ -446,6 +476,9 @@ namespace CrowdDefense.Systems
         }
 
         // ── EventManager subscriptions ───────────────────────────────────────
+
+        private void OnWaveStarted(int _)  => SetCombatLayer(true);
+        private void OnWaveCleared(int _)   => SetCombatLayer(false);
 
         private void OnLevelStart(CrowdDefense.Data.LevelData _, Bounds __)  => CrossfadeTo("wave_combat");
 
