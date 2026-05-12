@@ -6,6 +6,20 @@ namespace CrowdDefense.Data
 {
     public enum MetaUpgradeCategory { Combat, Economy, Utility }
 
+    public enum MetaUpgradeEffectKey
+    {
+        CastleHPMul,
+        HeroDamageMul,
+        StartCoinsBonus,
+        XpMul,
+        HeroRangeMul,
+        CoinGainMul,
+        PerkChoiceCountBonus,
+        HeroFireRateMul,
+        GemGainMul,
+        TowerUpgradeDiscount
+    }
+
     [Serializable]
     public struct MetaUpgradeEffect
     {

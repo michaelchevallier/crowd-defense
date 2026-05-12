@@ -72,22 +72,24 @@ namespace CrowdDefense.Systems
 
         private static void ApplyModifier(BalanceConfig cfg, DoctrineModifier mod)
         {
-            switch (mod.key)
+            if (!System.Enum.TryParse<DoctrineEffectKey>(mod.key, true, out var key))
             {
-                case "TowerDamageMul":      cfg.TowerDamageMul      *= mod.value; break;
-                case "SwarmMul":            cfg.SwarmMul            *= mod.value; break;
-                case "MagnetRange":         cfg.MagnetRange         *= mod.value; break;
-                case "MagnetCoinMul":       cfg.MagnetCoinMul       *= mod.value; break;
-                case "BankInterestRate":    cfg.BankInterestRate    *= mod.value; break;
-                case "SkipBonusGold":       cfg.SkipBonusGold       = Mathf.RoundToInt(cfg.SkipBonusGold * mod.value); break;
-                case "StreakBonusPerWave":  cfg.StreakBonusPerWave  *= mod.value; break;
-                case "SellRefundRatio":     cfg.SellRefundRatio     *= mod.value; break;
-                case "CastleHPBase":        cfg.CastleHPBase        *= mod.value; break;
-                default:
 #if UNITY_EDITOR
-                    Debug.LogWarning($"[DoctrineSystem] Unknown modifier key '{mod.key}' — ignored.");
+                Debug.LogWarning($"[DoctrineSystem] Unknown modifier key '{mod.key}' — ignored.");
 #endif
-                    break;
+                return;
+            }
+            switch (key)
+            {
+                case DoctrineEffectKey.TowerDamageMul:     cfg.TowerDamageMul      *= mod.value; break;
+                case DoctrineEffectKey.SwarmMul:           cfg.SwarmMul            *= mod.value; break;
+                case DoctrineEffectKey.MagnetRange:        cfg.MagnetRange         *= mod.value; break;
+                case DoctrineEffectKey.MagnetCoinMul:      cfg.MagnetCoinMul       *= mod.value; break;
+                case DoctrineEffectKey.BankInterestRate:   cfg.BankInterestRate    *= mod.value; break;
+                case DoctrineEffectKey.SkipBonusGold:      cfg.SkipBonusGold       = Mathf.RoundToInt(cfg.SkipBonusGold * mod.value); break;
+                case DoctrineEffectKey.StreakBonusPerWave: cfg.StreakBonusPerWave  *= mod.value; break;
+                case DoctrineEffectKey.SellRefundRatio:    cfg.SellRefundRatio     *= mod.value; break;
+                case DoctrineEffectKey.CastleHPBase:       cfg.CastleHPBase        *= mod.value; break;
             }
         }
 

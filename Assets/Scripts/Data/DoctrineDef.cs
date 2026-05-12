@@ -4,6 +4,19 @@ using UnityEngine;
 
 namespace CrowdDefense.Data
 {
+    public enum DoctrineEffectKey
+    {
+        TowerDamageMul,
+        SwarmMul,
+        MagnetRange,
+        MagnetCoinMul,
+        BankInterestRate,
+        SkipBonusGold,
+        StreakBonusPerWave,
+        SellRefundRatio,
+        CastleHPBase
+    }
+
     [Serializable]
     public struct DoctrineModifier
     {

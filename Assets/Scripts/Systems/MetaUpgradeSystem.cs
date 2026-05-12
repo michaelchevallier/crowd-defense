@@ -73,19 +73,26 @@ namespace CrowdDefense.Systems
         {
             foreach (var fx in def.effects)
             {
-                float v = fx.valuePerLevel * lvl;
-                switch (fx.key)
+                if (!System.Enum.TryParse<MetaUpgradeEffectKey>(fx.key, true, out var key))
                 {
-                    case "castleHPMul":         b.castleHPMul         *= 1f + v; break;
-                    case "heroDamageMul":       b.heroDamageMul       *= 1f + v; break;
-                    case "startCoinsBonus":     b.startCoinsBonus     += Mathf.RoundToInt(v); break;
-                    case "xpMul":               b.xpMul               *= 1f + v; break;
-                    case "heroRangeMul":        b.heroRangeMul        *= 1f + v; break;
-                    case "coinGainMul":         b.coinGainMul         *= 1f + v; break;
-                    case "perkChoiceCountBonus":b.perkChoiceCountBonus+= Mathf.RoundToInt(v); break;
-                    case "heroFireRateMul":     b.heroFireRateMul     *= 1f + v; break;
-                    case "gemGainMul":          b.gemGainMul          *= 1f + v; break;
-                    case "towerUpgradeDiscount":
+#if UNITY_EDITOR
+                    Debug.LogWarning($"[MetaUpgradeSystem] Unknown effect key '{fx.key}' in {def.id}");
+#endif
+                    continue;
+                }
+                float v = fx.valuePerLevel * lvl;
+                switch (key)
+                {
+                    case MetaUpgradeEffectKey.CastleHPMul:          b.castleHPMul         *= 1f + v; break;
+                    case MetaUpgradeEffectKey.HeroDamageMul:        b.heroDamageMul       *= 1f + v; break;
+                    case MetaUpgradeEffectKey.StartCoinsBonus:      b.startCoinsBonus     += Mathf.RoundToInt(v); break;
+                    case MetaUpgradeEffectKey.XpMul:                b.xpMul               *= 1f + v; break;
+                    case MetaUpgradeEffectKey.HeroRangeMul:         b.heroRangeMul        *= 1f + v; break;
+                    case MetaUpgradeEffectKey.CoinGainMul:          b.coinGainMul         *= 1f + v; break;
+                    case MetaUpgradeEffectKey.PerkChoiceCountBonus: b.perkChoiceCountBonus+= Mathf.RoundToInt(v); break;
+                    case MetaUpgradeEffectKey.HeroFireRateMul:      b.heroFireRateMul     *= 1f + v; break;
+                    case MetaUpgradeEffectKey.GemGainMul:           b.gemGainMul          *= 1f + v; break;
+                    case MetaUpgradeEffectKey.TowerUpgradeDiscount:
                         b.towerUpgradeDiscount = Mathf.Max(b.towerUpgradeDiscount, v);
                         break;
                 }
