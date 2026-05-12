@@ -39,6 +39,21 @@ Rationale :
 Caveats : avant drop, exécute `git stash show -p stash@{0} > /tmp/stash-wip-pre-compaction.patch` pour conserver une copie hors-repo temporaire (au cas où inspect tardif). Drop seulement après confirmation 002 + 004 mergés et compile OK.
 Mike notified : false (catégorie A pure, sans impact stratégique)
 
+### 2026-05-12 15h57 — A-PARITY-V4-vfx-bindings-cap
+For : Q-PARITY-V4-vfx-bindings-cap
+Status : delegated-decided
+Réponse : **(a) ACCEPT** + **ticket R6-PARITY-004-REFACTOR EN TÊTE DU BATCH P1** (priority within P1, dispatch AVANT autres P1).
+Rationale :
+1. 555 LOC > cap 500 = violation charter §1 règle #3 réelle mais mineure (+11%, helper class fonctionnel ship-able).
+2. Block + re-dispatch (b) = perfectionnisme, peut attendre P1 batch sans bloquer P0 milestone.
+3. Tolérer (c) = refusé, charter strict explicite "hard cap 500 LOC".
+4. Hybrid (a)+priority : ship en main maintenant, refactor split en 1er ticket P1 (priorité absolue P1) pour pas créer dette qui s'accumule.
+Caveats :
+- Spec ticket R6-PARITY-004-REFACTOR doit documenter ship-temp + plan split (partial class `VfxPoolBindings.cs` + `VfxPoolBindings.Modules.cs` OU extraction `VfxPoolTextures.cs` textures-only vs `VfxPoolBuilders.cs` Build*Module).
+- Audit batch P0 (a81562b6) a aussi recommandé le split — preuve indépendante du besoin.
+- Ne pas oublier R6-PARITY-005-IMPL (5 PARTIAL enemies ~265 LOC) + R6-PARITY-004-IMPL (9 textures unmapped) dans batch P1 backlog.
+Mike notified : true (T1 sprint complete P0-A + auto-handled violation, decision gate Mike pour mode dispatch P1)
+
 
 ---
 
