@@ -22,6 +22,9 @@ namespace CrowdDefense.Editor
         private const string k_ModelsRoot = "Assets/Models";
         private const string k_OutputDir  = "Assets/Resources/Animations/Controllers";
 
+        // Alias for -executeMethod CLI invocation.
+        public static void GenerateAll() => Build();
+
         [MenuItem("Tools/CrowdDefense/Build Animator Controllers")]
         public static void Build()
         {
