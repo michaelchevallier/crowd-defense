@@ -159,6 +159,14 @@ namespace CrowdDefense.Systems
             if (Economy.Instance != null)
                 Economy.Instance.OnGoldChanged += HandleGoldChanged;
 
+#if UNITY_EDITOR
+            if (currentLevel != null)
+            {
+                var mapErrors = CrowdDefense.Editor.MapValidator.Validate(currentLevel);
+                Debug.Assert(mapErrors.Count == 0,
+                    $"[MapValidator] {currentLevel.name} has {mapErrors.Count} error(s): {string.Join("; ", mapErrors)}");
+            }
+#endif
             SpawnCastle();
             SpawnHero();
             UI.HeroPortraitController.Instance?.Wire();
