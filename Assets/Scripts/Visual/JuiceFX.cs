@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Common;
+using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using CrowdDefense.UI;
 
@@ -40,7 +41,10 @@ namespace CrowdDefense.Visual
             var em = EventManager.Instance;
             if (em == null) return;
             em.Subscribe<EnemyKilledEvent>(OnEnemyKilled);
+            em.Subscribe<BossEncounteredEvent>(OnBossEncountered);
             em.Subscribe<BossDefeatedEvent>(OnBossDefeated);
+            em.Subscribe<CastleHitEvent>(OnCastleHit);
+            em.Subscribe<CastleDestroyedEvent>(OnCastleDestroyed);
             em.Subscribe<LevelEndedEvent>(OnLevelEnded);
         }
 
@@ -49,7 +53,10 @@ namespace CrowdDefense.Visual
             var em = EventManager.Instance;
             if (em == null) return;
             em.Unsubscribe<EnemyKilledEvent>(OnEnemyKilled);
+            em.Unsubscribe<BossEncounteredEvent>(OnBossEncountered);
             em.Unsubscribe<BossDefeatedEvent>(OnBossDefeated);
+            em.Unsubscribe<CastleHitEvent>(OnCastleHit);
+            em.Unsubscribe<CastleDestroyedEvent>(OnCastleDestroyed);
             em.Unsubscribe<LevelEndedEvent>(OnLevelEnded);
 
             StopAllCoroutines();
@@ -61,10 +68,29 @@ namespace CrowdDefense.Visual
 
         private void OnEnemyKilled(EnemyKilledEvent _) => Shake(0.04f, 120);
 
+        private void OnBossEncountered(BossEncounteredEvent _)
+        {
+            var juice = JuiceConfig.Get();
+            Shake(juice.BossSpawnShakeAmp, Mathf.RoundToInt(juice.BossSpawnShakeDur * 1000f));
+            SlowMo(juice.BossSpawnSlowMoScale, juice.BossSpawnSlowMoDurMs);
+        }
+
         private void OnBossDefeated(BossDefeatedEvent _)
         {
             Shake(0.30f, 600);
             SlowMo(0.05f, 100);
+        }
+
+        private void OnCastleHit(CastleHitEvent evt)
+        {
+            int dmg = evt.Damage;
+            float intensity = Mathf.Min(0.6f, 0.15f + dmg * 0.002f);
+            Shake(intensity, 250);
+        }
+
+        private void OnCastleDestroyed(CastleDestroyedEvent _)
+        {
+            Shake(0.8f, 500);
         }
 
         private void OnLevelEnded(LevelEndedEvent evt)

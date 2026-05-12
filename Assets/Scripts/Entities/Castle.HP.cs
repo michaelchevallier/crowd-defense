@@ -81,6 +81,8 @@ namespace CrowdDefense.Entities
             VfxPool.Instance?.SpawnHitFlash(transform);
             CheckOverrun();
 
+            EventManager.Instance?.Publish(new CastleHitEvent(actualDmg, HP));
+
             if (HP == 0)
             {
                 ApplyGrayscale();
@@ -89,6 +91,7 @@ namespace CrowdDefense.Entities
                 JuiceFX.Instance?.SlowMo(0.2f, 1500);
                 JuiceFX.Instance?.Flash(new Color(0f, 0f, 0f, 0.7f), 1000);
                 VfxPool.Instance?.SpawnExplosion(transform.position, 4f);
+                EventManager.Instance?.Publish(new CastleDestroyedEvent());
 #if UNITY_EDITOR
                 Debug.Log("[Castle] destroyed");
 #endif
