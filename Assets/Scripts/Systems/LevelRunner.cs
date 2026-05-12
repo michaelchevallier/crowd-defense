@@ -153,6 +153,7 @@ namespace CrowdDefense.Systems
             SpawnPathPreview();
             TryPlayOpeningCutscene();
             UI.TutorialPopupController.TryShow(currentLevel?.Id);
+            RestoreMidLevelStateIfPending();
 
             var bounds = default(Bounds);
             if (PathManager.Instance?.Grid != null)
@@ -175,7 +176,11 @@ namespace CrowdDefense.Systems
 
             // Accumulate real playtime (unscaled so pause doesn't skew it)
             if (State == GameState.WaveActive || State == GameState.WaveBreak)
-                _playtimeAccum += Time.unscaledDeltaTime;
+            {
+                float dt = Time.unscaledDeltaTime;
+                _playtimeAccum += dt;
+                LifetimeStats.Instance?.AddTime(dt);
+            }
 
             if (Input.GetKeyDown(KeyCode.Tab))
             {
@@ -361,6 +366,32 @@ namespace CrowdDefense.Systems
             SnapshotMidLevel(waveIdx);
         }
 
+        private void RestoreMidLevelStateIfPending()
+        {
+            var mid = SaveSystem.LoadRunState();
+            if (mid == null || mid.levelId != (currentLevel?.Id ?? "")) return;
+
+            if (Economy.Instance != null)
+            {
+                int delta = mid.gold - Economy.Instance.Gold;
+                if (delta > 0)      Economy.Instance.AddGold(delta);
+                else if (delta < 0) Economy.Instance.TrySpend(-delta);
+            }
+
+            // Reduce castle HP to saved value via simulated damage (avoids SetHP dependency).
+            if (PrimaryCastle != null && mid.castleHP > 0 && mid.castleHP < PrimaryCastle.HP)
+            {
+                int dmg = PrimaryCastle.HP - mid.castleHP;
+                PrimaryCastle.TakeDamage(dmg);
+            }
+
+            PlacementController.Instance?.RestoreTowers(mid.towers);
+
+#if UNITY_EDITOR
+            Debug.Log($"[LevelRunner] mid-level restore: level={mid.levelId} wave={mid.waveIdx} gold={mid.gold} hp={mid.castleHP} towers={mid.towers?.Count ?? 0}");
+#endif
+        }
+
         private void SnapshotMidLevel(int waveIdx)
         {
             var data = new MidLevelStateData
@@ -403,6 +434,8 @@ namespace CrowdDefense.Systems
             }
             else if (currentLevel != null)
                 SaveSystem.MarkLevelCleared(currentLevel.Id);
+
+            LifetimeStats.Instance?.AddLevelWon();
 
             if (Hero != null)
                 RunContext.Instance?.SnapshotHero(Hero);

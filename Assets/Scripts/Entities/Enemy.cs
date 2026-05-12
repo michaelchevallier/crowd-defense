@@ -1636,6 +1636,7 @@ namespace CrowdDefense.Entities
 
             Achievements.Instance?.Unlock("first_blood");
             Achievements.Instance?.TrackEvent("enemy_killed", 1);
+            LifetimeStats.Instance?.AddKill(1);
             StopEnrageVFX();
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);

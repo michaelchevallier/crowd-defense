@@ -27,6 +27,10 @@ namespace CrowdDefense.UI
             if (btnCredits != null)
                 btnCredits.clicked += () => CreditsScreen.Instance?.Show();
 
+            var btnStats = root.Q<Button>("btn-open-stats");
+            if (btnStats != null)
+                btnStats.clicked += () => StatsLifetimePanel.Instance?.Show();
+
             var grid = root.Q<VisualElement>("level-grid");
             if (grid == null)
             {
