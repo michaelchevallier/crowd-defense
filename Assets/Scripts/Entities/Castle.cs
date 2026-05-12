@@ -36,6 +36,9 @@ namespace CrowdDefense.Entities
 
         private enum DamageStage { Intact, Cracked, Ruined, Critical }
 
+        // Shake throttle — avoid spam when hit repeatedly within 100 ms
+        private float         _lastShakeTime = -1f;
+
         // Visual state
         private bool          _smokeActive;
         private Coroutine?    _smokeCoroutine;
@@ -206,10 +209,20 @@ namespace CrowdDefense.Entities
             TriggerHitVfx();
             UpdateDamageVfxIntensity();
 
-            AudioController.Instance?.Play("castle_hit", 0.65f);
-            JuiceFX.Instance?.Shake(0.1f, 200);
-            JuiceFX.Instance?.Flash(new Color(1f, 0.2f, 0.2f, 0.4f), 150);
+            AudioController.Instance?.Play3D("castle_hit", transform.position);
             VfxPool.Instance?.SpawnHitFlash(transform);
+
+            // Screen shake — throttled to once every 100 ms to prevent spam
+            if (Time.unscaledTime - _lastShakeTime > 0.1f)
+            {
+                _lastShakeTime = Time.unscaledTime;
+                CameraController.Instance?.Shake(0.3f, 0.2f);
+            }
+
+            // Red vignette flash only when HP < 33 %
+            float hpRatio = HPMax > 0 ? (float)HP / HPMax : 0f;
+            if (hpRatio < 0.33f)
+                PostProcessController.Instance?.FlashRedVignette(0.6f, 0.4f);
 
             if (HP == 0)
             {

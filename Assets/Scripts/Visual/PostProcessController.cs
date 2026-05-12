@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
@@ -89,6 +90,29 @@ namespace CrowdDefense.Visual
             _color.contrast.value     = contrast;
             _color.colorFilter.value  = filter;
             _color.saturation.value   = saturation;
+        }
+
+        // ── Red vignette flash ────────────────────────────────────────────────────
+
+        // Flash vignette to <intensity> then fade out over <fadeOut> seconds.
+        public void FlashRedVignette(float intensity, float fadeOut) =>
+            StartCoroutine(RedVignetteRoutine(intensity, fadeOut));
+
+        private IEnumerator RedVignetteRoutine(float peak, float fadeOut)
+        {
+            if (_vignette == null) yield break;
+            var prevColor = _vignette.color.value;
+            _vignette.color.value     = new Color(0.9f, 0.05f, 0.05f);
+            _vignette.intensity.value = peak;
+
+            for (float t = 0f; t < fadeOut; t += Time.unscaledDeltaTime)
+            {
+                _vignette.intensity.value = Mathf.Lerp(peak, 0f, t / fadeOut);
+                yield return null;
+            }
+
+            // Restore HP-driven vignette colour + let OnCastleHP reassert correct intensity next frame
+            _vignette.color.value = prevColor;
         }
 
         // Per-theme: post-exposure (EV), contrast (-100..100), color filter tint, saturation (-100..100).
