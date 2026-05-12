@@ -253,6 +253,7 @@ namespace CrowdDefense.Systems
                 var sourceId = source.Config?.Id ?? "?";
                 Vector3 mid = (srcPos + nearFrom.transform.position) * 0.5f;
                 owner.OnSynergyActivated?.Invoke(new SynergyActivatedInfo(fromId, sourceId, mid));
+                Achievements.Instance?.TrackEvent("synergy_activated", 1);
             }
             else if (owner != null)
             {

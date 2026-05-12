@@ -41,6 +41,7 @@ namespace CrowdDefense.Systems
             if (amount <= 0) return;
             SetGold(Gold + amount);
             LifetimeStats.Instance?.AddGold(amount);
+            Achievements.Instance?.TrackEvent("gold_earned", amount);
         }
 
         // Called by Enemy.Die after EnemyKilledEvent has been published (so ComboSystem

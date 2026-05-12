@@ -287,6 +287,7 @@ namespace CrowdDefense.Entities
             UpgradeBranch = TowerBranch.None;
             CumulativeCost = type.Cost;
             _l3TintApplied = false;
+            Achievements.Instance?.TrackEvent("tower_placed", 1);
             // L1 damage scale : Phaser LEVEL_SCALE[0] = 0.75
             _levelDmgScale = BalanceConfig.Get().LevelScale.Length > 0
                 ? BalanceConfig.Get().LevelScale[0]
