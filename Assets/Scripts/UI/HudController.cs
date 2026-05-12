@@ -29,6 +29,9 @@ namespace CrowdDefense.UI
         private Button? btnRestartVictory;
         private Button? btnMenuGo;
         private Button? btnMenuVictory;
+        private VisualElement? _confirmRestartPanel;
+        private Button? _confirmRestartYes;
+        private Button? _confirmRestartNo;
 
         // D1-02 wave launch UI refs
         private VisualElement? waveLaunchBtn;
@@ -146,6 +149,9 @@ namespace CrowdDefense.UI
             btnRestartVictory = root.Q<Button>("btn-restart-victory");
             btnMenuGo = root.Q<Button>("btn-menu-go");
             btnMenuVictory = root.Q<Button>("btn-menu-victory");
+            _confirmRestartPanel = root.Q<VisualElement>("confirm-restart-panel");
+            _confirmRestartYes = root.Q<Button>("btn-confirm-restart-yes");
+            _confirmRestartNo = root.Q<Button>("btn-confirm-restart-no");
 
             waveLaunchBtn = root.Q<VisualElement>("wave-launch-btn");
             waveLaunchPill = root.Q<VisualElement>("wave-launch-pill");
@@ -186,7 +192,9 @@ namespace CrowdDefense.UI
 
             ultBtn?.RegisterCallback<ClickEvent>(_ => TryCastUlt());
             bluePillBtn?.RegisterCallback<ClickEvent>(_ => TryStartBluePill());
-            btnRestartGo?.RegisterCallback<ClickEvent>(_ => Restart());
+            btnRestartGo?.RegisterCallback<ClickEvent>(_ => ShowRestartConfirm());
+            _confirmRestartYes?.RegisterCallback<ClickEvent>(_ => { HideRestartConfirm(); Restart(); });
+            _confirmRestartNo?.RegisterCallback<ClickEvent>(_ => HideRestartConfirm());
             btnRestartVictory?.RegisterCallback<ClickEvent>(_ => Restart());
             btnMenuGo?.RegisterCallback<ClickEvent>(_ => GoToMenu());
             btnMenuVictory?.RegisterCallback<ClickEvent>(_ => GoToMenu());
@@ -677,6 +685,16 @@ namespace CrowdDefense.UI
         {
             if (gameObject.GetComponent<T>() == null)
                 gameObject.AddComponent<T>();
+        }
+
+        private void ShowRestartConfirm()
+        {
+            _confirmRestartPanel?.RemoveFromClassList("hidden");
+        }
+
+        private void HideRestartConfirm()
+        {
+            _confirmRestartPanel?.AddToClassList("hidden");
         }
 
         private void Restart()

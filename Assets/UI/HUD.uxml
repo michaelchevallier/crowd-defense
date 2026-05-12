@@ -296,6 +296,15 @@
             <ui:Label text="Le castle est tombé." name="panel-game-over-subtitle" class="overlay-subtitle" />
             <ui:Button text="Recommencer" name="btn-restart-go" class="overlay-button" />
             <ui:Button text="Retour au menu" name="btn-menu-go" class="overlay-button overlay-button-secondary" />
+            <!-- Restart confirmation dialog (shown inline when Recommencer clicked) -->
+            <ui:VisualElement name="confirm-restart-panel" class="confirm-restart-panel hidden">
+                <ui:Label text="Relancer ce niveau ?" name="confirm-restart-title" class="confirm-restart-title" />
+                <ui:Label text="La progression de cette partie sera perdue." name="confirm-restart-subtitle" class="confirm-restart-subtitle" />
+                <ui:VisualElement class="confirm-restart-buttons">
+                    <ui:Button text="Oui, recommencer" name="btn-confirm-restart-yes" class="overlay-button confirm-yes" />
+                    <ui:Button text="Annuler" name="btn-confirm-restart-no" class="overlay-button overlay-button-secondary confirm-no" />
+                </ui:VisualElement>
+            </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Victory panel -->
