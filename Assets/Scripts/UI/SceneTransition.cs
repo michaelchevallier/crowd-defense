@@ -183,35 +183,53 @@ namespace CrowdDefense.UI
         {
             _busy = true;
 
-            // Fade to black
-            yield return StartCoroutine(Fade(0f, 1f, FadeDuration));
-
-            // Show loading UI with tip
-            _tipLabel.text = PickTip();
-            _progressBar.value = 0f;
-
-            // Start async load, hold activation
+            // Start async load immediately, hold activation
             _loadingOp = SceneManager.LoadSceneAsync(sceneName);
             _loadingOp.allowSceneActivation = false;
 
-            // Fade in loading group
-            yield return StartCoroutine(FadeGroup(_loadingGroup, 0f, 1f, 0.2f));
-
-            // Update progress until Unity's 0.9 cap
-            while (_loadingOp.progress < 0.9f)
+            // Wait up to 500 ms — skip loading UI entirely if load is already done
+            float waited = 0f;
+            const float ShowThreshold = 0.5f;
+            while (waited < ShowThreshold && _loadingOp.progress < 0.9f)
             {
-                _progressBar.value = _loadingOp.progress / 0.9f;
+                waited += Time.unscaledDeltaTime;
                 yield return null;
             }
 
-            // Smooth fill to 100%
-            yield return StartCoroutine(SmoothProgress(_progressBar.value, 1f, 0.3f));
+            bool showLoadingUi = _loadingOp.progress < 0.9f;
 
-            // Brief pause at 100% so player sees it
-            yield return new WaitForSecondsRealtime(0.15f);
+            // Fade to black
+            yield return StartCoroutine(Fade(0f, 1f, FadeDuration));
 
-            // Fade out loading group, then activate scene
-            yield return StartCoroutine(FadeGroup(_loadingGroup, 1f, 0f, 0.2f));
+            if (showLoadingUi)
+            {
+                // Show loading UI with tip
+                _tipLabel.text = PickTip();
+                _progressBar.value = waited < ShowThreshold ? _loadingOp.progress / 0.9f : 0f;
+
+                // Fade in loading group
+                yield return StartCoroutine(FadeGroup(_loadingGroup, 0f, 1f, 0.2f));
+            }
+
+            if (showLoadingUi)
+            {
+                // Update progress until Unity's 0.9 cap
+                while (_loadingOp.progress < 0.9f)
+                {
+                    _progressBar.value = _loadingOp.progress / 0.9f;
+                    yield return null;
+                }
+
+                // Smooth fill to 100%
+                yield return StartCoroutine(SmoothProgress(_progressBar.value, 1f, 0.3f));
+
+                // Brief pause at 100% so player sees it
+                yield return new WaitForSecondsRealtime(0.15f);
+
+                // Fade out loading group, then activate scene
+                yield return StartCoroutine(FadeGroup(_loadingGroup, 1f, 0f, 0.2f));
+            }
+
             _loadingOp.allowSceneActivation = true;
             _loadingOp = null;
 
