@@ -21,6 +21,7 @@ namespace CrowdDefense.Systems
         private const float CombatFadeIn = 1.5f;
         private const float CombatFadeOut = 2f;
         private const float BossFallbackVolBoost = 1.2f;
+        private const float BossFallbackPitchShift = 0.2f;
         private const float DuckMultiplier = 0.35f;
         private const float StingDuckDuration = 4.5f;
 
@@ -573,15 +574,35 @@ namespace CrowdDefense.Systems
             bool hasBossClip = _tracks.TryGetValue("boss", out var clip) && clip != null;
             if (hasBossClip)
             {
+                // Swell: boss source starts at 0 and FadeCo ramps to TargetVol over BossCrossfadeDuration (2s)
                 PlayWithCrossfade("boss", BossCrossfadeDuration);
             }
             else
             {
-                // Fallback: switch to "intense" with +20% volume boost
+                // Fallback: pitch up +0.2 + reverb on current source for orchestral swell impact
+                string fallback = _currentTrack ?? "intense";
+                if (_sources.TryGetValue(fallback, out var fallbackSrc))
+                {
+                    fallbackSrc.pitch += BossFallbackPitchShift;
+                    foreach (var f in fallbackSrc.GetComponents<AudioReverbFilter>()) UnityEngine.Object.Destroy(f);
+                    var rev = fallbackSrc.gameObject.AddComponent<AudioReverbFilter>();
+                    rev.reverbPreset = AudioReverbPreset.Auditorium;
+                    StartCoroutine(RemoveFallbackFxCo(fallbackSrc, rev, BossCrossfadeDuration + 4f));
+                }
                 float prev = _trackVolMul.TryGetValue("intense", out var m) ? m : 1f;
                 _trackVolMul["intense"] = prev * BossFallbackVolBoost;
                 PlayWithCrossfade("intense", BossCrossfadeDuration);
             }
+        }
+
+        private IEnumerator RemoveFallbackFxCo(AudioSource src, AudioReverbFilter rev, float delay)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+            if (src != null)
+            {
+                src.pitch = Mathf.Max(1f, src.pitch - BossFallbackPitchShift);
+            }
+            if (rev != null) UnityEngine.Object.Destroy(rev);
         }
 
         private void OnBossDefeated(BossDefeatedEvent _) => PlayWithCrossfade("calm", BossCrossfadeDuration);
