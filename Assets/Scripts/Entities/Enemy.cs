@@ -191,6 +191,9 @@ namespace CrowdDefense.Entities
         // Used by EnemyPathingSystem — true when enemy is suitable for external pathing tick
         public bool IsPathable => !IsDead && !_dying && cfg != null && !cfg.IsFlyer && !_static && pathManager != null;
 
+        // Fired by HandleDeath — (enemy, isBoss). LootSpawner subscribes.
+        public static event System.Action<Enemy, bool>? OnDeathStatic;
+
         // World pressure scaling (D1-04) — set once in Init
         private float pressureSpeedMul = 1f;
 
@@ -1634,6 +1637,7 @@ namespace CrowdDefense.Entities
             else Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
 #endif
 
+            if (cfg != null) Bestiary.Instance?.RecordKill(cfg.Id);
             Achievements.Instance?.Unlock("first_blood");
             Achievements.Instance?.TrackEvent("enemy_killed", 1);
             LifetimeStats.Instance?.AddKill(1);
@@ -1641,6 +1645,8 @@ namespace CrowdDefense.Entities
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);
             _lastDamageTower?.RegisterKill();
+
+            OnDeathStatic?.Invoke(this, isBoss);
 
             if (this != null && gameObject != null)
                 StartCoroutine(RagdollThenRelease(_lastDamageDirection));
