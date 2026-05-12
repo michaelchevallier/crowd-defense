@@ -445,20 +445,38 @@ namespace CrowdDefense.Systems
 
             PlacementController.Instance?.RestoreTowers(mid.towers);
 
+            // Restore hero level + XP from mid-level snapshot (overrides RunState defaults).
+            if (Hero != null && mid.heroLevel > 1)
+                Hero.ApplyRunContext(mid.heroPerks, mid.heroLevel, mid.heroXP);
+
+            // Synergy snapshot is informational; Synergies re-evaluates from placed towers automatically.
+            // synergyActiveIds preserved in DTO for future validation or display in restore toast.
+
 #if UNITY_EDITOR
-            Debug.Log($"[LevelRunner] mid-level restore: level={mid.levelId} wave={mid.waveIdx} gold={mid.gold} hp={mid.castleHP} towers={mid.towers?.Count ?? 0}");
+            Debug.Log($"[LevelRunner] mid-level restore: level={mid.levelId} wave={mid.waveIdx} gold={mid.gold} hp={mid.castleHP} towers={mid.towers?.Count ?? 0} heroLv={mid.heroLevel} synergies={mid.synergyActiveIds?.Count ?? 0}");
 #endif
         }
 
         private void SnapshotMidLevel(int waveIdx)
         {
+            var rs    = SaveSystem.GetRunState();
+            int score = ScoreCalc.ComputeScore(
+                waveIdx + 1,
+                WaveManager.Instance?.TotalWaves is > 0 ? WaveManager.Instance.TotalWaves : 10,
+                TotalCastleHPMax > 0 ? (float)TotalCastleHP / TotalCastleHPMax : 0f,
+                _playtimeAccum);
+
             var data = new MidLevelStateData
             {
-                levelId  = currentLevel?.Id ?? "",
-                waveIdx  = waveIdx + 1,
-                gold     = Economy.Instance?.Gold ?? 0,
-                castleHP = TotalCastleHP,
-                heroPerks = new System.Collections.Generic.List<string>(SaveSystem.GetRunState().heroPerks),
+                levelId         = currentLevel?.Id ?? "",
+                waveIdx         = waveIdx + 1,
+                currentSpawnIdx = 0,
+                gold            = Economy.Instance?.Gold ?? 0,
+                score           = score,
+                castleHP        = TotalCastleHP,
+                heroLevel       = Hero?.Level ?? rs.heroLevel,
+                heroXP          = Hero?.Xp    ?? rs.heroXP,
+                heroPerks       = new System.Collections.Generic.List<string>(rs.heroPerks),
             };
 
             var placed = PlacementController.Instance?.PlacedTowers;
@@ -479,6 +497,11 @@ namespace CrowdDefense.Systems
                     });
                 }
             }
+
+            var badges = Synergies.Instance?.ActiveBadges;
+            if (badges != null)
+                foreach (var b in badges)
+                    data.synergyActiveIds.Add(b.TowerId);
 
             SaveSystem.SaveRunState(data);
         }

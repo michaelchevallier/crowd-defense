@@ -100,12 +100,17 @@ namespace CrowdDefense.Systems
     [Serializable]
     public class MidLevelStateData
     {
-        public string        levelId    = "";
-        public int           waveIdx    = 0;
-        public int           gold       = 0;
-        public int           castleHP   = 0;
-        public List<string>  heroPerks  = new();
-        public List<PlacedTowerEntry> towers = new();
+        public string        levelId          = "";
+        public int           waveIdx          = 0;
+        public int           currentSpawnIdx  = 0;
+        public int           gold             = 0;
+        public int           score            = 0;
+        public int           castleHP         = 0;
+        public int           heroLevel        = 1;
+        public int           heroXP           = 0;
+        public List<string>  heroPerks        = new();
+        public List<PlacedTowerEntry> towers  = new();
+        public List<string>  synergyActiveIds = new();
     }
 
     public enum DiagnoseResult { Ok, Corrupted, MigrationAvailable, BackupCreated }
