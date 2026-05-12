@@ -127,6 +127,115 @@ namespace CrowdDefense.Entities
         private readonly Dictionary<string, int> _activeTagsCount = new();
         private bool _suppressPerkVfx;
 
+        // ── HP / respawn ──────────────────────────────────────────────────────
+        private const float DefaultMaxHp    = 100f;
+        private const float RespawnDelay    = 15f;
+        private const float InvulDuration   = 2f;
+
+        private float _hp;
+        private float _maxHp = DefaultMaxHp;
+        private bool  _isDead;
+        private float _invulTimer;
+        private Coroutine? _respawnRoutine;
+
+        public float HP    => _hp;
+        public float HPMax => _maxHp;
+        public bool  IsAlive => !_isDead;
+
+        public void TakeDamage(float dmg)
+        {
+            if (_isDead || _invulTimer > 0f || dmg <= 0f) return;
+            _hp -= dmg;
+            if (_hp <= 0f)
+            {
+                _hp = 0f;
+                TriggerMidLevelDeath();
+            }
+        }
+
+        public void TriggerMidLevelDeath()
+        {
+            if (_isDead) return;
+            _isDead = true;
+
+            gameObject.SetActive(false);
+            JuiceFX.Instance?.Flash(new Color(1f, 0f, 0f, 0.45f), 600);
+            AudioController.Instance?.Play("hero_death", 1.2f);
+            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up, Color.red);
+
+            _respawnRoutine = StartCoroutine(RespawnCountdownRoutine());
+        }
+
+        private System.Collections.IEnumerator RespawnCountdownRoutine()
+        {
+            float remaining = RespawnDelay;
+            while (remaining > 0f)
+            {
+                // Cancel if level ended (Lost or LevelComplete)
+                var state = LevelRunner.Instance?.State;
+                if (state == GameState.Lost || state == GameState.LevelComplete
+                    || state == GameState.Summary)
+                    yield break;
+
+                FloatingPopupController.Instance?.SpawnReward(
+                    $"Respawn {Mathf.CeilToInt(remaining)}s",
+                    Camera.main != null
+                        ? Camera.main.transform.position + Camera.main.transform.forward * 5f + Vector3.up * 1f
+                        : Vector3.up * 3f,
+                    new Color(1f, 0.5f, 0.5f));
+
+                yield return new WaitForSecondsRealtime(1f);
+                remaining -= 1f;
+            }
+
+            // Cancel if level ended during last second
+            var finalState = LevelRunner.Instance?.State;
+            if (finalState == GameState.Lost || finalState == GameState.LevelComplete
+                || finalState == GameState.Summary)
+                yield break;
+
+            RespawnAtCastle();
+        }
+
+        private void RespawnAtCastle()
+        {
+            _isDead = false;
+
+            // Respawn at castle position or fallback to current position
+            var castlePos = Castle.Instance != null
+                ? Castle.Instance.transform.position
+                : transform.position;
+            transform.position = castlePos + Vector3.up * 0.1f;
+
+            _hp = _maxHp * 0.5f;
+            _invulTimer = InvulDuration;
+
+            gameObject.SetActive(true);
+
+            // Visual feedback
+            JuiceFX.Instance?.Flash(new Color(0.3f, 1f, 0.4f, 0.35f), 400);
+            VfxPool.Instance?.SpawnLevelUp(transform.position + Vector3.up * 1f);
+            AudioController.Instance?.Play("hero_levelup", 0.9f);
+            JuiceFX.Instance?.PunchScale(transform, 1.4f, 0.3f);
+            FloatingPopupController.Instance?.SpawnReward(
+                "RESPAWN!", transform.position + Vector3.up * 2f, Color.green);
+            StartCoroutine(InvulFlashRoutine());
+        }
+
+        private System.Collections.IEnumerator InvulFlashRoutine()
+        {
+            var renderers = GetComponentsInChildren<Renderer>(includeInactive: true);
+            float elapsed = 0f;
+            while (elapsed < InvulDuration)
+            {
+                bool visible = Mathf.FloorToInt(elapsed / 0.15f) % 2 == 0;
+                foreach (var r in renderers) r.enabled = visible;
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            foreach (var r in renderers) r.enabled = true;
+        }
+
         // ── Nth-projectile AoE counter ────────────────────────────────────────
         private int _projFiredCount;
 
@@ -161,9 +270,14 @@ namespace CrowdDefense.Entities
             cfg      = type;
             _maxX    = maxX;
             _maxZ    = maxZ;
-            _cooldown = 0f;
+            _cooldown    = 0f;
             _ultCooldown = 0f;
-            _autoAttack = PlayerPrefs.GetInt(AutoAttackPrefsKey, 1) != 0;
+            _autoAttack  = PlayerPrefs.GetInt(AutoAttackPrefsKey, 1) != 0;
+            _maxHp       = DefaultMaxHp;
+            _hp          = _maxHp;
+            _isDead      = false;
+            _invulTimer  = 0f;
+            _respawnRoutine = null;
 
             transform.position = spawnPos;
             transform.localScale = Vector3.one * type.ModelScale;
@@ -736,6 +850,7 @@ namespace CrowdDefense.Entities
 
             _ultCooldown = Mathf.Max(0f, _ultCooldown - dt);
             _cooldown    = Mathf.Max(0f, _cooldown - dt);
+            if (_invulTimer > 0f) _invulTimer = Mathf.Max(0f, _invulTimer - dt);
 
             UpdateAuraPulse(dt);
             UpdatePerkIconsBillboard();
@@ -1218,6 +1333,7 @@ namespace CrowdDefense.Entities
         private void OnDestroy()
         {
             Enemy.OnDeathStatic -= OnEnemyKilled;
+            if (_respawnRoutine != null) StopCoroutine(_respawnRoutine);
             if (Current == this) Current = null;
             for (int i = _projectiles.Count - 1; i >= 0; i--)
             {
