@@ -5,6 +5,14 @@ using UnityEngine;
 
 namespace CrowdDefense.Data
 {
+    public enum SpawnPattern
+    {
+        Linear,
+        Sparse,
+        Cluster,
+        VFormation,
+    }
+
     [Serializable]
     public struct EnemySpawnEntry
     {
@@ -28,5 +36,6 @@ namespace CrowdDefense.Data
         /// 1f = normal (tous les niveaux classiques).
         /// </summary>
         public float scaleMul;
+        public SpawnPattern pattern;
     }
 }

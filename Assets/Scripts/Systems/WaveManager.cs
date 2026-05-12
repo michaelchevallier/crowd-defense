@@ -183,6 +183,17 @@ namespace CrowdDefense.Systems
             SpawnPressureMob(idx, currentWorld);
         }
 
+        private float GetSpawnIntervalMul(SpawnPattern p, int counter)
+        {
+            switch (p)
+            {
+                case SpawnPattern.Sparse: return 2f;
+                case SpawnPattern.Cluster: return (counter % 5 == 0) ? 4f : 0.1f;
+                case SpawnPattern.VFormation: return counter < 5 ? 0.05f : 4f;
+                default: return 1f;
+            }
+        }
+
         private void Update()
         {
             if (levelData == null) return;
@@ -193,7 +204,9 @@ namespace CrowdDefense.Systems
             {
                 spawnTimerMs += dtMs;
                 var wave = levelData.Waves[currentWaveIdx];
-                if (spawnTimerMs >= wave.spawnRateMs * _specialSpawnRateMul && pendingSpawns.Count > 0)
+                float patternMul = GetSpawnIntervalMul(wave.pattern, spawnCounter);
+                float actualInterval = wave.spawnRateMs * _specialSpawnRateMul * patternMul;
+                if (spawnTimerMs >= actualInterval && pendingSpawns.Count > 0)
                 {
                     spawnTimerMs = 0f;
                     SpawnEnemy(pendingSpawns.Dequeue(), wave.portalIdx);
