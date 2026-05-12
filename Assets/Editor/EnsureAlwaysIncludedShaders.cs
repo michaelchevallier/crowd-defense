@@ -41,6 +41,9 @@ namespace CrowdDefense.Editor
             "Universal Render Pipeline/Unlit",
             "Universal Render Pipeline/Simple Lit",
             "Universal Render Pipeline/Particles/Unlit",
+            // URP internal shaders (used by render pipeline but not directly referenced)
+            // These can be null on some GPU/platform combos if not explicitly included.
+            "Hidden/Universal Render Pipeline/StencilDitherMaskSeed",
             // Engine fallbacks (Sprites/Default + UI/Default sont safe).
             // NE PAS ajouter Hidden/InternalErrorShader : HideFlags.DontSave => "An asset
             // is marked with HideFlags.DontSave but is included in the build" => Build Failed.

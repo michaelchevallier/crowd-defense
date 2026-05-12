@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Toon_Lava
-  m_Shader: {fileID: 4800000, guid: f121cf0fe475f485e8177fd7859423b2, type: 3}
+  m_Shader: {fileID: 4800000, guid: 2620c419912914d1e99604a478a101b6, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -37,12 +37,14 @@ Material:
     - _CrackScale: 8
     - _EmissionStrength: 1.5
     - _FlickerAmp: 0.15
-    - _FlickerSpeed: 7.0
+    - _FlickerSpeed: 7
     - _FlowSpeed: 0.12
     - _GlowBase: 0.8
     - _GlowPulseAmp: 0.6
     - _GlowPulseFreq: 1.2
     - _NoiseStrength: 0.45
+    - _ScrollSpeedX: 0.08
+    - _ScrollSpeedY: 0.04
     m_Colors:
     - _GlowColor: {r: 1, g: 0.4, b: 0, a: 1}
     - _Tint: {r: 1, g: 0.627, b: 0.314, a: 1}
