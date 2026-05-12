@@ -263,6 +263,9 @@ namespace CrowdDefense.Entities
         private bool _l4EliteApplied = false;
         private Coroutine? _sparkleRoutine;
 
+        // Windup animation coroutine — cancelled on sell/destroy mid-windup.
+        private Coroutine? _windupRoutine;
+
         // Idle shimmer — subtle white tint pulse every 3 s over 0.4 s
         private Coroutine? _shimmerRoutine;
         private MaterialPropertyBlock? _shimmerMpb;
@@ -798,6 +801,7 @@ namespace CrowdDefense.Entities
         private IEnumerator PlayDestroyAnim()
         {
             _destroyStarted = true;
+            if (_windupRoutine != null) { StopCoroutine(_windupRoutine); _windupRoutine = null; }
             if (_selectionRing != null) _selectionRing.gameObject.SetActive(false);
             Vector3 startScale = transform.localScale;
             float targetRotZ = Random.Range(-45f, 45f);
@@ -918,7 +922,8 @@ namespace CrowdDefense.Entities
 
             if (target != null && cooldown <= 0f)
             {
-                Fire(target);
+                if (_windupRoutine != null) StopCoroutine(_windupRoutine);
+                _windupRoutine = StartCoroutine(WindupFire(target));
                 // L3FireRateMul >1 ralentit la cadence (sniper L3-DPS archer = x2)
                 float rateMs = cfg!.FireRateMs * L3FireRateMul * ResearchFireRateMul;
                 cooldown = rateMs / 1000f;
@@ -1071,7 +1076,68 @@ namespace CrowdDefense.Entities
             return best;
         }
 
-        private void Fire(Enemy t)
+        // ── Windup animation (squash + twitch 0.1 s before firing) ──────────────
+        private IEnumerator WindupFire(Enemy t)
+        {
+            if (_meshChild != null && !_destroyStarted)
+            {
+                var visual = _meshChild.transform;
+                Vector3 baseScale = visual.localScale;
+                float twitch = Random.value > 0.5f ? 5f : -5f;
+
+                // Phase 1 (0–0.05 s): squash Y 1→0.85, tilt +5°
+                float elapsed = 0f;
+                while (elapsed < 0.05f)
+                {
+                    if (_destroyStarted) { visual.localScale = baseScale; yield break; }
+                    elapsed += Time.deltaTime;
+                    float t01 = Mathf.Clamp01(elapsed / 0.05f);
+                    float sy = Mathf.Lerp(1f, 0.85f, t01);
+                    visual.localScale = new Vector3(baseScale.x, baseScale.y * sy, baseScale.z);
+                    visual.localRotation = Quaternion.Euler(0f, twitch * t01, 0f);
+                    yield return null;
+                }
+
+                // Phase 2 (0.05–0.10 s): stretch Y 0.85→1.05, rotation back
+                elapsed = 0f;
+                while (elapsed < 0.05f)
+                {
+                    if (_destroyStarted) { visual.localScale = baseScale; yield break; }
+                    elapsed += Time.deltaTime;
+                    float t01 = Mathf.Clamp01(elapsed / 0.05f);
+                    float sy = Mathf.Lerp(0.85f, 1.05f, t01);
+                    visual.localScale = new Vector3(baseScale.x, baseScale.y * sy, baseScale.z);
+                    visual.localRotation = Quaternion.Euler(0f, twitch * (1f - t01), 0f);
+                    yield return null;
+                }
+                visual.localRotation = Quaternion.identity;
+            }
+
+            // Phase 3 (0.10 s): actual shot
+            if (!_destroyStarted) ExecuteFire(t);
+
+            // Phase 4 (0.10–0.15 s): settle 1.05→1.0
+            if (_meshChild != null && !_destroyStarted)
+            {
+                var visual = _meshChild.transform;
+                Vector3 baseScale = visual.localScale;
+                float elapsed = 0f;
+                while (elapsed < 0.05f)
+                {
+                    if (_destroyStarted) { visual.localScale = baseScale; yield break; }
+                    elapsed += Time.deltaTime;
+                    float t01 = Mathf.Clamp01(elapsed / 0.05f);
+                    float sy = Mathf.Lerp(1.05f, 1f, t01);
+                    visual.localScale = new Vector3(baseScale.x, baseScale.y * sy, baseScale.z);
+                    yield return null;
+                }
+                visual.localScale = baseScale;
+            }
+
+            _windupRoutine = null;
+        }
+
+        private void ExecuteFire(Enemy t)
         {
             if (cfg == null) return;
             if (ProjectilePool.Instance == null)
