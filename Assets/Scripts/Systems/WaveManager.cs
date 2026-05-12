@@ -295,13 +295,13 @@ namespace CrowdDefense.Systems
 
             // Pick a random non-null enemy type from the wave
             EnemyType? pick = null;
-            foreach (var entry in wave.Entries)
+            foreach (var entry in wave.entries)
             {
                 if (entry.type != null) { pick = entry.type; break; }
             }
             if (pick == null) yield break;
 
-            int resolvedPathIdx = ResolvePathIdx(wave.PortalIdx);
+            int resolvedPathIdx = ResolvePathIdx(wave.portalIdx);
             if (PathManager.Instance == null || EnemyPool.Instance == null) yield break;
             Vector3 spawnPos = PathManager.Instance.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
             var enemy = EnemyPool.Instance.SpawnFromType(pick, spawnPos, resolvedPathIdx, _currentWaveScaleMul);
