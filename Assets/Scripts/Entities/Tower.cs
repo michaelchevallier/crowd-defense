@@ -241,6 +241,11 @@ namespace CrowdDefense.Entities
         private bool _l4EliteApplied = false;
         private Coroutine? _sparkleRoutine;
 
+        // Idle shimmer — subtle white tint pulse every 3 s over 0.4 s
+        private Coroutine? _shimmerRoutine;
+        private MaterialPropertyBlock? _shimmerMpb;
+        private static readonly int _shimmerColorId = Shader.PropertyToID("_BaseColor");
+
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
 
@@ -462,6 +467,9 @@ namespace CrowdDefense.Entities
             BuildDamageIcon(type.DamageType);
             if (type.Behavior == TowerBehavior.CoinPull)
                 BuildMagnetAuraCircle(BalanceConfig.Get().MagnetSlowRadius);
+
+            if (_shimmerRoutine != null) StopCoroutine(_shimmerRoutine);
+            _shimmerRoutine = StartCoroutine(ShimmerRoutine());
         }
 
         /// <summary>
@@ -1651,6 +1659,45 @@ namespace CrowdDefense.Entities
                 0f,
                 0f,
                 Mathf.Sin(t * 0.8f + phase) * 1.7f);
+        }
+
+        private IEnumerator ShimmerRoutine()
+        {
+            var wait3 = new WaitForSeconds(3f);
+            while (true)
+            {
+                yield return wait3;
+                var root = _meshChild != null ? _meshChild : gameObject;
+                var renderers = root.GetComponentsInChildren<Renderer>();
+                if (renderers.Length == 0) continue;
+                _shimmerMpb ??= new MaterialPropertyBlock();
+                const float duration = 0.4f;
+                float half = duration * 0.5f;
+                float elapsed = 0f;
+                while (elapsed < duration)
+                {
+                    float alpha = elapsed < half
+                        ? Mathf.Lerp(0f, 0.2f, elapsed / half)
+                        : Mathf.Lerp(0.2f, 0f, (elapsed - half) / half);
+                    var tint = new Color(1f, 1f, 1f, alpha);
+                    foreach (var r in renderers)
+                    {
+                        r.GetPropertyBlock(_shimmerMpb);
+                        _shimmerMpb.SetColor(_shimmerColorId, tint);
+                        r.SetPropertyBlock(_shimmerMpb);
+                    }
+                    elapsed += Time.deltaTime;
+                    yield return null;
+                }
+                // restore original property block state (alpha 0 = invisible tint)
+                var clear = new Color(1f, 1f, 1f, 0f);
+                foreach (var r in renderers)
+                {
+                    r.GetPropertyBlock(_shimmerMpb);
+                    _shimmerMpb.SetColor(_shimmerColorId, clear);
+                    r.SetPropertyBlock(_shimmerMpb);
+                }
+            }
         }
 
         private void TickSynergyHalo()
