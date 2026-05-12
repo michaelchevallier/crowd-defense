@@ -452,33 +452,6 @@ namespace CrowdDefense.Entities
                 VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.8f, 1.8f);
         }
 
-        private IEnumerator LerpBossTint(Color target, Color emission, float dur)
-        {
-            if (_cachedRenderers == null || _mpb == null) yield break;
-            Color from = _currentBossTint;
-            float t    = 0f;
-            while (t < dur)
-            {
-                t += Time.deltaTime;
-                Color c = Color.Lerp(from, target, t / dur);
-                _mpb.SetColor(_baseColorId, c);
-                _mpb.SetColor(_colorId,     c);
-                if (_hitFlashTimer <= 0f)
-                    _mpb.SetColor(_emissiveId, Color.Lerp(Color.black, emission, t / dur));
-                for (int i = 0; i < _cachedRenderers.Length; i++)
-                    _cachedRenderers[i].SetPropertyBlock(_mpb);
-                yield return null;
-            }
-            _currentBossTint = target;
-            _mpb.SetColor(_baseColorId, target);
-            _mpb.SetColor(_colorId,     target);
-            if (_hitFlashTimer <= 0f)
-                _mpb.SetColor(_emissiveId, emission);
-            for (int i = 0; i < _cachedRenderers.Length; i++)
-                _cachedRenderers[i].SetPropertyBlock(_mpb);
-            _bossTintLerp = null;
-        }
-
         // ── Castle reached ────────────────────────────────────────────────────
 
         private const float AttackTelegraphDuration = 0.5f;
