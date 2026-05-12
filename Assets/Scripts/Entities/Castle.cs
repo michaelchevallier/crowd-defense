@@ -57,6 +57,13 @@ namespace CrowdDefense.Entities
         private float         _hpBarBaseScaleX;
         private TextMesh?     _hpText;
 
+        // Computes MaxHp via D1-04 formula: 100 + 50*sqrt(W)*diffMul, then delegates to Init(hp, world)
+        public void InitWithFormula(int world, int level = 1)
+        {
+            int hp = BalanceConfig.GetCastleMaxHp(world, level);
+            Init(hp, world);
+        }
+
         public void Init(int hp, int world = 1)
         {
             HP = HPMax = hp;
