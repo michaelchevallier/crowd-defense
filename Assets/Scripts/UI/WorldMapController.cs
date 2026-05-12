@@ -171,12 +171,23 @@ namespace CrowdDefense.UI
 
             var starsRow = new Label(StarsText(stars, unlocked));
             starsRow.AddToClassList("tile-stars");
+            if (stars == 3)      starsRow.AddToClassList("stars-gold");
+            else if (stars == 2) starsRow.AddToClassList("stars-silver");
+            else if (stars == 1) starsRow.AddToClassList("stars-bronze");
             tile.Add(starsRow);
 
             if (unlocked && data != null)
             {
                 string id = levelId;
                 tile.RegisterCallback<ClickEvent>(_ => LevelLoader.LoadLevel(id));
+            }
+            else if (!unlocked)
+            {
+                var lockLabel = new Label(L.Get("worldmap.locked"));
+                lockLabel.AddToClassList("tile-lock-icon");
+                tile.Add(lockLabel);
+                tile.RegisterCallback<ClickEvent>(_ =>
+                    Toast.Show("Niveau verrouille", "Terminez le niveau precedent.", 2500, null, ToastType.Generic));
             }
 
             return tile;
