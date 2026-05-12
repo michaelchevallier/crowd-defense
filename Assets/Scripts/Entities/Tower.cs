@@ -105,20 +105,20 @@ namespace CrowdDefense.Entities
         private static readonly Dictionary<(string, TowerBranch), L3Stats> _l3StatsTable = new()
         {
             // Archer
-            ("archer", TowerBranch.Dps) => new L3Stats { MultiShot = 2 },
-            ("archer", TowerBranch.Utility) => new L3Stats { CritChance = 0.25f, CritMul = 3f },
+            [("archer", TowerBranch.Dps)] = new L3Stats { MultiShot = 2 },
+            [("archer", TowerBranch.Utility)] = new L3Stats { CritChance = 0.25f, CritMul = 3f },
 
             // Crossbow
-            ("crossbow", TowerBranch.Dps) => new L3Stats { FinalExplosion = true, FinalExplosionAoe = 2.5f },
-            ("crossbow", TowerBranch.Utility) => new L3Stats { Pierce = 3 }, // +3 to cfg.Pierce
+            [("crossbow", TowerBranch.Dps)] = new L3Stats { FinalExplosion = true, FinalExplosionAoe = 2.5f },
+            [("crossbow", TowerBranch.Utility)] = new L3Stats { Pierce = 3 },
 
             // Tank
-            ("tank", TowerBranch.Dps) => new L3Stats { BerserkerActive = true, BerserkerDmgMul = 2f, BerserkerHpThreshold = 0.5f },
-            ("tank", TowerBranch.Utility) => new L3Stats { BulwarkAura = true, BulwarkAuraRange = 4f, BulwarkDmgReduction = 0.20f },
+            [("tank", TowerBranch.Dps)] = new L3Stats { BerserkerActive = true, BerserkerDmgMul = 2f, BerserkerHpThreshold = 0.5f },
+            [("tank", TowerBranch.Utility)] = new L3Stats { BulwarkAura = true, BulwarkAuraRange = 4f, BulwarkDmgReduction = 0.20f },
 
             // Mage
-            ("mage", TowerBranch.Dps) => new L3Stats { ChainLightningJumps = 3, ChainLightningRange = 5f },
-            ("mage", TowerBranch.Utility) => new L3Stats { FreezeOnHit = true, FreezeDurMs = 500 },
+            [("mage", TowerBranch.Dps)] = new L3Stats { ChainLightningJumps = 3, ChainLightningRange = 5f },
+            [("mage", TowerBranch.Utility)] = new L3Stats { FreezeOnHit = true, FreezeDurMs = 500 },
         };
 
         // Affordable upgrade highlight ring (gold pulsing quad when player can afford next level)
