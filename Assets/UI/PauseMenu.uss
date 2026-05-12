@@ -12,6 +12,17 @@
     min-width: 320px;
 }
 
+.logo-title {
+    color: rgb(255, 217, 51);
+    font-size: 48px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    margin-bottom: 4px;
+    letter-spacing: 4px;
+    transform-origin: center center;
+}
+
 .pause-title {
     color: rgb(255, 210, 0);
     font-size: 80px;
