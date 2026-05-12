@@ -177,6 +177,7 @@ namespace CrowdDefense.Systems
             UI.HeroPortraitController.Instance?.Wire();
             SpawnTreasureSystem();
             SpawnPathPreview();
+            SpawnBuildPoints();
             if (gameObject.GetComponent<EnemyAmbientChatter>() == null)
                 gameObject.AddComponent<EnemyAmbientChatter>();
             TryPlayOpeningCutscene();
@@ -781,6 +782,29 @@ namespace CrowdDefense.Systems
         {
             var go = new GameObject("PathPreviewRenderer");
             go.AddComponent<Visual.PathPreviewRenderer>();
+        }
+
+        private void SpawnBuildPoints()
+        {
+            var grid = PathManager.Instance?.Grid;
+            if (grid == null) return;
+            var buildPointPrefab = Resources.Load<GameObject>("Prefabs/BuildPoint");
+            if (buildPointPrefab == null)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning("[LevelRunner] BuildPoint prefab not found at Resources/Prefabs/BuildPoint");
+#endif
+                return;
+            }
+            for (int x = 0; x < grid.Width; x++)
+            for (int y = 0; y < grid.Height; y++)
+            {
+                if (!grid.IsBuildable(x, y)) continue;
+                var pos = GridCoords.CellToWorld(x, y, grid.Width, grid.Height, grid.CellSize);
+                pos.y = 0.1f;
+                var bpGo = Instantiate(buildPointPrefab, pos, Quaternion.identity);
+                bpGo.GetComponent<Entities.BuildPoint>()?.Init(new Vector2Int(x, y));
+            }
         }
 
         // ── Input helpers ───────────────────────────────────────────────────────
