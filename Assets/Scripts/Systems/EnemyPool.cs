@@ -45,7 +45,9 @@ namespace CrowdDefense.Systems
             VfxPool.Instance?.SpawnPortal(position);
             enemy.Init(type, pathIdx, endlessMul);
             if (variant != CrowdDefense.Data.EnemyVariant.Normal) enemy.ApplyVariant(variant);
-            if (Random.value < 0.05f) enemy.ApplyElite();
+            int waveIdx = WaveManager.Instance?.CurrentWaveIdx ?? 0;
+            bool eliteEligible = waveIdx >= 4 && !(type.IsBoss || type.IsMidBoss);
+            if (eliteEligible && Random.value < 0.10f) enemy.ApplyElite();
 
 #if UNITY_EDITOR
             Vector3 target = (pm != null && pm.WaypointCountOnPath(pathIdx) > 1)

@@ -296,12 +296,12 @@ namespace CrowdDefense.Entities
             }
         }
 
-        // Called by EnemyPool after Init when the 5% elite roll succeeds.
+        // Called by EnemyPool after Init when the 10% elite roll succeeds (W5+, non-boss).
         public void ApplyElite()
         {
             _isElite = true;
-            // If pop-in is running, restart it with the elite-scaled target instead of multiplying transitional scale
-            float eliteScale = _bossBaseScale * 1.3f;
+            // Scale x1.15 — elite tier is visually distinct but not boss-sized
+            float eliteScale = _bossBaseScale * 1.15f;
             if (_popInCoroutine != null)
             {
                 StopCoroutine(_popInCoroutine);
@@ -311,18 +311,51 @@ namespace CrowdDefense.Entities
             {
                 transform.localScale = Vector3.one * eliteScale;
             }
-            hp    *= 2.5f;
-            maxHp *= 2.5f;
+            // HP +50%
+            hp    *= 1.5f;
+            maxHp *= 1.5f;
             // Gold tint via MPB — reuses the already-allocated _mpb from Init
             if (_cachedRenderers != null)
             {
                 _mpb ??= new MaterialPropertyBlock();
-                var gold = new Color(1f, 0.84f, 0f);
+                var gold = new Color(1f, 0.85f, 0.2f, 1f);
                 _mpb.SetColor(_baseColorId, gold);
                 _mpb.SetColor(_colorId,     gold);
                 for (int i = 0; i < _cachedRenderers.Length; i++)
                     _cachedRenderers[i].SetPropertyBlock(_mpb);
             }
+            // Yellow scintillating trail particle
+            SpawnEliteTrail();
+        }
+
+        private void SpawnEliteTrail()
+        {
+            var go = new GameObject("EliteTrail");
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = Vector3.zero;
+            var ps = go.AddComponent<ParticleSystem>();
+            var main = ps.main;
+            main.loop              = true;
+            main.startLifetime     = 0.5f;
+            main.startSpeed        = 0.6f;
+            main.startSize         = 0.08f;
+            main.startColor        = new Color(1f, 0.85f, 0.2f, 0.85f);
+            main.simulationSpace   = ParticleSystemSimulationSpace.World;
+            var emission = ps.emission;
+            emission.rateOverTime  = 18f;
+            var shape = ps.shape;
+            shape.enabled          = true;
+            shape.shapeType        = ParticleSystemShapeType.Sphere;
+            shape.radius           = 0.2f;
+            var colorOverLifetime  = ps.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            var grad = new Gradient();
+            grad.SetKeys(
+                new[] { new GradientColorKey(new Color(1f, 0.85f, 0.2f), 0f), new GradientColorKey(new Color(1f, 0.6f, 0f), 1f) },
+                new[] { new GradientAlphaKey(0.85f, 0f), new GradientAlphaKey(0f, 1f) }
+            );
+            colorOverLifetime.color = grad;
+            ps.Play();
         }
 
         // Called by BossSystem when enraged phase threshold is crossed
@@ -1790,7 +1823,7 @@ namespace CrowdDefense.Entities
                 int baseReward = cfg?.Reward ?? 0;
                 float coinMul  = CoinPullManager.Instance?.GetCoinMulAt(transform.position) ?? 1f;
                 float streakMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
-                float eliteMul = _isElite ? 3f : 1f;
+                float eliteMul = _isElite ? 2f : 1f;
                 int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul * eliteMul * _diffRewardMul));
 #if UNITY_EDITOR
                 Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} streakMul={streakMul:F2} reward={reward}");
