@@ -151,6 +151,9 @@
             <ui:Label text="x2 COMBO!" name="combo-label" class="combo-label" />
         </ui:VisualElement>
 
+        <!-- Combo milestone banner (top-right, big gold x2!/x4!/x8! slide-in) -->
+        <ui:Label name="combo-banner" class="combo-banner hidden" text="x2!" />
+
         <!-- Tower tooltip (hover sur tower placée) -->
         <ui:VisualElement name="tower-tooltip" class="tower-tooltip hidden">
             <ui:Label text="" name="tooltip-header" class="tooltip-header" />

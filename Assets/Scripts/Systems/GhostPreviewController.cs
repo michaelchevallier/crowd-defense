@@ -2,29 +2,34 @@
 using TMPro;
 using UnityEngine;
 using CrowdDefense.Common;
+using CrowdDefense.Data;
 
 namespace CrowdDefense.Systems
 {
     /// <summary>
-    /// Affiche un cube semi-transparent (ghost) qui suit la souris pendant le mode placement.
+    /// Affiche le mesh de la TowerType sélectionnée en semi-transparent (ghost) qui suit la souris.
     /// Vert = cellule buildable, rouge = cellule non-buildable ou hors-grille.
+    /// Alpha 0.4 via MaterialPropertyBlock sur tous les renderers (aucun collider).
     /// S'abonne à PlacementController.OnHoverPlacementCell et surveille SelectedTowerType.
     /// </summary>
     public class GhostPreviewController : MonoSingleton<GhostPreviewController>
     {
-        private static readonly Color ColorValid   = new Color(0.20f, 0.85f, 0.20f, 0.45f);
-        private static readonly Color ColorInvalid = new Color(0.85f, 0.20f, 0.20f, 0.45f);
+        private static readonly Color ColorValid   = new Color(0.20f, 0.85f, 0.20f, 0.40f);
+        private static readonly Color ColorInvalid = new Color(0.85f, 0.20f, 0.20f, 0.40f);
 
         private static readonly Color LabelAfford  = new Color(0.20f, 0.90f, 0.20f, 1.00f);
         private static readonly Color LabelTooExp  = new Color(0.95f, 0.20f, 0.20f, 1.00f);
 
-        private Camera?   cam;
+        private Camera?     cam;
         private GameObject? ghost;
-        private MeshRenderer? ghostRenderer;
-        private Material?   ghostMat;
         private GameObject? rangeRing;
-        private float       lastBuiltRange = -1f;
+        private float       lastBuiltRange  = -1f;
+        private TowerType?  lastTowerType;
         private TextMeshPro? costLabel;
+        private Material?   ghostMatTransparent;
+
+        // Reusable property block — avoids per-frame GC
+        private readonly MaterialPropertyBlock _mpb = new();
 
         // Cache for raw mouse-tracked world position (used when no valid cell)
         private Vector3 lastMouseWorld;
@@ -33,7 +38,7 @@ namespace CrowdDefense.Systems
         protected override void OnAwakeSingleton()
         {
             cam = Camera.main;
-            BuildGhost();
+            ghostMatTransparent = BuildTransparentMaterial();
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnHoverPlacementCell += OnHoverCell;
         }
@@ -44,37 +49,124 @@ namespace CrowdDefense.Systems
                 PlacementController.Instance.OnHoverPlacementCell -= OnHoverCell;
         }
 
-        private void BuildGhost()
+        private static Material BuildTransparentMaterial()
         {
-            ghost = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            ghost.name = "TowerGhost";
-            ghost.transform.SetParent(transform, false);
-
-            // Remove collider so ghost never intercepts raycasts
-            var col = ghost.GetComponent<Collider>();
-            if (col != null) Destroy(col);
-
-            ghostRenderer = ghost.GetComponent<MeshRenderer>();
-
-            // Semi-transparent material using URP/Lit with Alpha Blending
             var shader = Shader.Find("Universal Render Pipeline/Lit")
                       ?? Shader.Find("Standard");
-            ghostMat = new Material(shader)
+            var mat = new Material(shader) { renderQueue = 3000 };
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend",   0f);
+            mat.SetFloat("_AlphaClip", 0f);
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            mat.SetInt("_ZWrite",   0);
+            return mat;
+        }
+
+        private void Update()
+        {
+            var pc = PlacementController.Instance;
+            if (pc == null) { HideGhost(); return; }
+
+            bool inPlacementMode = pc.SelectedTowerType != null;
+            if (!inPlacementMode) { HideGhost(); return; }
+
+            // Rebuild ghost when TowerType changes
+            if (pc.SelectedTowerType != lastTowerType)
             {
-                renderQueue = 3000,
-            };
-            // URP transparent surface
-            ghostMat.SetFloat("_Surface", 1f);   // 0=Opaque, 1=Transparent
-            ghostMat.SetFloat("_Blend", 0f);      // Alpha blend
-            ghostMat.SetFloat("_AlphaClip", 0f);
-            ghostMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            ghostMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            ghostMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            ghostMat.SetInt("_ZWrite", 0);
+                BuildGhostFor(pc.SelectedTowerType!);
+                lastTowerType = pc.SelectedTowerType;
+            }
 
-            if (ghostRenderer != null) ghostRenderer.sharedMaterial = ghostMat;
+            if (ghost == null) return;
 
-            // Cost label — world-space TMP, billboarded toward camera in LateUpdate
+            // Keep ghost scale in sync with selected tower SizeMultiplier
+            float sizeMul  = pc.SelectedTowerType?.SizeMultiplier ?? 1f;
+            float cellSize = PathManager.Instance?.Grid?.CellSize ?? 1f;
+            float s = cellSize * 0.85f * sizeMul;
+            ghost.transform.localScale = new Vector3(s, s, s);
+
+            // Rebuild range ring when selected tower changes
+            float range = pc.SelectedTowerType?.Range ?? 0f;
+            if (!Mathf.Approximately(range, lastBuiltRange))
+                BuildRangeRing(range);
+
+            // Track raw mouse world for fallback positioning
+            if (cam != null)
+            {
+                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+                if (groundPlane.Raycast(ray, out float dist))
+                    lastMouseWorld = ray.GetPoint(dist);
+            }
+
+            // Update cost label each frame
+            if (costLabel != null)
+            {
+                int cost      = pc.SelectedTowerType?.Cost ?? 0;
+                int gold      = Economy.Instance?.Gold ?? 0;
+                bool canAfford = gold >= cost;
+                costLabel.text  = $"Cout: {cost}c";
+                costLabel.color = canAfford ? LabelAfford : LabelTooExp;
+            }
+        }
+
+        private void LateUpdate()
+        {
+            if (ghost == null || !ghost.activeSelf || costLabel == null || cam == null) return;
+            costLabel.transform.rotation = cam.transform.rotation;
+        }
+
+        private void BuildGhostFor(TowerType towerType)
+        {
+            // Destroy previous ghost
+            if (ghost != null)
+            {
+                Object.Destroy(ghost);
+                ghost      = null;
+                rangeRing  = null;
+                costLabel  = null;
+                lastBuiltRange = -1f;
+            }
+
+            // Try to load GLTF prefab from AssetRegistry
+            GameObject? sourcePrefab = null;
+            if (!string.IsNullOrEmpty(towerType.AssetKey))
+            {
+                var registry = Resources.Load<AssetRegistry>("AssetRegistry");
+                if (registry != null)
+                    sourcePrefab = registry.Get(towerType.AssetKey);
+            }
+
+            if (sourcePrefab != null)
+            {
+                ghost = Object.Instantiate(sourcePrefab, transform);
+            }
+            else
+            {
+                // Fallback to cube when no GLTF available
+                ghost = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                ghost.transform.SetParent(transform, false);
+            }
+
+            ghost.name = "TowerGhost";
+
+            // Remove all colliders so ghost never intercepts raycasts
+            foreach (var col in ghost.GetComponentsInChildren<Collider>(true))
+                Object.Destroy(col);
+
+            // Replace all materials with transparent variant + apply tint via MPB
+            foreach (var rend in ghost.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = new Material[rend.sharedMaterials.Length];
+                for (int i = 0; i < mats.Length; i++)
+                    mats[i] = ghostMatTransparent;
+                rend.sharedMaterials = mats;
+            }
+
+            ApplyTintToGhost(ColorValid);
+
+            // Cost label — world-space TMP billboarded in LateUpdate
             var labelGo = new GameObject("GhostCostLabel");
             labelGo.transform.SetParent(ghost.transform, false);
             labelGo.transform.localPosition = new Vector3(0f, 1.4f, 0f);
@@ -91,74 +183,35 @@ namespace CrowdDefense.Systems
             ghost.SetActive(false);
         }
 
-        private void Update()
+        private void ApplyTintToGhost(Color tint)
         {
-            var pc = PlacementController.Instance;
-            if (pc == null || ghost == null) { HideGhost(); return; }
-
-            bool inPlacementMode = pc.SelectedTowerType != null;
-            if (!inPlacementMode) { HideGhost(); return; }
-
-            // Keep ghost scale in sync with selected tower SizeMultiplier
-            float sizeMul = pc.SelectedTowerType?.SizeMultiplier ?? 1f;
-            float cellSize = PathManager.Instance?.Grid?.CellSize ?? 1f;
-            float s = cellSize * 0.85f * sizeMul;
-            ghost.transform.localScale = new Vector3(s, s * 0.6f, s);
-
-            // Rebuild range ring when selected tower changes (after scale is current)
-            float range = pc.SelectedTowerType?.Range ?? 0f;
-            if (!Mathf.Approximately(range, lastBuiltRange))
-                BuildRangeRing(range);
-
-            // Track raw mouse world for fallback positioning (when hovering non-buildable)
-            if (cam != null)
-            {
-                Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-                if (groundPlane.Raycast(ray, out float dist))
-                    lastMouseWorld = ray.GetPoint(dist);
-            }
-
-            // Update cost label color and text each frame
-            if (costLabel != null)
-            {
-                int cost  = pc.SelectedTowerType?.Cost ?? 0;
-                int gold  = Economy.Instance?.Gold ?? 0;
-                bool canAfford = gold >= cost;
-                costLabel.text  = $"Cout: {cost}c";
-                costLabel.color = canAfford ? LabelAfford : LabelTooExp;
-            }
-        }
-
-        private void LateUpdate()
-        {
-            if (ghost == null || !ghost.activeSelf || costLabel == null || cam == null) return;
-            // Billboard: make the label face the camera
-            costLabel.transform.rotation = cam.transform.rotation;
+            if (ghost == null) return;
+            _mpb.SetColor("_BaseColor", tint);
+            foreach (var rend in ghost.GetComponentsInChildren<Renderer>(true))
+                rend.SetPropertyBlock(_mpb);
         }
 
         private void OnHoverCell(Vector2Int? cell)
         {
-            if (ghost == null || ghostMat == null) return;
+            if (ghost == null) return;
 
             var pc = PlacementController.Instance;
             if (pc == null || pc.SelectedTowerType == null) { HideGhost(); return; }
 
             if (cell.HasValue)
             {
-                // Snap to cell center
                 var grid = PathManager.Instance!.Grid!;
                 Vector3 pos = GridCoords.CellToWorld(cell.Value.x, cell.Value.y, grid.Width, grid.Height, grid.CellSize);
                 pos.y = 0.3f;
                 ghost.transform.position = pos;
-                ghostMat.color = ColorValid;
+                ApplyTintToGhost(ColorValid);
             }
             else
             {
-                // Not on a buildable cell — follow raw mouse position, red tint
                 Vector3 pos = lastMouseWorld;
                 pos.y = 0.3f;
                 ghost.transform.position = pos;
-                ghostMat.color = ColorInvalid;
+                ApplyTintToGhost(ColorInvalid);
             }
 
             ghost.SetActive(true);
@@ -167,7 +220,7 @@ namespace CrowdDefense.Systems
 
         private void HideGhost()
         {
-            if (ghost != null)     ghost.SetActive(false);
+            if (ghost     != null) ghost.SetActive(false);
             if (rangeRing != null) rangeRing.SetActive(false);
         }
 
@@ -175,32 +228,31 @@ namespace CrowdDefense.Systems
         {
             if (rangeRing != null) Object.Destroy(rangeRing);
             lastBuiltRange = range;
-            if (range <= 0f) return;
+            if (range <= 0f || ghost == null) return;
 
             var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
             go.name = "GhostRangeRing";
-            go.transform.SetParent(ghost!.transform, false);
+            go.transform.SetParent(ghost.transform, false);
             go.transform.localPosition = new Vector3(0f, 0.04f, 0f);
             go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            // Compensate parent scale so world diameter = range*2
-            float parentScale = ghost!.transform.localScale.x;
-            float diameter = parentScale > 0f ? (range * 2f) / parentScale : range * 2f;
+            float parentScale = ghost.transform.localScale.x;
+            float diameter    = parentScale > 0f ? (range * 2f) / parentScale : range * 2f;
             go.transform.localScale = new Vector3(diameter, diameter, 1f);
             Object.Destroy(go.GetComponent<Collider>());
 
             const int texSize = 64;
-            var tex = new Texture2D(texSize, texSize, TextureFormat.RGBA32, false);
+            var tex    = new Texture2D(texSize, texSize, TextureFormat.RGBA32, false);
             tex.wrapMode = TextureWrapMode.Clamp;
             var pixels = new Color32[texSize * texSize];
             float half = texSize * 0.5f;
             for (int y = 0; y < texSize; y++)
             for (int x = 0; x < texSize; x++)
             {
-                float dx = (x - half) / half;
-                float dy = (y - half) / half;
+                float dx   = (x - half) / half;
+                float dy   = (y - half) / half;
                 float dist = Mathf.Sqrt(dx * dx + dy * dy);
                 float alpha = Mathf.SmoothStep(1f, 0f, dist) * 0.4f;
-                byte a = (byte)Mathf.RoundToInt(Mathf.Clamp01(alpha) * 255f);
+                byte  a    = (byte)Mathf.RoundToInt(Mathf.Clamp01(alpha) * 255f);
                 pixels[y * texSize + x] = new Color32(102, 222, 255, a);
             }
             tex.SetPixels32(pixels);
@@ -211,7 +263,7 @@ namespace CrowdDefense.Systems
             if (mat.HasProperty("_Surface"))
             {
                 mat.SetFloat("_Surface", 1f);
-                mat.SetFloat("_ZWrite", 0f);
+                mat.SetFloat("_ZWrite",  0f);
                 mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
                 mat.renderQueue = 3000;
             }
