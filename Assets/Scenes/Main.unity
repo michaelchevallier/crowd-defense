@@ -444,6 +444,7 @@ Transform:
   - {fileID: 837841439}
   - {fileID: 819492781}
   - {fileID: 1401904700}
+  - {fileID: 1401904697}
   - {fileID: 1973722761}
   - {fileID: 543855130}
   - {fileID: 125352552}
@@ -1676,6 +1677,58 @@ MonoBehaviour:
   sfxGroup: {fileID: -2070414367194906651, guid: c17353e2705b34d45be0b3393df21ad2, type: 2}
   musicGroup: {fileID: 1412630394163163098, guid: c17353e2705b34d45be0b3393df21ad2, type: 2}
   uiGroup: {fileID: -5682224201860013894, guid: c17353e2705b34d45be0b3393df21ad2, type: 2}
+--- !u!1 &1401904698
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1401904697}
+  - component: {fileID: 1401904696}
+  m_Layer: 0
+  m_Name: MusicManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1401904697
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401904698}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 327615480}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1401904696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1401904698}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 66d67ba9e4fb44eda875def5e8e33af6, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.MusicManager
+  menuTheme: {fileID: 8300000, guid: 33e9b2fbef0404198ad34192dc020e56, type: 3}
+  gameplayCalmTheme: {fileID: 8300000, guid: e5b06cedac89541c396f3872ccb7dfac, type: 3}
+  gameplayIntenseTheme: {fileID: 8300000, guid: ac8250d12c0c843b3923e98de4ce95f4, type: 3}
+  bossTheme: {fileID: 8300000, guid: f1198b74023304fd7a5b2bfaeebf9aeb, type: 3}
+  victorySting: {fileID: 0}
+  defeatSting: {fileID: 0}
+  musicVolume: 0.35
+  musicMixerGroup: {fileID: 1412630394163163098, guid: c17353e2705b34d45be0b3393df21ad2, type: 2}
 --- !u!21 &1495628543
 Material:
   serializedVersion: 8

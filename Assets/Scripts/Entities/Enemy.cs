@@ -185,6 +185,13 @@ namespace CrowdDefense.Entities
         internal float _burstSummonTimer  = 0f;
         internal float _tentacleSlamTimer = 0f;
 
+        // ── AI Hub drone formation — child GOs that orbit/follow boss ────────
+        internal readonly GameObject?[] _droneFormation = new GameObject?[6];
+        internal int _droneFormationCount = 0;
+
+        // ── Kraken slam telegraph state ──────────────────────────────────────
+        internal bool _krakenSlamTelegraphActive = false;
+
         // ── Static mode (decoration preview) ─────────────────────────────────
         private bool  _static     = false;
         private float _staticRotY = 0f;
