@@ -2132,8 +2132,10 @@ namespace CrowdDefense.Entities
 
         private IEnumerator CastleAttackWithTelegraph()
         {
-            float attackRange = 1.2f;
+            bool isAoe = cfg?.AoEAttack ?? false;
+            float attackRange = isAoe ? (cfg?.AoEAttackRadius ?? 1.5f) : 1.2f;
             var circle = BuildTelegraphCircle(attackRange);
+            if (isAoe) circle.GetComponent<LineRenderer>().material.color = new Color(1f, 0.1f, 0.1f, 0.9f);
 
             yield return new WaitForSeconds(AttackTelegraphDuration);
 
@@ -2141,14 +2143,41 @@ namespace CrowdDefense.Entities
 
             int dmg = Mathf.RoundToInt((cfg?.Damage ?? 0) * _damageMul);
 #if UNITY_EDITOR
-            Debug.Log($"[Enemy] reached castle type={cfg?.Id} dmg={dmg} pathIdx={pathIdx}");
+            Debug.Log($"[Enemy] reached castle type={cfg?.Id} dmg={dmg} aoe={isAoe} pathIdx={pathIdx}");
 #endif
             Castle.Instance?.TakeDamage(dmg);
+
+            if (isAoe && cfg != null)
+                SplashNearbyTowers(cfg.AoEAttackRadius, cfg.AoEAttackDamage);
+
             EventManager.Instance?.Publish(new EnemyReachedCastleEvent(this, dmg));
             if (dmg > 0)
                 EventManager.Instance?.Publish(new HeroDamagedEvent(dmg));
             WaveManager.Instance?.NotifyEnemyDied(this);
             ReleaseToPool();
+        }
+
+        private void SplashNearbyTowers(float radius, int splashDmg)
+        {
+            if (PlacementController.Instance == null) return;
+            var towers = PlacementController.Instance.PlacedTowers;
+            float radiusSq = radius * radius;
+            int hit = 0;
+            for (int i = 0; i < towers.Count; i++)
+            {
+                var tower = towers[i];
+                if (tower == null) continue;
+                if ((tower.transform.position - transform.position).sqrMagnitude < radiusSq)
+                {
+                    tower.ReceiveEnemySplash(splashDmg);
+                    hit++;
+                }
+            }
+            VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.4f, radius * 0.5f);
+            AudioController.Instance?.Play3D("boss_roar", transform.position, 0.6f);
+#if UNITY_EDITOR
+            Debug.Log($"[Enemy] AoE attack splash radius={radius} dmg={splashDmg} hit {hit} towers");
+#endif
         }
 
         private GameObject BuildTelegraphCircle(float radius)

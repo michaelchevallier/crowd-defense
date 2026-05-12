@@ -660,6 +660,12 @@ namespace CrowdDefense.Entities
             UpdateHpAlpha();
         }
 
+        public void ReceiveEnemySplash(int amount)
+        {
+            TakeDamage(amount);
+            VfxPool.Instance?.SpawnImpact(transform.position + Vector3.up * 0.8f, new Color(1f, 0.2f, 0f));
+        }
+
         /// <summary>
         /// Repair : restore HP to max, spend gold (10¢ per 5 HP missing, rounded up).
         /// No-op if full HP or insufficient gold.

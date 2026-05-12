@@ -64,6 +64,11 @@ namespace CrowdDefense.Data
         [SerializeField] private float aoeBlastRadius = 0f;
         [SerializeField] private int aoeBlastDamage = 0;
 
+        [Header("AoE Attack (castle reach)")]
+        [SerializeField] private bool aoeAttack = false;
+        [SerializeField] private float aoeAttackRadius = 1.5f;
+        [SerializeField] private int aoeAttackDamage = 3;
+
         [Header("Shader")]
         [SerializeField] private string shaderOverlay = "";
 
@@ -103,6 +108,9 @@ namespace CrowdDefense.Data
         public int AoeBlastMs => aoeBlastMs;
         public float AoeBlastRadius => aoeBlastRadius;
         public int AoeBlastDamage => aoeBlastDamage;
+        public bool AoEAttack => aoeAttack || isBoss || isMidBoss;
+        public float AoEAttackRadius => aoeAttackRadius;
+        public int AoEAttackDamage => aoeAttackDamage;
         public string ShaderOverlay => shaderOverlay;
     }
 }
