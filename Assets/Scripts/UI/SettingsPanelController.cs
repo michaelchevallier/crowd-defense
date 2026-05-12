@@ -157,6 +157,7 @@ namespace CrowdDefense.UI
             L.OnLocaleChanged += ApplyLocalizedTexts;
             BindCallbacks();
             SyncFromRegistry();
+            SyncFollowHero();
         }
 
         private void OnEnable()
@@ -200,7 +201,10 @@ namespace CrowdDefense.UI
             if (_langLabel != null)           _langLabel.text           = L.Get("settings.lang_label");
             if (_closeBtn != null)            _closeBtn.text            = L.Get("settings.close");
             if (_resetCameraBtn != null)      _resetCameraBtn.text      = L.Get("settings.reset_camera");
-            if (_followHeroLabel != null)     _followHeroLabel.text     = L.Get("settings.follow_hero");
+            if (_followHeroLabel != null)
+                _followHeroLabel.text = L.CurrentLocale == "fr" ? "Caméra suit le Hero"
+                    : L.CurrentLocale == "es" ? "Cámara sigue al Héroe"
+                    : "Camera follows Hero";
 
             if (_qualityDropdown != null) _qualityDropdown.choices = QualityChoices;
             if (_langDropdown != null)    _langDropdown.choices    = LangChoices;

@@ -25,6 +25,7 @@ namespace CrowdDefense.Visual
         private Transform?  _hero;
         private Transform?  _castle;
         private bool        _followHero;
+        private float       _followDisabledTimer; // seconds remaining before follow re-engages after manual pan
         private bool        _orbitDrag;       // space + left-drag
         private bool        _rightDrag;       // right-click orbit around castle
         private Vector3     _dragOrigin;
@@ -38,7 +39,23 @@ namespace CrowdDefense.Visual
         private Quaternion  _savedRot;        // rotation before bird's eye
         private Coroutine?  _birdsEyeRoutine;
 
-        // ── Public API ────────────────────────────────────────────────────────
+        private const string KFollowHero = "camera_follow_hero_v1";
+        private const float  FollowResumeDelay = 5f;
+
+        // ── Public API ─────────────────────────────────────────────────────────
+        public bool FollowHero
+        {
+            get => _followHero;
+            set
+            {
+                _followHero = value;
+                _followDisabledTimer = 0f;
+                PlayerPrefs.SetInt(KFollowHero, value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
+        }
+
+        // ── Public setters ────────────────────────────────────────────────────
         public void SetHero(Transform hero)    => _hero   = hero;
         public void SetCastle(Transform castle) => _castle = castle;
         public void SetMapBounds(float halfX, float halfZ) { mapHalfX = halfX; mapHalfZ = halfZ; }
@@ -47,6 +64,7 @@ namespace CrowdDefense.Visual
         private void Start()
         {
             _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
+            _followHero = PlayerPrefs.GetInt(KFollowHero, 0) == 1;
             EventManager.Instance?.Subscribe<BossEncounteredEvent>(OnBossSpawn);
         }
         protected override void OnDestroySingleton() =>
@@ -94,7 +112,10 @@ namespace CrowdDefense.Visual
             HandleSpaceDrag();
             HandleRightClickOrbit();
 
-            if (_followHero && _hero != null)
+            if (_followDisabledTimer > 0f)
+                _followDisabledTimer -= Time.deltaTime;
+
+            if (_followHero && _followDisabledTimer <= 0f && _hero != null)
                 SmoothFollowHero();
 
             ClampPosition();
@@ -116,7 +137,7 @@ namespace CrowdDefense.Visual
             Touch t = Input.GetTouch(0);
             if (t.phase == TouchPhase.Began) { _prevTouchPos = t.position; return; }
             if (t.phase != TouchPhase.Moved) return;
-            if (_followHero) return;
+            if (_followHero) _followDisabledTimer = FollowResumeDelay;
 
             Vector2 delta = t.position - _prevTouchPos;
             _prevTouchPos = t.position;
@@ -160,22 +181,22 @@ namespace CrowdDefense.Visual
             transform.position = pos;
         }
 
-        // ── Toggle follow Hero (C key) ─────────────────────────────────────────
+        // ── Toggle follow Hero (F key) ─────────────────────────────────────────
         private void HandleToggleFollow()
         {
-            if (Input.GetKeyDown(KeyCode.C))
-                _followHero = !_followHero;
+            if (Input.GetKeyDown(KeyCode.F))
+                FollowHero = !_followHero;
         }
 
         // ── WASD / Arrow keys pan ─────────────────────────────────────────────
         private void HandlePan()
         {
-            if (_followHero) return;
-
             float h = Input.GetAxisRaw("Horizontal");   // A/D + Left/Right
             float v = Input.GetAxisRaw("Vertical");     // W/S + Up/Down
 
             if (Mathf.Abs(h) < 0.001f && Mathf.Abs(v) < 0.001f) return;
+
+            if (_followHero) _followDisabledTimer = FollowResumeDelay;
 
             var right   = transform.right;   right.y = 0f; right.Normalize();
             var forward = transform.forward; forward.y = 0f; forward.Normalize();
