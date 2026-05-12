@@ -1,6 +1,7 @@
 // Editor-only: creates/refreshes the Toon materials under Assets/Resources/Materials/
 // Run via menu CrowdDefense > Build > Create Toon Materials
 // Called automatically on domain reload via [InitializeOnLoadMethod]
+#nullable enable
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
