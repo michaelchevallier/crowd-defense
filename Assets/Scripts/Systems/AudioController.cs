@@ -226,7 +226,17 @@ namespace CrowdDefense.Systems
 
         public void SetMasterVolume(float zeroToOne)
         {
-            if (mixer != null && mixer.SetFloat("MasterVol", LinearToDb(zeroToOne))) return;
+            SetMixerMasterVolume(zeroToOne);
+            SetGlobalListenerVolume(zeroToOne);
+        }
+
+        public void SetMixerMasterVolume(float zeroToOne)
+        {
+            if (mixer != null) mixer.SetFloat("MasterVol", LinearToDb(zeroToOne));
+        }
+
+        public void SetGlobalListenerVolume(float zeroToOne)
+        {
             AudioListener.volume = Mathf.Clamp01(zeroToOne);
         }
 
