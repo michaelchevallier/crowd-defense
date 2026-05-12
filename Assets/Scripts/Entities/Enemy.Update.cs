@@ -89,7 +89,7 @@ namespace CrowdDefense.Entities
             }
 
             // Walk anim blend + footstep audio
-            if (_animator != null && _animator.runtimeAnimatorController != null && cfg!.Speed > 0f)
+            if (_animator != null && _animator.runtimeAnimatorController != null && cfg!.Speed > 0f && HasAnimatorParam(_animator, "Speed"))
                 _animator.SetFloat("Speed", effSpeed / cfg.Speed);
             if (nowWalking)
             {
@@ -137,6 +137,13 @@ namespace CrowdDefense.Entities
             if (_bossEncounteredPublished || cfg == null || !cfg.IsBoss) return;
             _bossEncounteredPublished = true;
             EventManager.Instance?.Publish(new EnemySpawnedEvent(this));
+        }
+
+        private static bool HasAnimatorParam(Animator animator, string name)
+        {
+            foreach (var p in animator.parameters)
+                if (p.name == name) return true;
+            return false;
         }
 
         private void UpdateFreeze()
