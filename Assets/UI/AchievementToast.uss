@@ -1,10 +1,10 @@
-/* === Achievement Toast Stack (bottom-right anchor) === */
+/* === Achievement Toast Stack (top-right anchor) === */
 .toast-stack {
     position: absolute;
-    right: 24px;
-    bottom: 24px;
-    width: 320px;
-    flex-direction: column-reverse;
+    right: 20px;
+    top: 100px;
+    width: 280px;
+    flex-direction: column;
 }
 
 /* === Individual toast card === */
