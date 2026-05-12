@@ -393,13 +393,34 @@ namespace CrowdDefense.UI
         {
             var tower = currentTower;
             if (tower == null) return;
-            tower.ShowRangeRing(false);
-            _rangeVisible = false;
 
             int refund = CrowdDefense.Data.BalanceConfig.Get() is { } bal
                 ? UnityEngine.Mathf.RoundToInt(tower.CumulativeCost * bal.SellRefundRatio)
                 : 0;
 
+            if (tower.UpgradeLevel >= 3)
+            {
+                ShowSellConfirm(tower, refund);
+                return;
+            }
+
+            ExecuteSell(tower, refund);
+        }
+
+        private void ShowSellConfirm(Tower tower, int refund)
+        {
+            string name = tower.Config?.DisplayName ?? tower.Config?.Id ?? "tour";
+            Confirm.Show(
+                "Vendre tour L3 ?",
+                $"Vendre {name} L3 ? Remboursement : {refund}¢",
+                onConfirm: () => ExecuteSell(tower, refund)
+            );
+        }
+
+        private void ExecuteSell(Tower tower, int refund)
+        {
+            tower.ShowRangeRing(false);
+            _rangeVisible = false;
             currentTower = null;
             Hide();
             PlacementController.Instance?.DeselectTower();
