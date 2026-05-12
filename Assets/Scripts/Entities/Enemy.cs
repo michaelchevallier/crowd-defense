@@ -170,6 +170,10 @@ namespace CrowdDefense.Entities
         private bool  _static     = false;
         private float _staticRotY = 0f;
 
+        // ── Target reticle marker ─────────────────────────────────────────────
+        private int _targetedByCount = 0;
+        private GameObject? _reticleGO;
+
         // ── Public API ────────────────────────────────────────────────────────
         public EnemyType? Config              => cfg;
         public int  CurrentWaypoint           => currentWaypoint;
@@ -201,6 +205,41 @@ namespace CrowdDefense.Entities
 
         // Used by EnemyPathingSystem — true when enemy is suitable for external pathing tick
         public bool IsPathable => !IsDead && !_dying && cfg != null && !cfg.IsFlyer && !_static && pathManager != null;
+
+        // Called by Tower when this enemy becomes or stops being a target.
+        public void SetTargetedBy(bool targeted)
+        {
+            _targetedByCount = Mathf.Max(0, _targetedByCount + (targeted ? 1 : -1));
+            if (_targetedByCount > 0)
+                EnsureReticle();
+            else
+                HideReticle();
+        }
+
+        private void EnsureReticle()
+        {
+            if (_reticleGO != null) { _reticleGO.SetActive(true); return; }
+            _reticleGO = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            _reticleGO.name = "ReticleMarker";
+            if (_reticleGO.TryGetComponent<Collider>(out var col))
+                Object.Destroy(col);
+            _reticleGO.transform.SetParent(transform, false);
+            float h = GetComponent<CapsuleCollider>() is CapsuleCollider cc ? cc.height : 2f;
+            _reticleGO.transform.localPosition = new Vector3(0f, h * 0.55f + 0.3f, 0f);
+            _reticleGO.transform.localScale = Vector3.one * 0.22f;
+            var mr = _reticleGO.GetComponent<MeshRenderer>();
+            mr.material = new Material(Shader.Find("Sprites/Default"))
+            {
+                color = new Color(1f, 1f, 1f, 0.9f)
+            };
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+        }
+
+        private void HideReticle()
+        {
+            if (_reticleGO != null) _reticleGO.SetActive(false);
+        }
 
         // Fired by HandleDeath — (enemy, isBoss). LootSpawner subscribes.
         public static event System.Action<Enemy, bool>? OnDeathStatic;
@@ -413,6 +452,8 @@ namespace CrowdDefense.Entities
         public void Init(EnemyType type, int assignedPathIdx = 0, float endlessMul = 1f)
         {
             cfg = type;
+            _targetedByCount = 0;
+            HideReticle();
             IsDead       = false;
             _dying       = false;
             _dyingTimer  = 0f;

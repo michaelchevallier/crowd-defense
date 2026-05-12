@@ -712,7 +712,11 @@ namespace CrowdDefense.Entities
             cooldown -= Time.deltaTime;
 
             if (target == null || target.IsDead || OutOfRange(target))
+            {
+                target?.SetTargetedBy(false);
                 target = AcquireTarget();
+                target?.SetTargetedBy(true);
+            }
 
             if (target != null && cooldown <= 0f)
             {
@@ -1017,12 +1021,14 @@ namespace CrowdDefense.Entities
         public void SetTargetPriority(TargetPriority priority)
         {
             _targetPriority = priority;
+            target?.SetTargetedBy(false);
             target = null; // force re-acquire with new priority
         }
 
         public void SetGuardMode(GuardMode mode)
         {
             _guardMode = mode;
+            target?.SetTargetedBy(false);
             target = null; // force re-acquire with new filter
         }
 
@@ -1696,6 +1702,7 @@ namespace CrowdDefense.Entities
 
         private void OnDestroy()
         {
+            target?.SetTargetedBy(false);
             var settings = CrowdDefense.UI.SettingsRegistry.Instance;
             if (settings != null) settings.OnSettingsChanged -= RefreshDamageIconVisibility;
         }
