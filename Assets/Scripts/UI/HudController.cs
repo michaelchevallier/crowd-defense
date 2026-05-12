@@ -104,6 +104,11 @@ namespace CrowdDefense.UI
         private Coroutine?     _perfectStreakCoroutine;
         private int            _perfectWaveStreak = 0;
 
+        // Wave intro banner (left side, slide-in "Wave N - {enemy}" at wave start)
+        private VisualElement? _waveIntroBanner;
+        private Label?         _waveIntroLabel;
+        private Coroutine?     _waveIntroCoroutine;
+
         // Boss intro banner (bottom-center, 4s then fade)
         private VisualElement? _bossIntroBanner;
         private Label?         _bossIntroQuote;
@@ -292,6 +297,7 @@ namespace CrowdDefense.UI
             BuildPerfectStreakBanner(root);
             BuildWaveCountdownLabel(root);
             BuildWaveProgressDots(root);
+            BuildWaveIntroBanner(root);
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -1089,6 +1095,27 @@ namespace CrowdDefense.UI
         private void OnWaveStart(int idx)
         {
             RefreshWaveDots();
+
+            // Wave intro banner — pull primary enemy name from first non-null entry
+            string enemyName = string.Empty;
+            var wm0 = WaveManager.Instance;
+            if (wm0 != null)
+            {
+                var def = wm0.GetWaveDef(idx);
+                if (def.HasValue && def.Value.entries != null)
+                {
+                    foreach (var entry in def.Value.entries)
+                    {
+                        if (entry.type != null && !string.IsNullOrEmpty(entry.type.DisplayName))
+                        {
+                            enemyName = entry.type.DisplayName;
+                            break;
+                        }
+                    }
+                }
+            }
+            ShowWaveIntroBanner(idx + 1, enemyName);
+
             if (waveValue == null || WaveManager.Instance == null) return;
             bool endless = LevelRunner.Instance?.IsEndlessRun == true;
             waveValue.text = endless
@@ -1518,6 +1545,112 @@ namespace CrowdDefense.UI
             _enemyCountLabel.style.borderBottomRightRadius = new Length(4f, LengthUnit.Pixel);
             _enemyCountLabel.AddToClassList("hidden");
             root.Add(_enemyCountLabel);
+        }
+
+        // ── Wave intro banner (slide-in from left) ───────────────────────────
+
+        private void BuildWaveIntroBanner(VisualElement root)
+        {
+            _waveIntroBanner = new VisualElement { name = "wave-intro-banner" };
+            _waveIntroBanner.style.position       = Position.Absolute;
+            _waveIntroBanner.style.top            = new Length(50f, LengthUnit.Percent);
+            _waveIntroBanner.style.translate      = new Translate(Length.Auto(), new Length(-50f, LengthUnit.Percent));
+            _waveIntroBanner.style.paddingTop     = new Length(16f, LengthUnit.Pixel);
+            _waveIntroBanner.style.paddingBottom  = new Length(16f, LengthUnit.Pixel);
+            _waveIntroBanner.style.paddingLeft    = new Length(32f, LengthUnit.Pixel);
+            _waveIntroBanner.style.paddingRight   = new Length(32f, LengthUnit.Pixel);
+            _waveIntroBanner.style.backgroundColor = new StyleColor(new Color(0f, 0f, 0f, 0.7f));
+            _waveIntroBanner.style.borderTopLeftRadius    = new Length(0f,  LengthUnit.Pixel);
+            _waveIntroBanner.style.borderTopRightRadius   = new Length(8f,  LengthUnit.Pixel);
+            _waveIntroBanner.style.borderBottomLeftRadius = new Length(0f,  LengthUnit.Pixel);
+            _waveIntroBanner.style.borderBottomRightRadius = new Length(8f, LengthUnit.Pixel);
+            _waveIntroBanner.style.display        = DisplayStyle.None;
+            _waveIntroBanner.style.alignItems     = Align.Center;
+            _waveIntroBanner.style.zIndex         = 500;
+
+            _waveIntroLabel = new Label { name = "wave-intro-label", text = "" };
+            _waveIntroLabel.style.color                   = new StyleColor(Color.white);
+            _waveIntroLabel.style.fontSize                = new Length(56f, LengthUnit.Pixel);
+            _waveIntroLabel.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
+            _waveIntroLabel.style.unityTextAlign          = TextAnchor.MiddleLeft;
+            _waveIntroLabel.style.textShadow              = new TextShadow
+            {
+                color      = new Color(0f, 0f, 0f, 1f),
+                offset     = new Vector2(3f, 3f),
+                blurRadius = 0f,
+            };
+            _waveIntroBanner.Add(_waveIntroLabel);
+            root.Add(_waveIntroBanner);
+        }
+
+        public void ShowWaveIntroBanner(int waveNum, string enemyName)
+        {
+            if (_waveIntroBanner == null || _waveIntroLabel == null) return;
+
+            _waveIntroLabel.text = string.IsNullOrEmpty(enemyName)
+                ? $"Wave {waveNum}"
+                : $"Wave {waveNum}  •  {enemyName}";
+
+            if (_waveIntroCoroutine != null) StopCoroutine(_waveIntroCoroutine);
+            _waveIntroCoroutine = StartCoroutine(WaveIntroBannerCoroutine());
+        }
+
+        private System.Collections.IEnumerator WaveIntroBannerCoroutine()
+        {
+            if (_waveIntroBanner == null) yield break;
+
+            // Play audio sting at slide-in start
+            var ac = AudioController.Instance;
+            if (ac != null)
+            {
+                try
+                {
+                    if (ac.GetClip("wave_intro_sting") != null)
+                        ac.Play("wave_intro_sting", 0.7f);
+                }
+                catch { /* clip absent — skip silently */ }
+            }
+
+            _waveIntroBanner.style.display = DisplayStyle.Flex;
+
+            // Slide-in: X from -400 → 100 over 0.4s ease-out
+            const float slideInS  = 0.4f;
+            const float holdS     = 1.6f;
+            const float slideOutS = 0.4f;
+            const float startX    = -400f;
+            const float holdX     =  100f;
+            const float endX      =  800f;
+
+            float t = 0f;
+            while (t < slideInS)
+            {
+                t += Time.unscaledDeltaTime;
+                float p = Mathf.Clamp01(t / slideInS);
+                float eased = 1f - (1f - p) * (1f - p); // ease-out quadratic
+                float x = Mathf.Lerp(startX, holdX, eased);
+                _waveIntroBanner.style.left = new Length(x, LengthUnit.Pixel);
+                yield return null;
+            }
+            _waveIntroBanner.style.left = new Length(holdX, LengthUnit.Pixel);
+
+            // Hold
+            yield return new WaitForSecondsRealtime(holdS);
+            if (_waveIntroBanner == null) yield break;
+
+            // Slide-out: X from 100 → 800 over 0.4s ease-in
+            t = 0f;
+            while (t < slideOutS)
+            {
+                t += Time.unscaledDeltaTime;
+                float p = Mathf.Clamp01(t / slideOutS);
+                float eased = p * p; // ease-in quadratic
+                float x = Mathf.Lerp(holdX, endX, eased);
+                _waveIntroBanner.style.left = new Length(x, LengthUnit.Pixel);
+                yield return null;
+            }
+
+            if (_waveIntroBanner != null) _waveIntroBanner.style.display = DisplayStyle.None;
+            _waveIntroCoroutine = null;
         }
 
         private void EnsureSibling<T>() where T : Component
