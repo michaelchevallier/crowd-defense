@@ -37,7 +37,18 @@ namespace CrowdDefense.UI
         {
             Instance = this;
             var doc = GetComponent<UIDocument>();
-            _root         = doc.rootVisualElement.Q("pause-root");
+            if (doc == null)
+            {
+                Debug.LogError("[PauseMenuController] UIDocument component not found");
+                return;
+            }
+            var rootElem = doc.rootVisualElement;
+            if (rootElem == null)
+            {
+                Debug.LogError("[PauseMenuController] rootVisualElement is null");
+                return;
+            }
+            _root         = rootElem.Q("pause-root");
             _pauseOverlay = _root?.Q("pause-overlay");
             _logoTitle    = _root?.Q<Label>("logo-title");
             _btnResume    = _root?.Q<Button>("btn-resume");
