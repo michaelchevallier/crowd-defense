@@ -960,8 +960,88 @@ namespace CrowdDefense.Entities
             JuiceFX.Instance?.Flash(new Color(0.8f, 0.2f, 1f, 0.45f), 450);
             JuiceFX.Instance?.Shake(0.3f, 400);
             FloatingPopupController.Instance?.SpawnReward("ULTIMATE!", pos + Vector3.up * 2.5f, new Color(0.9f, 0.3f, 1f));
+            SpawnUltimateShockwave(pos, UltimateAoeRadius);
             OnUltFired?.Invoke();
             return true;
+        }
+
+        // ── Ultimate shockwave VFX ────────────────────────────────────────────
+        private static readonly Color ShockwaveColorStart = new(1f, 0.95f, 0.5f, 0.9f);
+        private static readonly Color ShockwaveColorEnd   = new(1f, 0.95f, 0.5f, 0f);
+
+        private void SpawnUltimateShockwave(Vector3 center, float radius)
+        {
+            AudioController.Instance?.Play("hero_ultimate_shockwave", 1.5f);
+
+            StartCoroutine(ShockwaveRingRoutine(center, radius, 0.6f, 0.9f, outerRing: true));
+            StartCoroutine(ShockwaveRingRoutine(center, radius * 0.6f, 0.3f, 1.0f, outerRing: false));
+        }
+
+        private System.Collections.IEnumerator ShockwaveRingRoutine(
+            Vector3 center, float finalRadius, float duration, float startAlpha, bool outerRing)
+        {
+            const int Segments = 64;
+            float groundY = center.y + 0.1f;
+
+            var go = new GameObject("UltimateShockwave");
+            go.transform.SetParent(null);
+            go.transform.position = center;
+
+            var lr = go.AddComponent<LineRenderer>();
+            lr.loop              = true;
+            lr.positionCount     = Segments;
+            lr.useWorldSpace     = true;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows    = false;
+
+            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                      ?? Shader.Find("Sprites/Default")
+                      ?? Shader.Find("Standard");
+            var mat = new Material(shader!)
+            {
+                color = outerRing ? ShockwaveColorStart : Color.white
+            };
+            mat.SetFloat("_Surface", 1f);
+            mat.SetInt("_ZWrite", 0);
+            mat.renderQueue = 3000;
+            lr.material = mat;
+
+            // Pre-allocate position array — reused each frame, no GC per-frame
+            var positions = new Vector3[Segments];
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t      = Mathf.Clamp01(elapsed / duration);
+                float eased  = 1f - (1f - t) * (1f - t);          // ease-out quad
+                float radius = eased * finalRadius;
+                float alpha  = Mathf.Lerp(startAlpha, 0f, t);
+                float width  = Mathf.Lerp(outerRing ? 0.5f : 0.3f, 0f, t);
+
+                lr.startWidth = width;
+                lr.endWidth   = width;
+
+                var ringColor = outerRing
+                    ? new Color(1f, 0.95f, 0.5f, alpha)
+                    : new Color(1f, 1f, 1f, alpha);
+                lr.startColor = ringColor;
+                lr.endColor   = ringColor;
+
+                for (int i = 0; i < Segments; i++)
+                {
+                    float angle = i * (2f * Mathf.PI / Segments);
+                    positions[i] = new Vector3(
+                        center.x + Mathf.Cos(angle) * radius,
+                        groundY,
+                        center.z + Mathf.Sin(angle) * radius);
+                }
+                lr.SetPositions(positions);
+
+                yield return null;
+            }
+
+            Destroy(go);
         }
 
         // ── Tower aura query (used by Synergies.cs) ───────────────────────────
