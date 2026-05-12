@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Common;
+using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    public enum ToastType { Generic, Achievement, Perk, Synergy, Combo, Modifier }
+    public enum ToastType { Generic, Achievement, Perk, Synergy, Combo, Modifier, Success, Warning, Error, Info }
 
     // Static facade — callers use Toast.Show(...) without needing a reference to the MonoBehaviour.
     public static class Toast
@@ -22,9 +23,11 @@ namespace CrowdDefense.UI
         private const float StaggerDelay    = 0.4f;
         private const float SlideInDuration = 0.22f;
         private const float FadeOutDuration = 0.25f;
+        private const int   MaxStackVisible = 4;
 
         private VisualElement? _stack;
         private readonly Queue<ToastData> _pending = new();
+        private readonly List<VisualElement> _visible = new();
         private bool _draining;
 
         private readonly struct ToastData
@@ -70,14 +73,32 @@ namespace CrowdDefense.UI
         {
             if (_stack == null) yield break;
 
+            // Evict oldest visible card if stack is full
+            if (_visible.Count >= MaxStackVisible && _visible.Count > 0)
+            {
+                var oldest = _visible[0];
+                _visible.RemoveAt(0);
+                StartCoroutine(EvictCard(oldest));
+            }
+
             var card = BuildCard(data);
             _stack.Add(card);
+            _visible.Add(card);
+
+            AudioController.Instance?.Play($"toast_{data.Type.ToString().ToLowerInvariant()}");
 
             yield return AnimateSlideIn(card);
             yield return new WaitForSecondsRealtime(data.DurationSec);
             yield return AnimateFadeOut(card);
 
+            _visible.Remove(card);
             _stack.Remove(card);
+        }
+
+        private IEnumerator EvictCard(VisualElement card)
+        {
+            yield return AnimateFadeOut(card);
+            _stack?.Remove(card);
         }
 
         private static string TypeCssClass(ToastType t) => t switch
@@ -87,7 +108,20 @@ namespace CrowdDefense.UI
             ToastType.Perk        => "toast-type-green",
             ToastType.Combo       => "toast-type-orange",
             ToastType.Modifier    => "toast-type-purple",
+            ToastType.Success     => "toast-type-success",
+            ToastType.Warning     => "toast-type-warning",
+            ToastType.Error       => "toast-type-error",
+            ToastType.Info        => "toast-type-info",
             _                     => "toast-type-default",
+        };
+
+        private static string? DefaultIcon(ToastType t) => t switch
+        {
+            ToastType.Success => "✅",
+            ToastType.Warning => "⚠️",
+            ToastType.Error   => "❌",
+            ToastType.Info    => "ℹ️",
+            _                 => null,
         };
 
         private static VisualElement BuildCard(ToastData data)
@@ -98,9 +132,10 @@ namespace CrowdDefense.UI
             card.style.opacity = 0f;
             card.style.translate = new Translate(new Length(80f, LengthUnit.Pixel), 0);
 
-            if (!string.IsNullOrEmpty(data.IconEmoji))
+            var resolvedIcon = string.IsNullOrEmpty(data.IconEmoji) ? DefaultIcon(data.Type) : data.IconEmoji;
+            if (!string.IsNullOrEmpty(resolvedIcon))
             {
-                var emoji = new Label(data.IconEmoji);
+                var emoji = new Label(resolvedIcon);
                 emoji.AddToClassList("generic-toast-emoji");
                 card.Add(emoji);
             }
