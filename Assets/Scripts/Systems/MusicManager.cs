@@ -236,6 +236,7 @@ namespace CrowdDefense.Systems
         /// <summary>
         /// Select calm track pitch-shifted per world tier.
         /// W1-2=1.0, W3-4=0.95, W5-6=0.90, W7-8=0.85, W9-10=0.80.
+        /// Also applies EQ tuning (reverb/lowpass/distortion/chorus) per world biome.
         /// No-op when boss track is active.
         /// </summary>
         public void PlayWorldTheme(int worldId)
@@ -250,10 +251,70 @@ namespace CrowdDefense.Systems
                 _    => 0.80f,
             };
             if (_sources.TryGetValue("calm", out var calmSrc))
+            {
                 calmSrc.pitch = pitch;
+                ApplyWorldEQ(calmSrc, worldId);
+            }
             if (_sources.TryGetValue("intense", out var intenseSrc))
+            {
                 intenseSrc.pitch = pitch;
+                ApplyWorldEQ(intenseSrc, worldId);
+            }
             Play("calm");
+        }
+
+        // World EQ presets per biome
+        // W1-2 forest  : reverb 0.3 (open canopy)
+        // W3-4 desert  : lowpass 0.7 (muffled heat)
+        // W5-6 snow    : reverb 0.5 + chorus 0.2 (echoey expanse)
+        // W7-8 lava    : distortion 0.3 (heavy, oppressive)
+        // W9-10 void   : reverb 0.8 (cathedral emptiness)
+        private static void ApplyWorldEQ(AudioSource src, int worldId)
+        {
+            // Remove any previously added filters before applying new preset
+            foreach (var f in src.GetComponents<AudioReverbFilter>())    UnityEngine.Object.Destroy(f);
+            foreach (var f in src.GetComponents<AudioLowPassFilter>())   UnityEngine.Object.Destroy(f);
+            foreach (var f in src.GetComponents<AudioChorusFilter>())    UnityEngine.Object.Destroy(f);
+            foreach (var f in src.GetComponents<AudioDistortionFilter>()) UnityEngine.Object.Destroy(f);
+
+            if (worldId <= 2)
+            {
+                // Forest: light reverb, open feel
+                var rev = src.gameObject.AddComponent<AudioReverbFilter>();
+                rev.reverbPreset = AudioReverbPreset.Forest;
+                rev.reverbLevel = -1000 + (int)(0.3f * 2000f); // approx 0.3 blend
+            }
+            else if (worldId <= 4)
+            {
+                // Desert: lowpass cutoff 0.7 (22000 Hz * 0.7 ≈ 15400 Hz, slightly muffled)
+                var lp = src.gameObject.AddComponent<AudioLowPassFilter>();
+                lp.cutoffFrequency = 22000f * 0.7f;
+                lp.lowpassResonanceQ = 1f;
+            }
+            else if (worldId <= 6)
+            {
+                // Snow: reverb + light chorus
+                var rev = src.gameObject.AddComponent<AudioReverbFilter>();
+                rev.reverbPreset = AudioReverbPreset.StoneCorridor;
+                rev.reverbLevel = -1000 + (int)(0.5f * 2000f);
+                var cho = src.gameObject.AddComponent<AudioChorusFilter>();
+                cho.depth = 0.2f;
+                cho.rate = 0.4f;
+                cho.dryMix = 0.9f;
+            }
+            else if (worldId <= 8)
+            {
+                // Lava: distortion 0.3
+                var dist = src.gameObject.AddComponent<AudioDistortionFilter>();
+                dist.distortionLevel = 0.3f;
+            }
+            else
+            {
+                // Void: heavy reverb, cathedral
+                var rev = src.gameObject.AddComponent<AudioReverbFilter>();
+                rev.reverbPreset = AudioReverbPreset.Auditorium;
+                rev.reverbLevel = -1000 + (int)(0.8f * 2000f);
+            }
         }
 
         /// <summary>
