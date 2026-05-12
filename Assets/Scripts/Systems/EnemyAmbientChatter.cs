@@ -18,8 +18,9 @@ namespace CrowdDefense.Systems
         };
 
         private const float GlobalCooldown  = 1.5f;
-        private const float IntervalMin     = 2f;
+        private const float IntervalMin     = 5f;
         private const float IntervalMax     = 5f;
+        private const float RandomOffsetSec = 2f;
 
         private float _nextChatterTime;
         private float _globalCooldownUntil;
@@ -34,7 +35,7 @@ namespace CrowdDefense.Systems
             if (Time.time < _nextChatterTime) return;
 
             // Schedule next tick regardless of whether we actually play.
-            _nextChatterTime = Time.time + Random.Range(IntervalMin, IntervalMax);
+            _nextChatterTime = Time.time + IntervalMin + Random.Range(-RandomOffsetSec, RandomOffsetSec);
 
             if (Time.time < _globalCooldownUntil) return;
 
