@@ -26,7 +26,7 @@ MonoBehaviour:
   - Key: boss_charge
     Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
   - Key: boss_death_roar
-    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
+    Clip: {fileID: 8300000, guid: c1a65be9840414b60b1bcdb718d05a39, type: 3}
   - Key: boss_defeated
     Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
   - Key: boss_kill_special
@@ -40,7 +40,7 @@ MonoBehaviour:
   - Key: castle_hit
     Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
   - Key: castle_lost
-    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+    Clip: {fileID: 8300000, guid: c1a65be9840414b60b1bcdb718d05a39, type: 3}
   - Key: chest_open
     Clip: {fileID: 8300000, guid: b9158f8f1710845ddbd7c72226764aba, type: 3}
   - Key: coin_pickup
@@ -48,7 +48,7 @@ MonoBehaviour:
   - Key: combo_up
     Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: cutscene_start
-    Clip: {fileID: 8300000, guid: 40a31f1789dc546ec938c15607c09aaf, type: 3}
+    Clip: {fileID: 8300000, guid: 7b0b6a4c7143d42529ab240963addef7, type: 3}
   - Key: enemy_die_basic
     Clip: {fileID: 8300000, guid: e4b1e123611e84c9bbff4da6225ed67b, type: 3}
   - Key: enemy_die_boss
@@ -62,13 +62,13 @@ MonoBehaviour:
   - Key: gold_earn
     Clip: {fileID: 8300000, guid: b9158f8f1710845ddbd7c72226764aba, type: 3}
   - Key: hero_death
-    Clip: {fileID: 8300000, guid: c1a65be9840414b60b1bcdb718d05a39, type: 3}
+    Clip: {fileID: 8300000, guid: a5ade2f6650c04de8bd3a3e815ef8900, type: 3}
   - Key: hero_levelup
     Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: hero_shoot
     Clip: {fileID: 8300000, guid: 0c58db39650b3439cb7f3a34c670cc32, type: 3}
   - Key: hero_ult
-    Clip: {fileID: 8300000, guid: 0c58db39650b3439cb7f3a34c670cc32, type: 3}
+    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
   - Key: level_up
     Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: menu_button_hover
@@ -76,9 +76,9 @@ MonoBehaviour:
   - Key: menu_open_woosh
     Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
   - Key: overrun_alert
-    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: path_reveal
-    Clip: {fileID: 8300000, guid: 40a31f1789dc546ec938c15607c09aaf, type: 3}
+    Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
   - Key: perk_pick
     Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
   - Key: place_invalid
@@ -112,9 +112,9 @@ MonoBehaviour:
   - Key: toast_success
     Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
   - Key: toast_warning
-    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: toast_error
-    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: toast_info
     Clip: {fileID: 8300000, guid: 40a31f1789dc546ec938c15607c09aaf, type: 3}
   - Key: tower_built
@@ -136,7 +136,7 @@ MonoBehaviour:
   - Key: tutorial_progress
     Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
   - Key: warning_sound
-    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
+    Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: wave_clear
     Clip: {fileID: 8300000, guid: da00b163e9c6e4e96a8dca439e468f62, type: 3}
   - Key: wave_start
