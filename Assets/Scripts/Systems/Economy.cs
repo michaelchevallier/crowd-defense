@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Collections;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
@@ -22,6 +23,12 @@ namespace CrowdDefense.Systems
         public event Action<int>? OnGoldChanged;
         // Fired with (gain, totalAccumulated) on interest tick; gain=0 means reset (leak)
         public event Action<int, int>? OnBankTick;
+
+        // Debounce gold popup — groups rapid gains within 0.05s into a single popup
+        private int     _pendingPopupGold;
+        private Vector3 _pendingPopupPos;
+        private float   _pendingPopupUntil = -1f;
+        private const float PopupDebounceS = 0.05f;
 
         private void Start()
         {
@@ -67,7 +74,7 @@ namespace CrowdDefense.Systems
             AddGold(finalReward);
         }
 
-        // Overload with world position — spawns coin popup above kill site.
+        // Overload with world position — spawns tiered gold popup above kill site (debounced).
         public void AddGoldFromKill(int baseReward, Vector3 worldPos)
         {
             float comboMul      = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
@@ -75,7 +82,35 @@ namespace CrowdDefense.Systems
             float endlessGoldMul = WaveManager.Instance?.EndlessGoldMul ?? 1f;
             int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul * TalentSystem.GoldIncomeMul));
             AddGold(finalReward);
-            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCoin(finalReward, worldPos);
+            AccumulateGoldPopup(finalReward, worldPos);
+        }
+
+        // Accumulates gold gains occurring within PopupDebounceS into one popup.
+        private void AccumulateGoldPopup(int amount, Vector3 worldPos)
+        {
+            if (Time.timeScale <= 0f) return;
+            _pendingPopupGold += amount;
+            // Use latest position (closest kill dominates)
+            _pendingPopupPos  = worldPos;
+            if (_pendingPopupUntil < 0f)
+            {
+                _pendingPopupUntil = Time.unscaledTime + PopupDebounceS;
+                StartCoroutine(FlushGoldPopup());
+            }
+        }
+
+        private System.Collections.IEnumerator FlushGoldPopup()
+        {
+            // Wait until real-time debounce window closes (unscaled — works during slow-mo)
+            while (Time.unscaledTime < _pendingPopupUntil)
+                yield return null;
+
+            int   total = _pendingPopupGold;
+            var   pos   = _pendingPopupPos;
+            _pendingPopupGold  = 0;
+            _pendingPopupUntil = -1f;
+
+            CrowdDefense.UI.FloatingPopupController.Instance?.SpawnGoldReward(total, pos);
         }
 
         // Called by Castle.TakeDamage to flag a leak this wave

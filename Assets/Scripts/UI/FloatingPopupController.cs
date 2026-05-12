@@ -34,9 +34,10 @@ namespace CrowdDefense.UI
 
         private sealed class WorldPopup
         {
-            public GameObject Go    = null!;
-            public TextMeshPro Tmp  = null!;
+            public GameObject Go        = null!;
+            public TextMeshPro Tmp      = null!;
             public bool        Alive;
+            public float       BaseScale = 1f;
         }
 
         protected override void OnAwakeSingleton()
@@ -69,7 +70,38 @@ namespace CrowdDefense.UI
             => Spawn($"+{amount}", "popup-gems", worldPos);
 
         public void SpawnReward(string text, Vector3 worldPos, Color color)
-            => SpawnWorld(text, worldPos, color);
+            => SpawnWorld(text, worldPos, color, 1f);
+
+        public void SpawnReward(string text, Vector3 worldPos, Color color, float scale)
+            => SpawnWorld(text, worldPos, color, scale);
+
+        // Tiered gold reward popup: < 10 → white 0.6, 10–30 → yellow 0.8, > 30 → gold 1.0 + sparkle
+        public void SpawnGoldReward(int amount, Vector3 worldPos)
+        {
+            if (Time.timeScale <= 0f) return;
+            Color  color;
+            float  scale;
+            bool   sparkle;
+            if (amount < 10)
+            {
+                color   = Color.white;
+                scale   = 0.6f;
+                sparkle = false;
+            }
+            else if (amount <= 30)
+            {
+                color   = new Color(1f, 0.92f, 0.15f);
+                scale   = 0.8f;
+                sparkle = false;
+            }
+            else
+            {
+                color   = new Color(1f, 0.78f, 0f);
+                scale   = 1.0f;
+                sparkle = true;
+            }
+            SpawnWorld($"+{amount}", worldPos + Vector3.up * 1.0f, color, scale, sparkle);
+        }
 
         // Screen-space popup — sx/sy in pixels (top-left origin). Used for HUD skip bonus.
         public void SpawnAtScreenPos(string text, string cssClass, float sx, float sy)
@@ -88,40 +120,55 @@ namespace CrowdDefense.UI
 
         // ── World-space 3D implementation ─────────────────────────────────────
 
-        private void SpawnWorld(string text, Vector3 worldPos, Color color)
+        private void SpawnWorld(string text, Vector3 worldPos, Color color, float scale = 1f, bool sparkle = false)
         {
             var wp = AcquireWorldPopup();
-            wp.Alive = true;
-            wp.Tmp.text  = text;
-            wp.Tmp.color = color;
-            wp.Go.transform.position = worldPos + Vector3.up * 0.5f;
+            wp.Alive       = true;
+            wp.Tmp.text    = text;
+            wp.Tmp.color   = color;
+            wp.BaseScale   = scale;
+            wp.Go.transform.position   = worldPos + Vector3.up * 0.5f;
             wp.Go.transform.localScale = Vector3.zero;
             wp.Go.SetActive(true);
             _worldActive.Add(wp);
+            if (sparkle) SpawnSparkle(worldPos);
             StartCoroutine(AnimateWorldPopup(wp));
+        }
+
+        private void SpawnSparkle(Vector3 worldPos)
+        {
+            for (int i = 0; i < 6; i++)
+            {
+                var offset = new Vector3(
+                    UnityEngine.Random.Range(-0.4f, 0.4f),
+                    UnityEngine.Random.Range(0.8f, 1.8f),
+                    UnityEngine.Random.Range(-0.4f, 0.4f));
+                CrowdDefense.Visual.VfxPool.Instance?.SpawnSpark(worldPos + offset, new Color(1f, 0.85f, 0.1f, 0.9f));
+            }
         }
 
         private IEnumerator AnimateWorldPopup(WorldPopup wp)
         {
             var cam = Camera.main;
             float elapsed = 0f;
+            float bs = wp.BaseScale;
 
-            // Punch-in : scale 0 → 1.2 → 1 sur PunchDuration
+            // Punch-in : scale 0 → PunchScale*bs → bs sur PunchDuration
             while (elapsed < PunchDuration)
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / PunchDuration);
                 float s = t < 0.5f
-                    ? Mathf.Lerp(0f, PunchScale, t * 2f)
-                    : Mathf.Lerp(PunchScale, 1f, (t - 0.5f) * 2f);
+                    ? Mathf.Lerp(0f, PunchScale * bs, t * 2f)
+                    : Mathf.Lerp(PunchScale * bs, bs, (t - 0.5f) * 2f);
                 wp.Go.transform.localScale = Vector3.one * s;
                 BillboardToCamera(wp.Go.transform, cam);
                 yield return null;
             }
 
-            wp.Go.transform.localScale = Vector3.one;
+            wp.Go.transform.localScale = Vector3.one * bs;
 
-            // Float + fade sur le reste de la durée
+            // Float + fade sur le reste de la durée (0.8s total rise matching brief)
             Vector3 startPos = wp.Go.transform.position;
             float remaining  = WorldLifetime - PunchDuration;
             elapsed = 0f;
@@ -162,8 +209,9 @@ namespace CrowdDefense.UI
                 var c = wp.Tmp.color;
                 c.a = 1f;
                 wp.Tmp.color = c;
-                wp.Go.transform.position = Vector3.zero;
+                wp.Go.transform.position   = Vector3.zero;
                 wp.Go.transform.localScale = Vector3.one;
+                wp.BaseScale               = 1f;
                 return wp;
             }
 

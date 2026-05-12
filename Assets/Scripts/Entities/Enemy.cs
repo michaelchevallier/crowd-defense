@@ -2253,8 +2253,6 @@ namespace CrowdDefense.Entities
                 EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
                 CoinPullManager.Instance?.SpawnCoinFlyTo(transform.position, reward);
                 Economy.Instance?.AddGoldFromKill(reward, transform.position + Vector3.up * 1.2f);
-                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
-                    $"+{reward}¢", transform.position + Vector3.up * 1f, Color.yellow);
             }
 #if UNITY_EDITOR
             else Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");

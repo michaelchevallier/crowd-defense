@@ -293,6 +293,15 @@ namespace CrowdDefense.Systems
                     LastWaveKillCount      = _waveKillCount;
                     LastWaveElapsedSeconds = Time.unscaledTime - _waveStartTimeUnscaled;
                     LastWaveGoldEarned     = Mathf.Max(0, (Economy.Instance?.Gold ?? 0) - _goldAtWaveStart);
+
+                    if (LastWaveGoldEarned > 0)
+                    {
+                        var castle = LevelRunner.Instance?.PrimaryCastle;
+                        Vector3 castlePos = castle != null ? castle.transform.position : Vector3.zero;
+                        CrowdDefense.UI.FloatingPopupController.Instance?.SpawnGoldReward(
+                            LastWaveGoldEarned, castlePos);
+                    }
+
                     OnWaveCleared?.Invoke(currentWaveIdx);
 #if UNITY_EDITOR
                     Debug.Log($"[WaveManager] Wave {currentWaveIdx + 1} cleared — awaiting player start");
