@@ -400,21 +400,16 @@ namespace CrowdDefense.UI
                 ? UnityEngine.Mathf.RoundToInt(tower.CumulativeCost * bal.SellRefundRatio)
                 : 0;
 
-            if (tower.UpgradeLevel >= 3)
-            {
-                ShowSellConfirm(tower, refund);
-                return;
-            }
-
-            ExecuteSell(tower, refund);
+            ShowSellConfirm(tower, refund);
         }
 
         private void ShowSellConfirm(Tower tower, int refund)
         {
             string name = tower.Config?.DisplayName ?? tower.Config?.Id ?? "tour";
+            string levelLabel = tower.UpgradeLevel >= 3 ? "L3" : tower.UpgradeLevel >= 2 ? "L2" : "L1";
             Confirm.Show(
-                "Vendre tour L3 ?",
-                $"Vendre {name} L3 ? Remboursement : {refund}¢",
+                $"Vendre tour {levelLabel} ?",
+                $"Vendre {name} {levelLabel} ? Remboursement : {refund}¢",
                 onConfirm: () => ExecuteSell(tower, refund)
             );
         }
