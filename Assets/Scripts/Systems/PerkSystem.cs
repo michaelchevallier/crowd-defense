@@ -16,6 +16,9 @@ namespace CrowdDefense.Systems
         private const float ForteresseHPMul     = 1.5f;
         private const float DefaultTowerAuraRange = 8f;
 
+        // Legendary perk — runtime-only instance, never stored as SO asset.
+        private PerkDef? _legendaryPerk;
+
         private PerkRegistry? _registry;
 
         public event Action<Hero, PerkDef>?         OnPerkApplied;
@@ -135,6 +138,35 @@ namespace CrowdDefense.Systems
             FisherYates(available);
             int take = Mathf.Min(count, available.Count);
             return available.GetRange(0, take);
+        }
+
+        // ── Legendary (all achievements unlocked) ────────────────────────────
+
+        public void UnlockLegendaryPerk()
+        {
+            var hero = LevelRunner.Instance?.Hero;
+            if (hero == null) return;
+
+            _legendaryPerk ??= CreateLegendaryDef();
+            if (!CanApply(hero, _legendaryPerk)) return;
+
+            var tagCounts = BuildTagCounts(hero);
+            ApplyOne(hero, _legendaryPerk, tagCounts);
+        }
+
+        private static PerkDef CreateLegendaryDef()
+        {
+            var def = ScriptableObject.CreateInstance<PerkDef>();
+            def.id          = "legendary";
+            def.nameKey     = "Legendaire";
+            def.descKey     = "Crit +20%  Gains x2";
+            def.iconEmoji   = "trophy";
+            def.rarity      = PerkRarity.Legendary;
+            def.critChance  = 0.20f;
+            def.coinGain    = 1.00f;   // +100% = double coin gain
+            def.stackable   = false;
+            def.maxStacks   = 1;
+            return def;
         }
 
         // ── Internals ─────────────────────────────────────────────────────────

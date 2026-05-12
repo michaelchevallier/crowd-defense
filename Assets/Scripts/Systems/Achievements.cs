@@ -3,12 +3,14 @@ using System;
 using System.Collections.Generic;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.UI;
 using UnityEngine;
 
 namespace CrowdDefense.Systems
 {
     public class Achievements : MonoSingleton<Achievements>
     {
+        private bool _legendaryPerkGranted;
         private const string PrefsKey = "cd.achievements.unlocked";
 
         [Header("Registry (auto-loaded from Resources/AchievementRegistry if null)")]
@@ -64,9 +66,27 @@ namespace CrowdDefense.Systems
 
             // AchievementToastController subscribes to OnUnlocked and renders the toast.
             OnUnlocked?.Invoke(id);
+
+            if (!_legendaryPerkGranted && IsAllUnlocked())
+            {
+                _legendaryPerkGranted = true;
+                PerkSystem.Instance?.UnlockLegendaryPerk();
+                Toast.Show("Achievement", "Perk Legendaire debloque !", 5000, "trophy", ToastType.Achievement);
+            }
         }
 
         public bool IsUnlocked(string id) => _unlocked.Contains(id);
+
+        public bool IsAllUnlocked()
+        {
+            if (registry == null || registry.All.Length == 0) return false;
+            foreach (var def in registry.All)
+            {
+                if (def == null) continue;
+                if (!_unlocked.Contains(def.id)) return false;
+            }
+            return true;
+        }
 
         public int UnlockedCount => _unlocked.Count;
 
