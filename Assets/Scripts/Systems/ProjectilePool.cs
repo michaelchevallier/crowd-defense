@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 using CrowdDefense.Common;
@@ -21,9 +22,17 @@ namespace CrowdDefense.Systems
                 actionOnRelease: OnRelease,
                 actionOnDestroy: OnPoolDestroy,
                 collectionCheck: false,
-                defaultCapacity: 30,
+                defaultCapacity: 40,
                 maxSize: 100
             );
+            Prewarm(40);
+        }
+
+        private void Prewarm(int count)
+        {
+            var temp = new List<Projectile>(count);
+            for (int i = 0; i < count; i++) temp.Add(Get());
+            foreach (var p in temp) Release(p);
         }
 
         private Projectile CreateProjectile()
