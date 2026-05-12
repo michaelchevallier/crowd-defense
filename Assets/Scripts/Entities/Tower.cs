@@ -214,6 +214,10 @@ namespace CrowdDefense.Entities
         // Tint appliqué au L3 signature (rouge=DPS, cyan=Utility)
         private bool _l3TintApplied = false;
 
+        // L3 glow halo ring (LineRenderer 24-vert circle + 1Hz pulse coroutine)
+        private GameObject? _glowRing;
+        private Coroutine? _glowPulseRoutine;
+
         [SerializeField] private TargetPriority _targetPriority = TargetPriority.First;
         public TargetPriority CurrentTargetPriority => _targetPriority;
 
@@ -1740,8 +1744,9 @@ namespace CrowdDefense.Entities
                 Debug.LogWarning($"[Tower] AssetRegistry not found in ApplyTierSkin — using color tint fallback");
 #endif
                 var tintRoot = _meshChild != null ? _meshChild : gameObject;
-                var fallbackColor = tier == 2 ? new Color(0.85f, 0.85f, 0.95f) : new Color(1f, 0.8f, 0.3f);
+                var fallbackColor = tier == 2 ? new Color(0.95f, 0.90f, 0.80f) : new Color(1f, 0.8f, 0.3f);
                 MaterialController.UpdateTint(tintRoot, fallbackColor);
+                if (tier == 3) SpawnGlowRing();
                 return;
             }
             var variantPrefab = registry.Get(variantKey);
@@ -1756,8 +1761,8 @@ namespace CrowdDefense.Entities
                 var tintRoot = _meshChild != null ? _meshChild : gameObject;
                 if (tier == 2)
                 {
-                    // Silver
-                    MaterialController.UpdateTint(tintRoot, new Color(0.85f, 0.85f, 0.95f));
+                    // L2 : gold trim — base tint brighter +0.1 (warm highlight)
+                    MaterialController.UpdateTint(tintRoot, new Color(0.95f, 0.90f, 0.80f));
                 }
                 else
                 {
@@ -1776,6 +1781,7 @@ namespace CrowdDefense.Entities
                             }
                         }
                     }
+                    SpawnGlowRing();
                 }
             }
         }
@@ -1816,11 +1822,61 @@ namespace CrowdDefense.Entities
                 : FindChildNamed(_meshChild.transform, "BarrelTip")?.transform;
         }
 
+        private void SpawnGlowRing()
+        {
+            if (_glowRing != null) return;
+
+            const int verts = 24;
+            const float radius = 0.75f;
+
+            _glowRing = new GameObject("GlowRing_L3");
+            _glowRing.transform.SetParent(transform, false);
+            _glowRing.transform.localPosition = new Vector3(0f, 0.1f, 0f);
+
+            var lr = _glowRing.AddComponent<LineRenderer>();
+            lr.useWorldSpace = false;
+            lr.loop = true;
+            lr.positionCount = verts;
+            lr.startWidth = 0.08f;
+            lr.endWidth = 0.08f;
+            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            lr.receiveShadows = false;
+
+            for (int i = 0; i < verts; i++)
+            {
+                float angle = i / (float)verts * Mathf.PI * 2f;
+                lr.SetPosition(i, new Vector3(Mathf.Cos(angle) * radius, 0f, Mathf.Sin(angle) * radius));
+            }
+
+            var mat = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.color = new Color(1f, 0.85f, 0.2f, 0.9f);
+            lr.material = mat;
+
+            _glowPulseRoutine = StartCoroutine(GlowPulseRoutine(lr, mat));
+        }
+
+        private IEnumerator GlowPulseRoutine(LineRenderer lr, Material mat)
+        {
+            Color baseColor = mat.color;
+            while (true)
+            {
+                float t = Mathf.Sin(Time.time * Mathf.PI * 2f) * 0.5f + 0.5f;
+                float alpha = Mathf.Lerp(0.4f, 0.95f, t);
+                float width = Mathf.Lerp(0.05f, 0.12f, t);
+                mat.color = new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
+                lr.startWidth = width;
+                lr.endWidth = width;
+                yield return null;
+            }
+        }
+
         private void OnDestroy()
         {
             target?.SetTargetedBy(false);
             var settings = CrowdDefense.UI.SettingsRegistry.Instance;
             if (settings != null) settings.OnSettingsChanged -= RefreshDamageIconVisibility;
+            if (_glowPulseRoutine != null) StopCoroutine(_glowPulseRoutine);
+            if (_glowRing != null) Destroy(_glowRing);
         }
 
 #if UNITY_EDITOR
