@@ -38,7 +38,9 @@ namespace CrowdDefense.Common
         {
             if (_instance != null && _instance != this)
             {
-                Destroy(gameObject);
+                // Destroy only the duplicate component, NOT the GameObject — the GameObject
+                // may host many other components (e.g. HUD GO with 22 UI controllers).
+                Destroy(this);
                 return;
             }
             _instance = (T)this;
