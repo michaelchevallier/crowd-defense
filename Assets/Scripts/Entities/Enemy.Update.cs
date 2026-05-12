@@ -68,6 +68,54 @@ namespace CrowdDefense.Entities
             float effSpeed = ComputeEffectiveSpeed();
             var heroInst = LevelRunner.Instance?.Hero;
             bool chasingHeroNow = _chaseHero && heroInst != null && heroInst.gameObject.activeInHierarchy;
+
+            // Normal ground enemies (not chasing hero) are moved by EnemyPathingSystem.Tick()
+            // — skip redundant inline movement to avoid double-update per frame.
+            if (!chasingHeroNow && IsPathable)
+            {
+                bool nowWalkingBatched = effSpeed > 0.01f;
+                if (nowWalkingBatched != _wasWalking)
+                {
+                    AnimationController.SetWalking(_animator, nowWalkingBatched);
+                    _wasWalking = nowWalkingBatched;
+                }
+                if (_animator != null && _animator.runtimeAnimatorController != null && cfg!.Speed > 0f && _hasSpeedParam)
+                    _animator.SetFloat("Speed", effSpeed / cfg.Speed);
+                if (nowWalkingBatched)
+                {
+                    _stepTimer -= Time.deltaTime;
+                    if (_stepTimer <= 0f)
+                    {
+                        _stepTimer = StepInterval;
+                        AudioController.Instance?.Play3D("step_dirt", transform.position, 0.55f);
+                    }
+                }
+                else { _stepTimer = 0f; }
+                if (effSpeed > 0.01f)
+                {
+                    _dustTimer -= Time.deltaTime;
+                    if (_dustTimer <= 0f)
+                    {
+                        _dustTimer = DustInterval;
+                        VfxPool.Instance?.SpawnImpact(
+                            new Vector3(transform.position.x, 0.05f, transform.position.z),
+                            new Color(0.78f, 0.66f, 0.47f));
+                    }
+                }
+                if (cfg!.IsFiery)
+                {
+                    _fieryTimer -= Time.deltaTime;
+                    if (_fieryTimer <= 0f)
+                    {
+                        _fieryTimer = FieryInterval;
+                        VfxPool.Instance?.SpawnImpact(
+                            transform.position + Vector3.up * 0.3f,
+                            new Color(1f, 0.23f, 0.063f));
+                    }
+                }
+                return;
+            }
+
             Vector3 target = chasingHeroNow
                 ? heroInst!.transform.position
                 : pathManager.GetWaypointOnPath(pathIdx, currentWaypoint) + Vector3.up * 0.5f;
@@ -89,7 +137,7 @@ namespace CrowdDefense.Entities
             }
 
             // Walk anim blend + footstep audio
-            if (_animator != null && _animator.runtimeAnimatorController != null && cfg!.Speed > 0f && HasAnimatorParam(_animator, "Speed"))
+            if (_animator != null && _animator.runtimeAnimatorController != null && cfg!.Speed > 0f && _hasSpeedParam)
                 _animator.SetFloat("Speed", effSpeed / cfg.Speed);
             if (nowWalking)
             {
@@ -137,13 +185,6 @@ namespace CrowdDefense.Entities
             if (_bossEncounteredPublished || cfg == null || !cfg.IsBoss) return;
             _bossEncounteredPublished = true;
             EventManager.Instance?.Publish(new EnemySpawnedEvent(this));
-        }
-
-        private static bool HasAnimatorParam(Animator animator, string name)
-        {
-            foreach (var p in animator.parameters)
-                if (p.name == name) return true;
-            return false;
         }
 
         private void UpdateFreeze()

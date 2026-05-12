@@ -76,7 +76,9 @@ namespace CrowdDefense.Entities
 
         // Animator configured by AnimationController.SetupAnimator at Init
         private Animator? _animator;
-        private bool _wasWalking = false;
+        private bool _wasWalking    = false;
+        // Cached once in Init — avoids animator.parameters[] allocation every frame
+        private bool _hasSpeedParam = false;
 
         // ── Hit flash ─────────────────────────────────────────────────────────
         private float _hitFlashTimer = 0f;

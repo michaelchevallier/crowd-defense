@@ -232,6 +232,7 @@ namespace CrowdDefense.Systems
             }
 
             UpdateHeroInput();
+            EnemyPathingSystem.Instance?.Tick();
         }
 
         // ── Public API ─────────────────────────────────────────────────────────
