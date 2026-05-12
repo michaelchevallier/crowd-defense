@@ -61,5 +61,11 @@ namespace CrowdDefense.Systems
             PlayerPrefs.SetInt(KeyWins, LevelsWon + 1);
             PlayerPrefs.Save();
         }
+
+        public void AddRun()
+        {
+            PlayerPrefs.SetInt(KeyRuns, TotalRuns + 1);
+            PlayerPrefs.Save();
+        }
     }
 }
