@@ -27,6 +27,19 @@ Mike notified : true | false
 
 (les réponses actives ici, plus récente en bas)
 
+### 2026-05-12 15h44 — A-PARITY-V4-stash-WIP
+For : Q-PARITY-V4-stash-WIP
+Status : delegated-decided
+Réponse : **(a) DROP confirmé** après merge agents R6-PARITY-002 + R6-PARITY-004.
+Rationale :
+1. VfxPoolBindings 589 LOC viole cap 500 LOC charter §1 règle #3 → refactor obligatoire de toute façon.
+2. Stash = code Opus direct dans main = viole charter §1 (Opus orchestre, Sonnet exécute en worktree).
+3. Agents fraîchement délégués en worktree produisent compliant work (002 déjà mergé `a7e404c`).
+4. Si VFX wire valuable, reproductible en 1-2h via R6-PARITY-004 worktree.
+Caveats : avant drop, exécute `git stash show -p stash@{0} > /tmp/stash-wip-pre-compaction.patch` pour conserver une copie hors-repo temporaire (au cas où inspect tardif). Drop seulement après confirmation 002 + 004 mergés et compile OK.
+Mike notified : false (catégorie A pure, sans impact stratégique)
+
+
 ---
 
 ## Answers resolved (last 30j)
