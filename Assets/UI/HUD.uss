@@ -1599,6 +1599,52 @@
     -unity-font-style: italic;
 }
 
+.synergy-hud-row-inactive .synergy-hud-row-label {
+    color: rgba(160, 160, 160, 0.50);
+    -unity-font-style: italic;
+}
+
+.synergy-hud-tooltip {
+    position: absolute;
+    right: 210px;
+    top: 0;
+    background-color: rgba(10, 12, 20, 0.96);
+    border-color: rgba(255, 200, 60, 0.50);
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 200px;
+    max-width: 260px;
+    flex-direction: column;
+}
+
+.synergy-hud-tooltip.hidden {
+    display: none;
+}
+
+.synergy-hud-tooltip-title {
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgb(255, 210, 80);
+    margin-bottom: 4px;
+}
+
+.synergy-hud-tooltip-desc {
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(210, 220, 240, 0.90);
+    white-space: normal;
+    margin-bottom: 4px;
+}
+
+.synergy-hud-tooltip-req {
+    font-size: 10px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(160, 180, 200, 0.70);
+    -unity-font-style: italic;
+}
+
 /* === Run Summary modal === */
 .run-summary-panel {
     position: absolute;
