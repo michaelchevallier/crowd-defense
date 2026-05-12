@@ -335,6 +335,8 @@ namespace CrowdDefense.UI
             BuildWaveIntroBanner(root);
             BuildWaveSummaryPanel(root);
             BuildDamageVignette(root);
+            BindWavePreview(root);
+            BuildEnemyIntelPopup(root);
 
             // Force initial values so top-bar is never blank at runtime
             if (goldValue != null) goldValue.text = "0";
@@ -1269,6 +1271,8 @@ namespace CrowdDefense.UI
                 if (inWindow && waveLaunchPillText != null)
                     waveLaunchPillText.text = L.Get("hud.pill_skip_text", secondsLeft, Mathf.RoundToInt(streak * 5));
             }
+
+            RefreshWavePreviewRoster();
         }
 
         private void OnStateChanged(GameState state)
@@ -1281,6 +1285,8 @@ namespace CrowdDefense.UI
             {
                 if (waveLaunchBtn != null)  SetVisible(waveLaunchBtn,  false);
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
+                if (_wavePreviewPanel != null) _wavePreviewPanel.AddToClassList("hidden");
+                if (_enemyIntelPopup != null)  _enemyIntelPopup.style.display = DisplayStyle.None;
                 _perfectWaveStreak = 0;
                 if (_perfectStreakCoroutine != null) { StopCoroutine(_perfectStreakCoroutine); _perfectStreakCoroutine = null; }
                 if (_streakEmitterCoroutine != null) { StopCoroutine(_streakEmitterCoroutine); _streakEmitterCoroutine = null; }
@@ -2145,6 +2151,192 @@ namespace CrowdDefense.UI
                 yield return new WaitForSecondsRealtime(0.15f);
             }
             _streakEmitterCoroutine = null;
+        }
+
+        // ── Wave preview (enemy roster during break) ────────────────────────
+
+        private void BindWavePreview(VisualElement root)
+        {
+            _wavePreviewPanel  = root.Q<VisualElement>("wave-preview");
+            _wavePreviewRoster = root.Q<VisualElement>("wave-preview-roster");
+            var title = root.Q<Label>("wave-preview-title");
+            if (title != null) title.text = "Prochaine vague";
+        }
+
+        private void RefreshWavePreviewRoster()
+        {
+            if (_wavePreviewPanel == null || _wavePreviewRoster == null) return;
+
+            var wm = WaveManager.Instance;
+            if (wm == null || !wm.IsWaitingForPlayerStart)
+            {
+                _wavePreviewPanel.RemoveFromClassList("hidden");
+                _wavePreviewPanel.AddToClassList("hidden");
+                return;
+            }
+
+            var waveDef = wm.GetNextWaveDef();
+            if (waveDef == null || waveDef.Value.entries == null || waveDef.Value.entries.Count == 0)
+            {
+                _wavePreviewPanel.AddToClassList("hidden");
+                return;
+            }
+
+            // Clear old chips — remove all children without allocating
+            _wavePreviewRoster.Clear();
+
+            foreach (var entry in waveDef.Value.entries)
+            {
+                if (entry.type == null) continue;
+                var et = entry.type;
+                var chip = BuildChip(et, entry.count);
+                _wavePreviewRoster.Add(chip);
+            }
+
+            _wavePreviewPanel.RemoveFromClassList("hidden");
+        }
+
+        private VisualElement BuildChip(EnemyType et, int count)
+        {
+            var chip = new VisualElement();
+            chip.AddToClassList("wave-preview-chip");
+            if (et.IsBoss || et.IsMidBoss) chip.AddToClassList("boss-chip");
+
+            var icon = new Label { text = et.IconEmoji };
+            icon.AddToClassList("wave-preview-chip-icon");
+
+            var countLabel = new Label { text = $"x{count}" };
+            countLabel.AddToClassList("wave-preview-chip-count");
+
+            chip.Add(icon);
+            chip.Add(countLabel);
+
+            chip.RegisterCallback<MouseEnterEvent>(evt => ShowEnemyIntelPopup(et, evt.mousePosition));
+            chip.RegisterCallback<MouseLeaveEvent>(_ => HideEnemyIntelPopup());
+
+            return chip;
+        }
+
+        // ── Enemy intel popup ────────────────────────────────────────────────
+
+        private void BuildEnemyIntelPopup(VisualElement root)
+        {
+            _enemyIntelPopup = new VisualElement { name = "enemy-intel-popup" };
+            _enemyIntelPopup.style.position         = Position.Absolute;
+            _enemyIntelPopup.style.width            = new Length(300f, LengthUnit.Pixel);
+            _enemyIntelPopup.style.minHeight        = new Length(120f, LengthUnit.Pixel);
+            _enemyIntelPopup.style.backgroundColor  = new StyleColor(new Color(0f, 0f, 0f, 0.90f));
+            _enemyIntelPopup.style.borderTopWidth    = _enemyIntelPopup.style.borderBottomWidth =
+            _enemyIntelPopup.style.borderLeftWidth   = _enemyIntelPopup.style.borderRightWidth  = 2f;
+            var goldBorder = new StyleColor(_kIntelGold);
+            _enemyIntelPopup.style.borderTopColor    = _enemyIntelPopup.style.borderBottomColor =
+            _enemyIntelPopup.style.borderLeftColor   = _enemyIntelPopup.style.borderRightColor  = goldBorder;
+            _enemyIntelPopup.style.borderTopLeftRadius    = _enemyIntelPopup.style.borderTopRightRadius =
+            _enemyIntelPopup.style.borderBottomLeftRadius = _enemyIntelPopup.style.borderBottomRightRadius = new Length(8f, LengthUnit.Pixel);
+            _enemyIntelPopup.style.paddingTop    = new Length(12f, LengthUnit.Pixel);
+            _enemyIntelPopup.style.paddingBottom = new Length(12f, LengthUnit.Pixel);
+            _enemyIntelPopup.style.paddingLeft   = new Length(14f, LengthUnit.Pixel);
+            _enemyIntelPopup.style.paddingRight  = new Length(14f, LengthUnit.Pixel);
+            _enemyIntelPopup.style.display       = DisplayStyle.None;
+            _enemyIntelPopup.style.opacity       = 0f;
+            _enemyIntelPopup.pickingMode         = PickingMode.Ignore;
+
+            _enemyIntelName = new Label { name = "enemy-intel-name", text = "" };
+            _enemyIntelName.style.color                   = new StyleColor(_kIntelGold);
+            _enemyIntelName.style.fontSize                = new Length(18f, LengthUnit.Pixel);
+            _enemyIntelName.style.unityFontStyleAndWeight = FontStyle.Bold;
+            _enemyIntelName.style.marginBottom            = new Length(8f, LengthUnit.Pixel);
+            _enemyIntelPopup.Add(_enemyIntelName);
+
+            _enemyIntelStats = new Label { name = "enemy-intel-stats", text = "" };
+            _enemyIntelStats.style.color        = new StyleColor(_kIntelWhite);
+            _enemyIntelStats.style.fontSize     = new Length(13f, LengthUnit.Pixel);
+            _enemyIntelStats.style.whiteSpace   = WhiteSpace.Normal;
+            _enemyIntelPopup.Add(_enemyIntelStats);
+
+            root.Add(_enemyIntelPopup);
+        }
+
+        private void ShowEnemyIntelPopup(EnemyType et, Vector2 mousePos)
+        {
+            if (_enemyIntelPopup == null || Time.timeScale == 0f) return;
+
+            // Position: clamp so popup stays on screen
+            float px = mousePos.x + 20f;
+            float py = mousePos.y - 100f;
+            if (py < 4f) py = 4f;
+
+            _enemyIntelPopup.style.left = new Length(px, LengthUnit.Pixel);
+            _enemyIntelPopup.style.top  = new Length(py, LengthUnit.Pixel);
+
+            if (_enemyIntelName != null)
+                _enemyIntelName.text = string.IsNullOrEmpty(et.BossName) ? et.DisplayName : et.BossName;
+
+            if (_enemyIntelStats != null)
+                _enemyIntelStats.text = BuildIntelText(et);
+
+            if (_enemyIntelFadeCoroutine != null) StopCoroutine(_enemyIntelFadeCoroutine);
+            _enemyIntelPopup.style.display = DisplayStyle.Flex;
+            _enemyIntelFadeCoroutine = StartCoroutine(FadeEnemyIntel(0f, 1f, 0.15f));
+        }
+
+        private void HideEnemyIntelPopup()
+        {
+            if (_enemyIntelPopup == null) return;
+            if (_enemyIntelFadeCoroutine != null) StopCoroutine(_enemyIntelFadeCoroutine);
+            _enemyIntelFadeCoroutine = StartCoroutine(FadeEnemyIntelOut());
+        }
+
+        private static string BuildIntelText(EnemyType et)
+        {
+            var sb = new System.Text.StringBuilder(128);
+            sb.Append($"HP: {et.Hp:0}");
+            if (et.ShieldHP > 0f) sb.Append($"  Bouclier: {et.ShieldHP:0}");
+            sb.Append($"\nVitesse: {et.Speed:0.0}");
+            sb.Append($"\nDegats: {et.Damage}");
+            if (et.IsFlyer)    sb.Append("\nVolant");
+            if (et.IsStealth)  sb.Append("\nFurtif");
+            if (et.IsBrigand)  sb.Append("\nCharge");
+            if (et.IsCorsair)  sb.Append("\nCorsaire");
+            if (et.IsFiery)    sb.Append("\nFlammes");
+            if (et.SummonsMinions) sb.Append("\nInvocateur");
+            if (et.AoeBlastMs > 0) sb.Append("\nExplosion AoE");
+            if (et.AoEAttack)  sb.Append("\nAttaque de zone");
+            if (et.ImmuneToFlyerBonus) sb.Append("\nImmun bonus volant");
+            if (et.IsBoss || et.IsMidBoss || et.IsApocalypseBoss)
+                sb.Append("\nBOSS");
+            return sb.ToString();
+        }
+
+        private System.Collections.IEnumerator FadeEnemyIntel(float from, float to, float dur)
+        {
+            if (_enemyIntelPopup == null) yield break;
+            float t = 0f;
+            while (t < dur)
+            {
+                t += Time.unscaledDeltaTime;
+                _enemyIntelPopup.style.opacity = Mathf.Lerp(from, to, Mathf.Clamp01(t / dur));
+                yield return null;
+            }
+            _enemyIntelPopup.style.opacity = to;
+            _enemyIntelFadeCoroutine = null;
+        }
+
+        private System.Collections.IEnumerator FadeEnemyIntelOut()
+        {
+            if (_enemyIntelPopup == null) yield break;
+            float startOpacity = _enemyIntelPopup.resolvedStyle.opacity;
+            float t = 0f;
+            const float dur = 0.1f;
+            while (t < dur)
+            {
+                t += Time.unscaledDeltaTime;
+                _enemyIntelPopup.style.opacity = Mathf.Lerp(startOpacity, 0f, Mathf.Clamp01(t / dur));
+                yield return null;
+            }
+            _enemyIntelPopup.style.opacity = 0f;
+            _enemyIntelPopup.style.display = DisplayStyle.None;
+            _enemyIntelFadeCoroutine = null;
         }
     }
 }
