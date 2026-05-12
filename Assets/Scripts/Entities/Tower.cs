@@ -98,6 +98,9 @@ namespace CrowdDefense.Entities
         private readonly List<float> _damageLogTimes  = new();
         private readonly List<float> _damageLogValues = new();
 
+        // Chain-lightning hit buffer — reused each shot to avoid per-shot HashSet alloc
+        private readonly HashSet<Enemy> _chainHitBuffer = new();
+
         // Cluster (Mine) : timer spawn
         private float _clusterTimer;
 
@@ -1287,7 +1290,9 @@ namespace CrowdDefense.Entities
         {
             if (WaveManager.Instance == null || jumps <= 0) return;
             float rangeSq = range * range;
-            var hit = new HashSet<Enemy> { origin };
+            _chainHitBuffer.Clear();
+            _chainHitBuffer.Add(origin);
+            var hit = _chainHitBuffer;
             Enemy? current = origin;
 
             VfxPool.Instance?.SpawnImpact(origin.transform.position, new Color(0.4f, 0.7f, 1f));
