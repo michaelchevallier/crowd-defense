@@ -36,6 +36,7 @@ namespace CrowdDefense.Data
         public float MagnetRange = 5f;
         public float MagnetCoinMul = 1.3f;
         public int MagnetCost = 130;
+        public float MagnetSlowRadius = 3f;
 
         [Header("Pacing (D1-02)")]
         public int SkipBonusGold = 30;

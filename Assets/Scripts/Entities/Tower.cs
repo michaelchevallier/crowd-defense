@@ -654,6 +654,18 @@ namespace CrowdDefense.Entities
                 transform.position,
                 cfg.Range,
                 cfg.CoinMul > 0f ? cfg.CoinMul : BalanceConfig.Get().MagnetCoinMul);
+
+            if (!_pullActive || SlowEffectManager.Instance == null || WaveManager.Instance == null) return;
+            float slowR2 = BalanceConfig.Get().MagnetSlowRadius * BalanceConfig.Get().MagnetSlowRadius;
+            var myPos = transform.position;
+            var active = WaveManager.Instance.ActiveEnemies;
+            for (int i = 0; i < active.Count; i++)
+            {
+                var e = active[i];
+                if (e == null || e.IsDead) continue;
+                if ((e.transform.position - myPos).sqrMagnitude <= slowR2)
+                    SlowEffectManager.Instance.ApplySlow(e, 0.7f, 200);
+            }
         }
 
         // ── Helpers ──────────────────────────────────────────────────────────
