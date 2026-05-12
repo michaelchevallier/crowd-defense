@@ -274,6 +274,18 @@ namespace CrowdDefense.UI
                 waveLaunchLabel.text = L.Get("hud.wave_launch_countdown", wm.NextWaveDisplayNumber, secondsLeft);
         }
 
+        private void TickWaveTime()
+        {
+            if (waveTimeLabel == null || _waveStartTime < 0f) return;
+            float now = Time.unscaledTime;
+            if (now - _lastWaveTickTime < 1f) return;
+            _lastWaveTickTime = now;
+            int elapsed = Mathf.FloorToInt(now - _waveStartTime);
+            int minutes = elapsed / 60;
+            int seconds = elapsed % 60;
+            waveTimeLabel.text = $"⏱ {minutes}:{seconds:00}";
+        }
+
         private void UpdateHeroPanel()
         {
             var hero = LevelRunner.Instance?.Hero;
@@ -455,6 +467,14 @@ namespace CrowdDefense.UI
                 waveKillCounter.text = "\U0001F480 0 / 0";
                 SetVisible(waveKillCounter, true);
             }
+            // Reset and show wave timer
+            _waveStartTime = Time.unscaledTime;
+            _lastWaveTickTime = -1f;
+            if (waveTimeLabel != null)
+            {
+                waveTimeLabel.text = "⏱ 0:00";
+                SetVisible(waveTimeLabel, true);
+            }
         }
 
         private void OnKillCountChanged(int kills, int total)
@@ -471,6 +491,13 @@ namespace CrowdDefense.UI
             float secondsLeft = wm.SkipWindowSecondsRemaining;
             int streak = wm.StreakCount;
             bool inWindow = secondsLeft > 0f;
+
+            // Stop and hide wave timer when break starts
+            if (waiting && waveTimeLabel != null)
+            {
+                _waveStartTime = -1f;
+                SetVisible(waveTimeLabel, false);
+            }
 
             // Show/hide launch button
             if (waveLaunchBtn != null)

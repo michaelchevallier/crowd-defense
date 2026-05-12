@@ -1270,3 +1270,13 @@
     color: rgba(160, 160, 160, 0.70);
     -unity-font-style: italic;
 }
+
+/* === Wave elapsed timer === */
+.wave-time {
+    font-size: 11px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgba(200, 220, 255, 0.85);
+    margin-top: 2px;
+    -unity-text-align: middle-center;
+}
