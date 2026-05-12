@@ -53,10 +53,13 @@ namespace CrowdDefense.UI
         // Share buttons (victory only)
         private GameObject? _shareRow;
         private Button?     _btnDiscord;
+        private Button?     _btnShare;
         private Button?     _btnTwitter;
         private Text?       _toastText;
         private Coroutine?  _toastCoroutine;
         private string      _shareLevelName = "";
+        private int         _shareScore;
+        private int         _shareWave;
 
         // Confirm modal (Menu / exit accidental click guard)
         private GameObject? _confirmModal;
@@ -195,10 +198,12 @@ namespace CrowdDefense.UI
             else
                 ClearStats();
 
-            // Cache level name for share messages
+            // Cache level name + score for share messages
             _shareLevelName = LevelRunner.Instance?.CurrentLevel?.DisplayName
                            ?? LevelRunner.Instance?.CurrentLevel?.Id
                            ?? "ce niveau";
+            _shareScore = r?.Score ?? 0;
+            _shareWave  = r?.WaveReached ?? 0;
 
             if (_btnPrimaryLabel  != null) _btnPrimaryLabel.text  = "Rejouer";
             if (_btnSecondaryLabel != null)
@@ -371,6 +376,13 @@ namespace CrowdDefense.UI
             string msg = $"J'ai conquis {_shareLevelName} avec 3 etoiles ! crowd-defense.io";
             GUIUtility.systemCopyBuffer = msg;
             ShowToast("Lien copie !");
+        }
+
+        private void OnShareClicked()
+        {
+            string msg = $"J'ai score {_shareScore} pts en V{_shareWave} sur Crowd Defense ! Bats-moi : https://michaelchevallier.github.io/crowd-defense/v6/";
+            GUIUtility.systemCopyBuffer = msg;
+            ShowToast("Score copie !");
         }
 
         private void OnTwitterShareClicked()
@@ -758,13 +770,20 @@ namespace CrowdDefense.UI
 
             (_btnDiscord, _) = CreateColoredButton(_shareRow.transform, "BtnDiscord",
                 anchorMin: new Vector2(0f, 0f),
-                anchorMax: new Vector2(0.47f, 1f),
+                anchorMax: new Vector2(0.30f, 1f),
                 bgColor: ShareDiscordColor,
                 labelText: "Discord");
             _btnDiscord.onClick.AddListener(OnDiscordShareClicked);
 
+            (_btnShare, _) = CreateColoredButton(_shareRow.transform, "BtnShare",
+                anchorMin: new Vector2(0.35f, 0f),
+                anchorMax: new Vector2(0.65f, 1f),
+                bgColor: new Color(0.15f, 0.55f, 0.25f, 1f),
+                labelText: "Partager");
+            _btnShare.onClick.AddListener(OnShareClicked);
+
             (_btnTwitter, _) = CreateColoredButton(_shareRow.transform, "BtnTwitter",
-                anchorMin: new Vector2(0.53f, 0f),
+                anchorMin: new Vector2(0.70f, 0f),
                 anchorMax: new Vector2(1f, 1f),
                 bgColor: ShareTwitterColor,
                 labelText: "Twitter");
