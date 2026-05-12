@@ -39,6 +39,10 @@ namespace CrowdDefense.Visual
         private Vector3     _savedPos;        // position before bird's eye
         private Quaternion  _savedRot;        // rotation before bird's eye
         private Coroutine?  _birdsEyeRoutine;
+        private Coroutine?  _resetRoutine;
+        private Vector3     _defaultPosition;
+        private Quaternion  _defaultRotation;
+        private float       _defaultY;
 
         private const string KFollowHero = "camera_follow_hero_v1";
         private const float  FollowResumeDelay = 5f;
@@ -68,6 +72,9 @@ namespace CrowdDefense.Visual
         private void Start()
         {
             _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
+            _defaultPosition = transform.position;
+            _defaultRotation = transform.rotation;
+            _defaultY        = transform.position.y;
             _followHero = PlayerPrefs.GetInt(KFollowHero, 0) == 1;
             EventManager.Instance?.Subscribe<BossEncounteredEvent>(OnBossSpawn);
         }
@@ -108,6 +115,7 @@ namespace CrowdDefense.Visual
             if (_zooming) return;
             if (Input.GetKeyDown(KeyCode.V)) ToggleBirdsEye();
             if (_birdsEye) return;
+            if (Input.GetKeyDown(KeyCode.R)) ResetToDefault();
             HandleZoom();
             HandlePinchZoom();
             HandleTouchPan();
@@ -297,6 +305,30 @@ namespace CrowdDefense.Visual
                 yield return null;
             }
             transform.position = origin;
+        }
+
+        // ── Reset to default (R key) ──────────────────────────────────────────
+        private void ResetToDefault()
+        {
+            if (_resetRoutine != null) StopCoroutine(_resetRoutine);
+            _resetRoutine = StartCoroutine(ResetRoutine());
+        }
+
+        private IEnumerator ResetRoutine()
+        {
+            var fromPos = transform.position;
+            var fromRot = transform.rotation;
+            var toPos   = new Vector3(_defaultPosition.x, _defaultY, _defaultPosition.z);
+            for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.5f)
+            {
+                float s = Mathf.SmoothStep(0f, 1f, t);
+                transform.position = Vector3.Lerp(fromPos, toPos, s);
+                transform.rotation = Quaternion.Slerp(fromRot, _defaultRotation, s);
+                yield return null;
+            }
+            transform.position = toPos;
+            transform.rotation = _defaultRotation;
+            _resetRoutine = null;
         }
 
         // ── Bird's eye toggle (V key) ─────────────────────────────────────────
