@@ -170,6 +170,7 @@
                 <ui:Button text="Close" name="settings-close-btn" class="settings-btn settings-btn-close" />
             </ui:VisualElement>
             <ui:VisualElement class="settings-danger-row">
+                <ui:Button text="Reset to Defaults" name="settings-reset-defaults-btn" class="settings-btn settings-btn-reset" />
                 <ui:Label text="Cette action est irréversible." name="reset-progress-warn" class="reset-progress-warn" />
                 <ui:Button text="Réinitialiser la progression" name="settings-reset-progress-btn" class="settings-btn settings-btn-danger" />
             </ui:VisualElement>

@@ -39,6 +39,7 @@ namespace CrowdDefense.UI
         private Button? _resetCameraBtn;
         private Button? _keyResetBtn;
         private Button? _changeNameBtn;
+        private Button? _resetDefaultsBtn;
         private Button? _resetProgressBtn;
         private Label?  _resetProgressWarnLabel;
         private Button? _exportSaveBtn;
@@ -157,6 +158,7 @@ namespace CrowdDefense.UI
             _resetCameraBtn      = _root.Q<Button>("settings-reset-camera-btn");
             _keyResetBtn         = _root.Q<Button>("key-reset-btn");
             _changeNameBtn       = _root.Q<Button>("settings-change-name-btn");
+            _resetDefaultsBtn    = _root.Q<Button>("settings-reset-defaults-btn");
             _resetProgressBtn    = _root.Q<Button>("settings-reset-progress-btn");
             _resetProgressWarnLabel = _root.Q<Label>("reset-progress-warn");
             _exportSaveBtn       = _root.Q<Button>("settings-export-save-btn");
@@ -329,6 +331,9 @@ namespace CrowdDefense.UI
             if (_keyResetBtn != null)         _keyResetBtn.text         = L.CurrentLocale == "fr" ? "Reinitialiser les touches"
                 : L.CurrentLocale == "es" ? "Restablecer teclas"
                 : "Reset Keyboard Defaults";
+            if (_resetDefaultsBtn != null)    _resetDefaultsBtn.text    = L.CurrentLocale == "fr" ? "Reinitialiser les parametres"
+                : L.CurrentLocale == "es" ? "Restablecer ajustes"
+                : "Reset to Defaults";
             if (_resetProgressBtn != null)    _resetProgressBtn.text    = L.Get("settings.reset_progress");
             if (_resetProgressWarnLabel != null) _resetProgressWarnLabel.text = L.Get("settings.reset_progress_warn");
             if (_exportSaveBtn != null)       _exportSaveBtn.text       = L.CurrentLocale == "fr" ? "Exporter la sauvegarde"
@@ -522,6 +527,7 @@ namespace CrowdDefense.UI
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
             _keyResetBtn?.RegisterCallback<ClickEvent>(_ => OnKeyReset());
             _changeNameBtn?.RegisterCallback<ClickEvent>(_ => OnChangeName());
+            _resetDefaultsBtn?.RegisterCallback<ClickEvent>(_ => OnResetSettingsClicked());
             _resetProgressBtn?.RegisterCallback<ClickEvent>(_ => OnResetProgressClicked());
             _exportSaveBtn?.RegisterCallback<ClickEvent>(_ => OnExportSave());
             _importSaveBtn?.RegisterCallback<ClickEvent>(_ => OnImportSave());
@@ -684,6 +690,32 @@ namespace CrowdDefense.UI
             var popup = FindFirstObjectByType<NameInputPopup>();
             if (popup != null)
                 popup.Show(() => { });
+        }
+
+        private void OnResetSettingsClicked()
+        {
+            string title = L.CurrentLocale == "fr" ? "Reinitialiser les parametres"
+                : L.CurrentLocale == "es" ? "Restablecer ajustes"
+                : "Reset Settings";
+            string msg = L.CurrentLocale == "fr" ? "Reinitialiser tous les parametres audio, graphiques et accessibilite ?"
+                : L.CurrentLocale == "es" ? "Restaurar todos los ajustes de audio, graficos y accesibilidad ?"
+                : "Reset all audio, graphics and accessibility settings?";
+            Confirm.Show(title, msg, onConfirm: () =>
+            {
+                string[] keys = {
+                    "cd.audio.master", "cd.audio.sfx", "cd.audio.music", "cd.audio.ui",
+                    "cd.audio.muted", "cd.audio.sfx_muted", "cd.audio.music_muted",
+                    "cd.gfx.quality", "cd.gfx.vfx", "cd.gfx.shake",
+                    "cd.gfx.damage_icons", "cd.gfx.music_pulse_v1", "cd.gfx.weather", "cd.gfx.bloom",
+                    "cd.a11y.colorblind", "cd.a11y.reduce_motion", "cd.a11y.large_text",
+                    "cd.a11y.font_size", "cd.a11y.high_contrast",
+                };
+                foreach (string key in keys)
+                    PlayerPrefs.DeleteKey(key);
+                PlayerPrefs.Save();
+                var reg = SettingsRegistry.Instance;
+                if (reg != null) { reg.Load(); SyncFromRegistry(); }
+            });
         }
 
         private void OnResetProgressClicked()
