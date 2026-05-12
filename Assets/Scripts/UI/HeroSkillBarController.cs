@@ -21,10 +21,14 @@ namespace CrowdDefense.UI
         private static readonly string[] KeyLabels  = { "Q", "W", "E" };
         private static readonly string[] SkillIds   = { "q", "w", "e" };
 
-        // Pulse animation constants (golden glow when skill is ready)
+        // Pulse animation constants
         private const float PulseScalePeak  = 1.10f;
         private const int   PulsePeriodMs   = 700;   // full oscillation period in ms
         private const int   PulseTickMs     = 16;    // ~60 Hz tick
+
+        // CSS classes for colour-coded states
+        private const string ClassReady    = "skill-slot-ready";    // blue glow pulse
+        private const string ClassCooldown = "skill-slot-cooldown"; // red tint
 
         private VisualElement?[]              _slots      = new VisualElement?[3];
         private VisualElement?[]              _overlays   = new VisualElement?[3];
@@ -121,19 +125,21 @@ namespace CrowdDefense.UI
                 _cdLabels[index]!.style.display = DisplayStyle.None;
             }
 
-            // Ready glow class toggle + pulse animation
+            // Colour-coded state: blue pulse when ready, red tint when on cooldown
             if (_slots[index] != null)
             {
                 bool nowReady = !onCooldown;
                 if (onCooldown)
                 {
-                    _slots[index]!.RemoveFromClassList("skill-slot-ready");
+                    _slots[index]!.RemoveFromClassList(ClassReady);
+                    _slots[index]!.AddToClassList(ClassCooldown);
                     if (_wasReady[index])
                         StopPulse(index);
                 }
                 else
                 {
-                    _slots[index]!.AddToClassList("skill-slot-ready");
+                    _slots[index]!.RemoveFromClassList(ClassCooldown);
+                    _slots[index]!.AddToClassList(ClassReady);
                     if (!_wasReady[index])
                         StartPulse(index);
                 }

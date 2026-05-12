@@ -1473,8 +1473,14 @@
 }
 
 .skill-slot-ready {
-    border-color: rgb(255, 210, 63);
-    background-color: rgba(28, 24, 8, 0.88);
+    border-color: rgb(80, 160, 255);
+    background-color: rgba(8, 16, 36, 0.92);
+    transform-origin: center;
+}
+
+.skill-slot-cooldown {
+    border-color: rgb(220, 50, 50);
+    background-color: rgba(28, 8, 8, 0.88);
     transform-origin: center;
 }
 
@@ -1495,11 +1501,14 @@
 .skill-key-label {
     position: absolute;
     bottom: 3px;
-    right: 5px;
-    font-size: 10px;
+    right: 4px;
+    font-size: 11px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    color: rgba(220, 220, 220, 0.80);
+    color: rgb(255, 255, 255);
+    background-color: rgba(0, 0, 0, 0.45);
+    border-radius: 3px;
+    padding: 0 2px;
 }
 
 .skill-cd-label {
