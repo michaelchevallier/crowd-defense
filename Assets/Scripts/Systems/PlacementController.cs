@@ -159,6 +159,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
                 Debug.Log($"[Place] reject cell ({cell.x},{cell.y}) char='{grid.At(cell.x, cell.y)}' (not buildable)");
 #endif
+                TriggerPlaceFeedback(false, hitPos);
                 return;
             }
 
@@ -203,8 +204,7 @@ namespace CrowdDefense.Systems
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
                 Synergies.Instance?.MarkDirty();
-                AudioController.Instance?.Play("tower_built", 0.7f);
-                VfxPool.Instance?.SpawnImpact(cellWorld + Vector3.up * 0.3f, new Color(1f, 0.84f, 0f));
+                TriggerPlaceFeedback(true, cellWorld + Vector3.up * 0.3f);
                 AudioController.Instance?.Play3D("tower_placed", cellWorld);
                 JuiceFX.Instance?.PunchScale(tower.transform, 1.15f, 0.3f);
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward("Tour placee !", cellWorld + Vector3.up * 1.5f, Color.green);
@@ -268,8 +268,7 @@ namespace CrowdDefense.Systems
                 tower.Init(selectedTowerType, projectilePrefab);
                 placedTowers.Add(tower);
                 Synergies.Instance?.MarkDirty();
-                AudioController.Instance?.Play("tower_built", 0.7f);
-                VfxPool.Instance?.SpawnImpact(cellWorld + Vector3.up * 0.3f, new Color(1f, 0.84f, 0f));
+                TriggerPlaceFeedback(true, cellWorld + Vector3.up * 0.3f);
                 AudioController.Instance?.Play3D("tower_placed", cellWorld);
                 JuiceFX.Instance?.PunchScale(tower.transform, 1.15f, 0.3f);
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward("Tour placee !", cellWorld + Vector3.up * 1.5f, Color.green);
@@ -374,6 +373,23 @@ namespace CrowdDefense.Systems
         public void SelectTowerForPlacement(TowerType? type)
         {
             selectedTowerType = type;
+        }
+
+        private void TriggerPlaceFeedback(bool valid, Vector3 worldPos)
+        {
+            if (valid)
+            {
+                AudioController.Instance?.Play("place_tower", 0.85f);
+                VfxPool.Instance?.SpawnImpact(worldPos, new Color(0.5f, 1f, 0.5f));
+#if UNITY_ANDROID || UNITY_IOS
+                Handheld.Vibrate();
+#endif
+            }
+            else
+            {
+                AudioController.Instance?.Play("place_invalid", 0.65f);
+                JuiceFX.Instance?.Shake(0.12f, 200);
+            }
         }
 
         public TowerType? SelectedTowerType => selectedTowerType;
