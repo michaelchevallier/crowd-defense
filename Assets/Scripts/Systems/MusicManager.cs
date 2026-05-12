@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using CrowdDefense.Common;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace CrowdDefense.Systems
 {
@@ -63,6 +64,9 @@ namespace CrowdDefense.Systems
 
         private void Start()
         {
+            SceneManager.activeSceneChanged += OnActiveSceneChanged;
+            OnActiveSceneChanged(default, SceneManager.GetActiveScene());
+
             var em = EventManager.Instance;
             if (em == null) return;
             em.Subscribe<LevelThemeChangedEvent>(OnLevelThemeChanged);
@@ -71,6 +75,8 @@ namespace CrowdDefense.Systems
 
         protected override void OnDestroySingleton()
         {
+            SceneManager.activeSceneChanged -= OnActiveSceneChanged;
+
             var em = EventManager.Instance;
             if (em == null) return;
             em.Unsubscribe<LevelThemeChangedEvent>(OnLevelThemeChanged);
@@ -339,6 +345,23 @@ namespace CrowdDefense.Systems
             _duckUntilTime = 0f;
             _duckCo = null;
             ApplyAllVolumes(0.6f);
+        }
+
+        // ── Scene routing ────────────────────────────────────────────────────
+
+        private void OnActiveSceneChanged(Scene _, Scene next)
+        {
+            string name = next.name;
+            if (name == "Menu" || name == "WorldMap")
+            {
+                musicVolume = 0.4f;
+                Play("menu");
+            }
+            else if (name == "Main")
+            {
+                musicVolume = 0.35f;
+                Play("calm");
+            }
         }
 
         // ── EventManager subscriptions ───────────────────────────────────────
