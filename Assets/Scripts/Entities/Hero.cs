@@ -620,12 +620,20 @@ namespace CrowdDefense.Entities
                     if (Lightning) LightningStrike(target);
                 }
             }
-            else if (_moveDir.sqrMagnitude > 0.01f)
+            else
             {
-                // Face movement direction when no target
-                var fwd = new Vector3(_moveDir.x, 0f, _moveDir.y);
-                if (fwd != Vector3.zero)
-                    transform.rotation = Quaternion.LookRotation(fwd);
+                if (_moveDir.sqrMagnitude > 0.01f)
+                {
+                    // Face movement direction when no target
+                    var fwd = new Vector3(_moveDir.x, 0f, _moveDir.y);
+                    if (fwd != Vector3.zero)
+                        transform.rotation = Quaternion.LookRotation(fwd);
+                }
+                else if (_attackAnimTimer <= 0f)
+                {
+                    // No target, no movement, no pending attack anim → explicit Idle
+                    AnimationController.SetIdle(_animator);
+                }
             }
         }
 
@@ -634,7 +642,7 @@ namespace CrowdDefense.Entities
         {
             if (cfg == null) return;
 
-            if (_animator != null) _animator.SetTrigger("attackTrigger");
+            AnimationController.TriggerAttack(_animator);
             _attackAnimTimer = 0.25f;
 
             var start = transform.position + Vector3.up * 0.9f;

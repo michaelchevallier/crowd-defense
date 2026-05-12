@@ -55,12 +55,33 @@ namespace CrowdDefense.Visual
 
         /// <summary>
         /// Toggle de l'état Walk via bool isWalking (Mechanim parameter).
-        /// Utilisé par Enemy.Update chaque frame (SetBool est O(1) Mechanim).
+        /// Utilisé par Enemy.Update et Hero.Update chaque frame (SetBool est O(1) Mechanim).
         /// </summary>
         public static void SetWalking(Animator? anim, bool walking)
         {
             if (anim == null) return;
             anim.SetBool("isWalking", walking);
+        }
+
+        /// <summary>
+        /// Déclenche la transition vers l'état Attack via attackTrigger.
+        /// Le controller revient vers Idle automatiquement (exitTime 0.9 → Idle transition).
+        /// </summary>
+        public static void TriggerAttack(Animator? anim)
+        {
+            if (anim == null) return;
+            anim.SetTrigger("attackTrigger");
+        }
+
+        /// <summary>
+        /// Force le retour vers Idle : reset isWalking + reset attackTrigger en attente.
+        /// À appeler quand l'entité passe de combat → repos sans mouvement.
+        /// </summary>
+        public static void SetIdle(Animator? anim)
+        {
+            if (anim == null) return;
+            anim.SetBool("isWalking", false);
+            anim.ResetTrigger("attackTrigger");
         }
 
     }
