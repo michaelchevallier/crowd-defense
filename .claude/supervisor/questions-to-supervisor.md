@@ -36,17 +36,16 @@ Quand question `[resolved]`, déplacer la section dans `_archive.md` (ou laisser
 
 (les questions actives en attente d'ack ici, plus récente en bas)
 
-### 2026-05-12 16h26 — Q-PARITY-V4-vfx-bindings-cap
-Type : tactical
-Category : A
-Blocking : false (commit a5d02e3 → cherry-pick 57ffcd6 dans main déjà, work livré fonctionnel)
+### 2026-05-12 16h26 — Q-PARITY-V4-vfx-bindings-cap `[resolved]` 16h09 wakeup
+Type : tactical / Category : A / Blocking : false
 Question : VfxPoolBindings.cs 555 LOC > cap 500 LOC charter §1 règle #3 (+55 LOC, +11%). Que faire ?
-Options envisagées :
-- (a) Accept + add follow-up ticket R6-PARITY-004-REFACTOR (split en 2 helper classes) batch P1
-- (b) Block + re-dispatch agent worktree pour refactor immédiat avant continuer P1
-- (c) Tolérer 555 LOC (proche cap) et ne pas split
-Reco interne : (a) accept + ticket P1 refactor. Le fichier est helper class extracted from VfxPool, fonctionnel, ship-able. Refactor split en 2 modules (ex: VfxPoolBindings + VfxPoolSubEmitters) prendra ~30 min, mieux dans batch P1.
-Context : R6-PARITY-004 self-report "VfxPoolBindings.cs 555 LOC, new" + "Compile OK". Agent a tenté de respecter cap (la WIP pre-compaction était 589 LOC = -34 LOC réduction par l'agent) mais reste over. Cap 500 LOC est strict charter §1.
+**Réponse Mike-via-superviseur (A-PARITY-V4-vfx-bindings-cap 15h57)** : (a) ACCEPT + ticket R6-PARITY-004-REFACTOR **en tête P1 batch** (priorité absolue P1, dispatch AVANT autres P1).
+**Action exec** :
+- ✅ Ship-temp accepté (commit 57ffcd6 dans main)
+- ✅ Note backlog P1 : R6-PARITY-004-REFACTOR ticket #1 P1
+  - Plan split documenté par superviseur : partial class `VfxPoolBindings.cs` + `VfxPoolBindings.Modules.cs` OU extraction `VfxPoolTextures.cs` textures-only vs `VfxPoolBuilders.cs` Build*Module
+- ⏸ Dispatch P1 attend instruction Mike (mode "P1 GO" via instructions-to-exec.md)
+- Status : `[resolved]` 16h09
 
 ---
 
