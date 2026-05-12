@@ -70,7 +70,7 @@ namespace CrowdDefense.UI
                     ["hud.radial_branch_utility"] = "Utility",
 
                     // DPS branch names per tower
-                    ["hud.radial_dps.archer"] = "Sniper",
+                    ["hud.radial_dps.archer"] = "Volley",
                     ["hud.radial_dps.mage"] = "Arcane",
                     ["hud.radial_dps.ballista"] = "Pierce Inf.",
                     ["hud.radial_dps.cannon"] = "Mega Shell",
@@ -83,7 +83,7 @@ namespace CrowdDefense.UI
                     ["hud.radial_dps_hint.default"] = "+Pure DPS",
 
                     // Utility branch names per tower
-                    ["hud.radial_util.archer"] = "Rain",
+                    ["hud.radial_util.archer"] = "Marksman",
                     ["hud.radial_util.mage"] = "Fireball",
                     ["hud.radial_util.ballista"] = "Explosion",
                     ["hud.radial_util.cannon"] = "Shotgun",
@@ -381,7 +381,7 @@ namespace CrowdDefense.UI
                     ["hud.radial_branch_utility"] = "Utilitaire",
 
                     // DPS branch names per tower
-                    ["hud.radial_dps.archer"] = "Sniper",
+                    ["hud.radial_dps.archer"] = "Volée",
                     ["hud.radial_dps.mage"] = "Arcane",
                     ["hud.radial_dps.ballista"] = "Perçage Inf.",
                     ["hud.radial_dps.cannon"] = "Mega Obus",
@@ -394,7 +394,7 @@ namespace CrowdDefense.UI
                     ["hud.radial_dps_hint.default"] = "+DPS pur",
 
                     // Utility branch names per tower
-                    ["hud.radial_util.archer"] = "Pluie",
+                    ["hud.radial_util.archer"] = "Tireur d'élite",
                     ["hud.radial_util.mage"] = "Boule de feu",
                     ["hud.radial_util.ballista"] = "Explosion",
                     ["hud.radial_util.cannon"] = "Shotgun",
@@ -692,7 +692,7 @@ namespace CrowdDefense.UI
                     ["hud.radial_branch_utility"] = "Utilidad",
 
                     // DPS branch names per tower
-                    ["hud.radial_dps.archer"] = "Francotirador",
+                    ["hud.radial_dps.archer"] = "Andanada",
                     ["hud.radial_dps.mage"] = "Arcano",
                     ["hud.radial_dps.ballista"] = "Perforac. Inf.",
                     ["hud.radial_dps.cannon"] = "Mega Obuz",
@@ -705,7 +705,7 @@ namespace CrowdDefense.UI
                     ["hud.radial_dps_hint.default"] = "+DPS puro",
 
                     // Utility branch names per tower
-                    ["hud.radial_util.archer"] = "Lluvia",
+                    ["hud.radial_util.archer"] = "Tirador",
                     ["hud.radial_util.mage"] = "Bola de fuego",
                     ["hud.radial_util.ballista"] = "Explosion",
                     ["hud.radial_util.cannon"] = "Escopeta",

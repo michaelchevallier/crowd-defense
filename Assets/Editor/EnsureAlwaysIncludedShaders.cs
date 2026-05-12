@@ -36,6 +36,9 @@ namespace CrowdDefense.Editor
             "CrowdDefense/SmokeTrail",
             "CrowdDefense/Starfield",
             "CrowdDefense/ToonCelShading",
+            "CrowdDefense/Portal_Vortex",
+            "CrowdDefense/Hologram_Scanline",
+            "CrowdDefense/Kelp_Sway",
             // URP core shaders
             "Universal Render Pipeline/Lit",
             "Universal Render Pipeline/Unlit",
