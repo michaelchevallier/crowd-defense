@@ -183,6 +183,41 @@ namespace CrowdDefense.Entities
         public TowerType? Config => cfg;
 
         /// <summary>
+        /// Returns the upgrade cost for the next level, applying a -20% cluster discount
+        /// if 3 or more towers of the same type are placed within radius meters (P1 synergie cluster).
+        /// </summary>
+        public int GetUpgradeCost()
+        {
+            if (cfg == null) return 0;
+            if (UpgradeLevel >= 3) return 0;
+            var bal = BalanceConfig.Get();
+            float mul = UpgradeLevel == 1 ? bal.UpgradeMulL2 : bal.UpgradeMulL3;
+            float baseCost = cfg.Cost * mul;
+            var clusterCount = CountClusterTowers(cfg.Id, 2f);
+            float discount = clusterCount >= 3 ? 0.8f : 1f;
+            return Mathf.RoundToInt(baseCost * discount);
+        }
+
+        /// <summary>
+        /// Counts towers of the given typeId (including this one) within radius meters.
+        /// Uses PlacementController.PlacedTowers — no physics allocation.
+        /// </summary>
+        private int CountClusterTowers(string typeId, float radius)
+        {
+            if (PlacementController.Instance == null) return 0;
+            float radiusSq = radius * radius;
+            Vector3 myPos = transform.position;
+            int count = 0;
+            foreach (var t in PlacementController.Instance.PlacedTowers)
+            {
+                if (t == null) continue;
+                if (t.Config?.Id != typeId) continue;
+                if ((t.transform.position - myPos).sqrMagnitude <= radiusSq) count++;
+            }
+            return count;
+        }
+
+        /// <summary>
         /// Returns the average DPS over the last 5 seconds based on actual damage events.
         /// </summary>
         public float GetLiveDps()

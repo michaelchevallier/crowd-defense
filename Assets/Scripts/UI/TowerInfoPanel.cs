@@ -24,6 +24,7 @@ namespace CrowdDefense.UI
         private Label? _statsLabel;
         private Label? _totalDmgLabel;
         private Label? _killsLabel;
+        private Label? _clusterLabel;
         private Button? _sellBtn;
 
         private Tower? _current;
@@ -58,8 +59,9 @@ namespace CrowdDefense.UI
             _dpsLiveLabel= root.Q<Label>("info-dps-live");
             _statsLabel  = root.Q<Label>("info-stats");
             _totalDmgLabel = root.Q<Label>("info-total-dmg");
-            _killsLabel  = root.Q<Label>("info-kills");
-            _sellBtn     = root.Q<Button>("info-sell-btn");
+            _killsLabel    = root.Q<Label>("info-kills");
+            _clusterLabel  = root.Q<Label>("info-cluster");
+            _sellBtn       = root.Q<Button>("info-sell-btn");
 
             if (_sellBtn != null)
                 _sellBtn.RegisterCallback<ClickEvent>(_ => OnSellClick());
@@ -165,6 +167,32 @@ namespace CrowdDefense.UI
 
             if (_killsLabel != null)
                 _killsLabel.text = $"Kills : {tower.TotalKills}";
+
+            if (_clusterLabel != null)
+            {
+                int cost = tower.GetUpgradeCost();
+                bool clusterActive = tower.UpgradeLevel < 3 && cost > 0 && IsClusterDiscountActive(tower);
+                _clusterLabel.text = clusterActive ? "Cluster -20%" : string.Empty;
+                _clusterLabel.style.display = clusterActive
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None;
+            }
+        }
+
+        private static bool IsClusterDiscountActive(Tower tower)
+        {
+            if (PlacementController.Instance == null || tower.Config == null) return false;
+            float radiusSq = 2f * 2f;
+            string id = tower.Config.Id;
+            Vector3 pos = tower.transform.position;
+            int count = 0;
+            foreach (var t in PlacementController.Instance.PlacedTowers)
+            {
+                if (t == null) continue;
+                if (t.Config?.Id != id) continue;
+                if ((t.transform.position - pos).sqrMagnitude <= radiusSq) count++;
+            }
+            return count >= 3;
         }
 
         private void OnSellClick()
