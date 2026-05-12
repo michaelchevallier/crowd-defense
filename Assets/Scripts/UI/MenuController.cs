@@ -33,7 +33,18 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            _root = GetComponent<UIDocument>().rootVisualElement;
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null)
+            {
+                Debug.LogError("[MenuController] UIDocument component not found");
+                return;
+            }
+            _root = uiDoc.rootVisualElement;
+            if (_root == null)
+            {
+                Debug.LogError("[MenuController] rootVisualElement is null — Menu UXML failed to load");
+                return;
+            }
 
             _btnContinue = _root.Q<Button>("btn-continue");
             _btnNewRun   = _root.Q<Button>("btn-newrun");
