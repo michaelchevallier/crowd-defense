@@ -1299,3 +1299,98 @@ Une fois nouveau deploy gh-pages avec wave 2 commits :
 ⏳ pending exec ack + dispatch wave 2 + qa-tester R1803 verification
 
 
+
+---
+
+# 🟢 BACKLOG-WAVE-3-IDLE-FILLER — 2026-05-12 19h48
+
+**Context superviseur** : Mike debug Unity Editor Safe Mode post-commit `4476039` (10 errors compile resolved). Pendant qu'on attend Unity reload + retest, fournir 3 tâches parallel-safe **non-bloquantes pour Mike**, **n'altèrent pas Main.unity / ProjectSettings**, et ne génèrent pas de reimport asset majeur.
+
+## Q-PARITY-V4-005-IMPL-cap-EnemyBoss — AUTO-RESOLVED
+
+Re-mesure : `EnemyBossBehaviors.cs` désormais **446 LOC** (`wc -l` 19h48) — sous cap 500 LOC charter §1 règle #3. Probablement compacté lors d'un cherry-pick subsequent ou refacto P3.1 Enemy partials extraction. **Aucune action requise**. Marquer `[resolved]` dans `questions-to-supervisor.md`.
+
+## TASK A — GLTFast race condition (RESEARCH-ONLY, ~30-45 min)
+
+**Symptôme observé Unity Editor Console** : 50+ models `Assets/Models/Heroes/Quaternius/UltimateAnimatedCharacters/*.gltf` + `Assets/Models/Enemies/*.gltf` fail import avec :
+```
+InvalidOperationException: JobHandle.Complete() on SortAndNormalizeBoneWeightsJob
+```
+
+**Hypothèse** : GLTFast 6.x + Unity 6 LTS race condition Burst-compiled job.
+
+**Livrable** : `.claude/research/2026-05-12-gltfast-race-condition.md` avec :
+1. **Root cause** : confirmer via web search GLTFast issues GitHub + Unity 6 + Burst compiler interplay
+2. **Impact** : combien de models concernés (`find Assets/Models -name "*.gltf" | wc -l`), gameplay impact (heroes/enemies rendu fallback)
+3. **3 options fix avec trade-offs** :
+   - Option 1 : Downgrade GLTFast `Packages/manifest.json` à version stable Unity 6
+   - Option 2 : Disable Burst pour GLTFast jobs (`com.unity.burst` flag)
+   - Option 3 : Alternative loader (ModelImporter natif Unity au lieu de runtime GLTFast)
+4. **Reco superviseur** : option recommandée + estimation effort + risque
+
+**Type** : `bug-fixer` subagent ou `general-purpose` research (no code change).
+**Files touchés** : **AUCUN** .cs / .meta / asset. Seul nouveau fichier markdown.
+**Parallel** : ✅ totalement isolé.
+
+## TASK B — Worktree cleanup safe (P2.1 cascade, ~15-30 min)
+
+**État** : 21 worktrees actifs (down from 34, mais persistant stale après P2.1 cleanup wave 1). Charter §2 D8 seuil 5+ → drift monitoring.
+
+**Action** :
+1. `git worktree list` énumère tous
+2. Pour chaque worktree : check si branche worktree mergée dans `main` via `git branch -a --merged main | grep <branch>`
+3. Si mergée ET aucun fichier modifié non-committé dans la worktree dir → safe to remove
+4. `git worktree remove <path>` (ou `--force` si seulement files generated)
+5. `git worktree prune` pour cleanup metadata
+6. Cible : ramener à **≤ 4 worktrees actifs** (sous seuil D8)
+
+**Commit** : `chore(hygiene): cleanup N stale worktrees (P2.1 cascade exec-direct wave 2)`
+
+**Files touchés** : aucun fichier Unity, juste `.git/worktrees/` métadonnées + dirs externes.
+**Parallel** : ✅ safe.
+
+## TASK C — P1.1b LINQ null-check verification + fix résiduel (~30 min)
+
+**Context** : Commit `443c816` bulk null-check 33 UI controllers défensif générique (Q<T>?.something). Mais P1.1b ciblait spécifiquement **`ArgumentNullException Parameter name: collection`** = appel LINQ sur collection null (pas Q<T> null).
+
+**Action** :
+1. `grep -rn "\.Sum(\|\.Average(\|\.Min(\|\.Max(\|\.OrderBy(\|\.Where(\|\.Select(\|\.Aggregate(\|\.Count(\|\.First(\|\.Last(" Assets/Scripts/UI/ Assets/Scripts/Systems/ Assets/Scripts/Data/`
+2. Filter callers : stats panels, leaderboard, run summary, achievements aggregation
+3. Pour chaque match identifier si la collection peut être null (field nullable, IEnumerable param, Dictionary[key])
+4. Si oui → add null-coalesce `(coll ?? Array.Empty<T>()).Sum(...)` OU `if (coll == null) return; coll.Sum(...)`
+5. Si tous ces sites déjà gardés par `443c816` Q<T> defensive → produire `.claude/audit/2026-05-12-linq-null-check-audit.md` "ALL CLEAR" et marquer P1.1b done
+
+**Commit** (si fix nécessaire) : `fix(runtime-crash-3b): null-check collections LINQ aggregation (N sites — P1.1b)`
+
+**Files touchés** : Assets/Scripts/UI/**.cs, Assets/Scripts/Systems/**.cs, Assets/Scripts/Data/**.cs (jamais Main.unity).
+**Parallel** : ✅ safe.
+
+## Constraints rappel
+
+- **NE PAS toucher** : `Assets/Scenes/Main.unity`, `ProjectSettings/*.asset`, `Packages/manifest.json` (sauf TASK A research-only, qui propose mais n'applique pas)
+- **NE PAS modifier** : .meta files (sauf strictement nécessaire avec trailing newlines comme `69cb53d`)
+- **NE PAS dispatch** : refacto god class (P3.4+ frozen jusqu'à validation Mike compile clean post-`4476039`)
+- Self-report 100 mots max par task dans ack
+
+## Cascade dispatch suggérée
+
+- **Slot 1** : TASK A (bug-fixer ou general-purpose, RESEARCH, background)
+- **Slot 2** : TASK B (general-purpose direct, EXEC, foreground rapide)
+- **Slot 3** : TASK C (bug-fixer, FIX si besoin, background)
+
+Tous 3 lançables **en parallèle dans le même message** (différents scopes, zéro overlap).
+
+## Mode
+
+Time cap : soft 2h (jusqu'à ~22h00). Sprint R6-PARITY-V4 déjà ✅ complete 85% V4 confirmé. Ces 3 tâches = hygiene + dette technique + research, hors sprint effectif.
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-backlog-wave-3-idle-filler-ack.md` :
+- Confirmation Q-PARITY-V4-005-IMPL-cap-EnemyBoss auto-resolved
+- 3 task IDs dispatched (worktree IDs si subagents)
+- ETA chaque task
+
+## Status
+
+⏳ pending exec ack + dispatch slots 1-3 parallèles
