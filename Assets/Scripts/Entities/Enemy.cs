@@ -1920,6 +1920,8 @@ namespace CrowdDefense.Entities
 #endif
             Castle.Instance?.TakeDamage(dmg);
             EventManager.Instance?.Publish(new EnemyReachedCastleEvent(this, dmg));
+            if (dmg > 0)
+                EventManager.Instance?.Publish(new HeroDamagedEvent(dmg));
             WaveManager.Instance?.NotifyEnemyDied(this);
             ReleaseToPool();
         }

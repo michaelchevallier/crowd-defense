@@ -414,8 +414,11 @@ namespace CrowdDefense.Visual
         private void PlayAndAutoRelease(ParticleSystem ps, ObjectPool<ParticleSystem> pool)
         {
             ApplyLod(ps);
+            var main = ps.main;
+            main.stopAction = ParticleSystemStopAction.Callback;
+            var handler = ps.gameObject.GetComponent<VfxPoolReleaseOnStop>() ?? ps.gameObject.AddComponent<VfxPoolReleaseOnStop>();
+            handler.Setup(ps, pool, _root);
             ps.Play(true);
-            StartCoroutine(AutoReleaseRoutine(ps, pool, _root));
         }
 
         private static WaitForSeconds GetWait(float seconds)
@@ -427,18 +430,6 @@ namespace CrowdDefense.Visual
                 _waitCache[key] = w;
             }
             return w;
-        }
-
-        private static IEnumerator AutoReleaseRoutine(ParticleSystem ps,
-                                                       ObjectPool<ParticleSystem> pool,
-                                                       Transform? root)
-        {
-            var main = ps.main;
-            float waitTime = main.startLifetime.constantMax + main.duration + 0.1f;
-            yield return GetWait(waitTime);
-            if (ps == null || !ps.gameObject.activeSelf) yield break;
-            if (root != null) ps.transform.SetParent(root, worldPositionStays: false);
-            pool.Release(ps);
         }
 
         private static bool IsVfxEnabled()
@@ -812,6 +803,29 @@ namespace CrowdDefense.Visual
             mat.SetInt("_DstBlend", 1);
             mat.renderQueue = 3000;
             return mat;
+        }
+    }
+
+    public class VfxPoolReleaseOnStop : MonoBehaviour
+    {
+        private ParticleSystem? _ps;
+        private ObjectPool<ParticleSystem>? _pool;
+        private Transform? _root;
+
+        public void Setup(ParticleSystem ps, ObjectPool<ParticleSystem> pool, Transform? root)
+        {
+            _ps = ps;
+            _pool = pool;
+            _root = root;
+        }
+
+        private void OnParticleSystemStopped()
+        {
+            if (_ps != null && _pool != null)
+            {
+                if (_root != null) _ps.transform.SetParent(_root, worldPositionStays: false);
+                _pool.Release(_ps);
+            }
         }
     }
 }

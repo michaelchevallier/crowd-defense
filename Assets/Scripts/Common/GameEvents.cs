@@ -56,6 +56,7 @@ namespace CrowdDefense.Common
 
     // Hero
     public record HeroLevelUpEvent(int NewLevel, int Xp, int XpToNext);
+    public record HeroDamagedEvent(int Damage);
 
     // Perks
     public record PerkPickedEvent(string PerkId, string HeroId);

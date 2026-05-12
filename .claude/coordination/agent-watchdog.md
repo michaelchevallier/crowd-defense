@@ -1,31 +1,33 @@
 # Agent Watchdog — Cron Single-Shot
 
-## 2026-05-12 05:51
+## 2026-05-12 06:35
 
 ### Snapshot
 
-- Actifs (<8 min) : 2 (Monitor r20 + current scan)
-- Stalled (8-30 min) : 5 (b* anciens Monitors dead)
+- Actifs (<8 min) : 1 (current scan)
+- Stalled (8-30 min) : 2 (b* Monitors dead r24/r25)
 - Worktrees : 16
-- Unity batch : **YES** PID 10928 (r20 phase ILPP context unloading)
-- r20 log silence : 68s — normal IL2CPP transition
+- Unity batch : **YES** PID 15424 (r26 Link_WebGL_wasm phase BUSY 6s)
+- r26 log silence : 10s — HEALTHY
 
 ### Killed
 
-0. Aucun. r20 progresse en phase IL2CPP/Linking.
+0. Aucun. r26 in linking phase.
 
 ### Sonnet en flight
 
-- Aucun (3 polish batch tous livrés : TimeFormatter 51b72bd, Achievement reqs 51b72bd, EnemyPool pending)
+- a258d993c837581b5 (Tower target prediction line)
 
 ### Recent commits
 
-- `51b72bd` TimeFormatter + AchievementsPanel counter progress
+- `8a2c829` MusicManager.DuckMusic 70%/1.5s/0.5s recover
+- `92742c7` EnemyAnim guard _static SetWalking
+- `32da28b` BalanceConfig wave variance + seed
 
 ### Notes
 
-V4 diff cron complete : 95-96% parity. r20 build going. EnemyPool agent encore en flight peut-être.
+Build cycle stable. Cycle this hour : r19→r26 (~25 builds, ~6 deploys live). Parity 96-97% hold.
 
 ### Stdout
 
-`Actifs:2 Stalled:5 Killed:0 Worktrees:16 UnityBatch:YES(PID10928,r20,IL2CPP) Sonnet:1InFlight Parity:95-96%`
+`Actifs:1 Stalled:2 Killed:0 Worktrees:16 UnityBatch:YES(PID15424,r26,Link_WASM) Sonnet:1InFlight`

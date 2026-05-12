@@ -26,10 +26,28 @@ namespace CrowdDefense.UI
 
         private float _tickTimer;
         private VisualElement? _xpFlashOverlay;
+        private VisualElement? _damageFlashOverlay;
 
         protected override void OnAwakeSingleton()
         {
             // Defer full init to Wire() so PanelSettings from other UIDocuments are ready.
+        }
+
+        private void OnEnable()  => EventManager.Instance?.Subscribe<HeroDamagedEvent>(OnHeroDamaged);
+        private void OnDisable() => EventManager.Instance?.Unsubscribe<HeroDamagedEvent>(OnHeroDamaged);
+
+        private void OnHeroDamaged(HeroDamagedEvent _)
+        {
+            if (_damageFlashOverlay == null) return;
+            StopCoroutine(nameof(DamageFlashRoutine));
+            StartCoroutine(DamageFlashRoutine());
+        }
+
+        private IEnumerator DamageFlashRoutine()
+        {
+            _damageFlashOverlay!.style.backgroundColor = new StyleColor(new Color(1f, 0f, 0f, 0.5f));
+            yield return new WaitForSecondsRealtime(0.15f);
+            _damageFlashOverlay.style.backgroundColor = new StyleColor(new Color(1f, 0f, 0f, 0f));
         }
 
         // Called by LevelRunner.Start after SpawnHero — all scene Awakes have run by then.
