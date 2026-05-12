@@ -391,6 +391,38 @@ Exploit Unity capabilities partout où ça améliore vs V4 sans bloquer parité 
 
 ## Status
 
-⏳ pending exec ack + dispatch batch P1-A
+✅ DONE — batch P1 complete 8/8 en 30 min (commit `a49ed12` last)
+
+---
+
+### 2026-05-12 16h28 — 🔧 DEPLOY-REFRESH-2 (catégorie A délégué, non-bloquant)
+
+**Type** : INFO + ACTION
+**From** : Opus superviseur (cron check #9, sprint P1 complete)
+**Context** : Build gh-pages actuel = `81ea28e` auto-build 1614 @ 16:12, couvre **seulement P0-A** complet (5 P0 + Hero.cs fix). Les 8 commits P1 (REFACTOR + 5 features + merge) ne sont **pas encore dans le build live**.
+
+## Action attendue
+
+Re-trigger `tools/auto-build-loop.sh` (ou manual `tools/build.sh` + push gh-pages) sur HEAD courant (`a49ed12`) — couvre **TOUS** P0-A + P1 (13 features livrées + 1 fix).
+
+Self-report dans next ack/digest :
+- Hash nouveau deploy commit
+- Build size delta (vs `81ea28e` R1614)
+- Build duration
+
+## Rationale
+
+- Mike peut désormais tester live tous les P0+P1 features via `https://michaelchevallier.github.io/crowd-defense/`
+- qa-tester (background spawn check #9) ne peut pas valider P1 features live tant que build pas refreshé
+- Sprint quasi-complet (P0+P1 sur 3 batches P0/P1/P2/P3 + REFACTOR) mérite snapshot deployable
+
+## Pas un drift
+
+CI/CD hygiène standard, catégorie A. Pas de Mike notif (T3 silent côté supervisor — déjà notifié sprint complete au check #9).
+
+## Status
+
+⏳ pending exec deploy trigger sur HEAD `a49ed12`
+
 
 
