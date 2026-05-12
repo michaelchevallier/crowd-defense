@@ -103,9 +103,17 @@ namespace CrowdDefense.UI
                 name.AddToClassList("bst-name");
                 card.Add(name);
 
-                var stats = new Label($"PV {et.Hp:0}  Vit {et.Speed:0.0}  Rec {et.Reward}c");
+                var stats = new Label($"PV {et.Hp:0}  Vit {et.Speed:0.0}  Dmg {et.Damage}  Or {et.Reward}c");
                 stats.AddToClassList("bst-stats");
                 card.Add(stats);
+
+                var traits = BuildTraits(et);
+                if (!string.IsNullOrEmpty(traits))
+                {
+                    var traitLabel = new Label(traits);
+                    traitLabel.AddToClassList("bst-traits");
+                    card.Add(traitLabel);
+                }
 
                 var killLabel = new Label($"Tues: {kills}");
                 killLabel.AddToClassList("bst-kills");
@@ -119,6 +127,18 @@ namespace CrowdDefense.UI
             }
 
             return card;
+        }
+
+        private static string BuildTraits(EnemyType et)
+        {
+            var tags = new System.Collections.Generic.List<string>(4);
+            if (et.IsBoss || et.IsMidBoss || et.IsApocalypseBoss) tags.Add("Boss");
+            if (et.IsFlyer)   tags.Add("Volant");
+            if (et.IsStealth) tags.Add("Furtif");
+            if (et.ShieldHP > 0f) tags.Add($"Bouclier {et.ShieldHP:0}");
+            if (et.SummonsMinions) tags.Add("Invocateur");
+            if (et.IsBrigand) tags.Add("Charge");
+            return string.Join(" | ", tags);
         }
 
         private static IEnumerator FlashGoldBorder(VisualElement card)
