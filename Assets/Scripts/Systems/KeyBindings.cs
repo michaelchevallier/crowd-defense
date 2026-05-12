@@ -27,6 +27,7 @@ namespace CrowdDefense.Systems
             { "skill_q",          KeyCode.Q },
             { "skill_w",          KeyCode.W },
             { "skill_e",          KeyCode.E },
+            { "skill_r",          KeyCode.R },
             { "speed_adjust_up",  KeyCode.Equals },
             { "speed_adjust_down", KeyCode.Minus },
         };

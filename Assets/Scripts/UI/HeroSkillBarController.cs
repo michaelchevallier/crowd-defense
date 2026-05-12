@@ -7,19 +7,24 @@ using CrowdDefense.Systems;
 namespace CrowdDefense.UI
 {
     /// <summary>
-    /// Renders the 3-slot hero skill bar (Q / W / E) bottom-center.
+    /// Renders the 4-slot hero skill bar (Q / W / E / R) bottom-center.
     /// Slots poll Hero.GetCooldownRatio(i) each frame and draw a radial-fill overlay.
     /// Slot 0 (Q) = auto-attack cooldown (read-only display).
     /// Slot 1 (W) = reserved / future skill.
     /// Slot 2 (E) = ultimate (maps to Hero.TryUlt).
+    /// Slot 3 (R) = ultimate ability — locked until Hero.Level >= 10 (shows "?" greyed).
     /// Wired as a sibling component on the HUD GameObject alongside HudController.
     /// </summary>
     [RequireComponent(typeof(UIDocument))]
     public class HeroSkillBarController : MonoBehaviour
     {
-        private static readonly string[] SlotNames  = { "skill-slot-q", "skill-slot-w", "skill-slot-e" };
-        private static readonly string[] KeyLabels  = { "Q", "W", "E" };
-        private static readonly string[] SkillIds   = { "q", "w", "e" };
+        private static readonly string[] SlotNames  = { "skill-slot-q", "skill-slot-w", "skill-slot-e", "skill-slot-r" };
+        private static readonly string[] KeyLabels  = { "Q", "W", "E", "R" };
+        private static readonly string[] SkillIds   = { "q", "w", "e", "r" };
+
+        private const int UltimateSlot        = 3;
+        private const int UltimateUnlockLevel = 10;
+        private const string ClassLocked      = "skill-slot-locked";
 
         // Pulse animation constants
         private const float PulseScalePeak  = 1.10f;
@@ -30,12 +35,12 @@ namespace CrowdDefense.UI
         private const string ClassReady    = "skill-slot-ready";    // blue glow pulse
         private const string ClassCooldown = "skill-slot-cooldown"; // red tint
 
-        private VisualElement?[]              _slots      = new VisualElement?[3];
-        private VisualElement?[]              _overlays   = new VisualElement?[3];
-        private Label?[]                      _keyLabels  = new Label?[3];
-        private Label?[]                      _cdLabels   = new Label?[3];
-        private IVisualElementScheduledItem?[] _pulseItems = new IVisualElementScheduledItem?[3];
-        private bool[]                        _wasReady   = new bool[3];
+        private VisualElement?[]              _slots      = new VisualElement?[4];
+        private VisualElement?[]              _overlays   = new VisualElement?[4];
+        private Label?[]                      _keyLabels  = new Label?[4];
+        private Label?[]                      _cdLabels   = new Label?[4];
+        private IVisualElementScheduledItem?[] _pulseItems = new IVisualElementScheduledItem?[4];
+        private bool[]                        _wasReady   = new bool[4];
 
         private VisualElement? _tooltip;
         private Label?         _tooltipName;
@@ -53,7 +58,7 @@ namespace CrowdDefense.UI
             _tooltipCd   = _tooltip?.Q<Label>("skill-tooltip-cd");
             _tooltipDesc = _tooltip?.Q<Label>("skill-tooltip-desc");
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
             {
                 _slots[i]    = root.Q<VisualElement>(SlotNames[i]);
                 _overlays[i] = _slots[i]?.Q<VisualElement>("skill-cd-overlay");
@@ -65,7 +70,7 @@ namespace CrowdDefense.UI
             }
 
             // Register click + hover callbacks
-            for (int idx = 0; idx < 3; idx++)
+            for (int idx = 0; idx < 4; idx++)
             {
                 int captured = idx;
                 _slots[captured]?.RegisterCallback<ClickEvent>(_ => TriggerSlot(captured));
@@ -83,7 +88,7 @@ namespace CrowdDefense.UI
 
             HandleKeyInput();
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 4; i++)
                 RefreshSlot(i);
         }
 
@@ -93,6 +98,7 @@ namespace CrowdDefense.UI
             if (Input.GetKeyDown(KeyBindings.GetKey("skill_q"))) TriggerSlot(0);
             if (Input.GetKeyDown(KeyBindings.GetKey("skill_w"))) TriggerSlot(1);
             if (Input.GetKeyDown(KeyBindings.GetKey("skill_e"))) TriggerSlot(2);
+            if (Input.GetKeyDown(KeyBindings.GetKey("skill_r"))) TriggerSlot(3);
         }
 
         private void TriggerSlot(int index)
@@ -104,6 +110,27 @@ namespace CrowdDefense.UI
         private void RefreshSlot(int index)
         {
             if (_overlays[index] == null || _cdLabels[index] == null) return;
+
+            // Slot 3 (R) locked until level 10
+            if (index == UltimateSlot)
+            {
+                bool unlocked = _hero != null && _hero.Level >= UltimateUnlockLevel;
+                if (_slots[index] != null)
+                {
+                    if (!unlocked)
+                    {
+                        _slots[index]!.AddToClassList(ClassLocked);
+                        _slots[index]!.RemoveFromClassList(ClassReady);
+                        _slots[index]!.RemoveFromClassList(ClassCooldown);
+                        if (_keyLabels[index] != null) _keyLabels[index]!.text = "?";
+                        _overlays[index]!.style.display = DisplayStyle.None;
+                        _cdLabels[index]!.style.display = DisplayStyle.None;
+                        return;
+                    }
+                    _slots[index]!.RemoveFromClassList(ClassLocked);
+                    if (_keyLabels[index] != null) _keyLabels[index]!.text = "R";
+                }
+            }
 
             float ratio = Mathf.Clamp01(_hero != null ? _hero.GetCooldownRatio(index) : 0f);
 

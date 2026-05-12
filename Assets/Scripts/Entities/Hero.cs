@@ -247,8 +247,15 @@ namespace CrowdDefense.Entities
         // ── Nth-projectile AoE counter ────────────────────────────────────────
         private int _projFiredCount;
 
-        // ── Ultimate ──────────────────────────────────────────────────────────
+        // ── Ultimate (slot 2 / E — existing) ─────────────────────────────────
         private float _ultCooldown;
+
+        // ── Ultimate slot 3 (R — unlock level 10, 60s CD, 5× dmg AoE r=4) ────
+        private const float UltimateCooldown    = 60f;
+        private const float UltimateAoeRadius   = 4f;
+        private const float UltimateDmgMul      = 5f;
+        private const int   UltimateUnlockLevel = 10;
+        private float _ultimateCooldown;
 
         // ── Aura pulse ────────────────────────────────────────────────────────
         private float _heroPulseT;
@@ -278,8 +285,9 @@ namespace CrowdDefense.Entities
             cfg      = type;
             _maxX    = maxX;
             _maxZ    = maxZ;
-            _cooldown    = 0f;
-            _ultCooldown = 0f;
+            _cooldown         = 0f;
+            _ultCooldown      = 0f;
+            _ultimateCooldown = 0f;
             _autoAttack  = PlayerPrefs.GetInt(AutoAttackPrefsKey, 1) != 0;
             _maxHp       = DefaultMaxHp;
             _hp          = _maxHp;
@@ -657,6 +665,7 @@ namespace CrowdDefense.Entities
         {
             0 => cfg != null && cfg.FireRateMs > 0 ? _cooldown / (cfg.FireRateMs / 1000f) : 0f,
             2 => UltCooldownFraction,
+            3 => UltimateCooldownFraction,
             _ => 0f,
         };
 
@@ -664,6 +673,7 @@ namespace CrowdDefense.Entities
         {
             0 => _cooldown,
             2 => _ultCooldown,
+            3 => _ultimateCooldown,
             _ => 0f,
         };
 
@@ -671,6 +681,7 @@ namespace CrowdDefense.Entities
         {
             if (slotIndex == 0 && !_autoAttack) TryManualFire();
             if (slotIndex == 2) TryUlt();
+            if (slotIndex == 3) TryUltimate();
             StartCoroutine(CastSweepRoutine(slotIndex));
         }
 
@@ -827,6 +838,44 @@ namespace CrowdDefense.Entities
             VfxPool.Instance.SpawnImpact(transform.position + Vector3.up, new Color(1f, 0.82f, 0.22f));
         }
 
+        // ── Ultimate ability R (slot 3) ───────────────────────────────────────
+        public bool IsUltimateUnlocked => Level >= UltimateUnlockLevel;
+
+        public float UltimateCooldownRemaining  => _ultimateCooldown;
+        public float UltimateCooldownFraction   =>
+            _ultimateCooldown / UltimateCooldown;
+
+        public bool TryUltimate()
+        {
+            if (!IsUltimateUnlocked) return false;
+            if (_ultimateCooldown > 0f) return false;
+            if (WaveManager.Instance == null) return false;
+
+            _ultimateCooldown = UltimateCooldown;
+
+            float baseDmg = cfg != null ? cfg.UltAoeDamage : 15f;
+            float dmg = baseDmg * UltimateDmgMul * DamageMul;
+            float r2  = UltimateAoeRadius * UltimateAoeRadius;
+            var   pos = transform.position;
+            var   active = WaveManager.Instance.ActiveEnemies;
+            for (int i = active.Count - 1; i >= 0; i--)
+            {
+                var e = active[i];
+                if (e == null || e.IsDead) continue;
+                if ((e.transform.position - pos).sqrMagnitude < r2)
+                    e.TakeDamage(dmg);
+            }
+
+            VfxPool.Instance?.SpawnImpact(pos + Vector3.up, new Color(1f, 0.2f, 1f));
+            VfxPool.Instance?.SpawnConfetti(pos + Vector3.up, UltimateAoeRadius);
+            AudioController.Instance?.Play("hero_ult", 1.2f);
+            JuiceFX.Instance?.Flash(new Color(0.8f, 0.2f, 1f, 0.45f), 450);
+            JuiceFX.Instance?.Shake(0.5f, 500);
+            FloatingPopupController.Instance?.SpawnReward("ULTIMATE!", pos + Vector3.up * 2.5f, new Color(0.9f, 0.3f, 1f));
+            OnUltFired?.Invoke();
+            return true;
+        }
+
         // ── Tower aura query (used by Synergies.cs) ───────────────────────────
         /// <summary>
         /// Returns damage and fire-rate multipliers that the hero aura grants
@@ -856,8 +905,9 @@ namespace CrowdDefense.Entities
             if (cfg == null) return;
             float dt = Time.deltaTime;
 
-            _ultCooldown = Mathf.Max(0f, _ultCooldown - dt);
-            _cooldown    = Mathf.Max(0f, _cooldown - dt);
+            _ultCooldown      = Mathf.Max(0f, _ultCooldown - dt);
+            _ultimateCooldown = Mathf.Max(0f, _ultimateCooldown - dt);
+            _cooldown         = Mathf.Max(0f, _cooldown - dt);
             if (_invulTimer > 0f) _invulTimer = Mathf.Max(0f, _invulTimer - dt);
 
             UpdateAuraPulse(dt);
