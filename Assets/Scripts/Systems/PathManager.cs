@@ -35,6 +35,10 @@ namespace CrowdDefense.Systems
         public int WaypointCount => Waypoints.Count;
         private static readonly IReadOnlyList<Vector3> _empty = new List<Vector3>();
 
+        // Cache built once after Build() — castleIdx → path indices. Avoids per-call List<int> alloc.
+        private Dictionary<int, IReadOnlyList<int>> _castlePathCache = new();
+        private static readonly IReadOnlyList<int> _emptyIntList = new List<int>();
+
         protected override void OnAwakeSingleton() => Build();
 
         public void Build()
@@ -90,6 +94,7 @@ namespace CrowdDefense.Systems
 
             Paths = paths;
             PathsMeta = meta;
+            RebuildCastlePathCache(meta);
 
 #if UNITY_EDITOR
             Debug.Log($"[PathManager] grid {Grid.Width}x{Grid.Height}, {paths.Count} paths built (portals={Grid.Portals.Count}, castles={Grid.Castles.Count})");
@@ -121,18 +126,27 @@ namespace CrowdDefense.Systems
             var meta  = new List<PathMeta> { new PathMeta(0, 0) };
             Paths     = paths;
             PathsMeta = meta;
+            RebuildCastlePathCache(meta);
+        }
+
+        private void RebuildCastlePathCache(List<PathMeta> meta)
+        {
+            _castlePathCache = new Dictionary<int, IReadOnlyList<int>>(meta.Count);
+            for (int i = 0; i < meta.Count; i++)
+            {
+                int ci = meta[i].CastleIdx;
+                if (!_castlePathCache.TryGetValue(ci, out var list))
+                    _castlePathCache[ci] = list = new List<int>();
+                ((List<int>)list).Add(i);
+            }
         }
 
         /// <summary>
         /// Returns all path indices whose castle end matches the given castle index.
+        /// Result is cached after Build() — no allocation on repeated calls.
         /// </summary>
-        public List<int> PathsForCastle(int castleIdx)
-        {
-            var result = new List<int>();
-            for (int i = 0; i < PathsMeta.Count; i++)
-                if (PathsMeta[i].CastleIdx == castleIdx) result.Add(i);
-            return result;
-        }
+        public IReadOnlyList<int> PathsForCastle(int castleIdx) =>
+            _castlePathCache.TryGetValue(castleIdx, out var cached) ? cached : _emptyIntList;
 
 #if UNITY_EDITOR
         private void OnDrawGizmos()

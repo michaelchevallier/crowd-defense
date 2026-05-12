@@ -66,8 +66,9 @@ namespace CrowdDefense.Systems
         // BFS from start to target. Returns cell sequence (start to target), or null if no path.
         public List<Vector2Int>? BfsShortestPath(Vector2Int start, Vector2Int target)
         {
-            var parent = new Dictionary<Vector2Int, Vector2Int>();
-            var queue = new Queue<Vector2Int>();
+            int capacity = Width * Height;
+            var parent = new Dictionary<Vector2Int, Vector2Int>(capacity);
+            var queue = new Queue<Vector2Int>(capacity);
             queue.Enqueue(start);
             parent[start] = new Vector2Int(-1, -1);
 
