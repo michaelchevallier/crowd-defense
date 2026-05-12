@@ -126,3 +126,9 @@ auto-build-*.log
 # TextMeshPro Examples & Extras — optional learning content, ~6.4MB
 /Assets/TextMesh Pro/Examples & Extras/
 /Assets/TextMesh Pro/Examples & Extras.meta
+
+# Unity TestRunner auto-generated artifacts (recreated each session, no need to track)
+/Assets/Resources/PerformanceTestRunInfo.json
+/Assets/Resources/PerformanceTestRunInfo.json.meta
+/Assets/Resources/PerformanceTestRunSettings.json
+/Assets/Resources/PerformanceTestRunSettings.json.meta

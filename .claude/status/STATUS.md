@@ -90,20 +90,44 @@ WAVE 4 (Top 5 user-facing gaps audit `adb68ee` non couverts) :
 
 ## Instructions next session opus
 
-À lire dans cet ordre :
+### Sprint R6-PARITY-V4-FINAL = OFFICIELLEMENT CLOSED (2026-05-13 02h35)
 
-1. **`.claude/supervisor/instructions-to-exec.md`** — dernières directives Mike + supervisor (WAVE 3 + WAVE 4 backlog actifs)
-2. **`.claude/audit/2026-05-12-*`** — audits récents (parity gap, visible-parity-honest, scene-wires, schools-mapping, triage-table)
-3. **`STATUS.md`** (root) — récit long-form sprint MIGRATE (455 lignes, phases 0-4 done, phase 5 next)
-4. **`CLAUDE.md`** (root) — Unity context + workflow Opus orchestre / Sonnet exécute
-5. **`.claude/supervisor/questions-to-supervisor.md`** — Q en cours, resolved récents
-6. **`.claude/supervisor/charter.md`** — règles cap LOC, cron policy, ScheduleWakeup interdits
+98 commits, V6 user-facing parity 45-65% → 95%+, master plan 11/11 P0+P1 + 13 bonus + UI HUD fix + N9 content. **NE PAS relancer ce sprint** — il est fini.
 
-Workflow type :
-- Read instructions-to-exec.md → pioche un ticket WAVE 3/4 non-DONE
-- Spawn Sonnet feature-dev en worktree OU bug-fixer direct selon complexité
-- Push autonome chaque commit, **NEVER IDLE** (Mike directive)
-- Coordination avec 4 bug-fixers Opus wave-3 actifs (cf zone safe lignes 1701-1718 instructions)
+### À lire dans cet ordre
+
+1. **`.claude/audit/SPRINT-R6-PARITY-V4-FINAL-completion.md`** — rapport final agent (a92d06b69, ~6KB, table 22 tickets + Mike complaints resolution + V6 parity recalc + verification plan).
+2. **`.claude/audit/MASTER-PLAN-tickets-swarm.md`** — agrégation 10-layer audit + 22 tickets P0-P3.
+3. **`.claude/audit/v6-layer-01..10-*.md`** — 10 audits orthogonaux par couche (Build/Scenes/Prefabs/Scripts/UI/Gameplay/Audio/Visual/Levels/Integration).
+4. **`STATUS.md`** (ce fichier) — sections "Architecture state" + "V4 baseline vs V6" + "Known issues".
+5. **`CLAUDE.md`** (root) — Unity context + workflow Opus orchestre / Sonnet exécute.
+6. **`.claude/supervisor/questions-to-supervisor.md`** — Q-N9 Q9-1/Q9-2/Q9-3 PENDING Mike (Q9-4 auto-shipped `2ecd3cd`).
+7. **`/Users/mike/.claude/projects/-Users-mike-Work-milan-project/memory/MEMORY.md`** — feedbacks Mike (feedback_no_priority_questions, feedback_test_autonomously_unitymcp, feedback_structured_audit_then_swarm, feedback_wire_as_you_go, etc.).
+
+### Actions immédiates à faire
+
+1. **PAS de spawn agents** par défaut. Sprint R6 CLOSED, exec idle acceptable per Mike "SAUF si objectif final atteint".
+2. **Si Mike pose nouvelle question** sur état V6 → lire `SPRINT-R6-PARITY-V4-FINAL-completion.md` + répondre depuis sources de vérité.
+3. **Si Mike déclare next sprint R7/R8/R9** :
+   - R7 polish : Foire+Medieval castle textures + 80 levels art + L3 upgrade branching
+   - R8 perf : 3 perf-3fix profilage live (60 FPS desktop / 30 FPS mobile)
+   - R9 playable MVP : 5-wave loop polish + onboarding tutorial + FTUE
+4. **Si Mike veut Q-N9 décisions** :
+   - Q9-1 endurance W*-9 keep 10 waves (V4 parity, BTD6 pattern) — reco YES
+   - Q9-2 ramp factor W9/W10 wave1 → 0.45 hybride (medium-conservatif)
+   - Q9-3 LevelDifficultyMul overrides cleanup uniformly — reco YES
+
+### Workflow autonome établi
+
+- **UnityMCP HTTP** `http://127.0.0.1:8080/mcp` pour test runtime Play mode (`refresh_unity`, `manage_editor`, `read_console`, `execute_code`). Init session via curl `initialize` puis `notifications/initialized`.
+- **Approche structurée** quand bugs reviennent : 10-layer audit orthogonal → master plan → swarm waves parallèles (cf memory `feedback_structured_audit_then_swarm.md`).
+- **Pas de questions priorité** : décider et exécuter (memory `feedback_no_priority_questions.md`).
+
+### Background tasks status post-sprint
+
+- Monitor 5min `bpwquirb0` : **STOPPÉ** (TaskStop, plus d'alerts spam, objective reached).
+- Cron supervisor /loop 30m : **ACTIVE** (cron `82d133e3 13,28,43,58`) — continue scrutes périodiques.
+- Tous les bug-fixers/Explore agents background : **COMPLETED** (cf `_clean-log.md` scrute logs).
 
 ---
 
