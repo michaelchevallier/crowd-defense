@@ -116,6 +116,9 @@ namespace CrowdDefense.Entities
         // ── Animator ──────────────────────────────────────────────────────────
         private Animator? _animator;
 
+        // ── Perk icons (world-space quads around head) ────────────────────────
+        private readonly GameObject?[] _perkIcons = new GameObject?[6];
+
         // ── Active projectile tracking (pool manages lifetime, this list for IsDone poll) ──
         private readonly List<HeroProjectile> _projectiles = new();
 
@@ -158,6 +161,7 @@ namespace CrowdDefense.Entities
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", "Walk");
 
             BuildAuraDecals();
+            BuildPerkIcons();
         }
 
         // ── Mesh spawn (mirrors Tower.SpawnMeshChild) ─────────────────────────
@@ -245,6 +249,66 @@ namespace CrowdDefense.Entities
             Object.Destroy(head.GetComponent<Collider>());
         }
 
+        // ── Perk icons world-space ────────────────────────────────────────────
+        private void BuildPerkIcons()
+        {
+            var unlitShader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
+            for (int i = 0; i < _perkIcons.Length; i++)
+            {
+                var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                go.name = $"PerkIcon{i}";
+                go.transform.SetParent(transform);
+                go.transform.localScale = Vector3.one * 0.2f;
+                Object.Destroy(go.GetComponent<Collider>());
+                var mat = new Material(unlitShader != null ? unlitShader : Shader.Find("Standard")!) { color = Color.white };
+                go.GetComponent<MeshRenderer>().material = mat;
+                go.SetActive(false);
+                _perkIcons[i] = go;
+            }
+        }
+
+        private void UpdatePerkIcons()
+        {
+            int count = Mathf.Min(_perks.Count, _perkIcons.Length);
+            for (int i = 0; i < _perkIcons.Length; i++)
+            {
+                var icon = _perkIcons[i];
+                if (icon == null) continue;
+                icon.SetActive(i < count);
+                if (i >= count) continue;
+                icon.GetComponent<MeshRenderer>().material.color = PerkColor(_perks[i]);
+                float angle = i * (360f / Mathf.Max(count, 1)) * Mathf.Deg2Rad;
+                icon.transform.localPosition = new Vector3(
+                    Mathf.Cos(angle) * 0.35f, 1.8f, Mathf.Sin(angle) * 0.35f);
+            }
+        }
+
+        private void UpdatePerkIconsBillboard()
+        {
+            var cam = Camera.main;
+            if (cam == null) return;
+            var rot = cam.transform.rotation;
+            for (int i = 0; i < _perkIcons.Length; i++)
+            {
+                var icon = _perkIcons[i];
+                if (icon != null && icon.activeSelf) icon.transform.rotation = rot;
+            }
+        }
+
+        private static Color PerkColor(string perkId) => perkId switch
+        {
+            var s when s.Contains("damage") || s.Contains("crit") || s.Contains("fireball")
+                    || s.Contains("multi") || s.Contains("pierce") || s.Contains("lightning")
+                    || s.Contains("combustion") || s.Contains("pyromancie") => new Color(1f, 0.2f, 0.2f),
+            var s when s.Contains("defense") || s.Contains("forteresse") || s.Contains("murs")
+                    || s.Contains("cristal") || s.Contains("castle") => new Color(0.3f, 0.5f, 1f),
+            var s when s.Contains("heal") || s.Contains("lifesteal") || s.Contains("regen")
+                    || s.Contains("wave_regen") => new Color(0.2f, 0.9f, 0.3f),
+            var s when s.Contains("speed") || s.Contains("move") || s.Contains("fire_rate") => new Color(1f, 0.9f, 0.1f),
+            var s when s.Contains("coin") || s.Contains("xp") || s.Contains("tower") => new Color(1f, 0.6f, 0.1f),
+            _ => new Color(0.9f, 0.3f, 1f),
+        };
+
         // ── Ground aura + halo decals (ring + glow disc) ──────────────────────
         private void BuildAuraDecals()
         {
@@ -316,11 +380,13 @@ namespace CrowdDefense.Entities
             _suppressPerkVfx = true;
             PerkSystem.Instance?.ApplyPerkList(this, perkIds);
             _suppressPerkVfx = false;
+            UpdatePerkIcons();
         }
 
         internal void AddPerkId(string id)
         {
             _perks.Add(id);
+            UpdatePerkIcons();
             if (_suppressPerkVfx) return;
 
             var pos = transform.position;
@@ -508,6 +574,7 @@ namespace CrowdDefense.Entities
             _cooldown    = Mathf.Max(0f, _cooldown - dt);
 
             UpdateAuraPulse(dt);
+            UpdatePerkIconsBillboard();
             UpdateAttackAnimTimer(dt);
             UpdateMovement(dt);
             UpdateCombat();
