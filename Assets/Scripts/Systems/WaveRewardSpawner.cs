@@ -34,7 +34,7 @@ namespace CrowdDefense.Systems
                 WaveManager.Instance.OnWaveCleared += OnWaveCleared;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroySingleton()
         {
             if (WaveManager.Instance != null)
                 WaveManager.Instance.OnWaveCleared -= OnWaveCleared;

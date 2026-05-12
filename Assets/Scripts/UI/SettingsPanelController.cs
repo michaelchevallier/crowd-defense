@@ -99,11 +99,6 @@ namespace CrowdDefense.UI
 
         private void Awake() => Instance = this;
 
-        private void OnDestroy()
-        {
-            if (Instance == this) Instance = null;
-        }
-
         private void Start()
         {
             _root = GetComponent<UIDocument>().rootVisualElement;
@@ -209,6 +204,7 @@ namespace CrowdDefense.UI
 
         private void OnDestroy()
         {
+            if (Instance == this) Instance = null;
             L.OnLocaleChanged -= ApplyLocalizedTexts;
         }
 
