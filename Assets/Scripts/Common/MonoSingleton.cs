@@ -8,6 +8,7 @@ namespace CrowdDefense.Common
         private static T? _instance;
         private static int _creationDepth = 0;
         private const int MaxCreationDepth = 5;
+        private static bool _destroying = false;
 
         // Lazy getter : if scene didn't include this singleton, FindFirstObjectByType fallback,
         // then auto-create GameObject as last resort. Prevents silent NullRef when scene setup
@@ -17,6 +18,7 @@ namespace CrowdDefense.Common
             get
             {
                 if (_instance != null) return _instance;
+                if (_destroying) return null;
 
                 // Don't auto-create during scene unload — avoid OnDestroy cascade
 #if UNITY_EDITOR
@@ -56,6 +58,7 @@ namespace CrowdDefense.Common
 
         protected virtual void OnDestroy()
         {
+            _destroying = true;
             if (_instance == this) _instance = null;
             OnDestroySingleton();
         }
