@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.Systems;
 
 namespace CrowdDefense.Visual
 {
@@ -23,6 +24,34 @@ namespace CrowdDefense.Visual
         [SerializeField] private GameObject? bubblesPrefab;
         [SerializeField] private GameObject? starsPrefab;
         [SerializeField] private GameObject? ashPrefab;
+
+        private static readonly Dictionary<WeatherType, string> AmbientClips = new()
+        {
+            { WeatherType.Pollen,   "ambient_forest"  },
+            { WeatherType.Rain,     "ambient_forest"  },
+            { WeatherType.Dust,     "ambient_wind"    },
+            { WeatherType.Wind,     "ambient_wind"    },
+            { WeatherType.Embers,   "ambient_volcano" },
+            { WeatherType.Ash,      "ambient_volcano" },
+            { WeatherType.Confetti, "ambient_calm"    },
+            { WeatherType.Bubbles,  "ambient_calm"    },
+            { WeatherType.Snow,     "ambient_blizzard"},
+            { WeatherType.Stars,    "ambient_blizzard"},
+        };
+
+        private static readonly Dictionary<WeatherType, Color> SkyTints = new()
+        {
+            { WeatherType.Dust,     new Color(0.90f, 0.65f, 0.30f) },
+            { WeatherType.Wind,     new Color(0.90f, 0.65f, 0.30f) },
+            { WeatherType.Snow,     new Color(0.70f, 0.82f, 1.00f) },
+            { WeatherType.Stars,    new Color(0.70f, 0.82f, 1.00f) },
+            { WeatherType.Embers,   new Color(1.00f, 0.28f, 0.10f) },
+            { WeatherType.Ash,      new Color(1.00f, 0.28f, 0.10f) },
+            { WeatherType.Pollen,   new Color(0.35f, 0.72f, 0.30f) },
+            { WeatherType.Rain,     new Color(0.35f, 0.72f, 0.30f) },
+            { WeatherType.Confetti, new Color(0.90f, 0.85f, 1.00f) },
+            { WeatherType.Bubbles,  new Color(0.40f, 0.70f, 1.00f) },
+        };
 
         // Fallback resource paths — loaded at runtime if the Inspector slots are empty.
         private const string PrefabRoot = "Prefabs/Weather/";
@@ -117,6 +146,18 @@ namespace CrowdDefense.Visual
                 var ps = SpawnEffect(wt);
                 if (ps != null) _active.Add(ps);
             }
+
+            // Ambient audio — use first weather type that has a clip mapping
+            foreach (var wt in types)
+            {
+                if (AmbientClips.ContainsKey(wt)) { PlayAmbientAudio(wt); break; }
+            }
+
+            // Sky tint — use first type that has a mapping
+            foreach (var wt in types)
+            {
+                if (SkyTints.ContainsKey(wt)) { ApplySkyGradient(wt); break; }
+            }
         }
 
         public void StopAll()
@@ -128,6 +169,35 @@ namespace CrowdDefense.Visual
                 Destroy(ps.gameObject);
             }
             _active.Clear();
+            StopAmbientAudio();
+        }
+
+        public void PlayAmbientAudio(WeatherType type)
+        {
+            if (!AmbientClips.TryGetValue(type, out var key)) return;
+            var clip = Resources.Load<AudioClip>($"Audio/Ambient/{key}");
+            if (clip == null) return;
+            AudioController.Instance?.PlayLoop(clip, "ambient", 0.4f);
+        }
+
+        public void StopAmbientAudio() =>
+            AudioController.Instance?.StopChannel("ambient");
+
+        public static void ApplySkyGradient(WeatherType type)
+        {
+            if (!SkyTints.TryGetValue(type, out var tint)) return;
+            RenderSettings.ambientLight = tint;
+            if (RenderSettings.skybox != null)
+                RenderSettings.skybox.SetColor("_Tint", tint);
+        }
+
+        public static void ApplySkyGradient(LevelTheme theme)
+        {
+            if (!ThemeWeather.TryGetValue(theme, out var types)) return;
+            foreach (var wt in types)
+            {
+                if (SkyTints.ContainsKey(wt)) { ApplySkyGradient(wt); return; }
+            }
         }
 
         private ParticleSystem? SpawnEffect(WeatherType wt)

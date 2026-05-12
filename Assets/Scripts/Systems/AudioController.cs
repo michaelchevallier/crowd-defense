@@ -31,6 +31,7 @@ namespace CrowdDefense.Systems
         private readonly Dictionary<string, float> _lastPlayedAt = new();
         private readonly HashSet<string> _warned = new();
         private Coroutine? _musicFadeCo;
+        private readonly Dictionary<string, AudioSource> _loopChannels = new();
 
         protected override void OnAwakeSingleton()
         {
@@ -245,6 +246,29 @@ namespace CrowdDefense.Systems
         public void SetUIVolume(float zeroToOne)
         {
             if (mixer != null && mixer.SetFloat("UIVol", LinearToDb(zeroToOne))) return;
+        }
+
+        public void PlayLoop(AudioClip clip, string channel, float volume = 1f)
+        {
+            if (!_loopChannels.TryGetValue(channel, out var src) || src == null)
+            {
+                var go = new GameObject($"Loop_{channel}");
+                go.transform.SetParent(transform);
+                src = go.AddComponent<AudioSource>();
+                src.playOnAwake = false;
+                src.loop = true;
+                _loopChannels[channel] = src;
+            }
+            if (src.clip == clip && src.isPlaying) return;
+            src.clip = clip;
+            src.volume = Mathf.Clamp01(volume);
+            src.Play();
+        }
+
+        public void StopChannel(string channel)
+        {
+            if (_loopChannels.TryGetValue(channel, out var src) && src != null)
+                src.Stop();
         }
 
         public void SetMuted(bool muted) =>
