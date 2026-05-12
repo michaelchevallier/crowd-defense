@@ -213,6 +213,15 @@ namespace CrowdDefense.Entities
         // Modified by SlowEffectManager each frame (slow) or by Freeze logic below
         public float currentSpeedMul = 1f;
 
+        // DynamicEventManager hook (R6-PARITY-012) — reassign to alternate path mid-wave.
+        public void ForceRecalcPath(int newPathIdx)
+        {
+            var pm = Systems.PathManager.Instance;
+            if (pm == null || newPathIdx < 0 || newPathIdx >= pm.Paths.Count) return;
+            pathIdx = newPathIdx;
+            currentWaypoint = 1;
+        }
+
         // Used by EnemyPathingSystem — exposes speed without touching Transform
         public float GetEffectiveSpeed() => ComputeEffectiveSpeed();
 
