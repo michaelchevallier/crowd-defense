@@ -87,6 +87,9 @@ namespace CrowdDefense.Entities
         private float _idlePhase;
         private float _lastFireAt;
 
+        // DOT feedback popup throttle — skip if popup emitted within last 0.5s
+        private float _lastDotPopupAt = -1f;
+
         // DPS rolling window — entries are (timestamp, damage) pairs stored flat
         private readonly List<float> _damageLogTimes  = new();
         private readonly List<float> _damageLogValues = new();
@@ -827,6 +830,22 @@ namespace CrowdDefense.Entities
             // L3 Frostmage (mage Utility) : freeze on hit 0.5s (D1-03)
             if (L3FreezeOnHit && SlowEffectManager.Instance != null)
                 SlowEffectManager.Instance.ApplySlow(t, 0f, L3FreezeDurMs);
+
+            // DOT feedback popups — throttled per tower (0.5s cooldown)
+            if (Time.time - _lastDotPopupAt >= 0.5f)
+            {
+                string? dotIcon = null;
+                Color dotColor = Color.white;
+                if (L3BurnDot)          { dotIcon = "\U0001F525"; dotColor = new Color(1f, 0.45f, 0.05f); }
+                else if (L3FreezeOnHit) { dotIcon = "❄️"; dotColor = new Color(0.4f, 0.9f, 1f); }
+                else if (L3SlowOnHit)   { dotIcon = "❄️"; dotColor = new Color(0.4f, 0.9f, 1f); }
+                if (dotIcon != null)
+                {
+                    CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                        dotIcon, transform.position + Vector3.up * 1.5f, dotColor);
+                    _lastDotPopupAt = Time.time;
+                }
+            }
 
             // L3 Archmage (mage DPS) : chain lightning jumps to nearby enemies (D1-03)
             if (L3ChainLightningJumps > 0)
