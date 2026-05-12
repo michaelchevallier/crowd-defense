@@ -5,6 +5,8 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
+using CrowdDefense.UI;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.Systems
 {
@@ -57,6 +59,18 @@ namespace CrowdDefense.Systems
         // cross-effect activation state: key = "sourceInstanceId:syn.from" → currently active?
         // Allows firing OnSynergyActivated exactly once per pair becoming active.
         private readonly Dictionary<string, bool> _crossActiveKeys = new();
+
+        protected override void OnAwakeSingleton()
+        {
+            OnSynergyActivated += HandleSynergyActivated;
+        }
+
+        private static void HandleSynergyActivated(SynergyActivatedInfo info)
+        {
+            Toast.Show("Synergy unlocked!", info.Label, 3000, null, ToastType.Synergy);
+            VfxPool.Instance?.SpawnConfetti(info.MidPoint, 1.5f);
+            AudioController.Instance?.Play("achievement_unlock");
+        }
 
         public void MarkDirty() => _dirty = true;
 
