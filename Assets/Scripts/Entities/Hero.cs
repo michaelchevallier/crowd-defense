@@ -443,7 +443,32 @@ namespace CrowdDefense.Entities
                 // Stage B: audio + juice feedback
                 AudioController.Instance?.Play("level_up", 0.9f);
                 JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.35f), 250);
+                JuiceFX.Instance?.PunchScale(transform, 1.25f, 0.3f);
+                VfxPool.Instance?.SpawnLevelUp(transform.position + Vector3.up * 1.5f);
+                StartCoroutine(RimLightGlowRoutine());
             }
+        }
+
+        private System.Collections.IEnumerator RimLightGlowRoutine()
+        {
+            var lightGo = new GameObject("LevelUpRimLight");
+            lightGo.transform.SetParent(transform);
+            lightGo.transform.localPosition = Vector3.up * 1.0f;
+            var light = lightGo.AddComponent<Light>();
+            light.type      = LightType.Point;
+            light.color     = new Color(1f, 0.84f, 0.1f);
+            light.intensity = 5f;
+            light.range     = 3f;
+
+            const float duration = 0.8f;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                light.intensity = Mathf.Lerp(5f, 0f, elapsed / duration);
+                yield return null;
+            }
+            Destroy(lightGo);
         }
 
         // ── Ultimate ──────────────────────────────────────────────────────────
