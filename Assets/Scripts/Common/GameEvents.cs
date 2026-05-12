@@ -48,6 +48,7 @@ namespace CrowdDefense.Common
     public record SynergyPairActivatedEvent(string FromType, string ToType, string Label);
 
     // Boss lifecycle
+    public record BossWarningEvent(string DisplayName);
     public record BossEncounteredEvent(string DisplayName, float MaxHp, Color AuraColor, Vector3 BossPos);
     public record BossHpChangedEvent(float Ratio);
     public record BossPhaseChangedEvent(string PhaseName, int PhaseIdx);

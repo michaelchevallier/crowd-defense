@@ -28,20 +28,91 @@ namespace CrowdDefense.UI
         private Coroutine?  _animCo;
         private string      _prefsKey = string.Empty;
 
+        private Coroutine? _pulseCo;
+
         protected override void OnAwakeSingleton()
         {
             BuildCanvas();
             var em = EventManager.Instance;
-            if (em != null) em.Subscribe<BossEncounteredEvent>(OnBossEncountered);
+            if (em != null)
+            {
+                em.Subscribe<BossEncounteredEvent>(OnBossEncountered);
+                em.Subscribe<BossWarningEvent>(OnBossWarning);
+            }
         }
 
         protected override void OnDestroySingleton()
         {
             var em = EventManager.Instance;
-            if (em != null) em.Unsubscribe<BossEncounteredEvent>(OnBossEncountered);
+            if (em != null)
+            {
+                em.Unsubscribe<BossEncounteredEvent>(OnBossEncountered);
+                em.Unsubscribe<BossWarningEvent>(OnBossWarning);
+            }
         }
 
-        private void OnBossEncountered(BossEncounteredEvent e) => Show(e.DisplayName);
+        private void OnBossWarning(BossWarningEvent e) => ShowWarning(e.DisplayName);
+        private void OnBossEncountered(BossEncounteredEvent e)
+        {
+            HideWarning();
+            Show(e.DisplayName);
+        }
+
+        public void ShowWarning(string bossName)
+        {
+            if (_canvas == null || _panel == null || _label == null) return;
+            if (_pulseCo != null) StopCoroutine(_pulseCo);
+            if (_animCo != null) { StopCoroutine(_animCo); _animCo = null; }
+
+            _label.text = $"BOSS INCOMING\n{bossName.ToUpper()}";
+            _label.color = Color.white;
+            // Red warning background, semi-transparent, top-center strip
+            var img = _panel.GetComponent<Image>();
+            if (img != null) img.color = new Color(0.8f, 0f, 0f, 0.85f);
+            // Position panel at top-center (strip height ~120px)
+            _panel.anchorMin = new Vector2(0f, 1f);
+            _panel.anchorMax = new Vector2(1f, 1f);
+            _panel.pivot     = new Vector2(0.5f, 1f);
+            _panel.anchoredPosition = Vector2.zero;
+            _panel.sizeDelta = new Vector2(0f, 120f);
+
+            AudioController.Instance?.Play("warning_sound", 1f);
+            _canvas.gameObject.SetActive(true);
+            _pulseCo = StartCoroutine(PulseWarning());
+        }
+
+        private void HideWarning()
+        {
+            if (_pulseCo != null) { StopCoroutine(_pulseCo); _pulseCo = null; }
+            // Reset panel to fullscreen for the intro banner that follows
+            if (_panel != null)
+            {
+                _panel.anchorMin = Vector2.zero;
+                _panel.anchorMax = Vector2.one;
+                _panel.pivot     = new Vector2(0.5f, 0.5f);
+                _panel.anchoredPosition = Vector2.zero;
+                _panel.sizeDelta = Vector2.zero;
+                var img = _panel.GetComponent<Image>();
+                if (img != null) img.color = new Color(0.25f, 0f, 0f, 0.8f);
+            }
+            if (_canvas != null) _canvas.gameObject.SetActive(false);
+        }
+
+        private IEnumerator PulseWarning()
+        {
+            if (_panel == null) yield break;
+            var img = _panel.GetComponent<Image>();
+            float t = 0f;
+            while (true)
+            {
+                t += Time.unscaledDeltaTime * 3f;
+                float alpha = Mathf.Lerp(0.55f, 0.95f, (Mathf.Sin(t) + 1f) * 0.5f);
+                if (img != null) img.color = new Color(0.8f, 0f, 0f, alpha);
+                if (_label != null)
+                    _label.color = Color.Lerp(Color.white, new Color(1f, 0.85f, 0.1f), (Mathf.Sin(t * 1.5f) + 1f) * 0.5f);
+                yield return null;
+            }
+        }
 
         public void Show(string bossName, string subtitle = "")
         {

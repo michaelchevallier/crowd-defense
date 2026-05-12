@@ -225,6 +225,7 @@ namespace CrowdDefense.Systems
             if (idx == 4) Achievements.Instance?.Unlock("wave_5_reached");
             OnWaveStart?.Invoke(idx);
             SpawnPressureMob(idx, currentWorld);
+            TriggerBossWarningIfNeeded(wave);
         }
 
         private float GetSpawnIntervalMul(SpawnPattern p, int counter)
@@ -457,6 +458,26 @@ namespace CrowdDefense.Systems
                 _waveKillCount++;
                 OnKillCountChanged?.Invoke(_waveKillCount, _waveTotalSpawned);
             }
+        }
+
+        private void TriggerBossWarningIfNeeded(WaveDef wave)
+        {
+            foreach (var entry in wave.entries)
+            {
+                if (entry.type != null && entry.type.IsBoss)
+                {
+                    StartCoroutine(BossWarnCoroutine(entry.type.DisplayName, wave.spawnRateMs / 1000f));
+                    return;
+                }
+            }
+        }
+
+        private System.Collections.IEnumerator BossWarnCoroutine(string displayName, float firstSpawnDelaySec)
+        {
+            float warnDelay = Mathf.Max(0f, firstSpawnDelaySec - 3f);
+            if (warnDelay > 0f) yield return new WaitForSeconds(warnDelay);
+            if (!waveActive) yield break;
+            EventManager.Instance?.Publish(new BossWarningEvent(displayName));
         }
 
         // Called by boss enemies when they summon a minion mid-wave.
