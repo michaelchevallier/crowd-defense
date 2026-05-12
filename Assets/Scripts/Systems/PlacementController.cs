@@ -364,6 +364,35 @@ namespace CrowdDefense.Systems
 
         public void UnregisterTower(Tower t) => placedTowers.Remove(t);
 
+        // Restore towers from mid-level save. Bypasses cost/gold check for upgrades.
+        public void RestoreTowers(System.Collections.Generic.List<PlacedTowerEntry> entries)
+        {
+            if (towerRegistry == null || towerPrefab == null || entries == null) return;
+            var bal = BalanceConfig.Get();
+            foreach (var entry in entries)
+            {
+                TowerType? type = null;
+                foreach (var t in towerRegistry.Towers)
+                    if (t != null && t.Id == entry.typeId) { type = t; break; }
+                if (type == null) continue;
+
+                var pos = new Vector3(entry.posX, entry.posY, entry.posZ);
+                var go = Instantiate(towerPrefab, pos, Quaternion.identity);
+                var tower = go.GetComponent<Tower>();
+                if (tower == null) continue;
+                tower.Init(type, null);
+                // Force upgrades by granting temporary gold so UpgradeTo's TrySpend passes.
+                for (int i = 1; i < entry.level; i++)
+                {
+                    float mul = (i + 1) == 2 ? bal.UpgradeMulL2 : bal.UpgradeMulL3;
+                    int cost = UnityEngine.Mathf.RoundToInt(type.Cost * mul);
+                    Economy.Instance?.AddGold(cost);
+                    tower.UpgradeTo(i + 1);
+                }
+                placedTowers.Add(tower);
+            }
+        }
+
         // Called by boss AoE blast to destroy a tower directly (POC — no HP system yet).
         public void RemoveTower(Tower t)
         {

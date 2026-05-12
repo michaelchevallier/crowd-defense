@@ -40,6 +40,7 @@ namespace CrowdDefense.UI
                 return;
             }
 
+            AddContinueRow(grid);
             AddDailyRow(grid);
 
             var registry = LevelRegistry.Get();
@@ -85,6 +86,29 @@ namespace CrowdDefense.UI
 
                 grid.Add(row);
             }
+        }
+
+        private static void AddContinueRow(VisualElement grid)
+        {
+            if (!SaveSystem.HasRunState()) return;
+
+            var mid = SaveSystem.LoadRunState();
+            if (mid == null || string.IsNullOrEmpty(mid.levelId)) return;
+
+            string display = $"{mid.levelId} V{mid.waveIdx}";
+            var row = new VisualElement();
+            row.AddToClassList("world-row");
+
+            var btn = new Button();
+            btn.text = $"Continuer ({display})";
+            btn.AddToClassList("level-btn");
+            btn.AddToClassList("continue-btn");
+
+            string savedLevelId = mid.levelId;
+            btn.RegisterCallback<ClickEvent>(_ => LevelLoader.LoadLevel(savedLevelId));
+            row.Add(btn);
+
+            grid.Add(row);
         }
 
         private static void OnLevelClicked(string levelId)

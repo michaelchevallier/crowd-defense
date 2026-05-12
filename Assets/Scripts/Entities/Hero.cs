@@ -157,6 +157,7 @@ namespace CrowdDefense.Entities
 
             int skinTier = (_perks?.Count ?? 0) >= 5 ? 2 : ((_perks?.Count ?? 0) >= 2 ? 1 : 0);
             ApplySkin(skinTier);
+            ApplyTintFromPrefs(type.Id);
 
             _animator = AnimationController.SetupAnimator(toonRoot, "Idle", "Walk");
 
@@ -1030,6 +1031,32 @@ namespace CrowdDefense.Entities
                 {
                     block.Clear();
                 }
+                r.SetPropertyBlock(block);
+            }
+        }
+
+        // Reads the persisted hero_tint PlayerPrefs key and overlays _BaseColor via MaterialPropertyBlock.
+        // Called after ApplySkin so the custom tint always wins over the tier tint.
+        private void ApplyTintFromPrefs(string heroId)
+        {
+            string hex = PlayerPrefs.GetString(UI.HeroPickScreen.TintPrefsKey(heroId), "");
+            if (string.IsNullOrEmpty(hex)) return;
+            if (!ColorUtility.TryParseHtmlString(hex, out var tint)) return;
+
+            var block = new MaterialPropertyBlock();
+
+            foreach (var r in GetComponentsInChildren<SkinnedMeshRenderer>(includeInactive: true))
+            {
+                r.GetPropertyBlock(block);
+                block.SetColor("_BaseColor", tint);
+                block.SetColor("_Color", tint);
+                r.SetPropertyBlock(block);
+            }
+            foreach (var r in GetComponentsInChildren<MeshRenderer>(includeInactive: true))
+            {
+                r.GetPropertyBlock(block);
+                block.SetColor("_BaseColor", tint);
+                block.SetColor("_Color", tint);
                 r.SetPropertyBlock(block);
             }
         }

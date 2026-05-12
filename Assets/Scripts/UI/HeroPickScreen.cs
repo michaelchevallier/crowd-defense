@@ -14,6 +14,18 @@ namespace CrowdDefense.UI
     {
         public const string PrefsKey = "selected_hero_v1";
 
+        // 5 tint presets shown under each hero card.
+        private static readonly (string hex, Color color)[] TintPresets =
+        {
+            ("#FFFFFF", Color.white),
+            ("#E05252", new Color(0.878f, 0.322f, 0.322f)),
+            ("#5285E0", new Color(0.322f, 0.522f, 0.878f)),
+            ("#52E069", new Color(0.322f, 0.878f, 0.412f)),
+            ("#9B52E0", new Color(0.608f, 0.322f, 0.878f)),
+        };
+
+        public static string TintPrefsKey(string heroId) => $"hero_tint_{heroId}_v1";
+
         [SerializeField] private HeroType[]   heroTypes   = Array.Empty<HeroType>();
         [SerializeField] private Canvas?      rootCanvas;
         [SerializeField] private RectTransform? cardContainer;
@@ -118,12 +130,15 @@ namespace CrowdDefense.UI
             descTxt.alignment = TextAnchor.UpperCenter;
             descTxt.color     = new Color(0.85f, 0.85f, 0.85f);
 
-            // Choose button
+            // Tint row (5 color swatches)
+            BuildTintRow(cardRt, hero, portraitImg);
+
+            // Choose button (moved down to make room: anchorMin.y was 0.04, now shifted to row below tints)
             var btnGo = new GameObject("btn", typeof(RectTransform), typeof(CanvasRenderer));
             var btnRt = btnGo.GetComponent<RectTransform>();
             btnRt.SetParent(cardRt, false);
             btnRt.anchorMin = new Vector2(0.1f, 0.04f);
-            btnRt.anchorMax = new Vector2(0.9f, 0.20f);
+            btnRt.anchorMax = new Vector2(0.9f, 0.19f);
             btnRt.offsetMin = Vector2.zero;
             btnRt.offsetMax = Vector2.zero;
             var btnImg = btnGo.AddComponent<Image>();
@@ -146,6 +161,48 @@ namespace CrowdDefense.UI
 
             HeroType captured = hero;
             btn.onClick.AddListener(() => OnHeroChosen(captured));
+        }
+
+        // Builds a row of 5 color-swatch buttons (19% height band above the choose-btn).
+        // Clicking a swatch: saves hex to PlayerPrefs + updates portrait image color immediately.
+        private void BuildTintRow(RectTransform cardRt, HeroType hero, Image portraitImg)
+        {
+            string savedHex = PlayerPrefs.GetString(TintPrefsKey(hero.Id), "");
+            if (!string.IsNullOrEmpty(savedHex))
+            {
+                if (ColorUtility.TryParseHtmlString(savedHex, out var saved))
+                    portraitImg.color = saved;
+            }
+
+            float swatchWidth = 1f / TintPresets.Length;
+            for (int i = 0; i < TintPresets.Length; i++)
+            {
+                var (hex, col) = TintPresets[i];
+                var swatchGo = new GameObject($"tint_{i}", typeof(RectTransform), typeof(CanvasRenderer));
+                var swatchRt = swatchGo.GetComponent<RectTransform>();
+                swatchRt.SetParent(cardRt, false);
+                float xMin = i * swatchWidth;
+                float xMax = xMin + swatchWidth;
+                swatchRt.anchorMin = new Vector2(xMin, 0.19f);
+                swatchRt.anchorMax = new Vector2(xMax, 0.34f);
+                swatchRt.offsetMin = new Vector2(2f, 2f);
+                swatchRt.offsetMax = new Vector2(-2f, -2f);
+
+                var swatchImg = swatchGo.AddComponent<Image>();
+                swatchImg.color = col;
+                var swatchBtn = swatchGo.AddComponent<Button>();
+
+                string capturedHex   = hex;
+                Color  capturedColor = col;
+                string heroId        = hero.Id;
+                Image  portrait      = portraitImg;
+                swatchBtn.onClick.AddListener(() =>
+                {
+                    PlayerPrefs.SetString(TintPrefsKey(heroId), capturedHex);
+                    PlayerPrefs.Save();
+                    portrait.color = capturedColor;
+                });
+            }
         }
 
         private void ClearCards()
