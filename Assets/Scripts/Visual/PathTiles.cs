@@ -290,8 +290,10 @@ namespace CrowdDefense.Visual
                     var col = go.GetComponent<Collider>();
                     if (col != null) Destroy(col);
 
-                    var matInst = Object.Instantiate(mat);
-                    go.GetComponent<MeshRenderer>().sharedMaterial = matInst;
+                    // Share one material instance across all bridge quads of the same type
+                    // so GPU instancing can batch them. Per-cell Instantiate() was defeating
+                    // instancing by creating N separate material objects.
+                    go.GetComponent<MeshRenderer>().sharedMaterial = mat;
 
                     _spawnedObjects.Add(go);
                 }
