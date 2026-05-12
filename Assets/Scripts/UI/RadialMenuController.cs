@@ -211,13 +211,21 @@ namespace CrowdDefense.UI
 
         private void PopulateL2Button(int cost, bool canAfford)
         {
-            if (btnUpgradeL2Cost != null) btnUpgradeL2Cost.text = $"{cost}g";
+            if (btnUpgradeL2Cost != null)
+            {
+                btnUpgradeL2Cost.text = $"{cost}g";
+                SetCostAffordability(btnUpgradeL2Cost, canAfford);
+            }
             btnUpgradeL2?.SetEnabled(canAfford);
         }
 
         private void PopulateL3StandardButton(int cost, bool canAfford)
         {
-            if (btnUpgradeL3Cost != null) btnUpgradeL3Cost.text = $"{cost}g";
+            if (btnUpgradeL3Cost != null)
+            {
+                btnUpgradeL3Cost.text = $"{cost}g";
+                SetCostAffordability(btnUpgradeL3Cost, canAfford);
+            }
             btnUpgradeL3?.SetEnabled(canAfford);
         }
 
@@ -432,6 +440,13 @@ namespace CrowdDefense.UI
         {
             if (el == null) return;
             el.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private static void SetCostAffordability(Label label, bool canAfford)
+        {
+            const string cls = "radial-cost--unaffordable";
+            if (canAfford) label.RemoveFromClassList(cls);
+            else           label.AddToClassList(cls);
         }
 
         private void Show() => radialMenu?.RemoveFromClassList("hidden");

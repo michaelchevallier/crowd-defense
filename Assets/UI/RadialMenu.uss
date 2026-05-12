@@ -147,6 +147,10 @@
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
 
+.radial-cost--unaffordable {
+    color: rgb(255, 70, 70);
+}
+
 /* Ligne action (range + sell) */
 .radial-action-row {
     flex-direction: row;
