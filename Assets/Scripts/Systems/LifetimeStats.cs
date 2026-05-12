@@ -1,4 +1,6 @@
 #nullable enable
+using System;
+using System.Collections.Generic;
 using CrowdDefense.Common;
 using UnityEngine;
 
@@ -7,11 +9,43 @@ namespace CrowdDefense.Systems
     [DefaultExecutionOrder(-90)]
     public class LifetimeStats : MonoSingleton<LifetimeStats>
     {
-        private const string KeyKills   = "total_kills_lifetime_v1";
-        private const string KeyGold    = "total_gold_lifetime_v1";
-        private const string KeyTime    = "total_time_played_seconds_v1";
-        private const string KeyWins    = "levels_won_lifetime_v1";
-        private const string KeyRuns    = "total_runs_lifetime_v1";
+        private const string KeyKills      = "total_kills_lifetime_v1";
+        private const string KeyGold       = "total_gold_lifetime_v1";
+        private const string KeyTime       = "total_time_played_seconds_v1";
+        private const string KeyWins       = "levels_won_lifetime_v1";
+        private const string KeyRuns       = "total_runs_lifetime_v1";
+        private const string KeyLeaderboard = "cd.leaderboard.scores";
+        private const int    MaxLeaderboard = 5;
+
+        [Serializable]
+        public class ScoreEntry
+        {
+            public int    score;
+            public string date  = "";
+            public int    world;
+        }
+
+        [Serializable]
+        private class ScoreList { public List<ScoreEntry> entries = new(); }
+
+        public static List<ScoreEntry> GetLeaderboard()
+        {
+            var json = PlayerPrefs.GetString(KeyLeaderboard, "");
+            if (string.IsNullOrEmpty(json)) return new List<ScoreEntry>();
+            try { return JsonUtility.FromJson<ScoreList>(json)?.entries ?? new List<ScoreEntry>(); }
+            catch { return new List<ScoreEntry>(); }
+        }
+
+        public static void RecordScore(int score, string runDate, int world = 0)
+        {
+            var list = GetLeaderboard();
+            list.Add(new ScoreEntry { score = score, date = runDate, world = world });
+            list.Sort((a, b) => b.score.CompareTo(a.score));
+            if (list.Count > MaxLeaderboard) list.RemoveRange(MaxLeaderboard, list.Count - MaxLeaderboard);
+            var wrapper = new ScoreList { entries = list };
+            PlayerPrefs.SetString(KeyLeaderboard, JsonUtility.ToJson(wrapper));
+            PlayerPrefs.Save();
+        }
 
         // Per-world storage — world ids 1..10
         private static string StarKey(int world)  => $"world_{world}_best_stars_v1";

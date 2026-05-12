@@ -19,6 +19,7 @@ namespace CrowdDefense.UI
         private Label?         _winsValue;
         private Label?         _achValue;
         private VisualElement? _worldContainer;
+        private VisualElement? _leaderboardContainer;
 
         // Career Totals section (injected dynamically)
         private Label? _careerRunsValue;
@@ -49,6 +50,7 @@ namespace CrowdDefense.UI
             if (closeBtn != null) closeBtn.clicked += Hide;
 
             BuildCareerTotalsSection(ve);
+            BuildLeaderboardSection(ve);
         }
 
         private void OnDestroy()
@@ -80,6 +82,7 @@ namespace CrowdDefense.UI
 
             RefreshCareerTotals(ls);
             PopulateRows();
+            PopulateLeaderboard();
         }
 
         private void RefreshCareerTotals(LifetimeStats ls)
@@ -141,6 +144,48 @@ namespace CrowdDefense.UI
             3 => "***",
             _ => "---"
         };
+
+        private void PopulateLeaderboard()
+        {
+            if (_leaderboardContainer == null) return;
+            _leaderboardContainer.Clear();
+
+            var scores = LifetimeStats.GetLeaderboard();
+            if (scores.Count == 0)
+            {
+                var empty = new Label("No runs yet");
+                empty.AddToClassList("lt-lb-empty");
+                _leaderboardContainer.Add(empty);
+                return;
+            }
+
+            for (int i = 0; i < scores.Count; i++)
+            {
+                var e   = scores[i];
+                var lbl = new Label($"{i + 1}. {e.score:N0} pts — W{e.world} — {e.date}");
+                lbl.AddToClassList("lt-lb-entry");
+                _leaderboardContainer.Add(lbl);
+            }
+        }
+
+        private void BuildLeaderboardSection(VisualElement root)
+        {
+            var anchor = root.Q<VisualElement>("lt-leaderboard") ?? _root ?? root;
+
+            var section = new VisualElement();
+            section.name = "leaderboard-section";
+            section.AddToClassList("lt-section");
+
+            var header = new Label("Top 5 Best Scores");
+            header.AddToClassList("lt-section-header");
+            section.Add(header);
+
+            _leaderboardContainer = new VisualElement();
+            _leaderboardContainer.name = "lt-lb-rows";
+            section.Add(_leaderboardContainer);
+
+            anchor.Add(section);
+        }
 
         private static string FormatTime(float seconds)
         {
