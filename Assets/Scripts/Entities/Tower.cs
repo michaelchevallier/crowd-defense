@@ -1379,22 +1379,23 @@ namespace CrowdDefense.Entities
             TickAffordableHighlight();
 
             bool isSelected = PlacementController.Instance?.SelectedTower == this;
-            if (!isSelected)
+            bool recentFire = (Time.time - _lastFireAt) < 0.2f;
+
+            if (!isSelected && !recentFire)
             {
-                float bobY = _basePos.y + Mathf.Sin(Time.time * 2f + _idlePhase) * 0.03f;
+                float bobY = _basePos.y + Mathf.Sin(Time.time * 5f + _idlePhase) * 0.05f;
                 transform.position = new Vector3(_basePos.x, bobY, _basePos.z);
             }
 
             if (_meshChild == null) return;
 
-            bool recentFire = (Time.time - _lastFireAt) < 0.2f;
             if (recentFire) return;
 
             float t = Time.time;
             float phase = _idlePhase;
             _meshChild.transform.localPosition = new Vector3(
                 0f,
-                Mathf.Sin(t * 1.5f + phase) * 0.04f,
+                Mathf.Sin(t * 5f + phase) * 0.05f,
                 0f);
             _meshChild.transform.localRotation = Quaternion.Euler(
                 0f,
