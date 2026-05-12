@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Toon_Water
-  m_Shader: {fileID: 4800000, guid: e9d4679bb4e664728a6a5620f0d14617, type: 3}
+  m_Shader: {fileID: 4800000, guid: 8fed033e00a5b41e2bd0eea901a85f4a, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -27,14 +27,18 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _NoiseTex:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
     - _CausticScale: 22
     - _CausticStrength: 0.1
+    - _FlowSpeed: 0.15
     - _FoamStrength: 0.18
     - _FoamWidth: 0.025
-    - _ScrollSpeedX: 0.12
-    - _ScrollSpeedY: 0.06
+    - _NoiseStrength: 0.35
     - _VertWaveAmp: 0.05
     - _VertWaveFreq: 2
     - _VertWaveSpeed: 1.5
