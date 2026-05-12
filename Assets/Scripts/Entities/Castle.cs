@@ -20,8 +20,9 @@ namespace CrowdDefense.Entities
         public event Action<int, int>? OnHPChanged;
         public event Action<Castle>?   OnCastleDied;
 
-        // World index used for no-regen threshold (D1-04)
+        // World index used for no-regen threshold (D1-04) and candle theme
         private int _world = 1;
+        private int _currentWorld = 0;  // 0 = not yet configured
 
         // Armor break — temporary damage taken multiplier (siege enemies / armor break effect)
         private float _dmgTakenMul        = 1f;
@@ -106,6 +107,7 @@ namespace CrowdDefense.Entities
             BuildHpBar();
             ApplyWorldDecoration(world);
             SpawnCandleParticles();
+            ConfigureCandlesForWorld(world);
             BuildGate();
             SubscribeWaveEvents();
             OnHPChanged?.Invoke(HP, HPMax);
@@ -700,6 +702,128 @@ namespace CrowdDefense.Entities
 
                 ps.Play();
                 _candlePs[i] = ps;
+            }
+        }
+
+        // Called by LevelRunner when the active world changes (e.g. level 1→11 = W1→W2).
+        public void SetWorld(int world)
+        {
+            if (_currentWorld == world) return;
+            _world = world;
+            ConfigureCandlesForWorld(world);
+        }
+
+        // Reconfigures the 4 ambient candle ParticleSystems for the given world theme.
+        // Zero allocation — mutates existing PS module structs in-place.
+        private void ConfigureCandlesForWorld(int world)
+        {
+            if (_currentWorld == world) return;
+            _currentWorld = world;
+
+            // Per-world theme data: (colorA, colorB, startSize min/max, emissionRate, flickerSpeed)
+            // colorA = base flame tip, colorB = flame core
+            Color colorA, colorB;
+            float sizeMin, sizeMax, emissionRate, flickerMul;
+
+            switch (world)
+            {
+                case 2:  // Marais — green-yellow
+                    colorA     = new Color(0.7f,  0.9f,  0.4f);
+                    colorB     = new Color(0.5f,  0.75f, 0.1f);
+                    sizeMin    = 0.06f; sizeMax = 0.13f;
+                    emissionRate = 10f; flickerMul = 1.0f;
+                    break;
+                case 3:  // Désert — orange torch
+                    colorA     = new Color(1f,    0.5f,  0.1f);
+                    colorB     = new Color(0.9f,  0.3f,  0.0f);
+                    sizeMin    = 0.08f; sizeMax = 0.18f;
+                    emissionRate = 14f; flickerMul = 1.3f;
+                    break;
+                case 4:  // Glacier — cyan cold
+                    colorA     = new Color(0.4f,  0.85f, 1.0f);
+                    colorB     = new Color(0.2f,  0.6f,  0.9f);
+                    sizeMin    = 0.05f; sizeMax = 0.11f;
+                    emissionRate = 9f;  flickerMul = 1.5f;  // rapid cold flicker
+                    break;
+                case 5:  // Mer — blue-cyan
+                    colorA     = new Color(0.3f,  0.7f,  1.0f);
+                    colorB     = new Color(0.1f,  0.45f, 0.85f);
+                    sizeMin    = 0.07f; sizeMax = 0.15f;
+                    emissionRate = 12f; flickerMul = 1.1f;
+                    break;
+                case 6:  // Volcan — red brazier intense
+                    colorA     = new Color(1f,    0.3f,  0.1f);
+                    colorB     = new Color(0.85f, 0.1f,  0.0f);
+                    sizeMin    = 0.10f; sizeMax = 0.22f;
+                    emissionRate = 20f; flickerMul = 1.4f;
+                    break;
+                case 7:  // Ruines — purple mystical
+                    colorA     = new Color(0.7f,  0.5f,  1.0f);
+                    colorB     = new Color(0.5f,  0.2f,  0.85f);
+                    sizeMin    = 0.05f; sizeMax = 0.12f;
+                    emissionRate = 8f;  flickerMul = 0.7f;  // slow, eerie
+                    break;
+                case 8:  // Ciel — white bright
+                    colorA     = new Color(1f,    1f,    0.95f);
+                    colorB     = new Color(0.9f,  0.95f, 0.8f);
+                    sizeMin    = 0.07f; sizeMax = 0.16f;
+                    emissionRate = 12f; flickerMul = 1.0f;
+                    break;
+                case 9:  // Astral — violet
+                    colorA     = new Color(0.8f,  0.4f,  1.0f);
+                    colorB     = new Color(0.6f,  0.15f, 0.9f);
+                    sizeMin    = 0.07f; sizeMax = 0.17f;
+                    emissionRate = 13f; flickerMul = 1.2f;
+                    break;
+                case 10: // Apocalypse — red-orange extreme
+                    colorA     = new Color(1f,    0.2f,  0.05f);
+                    colorB     = new Color(0.9f,  0.05f, 0.0f);
+                    sizeMin    = 0.12f; sizeMax = 0.26f;
+                    emissionRate = 24f; flickerMul = 2.0f;  // extreme flicker
+                    break;
+                default: // W1 Forêt — warm yellow (also fallback for unknown worlds)
+                    colorA     = new Color(1f,    0.8f,  0.3f);
+                    colorB     = new Color(1f,    0.45f, 0.05f);
+                    sizeMin    = 0.06f; sizeMax = 0.14f;
+                    emissionRate = 10f; flickerMul = 1.0f;
+                    break;
+            }
+
+            // Intensity maps to startSpeed: higher intensity worlds get faster rising particles
+            float speedMin = 0.4f * flickerMul;
+            float speedMax = 0.9f * flickerMul;
+
+            for (int i = 0; i < _candlePs.Length; i++)
+            {
+                var ps = _candlePs[i];
+                if (ps == null) continue;
+
+                var main        = ps.main;
+                main.startColor = new ParticleSystem.MinMaxGradient(colorA, colorB);
+                main.startSize  = new ParticleSystem.MinMaxCurve(sizeMin, sizeMax);
+                main.startSpeed = new ParticleSystem.MinMaxCurve(speedMin, speedMax);
+
+                var emission          = ps.emission;
+                emission.rateOverTime = emissionRate;
+
+                // Rebuild colorOverLifetime gradient to match new palette
+                var col = ps.colorOverLifetime;
+                col.enabled = true;
+                var grad = new Gradient();
+                grad.SetKeys(
+                    new[]
+                    {
+                        new GradientColorKey(colorA,                                              0f),
+                        new GradientColorKey(Color.Lerp(colorA, colorB, 0.5f),                   0.5f),
+                        new GradientColorKey(new Color(colorB.r * 0.6f, colorB.g * 0.1f, 0f),   1f),
+                    },
+                    new[]
+                    {
+                        new GradientAlphaKey(0.9f, 0f),
+                        new GradientAlphaKey(0.7f, 0.5f),
+                        new GradientAlphaKey(0f,   1f),
+                    });
+                col.color = new ParticleSystem.MinMaxGradient(grad);
             }
         }
 
