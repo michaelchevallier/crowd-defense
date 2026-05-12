@@ -294,7 +294,7 @@
 
         <!-- Keyboard hints footer bar -->
         <ui:VisualElement name="keyboard-hints" class="keyboard-hints">
-            <ui:Label name="keyboard-hints-label" class="key-hint" text="N=vague  ESC=pause  U=ult  Espace=vitesse  F3=debug  M=minimap" />
+            <ui:Label name="keyboard-hints-label" class="key-hint" text="N=vague  ESC=pause  U=ult  Espace=vitesse  F3=debug  F4=spawn  M=minimap" />
         </ui:VisualElement>
 
         <!-- Toast stack (generic toasts: perk, synergy, combo, modifier, achievement) -->
@@ -458,6 +458,10 @@
                         <ui:Label text="Compteur FPS / Profil" class="help-desc" />
                     </ui:VisualElement>
                     <ui:VisualElement class="help-row">
+                        <ui:Label text="F4" class="help-key" />
+                        <ui:Label text="Spawner debug (vague/queue/TTN)" class="help-desc" />
+                    </ui:VisualElement>
+                    <ui:VisualElement class="help-row">
                         <ui:Label text="ESC" class="help-key" />
                         <ui:Label text="Menu pause" class="help-desc" />
                     </ui:VisualElement>
@@ -581,5 +585,7 @@
             </ui:VisualElement>
         <!-- Debug profile overlay — toggle F3 -->
         <ui:Label name="profile-overlay" class="profile hidden" />
+        <!-- Debug spawn overlay — toggle F4 -->
+        <ui:Label name="spawn-overlay" class="profile hidden" />
     </ui:VisualElement>
 </ui:UXML>

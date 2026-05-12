@@ -37,6 +37,13 @@ namespace CrowdDefense.Systems
         public int WaveDisplayNumber => currentWaveIdx + 1;
         public int TotalWaves => levelData?.Waves.Count ?? 0;
         public bool IsWaitingForPlayerStart => waitingForPlayerStart;
+        public bool IsWaveActive => waveActive;
+        public int PendingSpawnCount => pendingSpawns.Count;
+        public float SpawnTimerMs => spawnTimerMs;
+        public float SpawnIntervalMs => levelData != null && waveActive
+            ? levelData.Waves[currentWaveIdx].spawnRateMs * _specialSpawnRateMul * _varSpawnRateMul
+                * GetSpawnIntervalMul(levelData.Waves[currentWaveIdx].pattern, spawnCounter)
+            : 0f;
         public float SkipWindowSecondsRemaining => skipWindowTimer;
         public int StreakCount => streakCount;
         // Display number of the wave that will start when the player clicks (1-based)
