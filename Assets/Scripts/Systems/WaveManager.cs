@@ -70,6 +70,10 @@ namespace CrowdDefense.Systems
         public int WaveKillCount => _waveKillCount;
         public int WaveTotalSpawned => _waveTotalSpawned;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private bool _debugPause = false;
+#endif
+
         private void Start()
         {
             // Fallback to LevelRunner's currentLevel if this component's levelData is not assigned
@@ -242,6 +246,13 @@ namespace CrowdDefense.Systems
         private void Update()
         {
             if (levelData == null) return;
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (Input.GetKeyDown(KeyCode.F5))
+                _debugPause = !_debugPause;
+            if (_debugPause) return;
+#endif
+
             float dt = Time.deltaTime;
             float dtMs = dt * 1000f;
 
@@ -308,6 +319,21 @@ namespace CrowdDefense.Systems
                 }
             }
         }
+
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        private void OnGUI()
+        {
+            if (!_debugPause) return;
+            var style = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 20,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.UpperCenter,
+                normal = { textColor = new Color(1f, 0.85f, 0f) }
+            };
+            GUI.Label(new Rect(0, 8, Screen.width, 36), "WAVE PAUSED [F5]", style);
+        }
+#endif
 
         // Called by HudController on button click or N keypress (debounced externally)
         public void StartNextWave()
