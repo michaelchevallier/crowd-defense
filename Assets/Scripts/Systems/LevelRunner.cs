@@ -162,6 +162,8 @@ namespace CrowdDefense.Systems
             UI.HeroPortraitController.Instance?.Wire();
             SpawnTreasureSystem();
             SpawnPathPreview();
+            if (gameObject.GetComponent<EnemyAmbientChatter>() == null)
+                gameObject.AddComponent<EnemyAmbientChatter>();
             TryPlayOpeningCutscene();
             UI.TutorialPopupController.TryShow(currentLevel?.Id);
             UI.TutorialArrowGuide.TryStart(currentLevel?.Id);
