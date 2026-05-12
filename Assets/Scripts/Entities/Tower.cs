@@ -956,6 +956,19 @@ namespace CrowdDefense.Entities
                 if (hpRatio < L3BerserkerHpThreshold) dmg *= L3BerserkerDmgMul;
             }
 
+            // Base crit (all towers) — modifiable via Talent + Research
+            {
+                var bal = BalanceConfig.Get();
+                float baseCrit = bal.CritChance
+                    + TalentSystem.CritChanceBonus
+                    + TowerResearchTree.CritChanceBonus(cfg.Id);
+                if (baseCrit > 0f && Random.value < baseCrit)
+                {
+                    dmg *= bal.CritDmgMul;
+                    CrowdDefense.UI.FloatingPopupController.Instance?.SpawnCrit(dmg, t.transform.position);
+                }
+            }
+
             // L3 Ranger Marksman (archer Utility) : crit hit (D1-03)
             if (L3CritChance > 0f && Random.value < L3CritChance)
                 dmg *= L3CritMul;

@@ -17,6 +17,8 @@ namespace CrowdDefense.Data
         [Header("Tower scaling")]
         public float TowerDamageMul = 1.6f;
         public float[] LevelScale = { 0.75f, 1.0f, 1.30f };
+        public float CritChance = 0.05f;
+        public float CritDmgMul = 2.0f;
 
         [Header("Wave economy")]
         public float SwarmMul = 1.4f;

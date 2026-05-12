@@ -65,6 +65,9 @@ namespace CrowdDefense.Systems
         public static float FireRateIntervalMul(string towerId) =>
             IsUnlocked(towerId, 2) ? 0.90f : 1f;
 
+        // Reserved for future research node — returns 0 until wired
+        public static float CritChanceBonus(string towerId) => 0f;
+
         // ── Node display helpers ──────────────────────────────────────────────
 
         public static string NodeLabel(int node) => node switch

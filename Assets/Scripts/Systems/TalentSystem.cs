@@ -51,6 +51,8 @@ namespace CrowdDefense.Systems
         public static float TowerDamageMul   => 1f + 0.05f * TowerDamageLevel;
         public static float HeroPowerMul     => 1f + 0.05f * HeroPowerLevel;
         public static float GoldIncomeMul    => 1f + 0.05f * GoldIncomeLevel;
+        // Reserved for future talent node — returns 0 until wired
+        public static float CritChanceBonus  => 0f;
 
         // ── Points ───────────────────────────────────────────────────────────
 
