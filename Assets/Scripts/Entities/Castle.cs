@@ -266,6 +266,7 @@ namespace CrowdDefense.Entities
             HP = Mathf.Min(HPMax, HP + amount);
             OnHPChanged?.Invoke(HP, HPMax);
             RefreshHpBar();
+            UpdateCastleAura();
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnHeal(
                 amount, transform.position + Vector3.up * 2f);
             VfxPool.Instance?.SpawnHealAura(transform.position);
@@ -279,6 +280,7 @@ namespace CrowdDefense.Entities
             HP    += bonus;
             OnHPChanged?.Invoke(HP, HPMax);
             RefreshHpBar();
+            UpdateCastleAura();
         }
 
         // ── Visual helpers ──────────────────────────────────────────────────────
