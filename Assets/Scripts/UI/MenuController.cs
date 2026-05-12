@@ -102,7 +102,7 @@ namespace CrowdDefense.UI
             };
 
             _demoOverlay.Add(label);
-            _root?.Add(_demoOverlay);
+            Root?.Add(_demoOverlay);
 
             _demoOverlay.RegisterCallback<ClickEvent>(_ => CancelDemoMode());
 
