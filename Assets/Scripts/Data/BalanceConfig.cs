@@ -59,6 +59,10 @@ namespace CrowdDefense.Data
         [Header("Interest bank (D1-01 §3.5)")]
         public float BankInterestRate = 0.05f;
 
+        [Header("Wave Variance")]
+        public float WaveSpawnVariance = 0.15f;
+        public float WaveCountVariance = 0.1f;
+
         [Header("Combo system (multi-kill streak)")]
         public float ComboWindowSeconds = 2f;
         public int ComboMinKills = 2;

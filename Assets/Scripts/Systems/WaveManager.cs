@@ -22,6 +22,7 @@ namespace CrowdDefense.Systems
         private float _currentWaveScaleMul = 1f;  // endless mode: applied per-spawn (HP-based)
         private float _specialSpawnRateMul = 1f;   // endless special wave: spawn rate modifier
         private float _specialCountMul = 1f;        // endless special wave: enemy count modifier
+        private float _varSpawnRateMul = 1f;        // BalanceConfig variance: per-wave spawn jitter
         private Queue<(EnemyType type, EnemyVariant variant)> pendingSpawns = new();
         private List<Enemy> activeEnemies = new();
 
@@ -135,12 +136,20 @@ namespace CrowdDefense.Systems
             _waveTotalSpawned = 0;
             _specialSpawnRateMul = 1f;
             _specialCountMul = 1f;
+            _varSpawnRateMul = 1f;
             var wave = levelData!.Waves[idx];
             var cfg = BalanceConfig.Get();
             float swarmMul = cfg.SwarmMul;
             // D1-04 mob pressure : mobCountMul par world
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
             float countMul = cfg.GetPressure(currentWorld).mobCountMul;
+            // Wave variance: seeded by levelId ^ waveIdx for deterministic replayability
+            var seed = (levelData!.Id?.GetHashCode() ?? 0) ^ idx;
+            var varianceRng = new System.Random(seed);
+            float varCountMul = 1f + (float)(varianceRng.NextDouble() * 2 - 1) * cfg.WaveCountVariance;
+            float varSpawnMul = 1f + (float)(varianceRng.NextDouble() * 2 - 1) * cfg.WaveSpawnVariance;
+            countMul *= varCountMul;
+            _varSpawnRateMul = varSpawnMul;
             // Endless scaling: override scaleMul with spec formula, then check special waves.
             bool isEndless = levelData!.IsEndless || LevelRunner.Instance?.IsEndlessRun == true;
             if (isEndless)
@@ -215,7 +224,7 @@ namespace CrowdDefense.Systems
                 spawnTimerMs += dtMs;
                 var wave = levelData.Waves[currentWaveIdx];
                 float patternMul = GetSpawnIntervalMul(wave.pattern, spawnCounter);
-                float actualInterval = wave.spawnRateMs * _specialSpawnRateMul * patternMul;
+                float actualInterval = wave.spawnRateMs * _specialSpawnRateMul * _varSpawnRateMul * patternMul;
                 if (spawnTimerMs >= actualInterval && pendingSpawns.Count > 0)
                 {
                     spawnTimerMs = 0f;
