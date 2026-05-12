@@ -117,6 +117,8 @@ namespace CrowdDefense.Entities
         private int   _bossPhase        = 0;   // 0=init, 1=default, 2=darkred, 3=fire
         private float _bossBaseScale    = 1f;  // type.Scale captured at Init, before elite mul
         private Color _bossPhaseEmission = Color.black; // current phase emission, restored after hit flash
+        private Color _currentBossTint  = Color.white;
+        private Coroutine? _bossTintLerp;
 
         // ── Apocalypse boss phases ─────────────────────────────────────────────
         private int   _apocPhase        = 0;
@@ -305,20 +307,41 @@ namespace CrowdDefense.Entities
             float eliteMul = _isElite ? (_bossBaseScale > 0f ? transform.localScale.x / _bossBaseScale : 1f) : 1f;
             transform.localScale = Vector3.one * (_bossBaseScale * scaleMul * eliteMul);
 
-            // Phase color BEFORE flash — flash only writes _emissiveId, tint keys are separate
-            _mpb.SetColor(_baseColorId, tint);
-            _mpb.SetColor(_colorId,     tint);
+            // Phase color — smooth lerp to avoid jarring switch on HP threshold
             _bossPhaseEmission = emission;
-            // Write emission only if no hit flash is currently running (flash takes priority)
-            if (_hitFlashTimer <= 0f)
-                _mpb.SetColor(_emissiveId, emission);
-
-            for (int i = 0; i < _cachedRenderers.Length; i++)
-                _cachedRenderers[i].SetPropertyBlock(_mpb);
+            if (_bossTintLerp != null) StopCoroutine(_bossTintLerp);
+            _bossTintLerp = StartCoroutine(LerpBossTint(tint, emission, 0.3f));
 
             // Phase 3: ember burst via VfxPool if available
             if (phase == 3)
                 VfxPool.Instance?.SpawnExplosion(transform.position + Vector3.up * 0.8f, 1.8f);
+        }
+
+        private IEnumerator LerpBossTint(Color target, Color emission, float dur)
+        {
+            if (_cachedRenderers == null || _mpb == null) yield break;
+            Color from = _currentBossTint;
+            float t    = 0f;
+            while (t < dur)
+            {
+                t += Time.deltaTime;
+                Color c = Color.Lerp(from, target, t / dur);
+                _mpb.SetColor(_baseColorId, c);
+                _mpb.SetColor(_colorId,     c);
+                if (_hitFlashTimer <= 0f)
+                    _mpb.SetColor(_emissiveId, Color.Lerp(Color.black, emission, t / dur));
+                for (int i = 0; i < _cachedRenderers.Length; i++)
+                    _cachedRenderers[i].SetPropertyBlock(_mpb);
+                yield return null;
+            }
+            _currentBossTint = target;
+            _mpb.SetColor(_baseColorId, target);
+            _mpb.SetColor(_colorId,     target);
+            if (_hitFlashTimer <= 0f)
+                _mpb.SetColor(_emissiveId, emission);
+            for (int i = 0; i < _cachedRenderers.Length; i++)
+                _cachedRenderers[i].SetPropertyBlock(_mpb);
+            _bossTintLerp = null;
         }
 
         // Knockback along path — rewind current waypoint progress to push enemy back.

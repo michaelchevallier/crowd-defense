@@ -318,20 +318,45 @@ namespace CrowdDefense.Entities
         private static readonly int _baseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int _colorId     = Shader.PropertyToID("_Color");
         private MaterialPropertyBlock? _castleMpb;
+        private Color     _currentCastleTint = Color.white;
+        private Coroutine? _tintLerpCoroutine;
 
         private void UpdateTint()
         {
-            float ratio = HPMax > 0 ? (float)HP / HPMax : 0f;
-            Color tint  = AssetVariants.GetCastleTint(ratio);
-            _castleMpb ??= new MaterialPropertyBlock();
-            _castleMpb.SetColor(_baseColorId, tint);
-            _castleMpb.SetColor(_colorId,     tint);
+            float ratio  = HPMax > 0 ? (float)HP / HPMax : 0f;
+            Color target = AssetVariants.GetCastleTint(ratio);
+            if (target == _currentCastleTint) return;
+            if (_tintLerpCoroutine != null) StopCoroutine(_tintLerpCoroutine);
+            _tintLerpCoroutine = StartCoroutine(LerpCastleTint(target, 0.3f));
+        }
 
+        private IEnumerator LerpCastleTint(Color target, float dur)
+        {
+            _castleMpb ??= new MaterialPropertyBlock();
+            Color from = _currentCastleTint;
+            float t    = 0f;
+            while (t < dur)
+            {
+                t += Time.deltaTime;
+                Color c = Color.Lerp(from, target, t / dur);
+                _castleMpb.SetColor(_baseColorId, c);
+                _castleMpb.SetColor(_colorId,     c);
+                foreach (var rend in GetComponentsInChildren<Renderer>())
+                {
+                    if (rend.gameObject.name.StartsWith("CastleHPBar")) continue;
+                    rend.SetPropertyBlock(_castleMpb);
+                }
+                yield return null;
+            }
+            _currentCastleTint = target;
+            _castleMpb.SetColor(_baseColorId, target);
+            _castleMpb.SetColor(_colorId,     target);
             foreach (var rend in GetComponentsInChildren<Renderer>())
             {
                 if (rend.gameObject.name.StartsWith("CastleHPBar")) continue;
                 rend.SetPropertyBlock(_castleMpb);
             }
+            _tintLerpCoroutine = null;
         }
 
         // Progressive smoke + danger light intensity scaled to HP%
