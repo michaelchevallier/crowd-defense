@@ -326,6 +326,12 @@
 
         <ui:VisualElement name="popup-overlay" class="popup-overlay" picking-mode="Ignore" />
 
+        <!-- Placement hover preview card (PlacementHoverPreviewController — follows cursor) -->
+        <ui:VisualElement name="tower-hover-card" class="tower-hover-card hidden" picking-mode="Ignore">
+            <ui:Label name="hover-card-name" class="hover-card-name" text="" />
+            <ui:Label name="hover-card-stats" class="hover-card-stats" text="" />
+        </ui:VisualElement>
+
         <!-- L3 Branch Choice modal (UpgradeMenuController — signature towers only) -->
         <ui:VisualElement name="l3-choice-panel" class="l3-choice-panel hidden">
             <ui:VisualElement class="l3-choice-box">

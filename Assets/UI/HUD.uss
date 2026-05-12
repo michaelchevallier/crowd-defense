@@ -1594,3 +1594,41 @@
     opacity: 0;
     display: none;
 }
+
+/* === Placement hover preview card (cursor follow, valid build cell) === */
+.tower-hover-card {
+    position: absolute;
+    background-color: rgba(10, 14, 20, 0.92);
+    border-color: rgba(100, 220, 100, 0.55);
+    border-width: 1px;
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-width: 160px;
+    max-width: 240px;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+.tower-hover-card--poor {
+    border-color: rgba(220, 80, 60, 0.65);
+}
+
+.hover-card-name {
+    color: rgb(220, 235, 255);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 4px;
+    white-space: normal;
+}
+
+.tower-hover-card--poor .hover-card-name {
+    color: rgb(255, 120, 100);
+}
+
+.hover-card-stats {
+    color: rgba(190, 210, 235, 0.85);
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+}
