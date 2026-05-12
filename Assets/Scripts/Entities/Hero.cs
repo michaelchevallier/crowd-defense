@@ -607,12 +607,16 @@ namespace CrowdDefense.Entities
                 VfxPool.Instance?.SpawnLevelUp(levelUpPos + Vector3.up * 1.5f);
                 VfxPool.Instance?.SpawnLevelUp(levelUpPos + Vector3.up * 1.8f);
                 VfxPool.Instance?.SpawnConfetti(levelUpPos + Vector3.up * 1.5f, 1.5f);
+                VfxPool.Instance?.SpawnUpgradeBurst(levelUpPos + Vector3.up * 1.0f, Level);
                 FloatingPopupController.Instance?.SpawnReward("LEVEL UP!", levelUpPos + Vector3.up * 2.5f, new Color(1f, 0.84f, 0f));
-                AudioController.Instance?.Play("hero_levelup", 1f);
+                AudioController.Instance?.PlayPitched("hero_levelup", 1.2f, 1.1f);
+                Toast.Show($"Hero Level {Level}!", "Vie restauree au maximum", 2000, null, ToastType.Achievement);
+                _hp = _maxHp;
                 JuiceFX.Instance?.SlowMo(0.5f, 500);
                 JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.4f), 200);
                 JuiceFX.Instance?.PunchScale(transform, 1.5f, 0.4f);
                 StartCoroutine(RimLightGlowRoutine());
+                StartCoroutine(WhiteLightFlashRoutine());
             }
         }
 
@@ -636,6 +640,34 @@ namespace CrowdDefense.Entities
                 yield return null;
             }
             Destroy(lightGo);
+        }
+
+        private System.Collections.IEnumerator WhiteLightFlashRoutine()
+        {
+            var go = new GameObject("LevelUpWhiteFlash");
+            go.transform.SetParent(transform);
+            go.transform.localPosition = Vector3.up * 1.0f;
+            var light = go.AddComponent<Light>();
+            light.type      = LightType.Point;
+            light.color     = Color.white;
+            light.range     = 5f;
+
+            const float half = 0.25f;
+            float t = 0f;
+            while (t < half)
+            {
+                t += Time.deltaTime;
+                light.intensity = Mathf.Lerp(0f, 3f, t / half);
+                yield return null;
+            }
+            t = 0f;
+            while (t < half)
+            {
+                t += Time.deltaTime;
+                light.intensity = Mathf.Lerp(3f, 0f, t / half);
+                yield return null;
+            }
+            Destroy(go);
         }
 
         // ── Crown milestone ───────────────────────────────────────────────────

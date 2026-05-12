@@ -142,6 +142,7 @@ namespace CrowdDefense.Entities
 
         // Idle animation phase (random offset per tower) + base world Y for root bob
         private float _idlePhase;
+        private float _breathOffset;
         private Vector3 _basePos;
         private float _lastFireAt;
 
@@ -397,6 +398,7 @@ namespace CrowdDefense.Entities
             _slowTickTimer = 0f;
             _heroBuffDmgMul = 1f;
             _idlePhase = Random.value * Mathf.PI * 2f;
+            _breathOffset = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
             _basePos = transform.position;
             _lastFireAt = 0f;
             UpgradeLevel = 1;
@@ -1689,6 +1691,8 @@ namespace CrowdDefense.Entities
 
             if (_meshChild == null) return;
 
+            TickBreathing(recentFire);
+
             if (recentFire) return;
 
             float t = Time.time;
@@ -1701,6 +1705,14 @@ namespace CrowdDefense.Entities
                 0f,
                 0f,
                 Mathf.Sin(t * 0.8f + phase) * 1.7f);
+        }
+
+        private void TickBreathing(bool isFiring)
+        {
+            if (_meshChild == null) return;
+            float amp = isFiring ? 0.025f : 0.015f;
+            float s = 1f + Mathf.Sin(Time.time * 1.5f + _breathOffset) * amp;
+            _meshChild.transform.localScale = new Vector3(s, s, s);
         }
 
         private IEnumerator ShimmerRoutine()
