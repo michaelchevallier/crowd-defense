@@ -898,6 +898,119 @@
 
 .toast-type-default { border-color: rgba(160, 160, 180, 0.45); }
 
+/* === Tower info panel (bottom-right, sticky, shown on tower select) === */
+#tower-info-panel {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    width: 280px;
+    background-color: rgba(10, 14, 22, 0.96);
+    border-color: rgba(160, 200, 255, 0.55);
+    border-width: 2px;
+    border-radius: 12px;
+    padding: 14px 16px;
+    flex-direction: column;
+}
+
+.info-header-row {
+    flex-direction: row;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.info-portrait {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    background-color: rgba(100, 140, 255, 0.6);
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.info-title-col {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.info-name {
+    color: rgb(220, 235, 255);
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 2px;
+}
+
+.info-level {
+    color: rgb(255, 210, 63);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.info-branch {
+    color: rgb(160, 220, 255);
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 6px;
+}
+
+.info-stats {
+    color: rgba(200, 215, 235, 0.85);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+    margin-bottom: 8px;
+    border-bottom-width: 1px;
+    border-color: rgba(140, 160, 200, 0.18);
+    padding-bottom: 8px;
+}
+
+.info-live-row {
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-bottom: 4px;
+}
+
+.info-live-value {
+    color: rgb(120, 255, 160);
+    font-size: 13px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.info-cumul-row {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.info-cumul-value {
+    color: rgba(190, 210, 240, 0.8);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.info-sell-btn {
+    align-self: stretch;
+    background-color: rgba(200, 50, 50, 0.3);
+    border-color: rgba(220, 80, 80, 0.7);
+    border-width: 1px;
+    border-radius: 8px;
+    color: rgb(255, 140, 140);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    padding: 8px 0;
+    cursor: link;
+}
+
+.info-sell-btn:hover {
+    background-color: rgba(220, 60, 60, 0.55);
+    border-color: rgb(240, 100, 100);
+    color: rgb(255, 180, 180);
+}
+
 /* === Keyboard hints footer bar === */
 .keyboard-hints {
     position: absolute;

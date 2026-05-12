@@ -45,6 +45,7 @@ namespace CrowdDefense.Entities
         // Ragdoll
         private const float RagdollFadeDuration = 3f;
         private Vector3 _lastDamageDirection = Vector3.back;
+        private Tower?  _lastDamageTower;
 
         // Set by BossSystem when enraged threshold is crossed (also by self-trigger 50% HP fallback)
         private float _enragedSpeedMul    = 1f;
@@ -1293,6 +1294,12 @@ namespace CrowdDefense.Entities
 
         // ── TakeDamage ────────────────────────────────────────────────────────
 
+        public void TakeDamage(float dmg, Tower? sourceTower)
+        {
+            _lastDamageTower = sourceTower;
+            TakeDamage(dmg);
+        }
+
         public void TakeDamage(float dmg, Vector3 hitOrigin = default)
         {
             if (IsDead || _dying) return;
@@ -1549,6 +1556,7 @@ namespace CrowdDefense.Entities
             Achievements.Instance?.TrackEvent("enemy_killed", 1);
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);
+            _lastDamageTower?.RegisterKill();
 
             if (this != null && gameObject != null)
                 StartCoroutine(RagdollThenRelease(_lastDamageDirection));

@@ -120,7 +120,7 @@ namespace CrowdDefense.Entities
             if (aoe > 0f)
                 ApplyAoeDamage();
             else if (!alreadyHit.Contains(target))
-                target.TakeDamage(damage);
+                target.TakeDamage(damage, sourceTower);
 
             ApplyOnHitEffects(target);
 

@@ -165,6 +165,7 @@ namespace CrowdDefense.Systems
             if (currentLevel != null)
                 LevelEvents.RaiseLevelStart(currentLevel, bounds);
 
+            SetGameSpeed(1);
             TransitionTo(GameState.Lobby);
         }
 
@@ -193,9 +194,12 @@ namespace CrowdDefense.Systems
 
         // ── Public API ─────────────────────────────────────────────────────────
 
-        public void SetGameSpeed(int multiplier)
+        // index 0=0.5x 1=1x 2=2x 3=3x (matches SpeedControlController._speeds)
+        private static readonly float[] SpeedTable = { 0.5f, 1f, 2f, 3f };
+
+        public void SetGameSpeed(int index)
         {
-            _targetSpeed = Mathf.Clamp(multiplier, 1, 3);
+            _targetSpeed = SpeedTable[Mathf.Clamp(index, 0, SpeedTable.Length - 1)];
             ApplyTimeScale();
         }
 

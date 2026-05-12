@@ -20,6 +20,8 @@ namespace CrowdDefense.UI
     /// </summary>
     public class RadialMenuController : MonoBehaviour
     {
+        public static RadialMenuController? Instance { get; private set; }
+
         private static readonly TowerId[] SignatureIds = { TowerId.Archer, TowerId.Mage, TowerId.Ballista, TowerId.Cannon };
 
         private VisualElement? radialMenu;
@@ -43,6 +45,12 @@ namespace CrowdDefense.UI
 
         private Tower? currentTower;
         private bool _rangeVisible;
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this) { Destroy(this); return; }
+            Instance = this;
+        }
 
         private void Start()
         {
@@ -85,6 +93,7 @@ namespace CrowdDefense.UI
 
         private void OnDestroy()
         {
+            if (Instance == this) Instance = null;
             if (PlacementController.Instance != null)
                 PlacementController.Instance.OnTowerSelected -= OnTowerSelected;
         }
@@ -323,6 +332,9 @@ namespace CrowdDefense.UI
                     btnRange.RemoveFromClassList("radial-btn-range--active");
             }
         }
+
+        // Called by TowerInfoPanel sell button as well as internal btn-sell click
+        public void TrySellCurrentTower() => OnSellClicked();
 
         private void OnSellClicked()
         {

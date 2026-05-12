@@ -112,7 +112,7 @@ namespace CrowdDefense.UI
         public int GameSpeed
         {
             get => _gameSpeed;
-            set { value = value < 1 ? 1 : value > 3 ? 3 : value; if (_gameSpeed == value) return; _gameSpeed = value; Save(); Notify(); }
+            set { value = value < 0 ? 0 : value > 3 ? 3 : value; if (_gameSpeed == value) return; _gameSpeed = value; Save(); Notify(); }
         }
 
         protected override void OnAwakeSingleton()

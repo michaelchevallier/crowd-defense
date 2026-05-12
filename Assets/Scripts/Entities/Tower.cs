@@ -164,6 +164,11 @@ namespace CrowdDefense.Entities
         // Coût cumulé pour le calcul du refund sell
         public int CumulativeCost { get; private set; }
 
+        // Statistiques cumulées (pour TowerInfoPanel)
+        public float TotalDamageDealt { get; private set; }
+        public int   TotalKills       { get; private set; }
+        public void  RegisterKill()   => TotalKills++;
+
         // Scale dégâts appliqué à ce niveau (ratio vs L1 Phaser convention)
         private float _levelDmgScale = 1f;
 
@@ -754,9 +759,10 @@ namespace CrowdDefense.Entities
                 if (flyMul > 1f) dmg *= flyMul;
             }
 
-            // Track damage for live DPS window (5s rolling)
+            // Track damage for live DPS window (5s rolling) + cumulative stat
             _damageLogTimes.Add(Time.time);
             _damageLogValues.Add(dmg);
+            TotalDamageDealt += dmg;
 
             // Pierce : L3Pierce overrides cfg.Pierce ; add _pierceBonus from synergy
             int effectivePierce = L3Pierce > 0 ? L3Pierce : cfg.Pierce + _pierceBonus;
