@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using UnityEngine;
@@ -27,6 +28,14 @@ namespace CrowdDefense.UI
         private VisualElement? _splashOverlay;
         private VisualElement? _showcaseRow;
         private bool _splashDone;
+
+        // ── Play button hover particles ──────────────────────────────────────
+        private const int ParticlePoolSize = 6;
+        private static readonly Color ParticleColor = new Color(1f, 0.85f, 0.2f, 0.8f);
+        private readonly VisualElement[] _particlePool = new VisualElement[ParticlePoolSize];
+        private readonly bool[] _particleInUse = new bool[ParticlePoolSize];
+        private VisualElement? _particleContainer;
+        private Coroutine? _hoverParticlesCo;
 
         // ── Background gradient ──────────────────────────────────────────────
         private static readonly Color[] GradientColors =
@@ -72,6 +81,21 @@ namespace CrowdDefense.UI
             if (_btnTalents  != null) _btnTalents.clicked  += OnTalents;
             if (_btnDaily    != null) _btnDaily.clicked    += OnDaily;
             if (_btnHardcore != null) _btnHardcore.clicked += OnHardcore;
+
+            InitHoverParticles();
+            if (_btnNewRun != null)
+            {
+                _btnNewRun.RegisterCallback<MouseEnterEvent>(OnPlayButtonHoverEnter);
+                _btnNewRun.RegisterCallback<MouseLeaveEvent>(OnPlayButtonHoverExit);
+                _btnNewRun.style.transformOrigin = new StyleTransformOrigin(
+                    new TransformOrigin(Length.Percent(50), Length.Percent(50)));
+                _btnNewRun.style.transitionProperty = new StyleList<StylePropertyName>(
+                    new List<StylePropertyName> { new StylePropertyName("scale") });
+                _btnNewRun.style.transitionDuration = new StyleList<TimeValue>(
+                    new List<TimeValue> { new TimeValue(150, TimeUnit.Millisecond) });
+                _btnNewRun.style.transitionTimingFunction = new StyleList<EasingFunction>(
+                    new List<EasingFunction> { new EasingFunction(EasingMode.EaseOut) });
+            }
 
             ApplySeasonalTint();
             StartCoroutine(AnimateBackgroundGradient());
@@ -325,6 +349,144 @@ namespace CrowdDefense.UI
             };
 
             _root.Insert(0, overlay);
+        }
+
+        // ── Play button hover particles ──────────────────────────────────────
+
+        private void InitHoverParticles()
+        {
+            if (_root == null) return;
+
+            _particleContainer = new VisualElement
+            {
+                name        = "hover-particle-container",
+                pickingMode = PickingMode.Ignore,
+                style =
+                {
+                    position = Position.Absolute,
+                    left = 0, right = 0, top = 0, bottom = 0,
+                    overflow = Overflow.Hidden
+                }
+            };
+            _root.Add(_particleContainer);
+
+            for (int i = 0; i < ParticlePoolSize; i++)
+            {
+                var p = new VisualElement
+                {
+                    name        = $"hover-particle-{i}",
+                    pickingMode = PickingMode.Ignore,
+                    style =
+                    {
+                        position        = Position.Absolute,
+                        width           = 8,
+                        height          = 8,
+                        borderTopLeftRadius     = 4,
+                        borderTopRightRadius    = 4,
+                        borderBottomLeftRadius  = 4,
+                        borderBottomRightRadius = 4,
+                        backgroundColor = new StyleColor(ParticleColor),
+                        display         = DisplayStyle.None
+                    }
+                };
+                _particleContainer.Add(p);
+                _particlePool[i]   = p;
+                _particleInUse[i]  = false;
+            }
+        }
+
+        private void OnPlayButtonHoverEnter(MouseEnterEvent evt)
+        {
+            if (_btnNewRun != null)
+                _btnNewRun.style.scale = new StyleScale(new Scale(new Vector3(1.05f, 1.05f, 1f)));
+
+            AudioController.Instance?.PlayPitched("menu_hover_chime", 0.3f, 1.1f);
+
+            if (_hoverParticlesCo != null) StopCoroutine(_hoverParticlesCo);
+            _hoverParticlesCo = StartCoroutine(EmitHoverParticles());
+        }
+
+        private void OnPlayButtonHoverExit(MouseLeaveEvent evt)
+        {
+            if (_btnNewRun != null)
+                _btnNewRun.style.scale = new StyleScale(new Scale(Vector3.one));
+
+            if (_hoverParticlesCo != null)
+            {
+                StopCoroutine(_hoverParticlesCo);
+                _hoverParticlesCo = null;
+            }
+            ReturnAllParticles();
+        }
+
+        private IEnumerator EmitHoverParticles()
+        {
+            while (true)
+            {
+                SpawnOneParticle();
+                yield return new WaitForSecondsRealtime(0.1f);
+            }
+        }
+
+        private void SpawnOneParticle()
+        {
+            if (_btnNewRun == null || _particleContainer == null) return;
+
+            int slot = -1;
+            for (int i = 0; i < ParticlePoolSize; i++)
+            {
+                if (!_particleInUse[i]) { slot = i; break; }
+            }
+            if (slot < 0) return;
+
+            _particleInUse[slot] = true;
+            var p = _particlePool[slot];
+
+            // Position at bottom of button, random X within button width
+            var btnBounds = _btnNewRun.worldBound;
+            var containerBounds = _particleContainer.worldBound;
+            float relLeft   = btnBounds.xMin - containerBounds.xMin;
+            float relBottom = btnBounds.yMax  - containerBounds.yMin;
+            float randX     = relLeft + UnityEngine.Random.Range(0f, btnBounds.width) - 4f;
+
+            p.style.left    = randX;
+            p.style.top     = relBottom - 8f;
+            p.style.opacity = 0.8f;
+            p.style.display = DisplayStyle.Flex;
+
+            StartCoroutine(AnimateParticleCo(slot, relBottom - 8f));
+        }
+
+        private IEnumerator AnimateParticleCo(int slot, float startTop)
+        {
+            var p        = _particlePool[slot];
+            const float duration = 0.6f;
+            const float rise     = 40f;
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                if (p == null) yield break;
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                p.style.top     = startTop - t * rise;
+                p.style.opacity = Mathf.Lerp(0.8f, 0f, t);
+                yield return null;
+            }
+
+            ReturnParticle(slot);
+        }
+
+        private void ReturnParticle(int slot)
+        {
+            _particlePool[slot].style.display = DisplayStyle.None;
+            _particleInUse[slot] = false;
+        }
+
+        private void ReturnAllParticles()
+        {
+            for (int i = 0; i < ParticlePoolSize; i++)
+                ReturnParticle(i);
         }
 
         private void OnDestroy()
