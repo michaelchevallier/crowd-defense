@@ -7,15 +7,11 @@
 
 ## 🔴 EN COURS (action requise)
 
-- **WebGL Deploy commit 8506524** : Build disponible en `/Users/mike/Work/crowd-defense/Build/WebGL/` (26MB). À déployer vers `gh-pages` worktree `/private/tmp/crowd-defense-v6/v6/` et pusher.
-  ```bash
-  # Dans /private/tmp/crowd-defense-v6 (worktree gh-pages)
-  rm -rf v6/*
-  cp -r /Users/mike/Work/crowd-defense/Build/WebGL/* v6/
-  git add . && git commit -m "deploy: WebGL v6 latest features + bug fixes (commit 8506524)"
-  git push origin gh-pages
-  ```
-  URL en live : `https://michaelchevallier.github.io/crowd-defense/v6/` (après push)
+_Aucun item bloquant — Build #36 deployé `ec1d1aa` à 02:18 le 12 mai 2026._
+
+URL en live : https://michaelchevallier.github.io/crowd-defense/v6/
+
+Backup local du build : `/tmp/webgl-safe-2026-05-12-02h13/WebGL/`
 
 ---
 

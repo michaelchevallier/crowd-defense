@@ -56,7 +56,7 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F3))
+            if (Input.GetKeyDown(KeyBindings.GetKey("debug")))
             {
                 _active = !_active;
                 ApplyVisibility();

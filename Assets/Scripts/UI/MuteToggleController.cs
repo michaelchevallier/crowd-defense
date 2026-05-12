@@ -27,7 +27,7 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.M)) Toggle();
+            if (Input.GetKeyDown(KeyBindings.GetKey("mute"))) Toggle();
         }
 
         private void Toggle()

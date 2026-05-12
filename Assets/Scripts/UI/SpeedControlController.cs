@@ -36,7 +36,7 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyBindings.GetKey("speed")))
                 CycleForward();
             else if (Input.GetKeyDown(KeyCode.Equals) || Input.GetKeyDown(KeyCode.KeypadPlus))
                 Shift(+1);

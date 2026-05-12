@@ -113,9 +113,9 @@ namespace CrowdDefense.Visual
         private void Update()
         {
             if (_zooming) return;
-            if (Input.GetKeyDown(KeyCode.V)) ToggleBirdsEye();
+            if (Input.GetKeyDown(KeyBindings.GetKey("birdseye"))) ToggleBirdsEye();
             if (_birdsEye) return;
-            if (Input.GetKeyDown(KeyCode.R)) ResetToDefault();
+            if (Input.GetKeyDown(KeyBindings.GetKey("reset"))) ResetToDefault();
             HandleZoom();
             HandlePinchZoom();
             HandleTouchPan();
@@ -196,7 +196,7 @@ namespace CrowdDefense.Visual
         // ── Toggle follow Hero (F key) ─────────────────────────────────────────
         private void HandleToggleFollow()
         {
-            if (Input.GetKeyDown(KeyCode.F))
+            if (Input.GetKeyDown(KeyBindings.GetKey("follow")))
                 FollowHero = !_followHero;
         }
 

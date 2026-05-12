@@ -101,6 +101,7 @@ namespace CrowdDefense.UI
             EnsureSibling<MinimapController>();
             EnsureSibling<HelpOverlayController>();
             EnsureSibling<QuickSaveHotkey>();
+            EnsureSibling<KeyBindingsPanel>();
 
             var root = GetComponent<UIDocument>().rootVisualElement;
             ApplyDeviceClasses(root);

@@ -20,10 +20,16 @@ namespace CrowdDefense.UI
         private Image?         _fillImage;
 
         private float _maxHp;
+        private float _currentRatio;
+        private float _blinkTimer;
 
         private static readonly Color ColorFull    = new Color(0.18f, 0.82f, 0.18f); // green
         private static readonly Color ColorLow     = new Color(0.90f, 0.15f, 0.15f); // red
         private static readonly Color ColorEnraged = new Color(1.00f, 0.50f, 0.00f); // orange mid
+
+        private static readonly Color LabelGreen  = new Color(0.18f, 0.82f, 0.18f);
+        private static readonly Color LabelOrange = new Color(1.00f, 0.55f, 0.00f);
+        private static readonly Color LabelRed    = new Color(0.90f, 0.15f, 0.15f);
 
         protected override void OnAwakeSingleton()
         {
@@ -52,6 +58,13 @@ namespace CrowdDefense.UI
             if (_canvas != null) _canvas.gameObject.SetActive(true);
         }
 
+        private void Update()
+        {
+            if (_hpLabel == null || _currentRatio >= 0.33f) return;
+            _blinkTimer += Time.deltaTime;
+            _hpLabel.color = (_blinkTimer % 0.6f < 0.3f) ? LabelRed : Color.white;
+        }
+
         private void OnHpChanged(BossHpChangedEvent e) => RefreshBar(e.Ratio);
 
         private void OnDefeated(BossDefeatedEvent _)
@@ -61,6 +74,9 @@ namespace CrowdDefense.UI
 
         private void RefreshBar(float ratio)
         {
+            _currentRatio = ratio;
+            _blinkTimer   = 0f;
+
             if (_fillRect != null)
                 _fillRect.anchorMax = new Vector2(ratio, 1f);
 
@@ -73,8 +89,14 @@ namespace CrowdDefense.UI
 
             if (_hpLabel != null)
             {
-                float current = ratio * _maxHp;
-                _hpLabel.text = $"{current:F0} / {_maxHp:F0}";
+                float current    = ratio * _maxHp;
+                float pct        = ratio * 100f;
+                Color pctColor   = pct > 66f ? LabelGreen : pct >= 33f ? LabelOrange : LabelRed;
+                string pctStyled = $"<color=#{ColorUtility.ToHtmlStringRGB(pctColor)}>{pct:F0}%</color>";
+                _hpLabel.text    = $"{current:F0} / {_maxHp:F0} ({pctStyled})";
+                // Steady color for >= 33%; blink handled in Update for < 33%
+                if (ratio >= 0.33f)
+                    _hpLabel.color = Color.white;
             }
         }
 

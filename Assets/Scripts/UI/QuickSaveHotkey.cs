@@ -13,9 +13,9 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F5))
+            if (Input.GetKeyDown(KeyBindings.GetKey("save")))
                 QuickSave();
-            else if (Input.GetKeyDown(KeyCode.F9))
+            else if (Input.GetKeyDown(KeyBindings.GetKey("load")))
                 QuickLoad();
         }
 

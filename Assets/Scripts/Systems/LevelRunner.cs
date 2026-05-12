@@ -206,7 +206,7 @@ namespace CrowdDefense.Systems
 #endif
             }
 
-            if (Input.GetKeyDown(KeyCode.Escape))
+            if (Input.GetKeyDown(KeyBindings.GetKey("pause")))
                 TogglePause();
 
             UpdateHeroInput();

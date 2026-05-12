@@ -35,6 +35,9 @@ namespace CrowdDefense.Entities
         private float _cooldown;
         private float _attackAnimTimer;
         private bool  _running;
+        private bool  _autoAttack = true;
+
+        private const string AutoAttackPrefsKey = "hero_auto_attack_v1";
 
         // ── Movement ──────────────────────────────────────────────────────────
         private Vector2 _moveDir;
@@ -71,6 +74,18 @@ namespace CrowdDefense.Entities
         public bool  ForteressePerk      { get; internal set; }
         public bool  MursPierre         { get; internal set; }
         public bool  CristalGlace       { get; internal set; }
+
+        // Auto-attack toggle — persisted in PlayerPrefs hero_auto_attack_v1
+        public bool AutoAttack
+        {
+            get => _autoAttack;
+            set
+            {
+                _autoAttack = value;
+                PlayerPrefs.SetInt(AutoAttackPrefsKey, value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
+        }
 
         // Channeling state (set externally by BluePill/item system — mirrors V5 channelingPill)
         public bool  ChannelingPill      { get; set; }
@@ -138,6 +153,7 @@ namespace CrowdDefense.Entities
             _maxZ    = maxZ;
             _cooldown = 0f;
             _ultCooldown = 0f;
+            _autoAttack = PlayerPrefs.GetInt(AutoAttackPrefsKey, 1) != 0;
 
             transform.position = spawnPos;
             transform.localScale = Vector3.one * type.ModelScale;

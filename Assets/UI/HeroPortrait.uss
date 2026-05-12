@@ -1,0 +1,95 @@
+.hero-portrait-root {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    width: 200px;
+    height: 100px;
+    background-color: rgba(0, 0, 0, 0.72);
+    border-radius: 10px;
+    padding: 8px;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.portrait {
+    width: 64px;
+    height: 64px;
+    border-radius: 32px;
+    margin-right: 8px;
+    flex-shrink: 0;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.hero-portrait-info {
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.hp-bar-bg {
+    height: 10px;
+    background-color: rgba(255, 255, 255, 0.12);
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 3px;
+    width: 100%;
+}
+
+.hp-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.2s ease;
+}
+
+.hp-bar-fill-high {
+    background-color: rgb(74, 200, 80);
+}
+
+.hp-bar-fill-mid {
+    background-color: rgb(230, 180, 40);
+}
+
+.hp-bar-fill-low {
+    background-color: rgb(210, 50, 50);
+}
+
+.hp-label {
+    color: rgba(220, 220, 220, 0.9);
+    font-size: 10px;
+    margin-bottom: 4px;
+}
+
+.perks-row {
+    flex-direction: row;
+    align-items: center;
+    margin-top: 2px;
+}
+
+.perk-slot {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    margin-right: 3px;
+    justify-content: center;
+    align-items: center;
+}
+
+.perk-slot-filled {
+    background-color: rgba(255, 200, 60, 0.85);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.perk-slot-empty {
+    background-color: rgba(80, 80, 80, 0.5);
+    border-width: 1px;
+    border-color: rgba(100, 100, 100, 0.3);
+}
+
+.perk-slot-label {
+    font-size: 8px;
+    color: rgba(30, 20, 0, 0.9);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}

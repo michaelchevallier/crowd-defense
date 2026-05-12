@@ -62,7 +62,7 @@ namespace CrowdDefense.Systems
             }
         }
 
-        private void ShowClusterHighlights(Tower source, System.Collections.Generic.List<Tower> towers)
+        private void ShowClusterHighlights(Tower source, System.Collections.Generic.IReadOnlyList<Tower> towers)
         {
             string? sourceId = source.Config?.Id;
             if (sourceId == null) return;

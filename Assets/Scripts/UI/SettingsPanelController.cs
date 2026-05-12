@@ -50,6 +50,7 @@ namespace CrowdDefense.UI
 
         private DropdownField? _langDropdown;
         private Button? _closeBtn;
+        private Button? _keybindingsBtn;
 
         // Section title label refs for locale refresh
         private Label? _settingsTitleLabel;
@@ -133,6 +134,7 @@ namespace CrowdDefense.UI
             _langDropdown = _root.Q<DropdownField>("lang-dropdown");
             _closeBtn = _root.Q<Button>("settings-close-btn");
             _fullscreenBtn = _root.Q<Button>("settings-fullscreen-btn");
+            _keybindingsBtn = _root.Q<Button>("settings-keybindings-btn");
 
             _settingsTitleLabel  = _root.Q<Label>("settings-title");
             _audioSectionLabel   = _root.Q<Label>("audio-section-title");
@@ -223,6 +225,8 @@ namespace CrowdDefense.UI
             if (_langSectionLabel != null)    _langSectionLabel.text    = L.Get("settings.lang_section");
             if (_langLabel != null)           _langLabel.text           = L.Get("settings.lang_label");
             if (_closeBtn != null)            _closeBtn.text            = L.Get("settings.close");
+            if (_keybindingsBtn != null)      _keybindingsBtn.text      = L.CurrentLocale == "fr" ? "Raccourcis"
+                : L.CurrentLocale == "es" ? "Atajos" : "Keybindings";
             if (_resetCameraBtn != null)      _resetCameraBtn.text      = L.Get("settings.reset_camera");
             if (_resetProgressBtn != null)    _resetProgressBtn.text    = L.Get("settings.reset_progress");
             if (_resetProgressWarnLabel != null) _resetProgressWarnLabel.text = L.Get("settings.reset_progress_warn");
@@ -369,6 +373,7 @@ namespace CrowdDefense.UI
 
             _closeBtn?.RegisterCallback<ClickEvent>(_ => Hide());
             _fullscreenBtn?.RegisterCallback<ClickEvent>(_ => ToggleFullscreen());
+            _keybindingsBtn?.RegisterCallback<ClickEvent>(_ => OpenKeyBindings());
             _resetCameraBtn?.RegisterCallback<ClickEvent>(_ => ResetCamera());
             _changeNameBtn?.RegisterCallback<ClickEvent>(_ => OnChangeName());
             _resetProgressBtn?.RegisterCallback<ClickEvent>(_ => OnResetProgressClicked());
@@ -494,6 +499,12 @@ namespace CrowdDefense.UI
                     PlayerPrefs.Save();
                     SceneManager.LoadScene(0);
                 });
+        }
+
+        private void OpenKeyBindings()
+        {
+            var panel = GetComponent<KeyBindingsPanel>();
+            panel?.Show();
         }
 
         private static string FormatPct(float v) => Mathf.RoundToInt(v * 100f) + "%";

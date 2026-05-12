@@ -29,7 +29,7 @@ namespace CrowdDefense.Visual
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.P))
+            if (Input.GetKeyDown(KeyBindings.GetKey("pathPreview")))
                 SetVisible(!_visible);
         }
 

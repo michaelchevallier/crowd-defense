@@ -1,6 +1,7 @@
 #nullable enable
 using UnityEngine;
 using UnityEngine.UIElements;
+using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
@@ -26,7 +27,7 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.H) || Input.GetKeyDown(KeyCode.Slash))
+            if (Input.GetKeyDown(KeyBindings.GetKey("help")) || Input.GetKeyDown(KeyCode.Slash))
                 Toggle();
         }
 
