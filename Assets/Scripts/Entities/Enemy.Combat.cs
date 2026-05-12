@@ -10,15 +10,6 @@ namespace CrowdDefense.Entities
 {
     public partial class Enemy : MonoBehaviour
     {
-        private void TriggerHitFlash()
-        {
-            if (_cachedRenderers == null || _mpb == null) return;
-            _mpb.SetColor(_emissiveId, new Color(1f, 0.125f, 0.125f));
-            for (int i = 0; i < _cachedRenderers.Length; i++)
-                _cachedRenderers[i].SetPropertyBlock(_mpb);
-            _hitFlashTimer = HitFlashDuration;
-        }
-
         private void TickHitFlash()
         {
             if (_hitFlashTimer <= 0f) return;

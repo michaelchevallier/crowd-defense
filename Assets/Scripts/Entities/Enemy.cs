@@ -409,36 +409,6 @@ namespace CrowdDefense.Entities
         // ── Boss death cinematic ──────────────────────────────────────────────
 
 
-        // ── Tint helpers ──────────────────────────────────────────────────────
-
-        // Tint cyan during slow, restore base color on expiration — preserves stealth alpha
-        public void SetSlowTint(bool slowed)
-        {
-            float a = (cfg?.IsStealth == true) ? StealthAlpha : 1f;
-            Color tint = slowed
-                ? new Color(0.4f, 0.9f, 1.0f, a)
-                : new Color(baseColor.r, baseColor.g, baseColor.b, a);
-            ApplyTint(tint);
-        }
-
-        // ── SetStatic (decoration / preview mode) ────────────────────────────
-        // Freezes enemy in world space, switches to Idle animation
-        public void SetStatic(float worldX, float worldZ, float rotY = 0f)
-        {
-            _static     = true;
-            _staticRotY = rotY;
-            float y = cfg != null && cfg.IsFlyer ? cfg.FlyHeight : 0f;
-            transform.position = new Vector3(worldX, y, worldZ);
-            transform.rotation  = Quaternion.Euler(0f, rotY, 0f);
-            AnimationController.SetWalking(_animator, false);
-        }
-
-        // ── Castle reached ────────────────────────────────────────────────────
-
-        private const float AttackTelegraphDuration = 0.5f;
-        private const int   TelegraphSegments       = 32;
-
-
 
 
 
@@ -454,38 +424,6 @@ namespace CrowdDefense.Entities
 
 
         // ── OnDestroy cleanup ─────────────────────────────────────────────────
-
-        private void OnDestroy()
-        {
-            CancelInvoke();
-        }
-
-#if UNITY_EDITOR
-        // ── Editor gizmos — aggro debug visualizer ────────────────────────────
-
-        private void OnDrawGizmosSelected()
-        {
-            var hero = LevelRunner.Instance?.Hero;
-            bool chasingHero = _chaseHero && hero != null && hero.gameObject.activeInHierarchy;
-
-            if (chasingHero && hero != null)
-            {
-                Gizmos.color = Color.red;
-                Gizmos.DrawLine(transform.position, hero.transform.position);
-                Gizmos.DrawSphere(hero.transform.position, 0.2f);
-            }
-            else if (pathManager != null)
-            {
-                int wpCount = pathManager.WaypointCountOnPath(pathIdx);
-                if (currentWaypoint < wpCount)
-                {
-                    Vector3 waypointPos = pathManager.GetWaypointOnPath(pathIdx, currentWaypoint) + Vector3.up * 0.5f;
-                    Gizmos.color = Color.cyan;
-                    Gizmos.DrawLine(transform.position, waypointPos);
-                    Gizmos.DrawSphere(waypointPos, 0.2f);
-                }
-            }
-        }
-#endif
+        // Moved to Enemy.Lifecycle.cs partial for cap compliance
     }
 }

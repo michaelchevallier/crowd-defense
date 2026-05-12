@@ -2,6 +2,7 @@
 using System;
 using UnityEngine;
 using TMPro;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using CrowdDefense.Visual;

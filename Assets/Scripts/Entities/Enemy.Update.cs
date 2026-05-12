@@ -12,8 +12,6 @@ namespace CrowdDefense.Entities
     {
         // ── Update lifecycle ──────────────────────────────────────────────────
 
-        private void Start() { }
-
         private void Update()
         {
             if (cfg == null || IsDead) return;
