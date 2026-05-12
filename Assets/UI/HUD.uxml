@@ -253,6 +253,9 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
+        <!-- Combo multiplier badge (top-right, persistent while combo active) -->
+        <ui:Label name="combo-multiplier-label" class="combo-multiplier hidden" text="x2.5" />
+
         <!-- Synergy active panel (top-right, shows active synergy effect labels) -->
         <ui:VisualElement name="synergy-hud-panel" class="synergy-hud-panel hidden">
             <ui:Label text="Synergies actives" name="synergy-hud-title" class="synergy-hud-title" />

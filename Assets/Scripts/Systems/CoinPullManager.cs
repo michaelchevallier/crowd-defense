@@ -52,7 +52,9 @@ namespace CrowdDefense.Systems
                 var s = sources[i];
                 float dx = pos.x - s.position.x;
                 float dz = pos.z - s.position.z;
-                if (dx * dx + dz * dz < s.range * s.range)
+                // Apply magnet synergy multiplier to range check
+                float boostedRange = s.range * _magnetRangeMul;
+                if (dx * dx + dz * dz < boostedRange * boostedRange)
                     best = Mathf.Max(best, s.coinMul);
             }
             return best;

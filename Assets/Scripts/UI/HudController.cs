@@ -59,6 +59,9 @@ namespace CrowdDefense.UI
         // Sidebar showing all active perks of the current run
         private CurrentRunPerksPanel? _perksPanel;
 
+        // Combo multiplier badge (top-right, persistent while combo active)
+        private Label? _comboMultiplierLabel;
+
         // Keyboard hints footer label
         private Label? keyboardHintsLabel;
 

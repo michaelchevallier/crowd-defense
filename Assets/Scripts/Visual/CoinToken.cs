@@ -60,9 +60,7 @@ namespace CrowdDefense.Visual
             {
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / dur);
-                float ease = t < 0.5f
-                    ? 2f * t * t
-                    : 1f - Mathf.Pow(-2f * t + 2f, 2f) * 0.5f; // ease-in-out quad
+                float ease = 1f - Mathf.Pow(1f - t, 3f); // ease-out cubic
 
                 transform.position = CubicBezier(start, p1, p2, end, ease);
 
