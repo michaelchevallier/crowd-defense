@@ -145,6 +145,13 @@
             <ui:Label text="" name="tooltip-synergies" class="tooltip-synergies" />
         </ui:VisualElement>
 
+        <!-- Enemy tooltip (hover sur ennemi en jeu) -->
+        <ui:VisualElement name="enemy-tooltip" class="enemy-tooltip hidden">
+            <ui:Label text="" name="enemy-tooltip-name" class="enemy-tooltip-name" />
+            <ui:Label text="" name="enemy-tooltip-stats" class="enemy-tooltip-stats" />
+            <ui:Label text="" name="enemy-tooltip-special" class="enemy-tooltip-special hidden" />
+        </ui:VisualElement>
+
         <!-- Tutorial overlay (W1-1 only) -->
         <ui:VisualElement name="tutorial-root" class="tutorial-root hidden">
             <ui:VisualElement name="tutorial-arrow" class="tutorial-arrow hidden" />

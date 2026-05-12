@@ -157,6 +157,8 @@ namespace CrowdDefense.Entities
         public bool IsFlyer                   => cfg?.IsFlyer ?? false;
         public bool ImmuneToFlyerBonus        => cfg?.ImmuneToFlyerBonus ?? false;
         public float HpRatio                  => maxHp > 0f ? Mathf.Clamp01(hp / maxHp) : 0f;
+        public float CurrentHp                => hp;
+        public float MaxHp                    => maxHp;
 
         // Expose alpha so Tower can test stealth phase
         public float StealthAlpha { get; private set; } = 1f;

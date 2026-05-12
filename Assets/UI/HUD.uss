@@ -457,6 +457,42 @@
     white-space: normal;
 }
 
+/* === Enemy tooltip (hover ennemi) === */
+.enemy-tooltip {
+    position: absolute;
+    background-color: rgba(12, 8, 8, 0.93);
+    border-color: rgba(220, 60, 60, 0.6);
+    border-width: 2px;
+    border-radius: 8px;
+    padding: 10px 14px;
+    min-width: 220px;
+    max-width: 260px;
+}
+
+.enemy-tooltip-name {
+    color: rgb(255, 160, 140);
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-bottom: 5px;
+    white-space: normal;
+}
+
+.enemy-tooltip-stats {
+    color: rgba(220, 210, 210, 0.88);
+    font-size: 12px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    white-space: normal;
+}
+
+.enemy-tooltip-special {
+    color: rgb(255, 200, 80);
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    margin-top: 5px;
+    white-space: normal;
+}
+
 /* === Tower stats panel (top-right, shown on tower select) === */
 #tower-stats-panel {
     position: absolute;
