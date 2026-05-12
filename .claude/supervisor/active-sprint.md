@@ -5,18 +5,33 @@
 
 ## Current
 
-- **Sprint** : R6-01 (triage + bug-fixer runtime)
-- **Mode** : supervisé Mike (pas autonome)
-- **Started** : 2026-05-12
-- **Time cap** : aucun (mode supervisé)
-- **Status** : en cours (Track A triage table + Track B bug-fixer en parallèle)
+- **Sprint** : R6-02 (DELETE pass)
+- **Mode** : supervisé Mike batch (par défaut, Mike valide chaque batch 3-4 tickets)
+- **Started** : 2026-05-12 14h20
+- **Time cap** : pas de cap explicite (~4-6h estimé pour 24 tickets)
+- **Status** : sealed, awaiting Mike GO dispatch
+- **Backlog** : `.claude/specs/R6-EXEC/_backlog.md` (24 tickets)
+- **Coordination** : `.claude/coordination/sprint-R6-02.md`
 
-## Scope sealed
+## Scope sealed R6-02
 
-- Track A : produire `.claude/audit/2026-05-12-triage-table.md` (40-70 lignes max)
-- Track B : 1 Sonnet bug-fixer en worktree, fix 5 bugs runtime
-  (3 shaders URP + NullRef + ArgumentNull)
-- Aucun autre commit code feature autorisé pendant R6-01
+- 24 tickets DELETE pass (entities + UI + systems + endscreen)
+- LOC delta target : **-6750 LOC**
+- 3 file deletions : RandomMapGenerator.cs, ReplayRecorder.cs, Difficulty.cs
+- Smoke test post-sprint : WebGL build clean + console clean + W1-1 jouable
+- API contracts à préserver (cf sprint-R6-02.md)
+
+## Mode change conditions
+
+Mike peut écrire en chat :
+- "GO autonomous sprint R6-02 time cap N heures" → switch autonome + ScheduleWakeup 1800s
+- "GO batch dispatch N tickets" → dispatch supervisé batch (3-4 tickets)
+- "STOP R6-02" → exit sprint, no rescheduleWakeup, push notif
+
+## R6-01 historique (DONE)
+
+- Track A : ✅ `.claude/audit/2026-05-12-triage-table.md` 56 rows + 3 decisions Mike validées (commit `d87125c`)
+- Track B : ✅ bug-fixer 3 commits (`08778de` shaders URP, `7d3b1af` NullRef MinimapController, `1f93e3c` ArgumentNull TowerInfoPanel) + gh-pages deploy `50c5420`
 
 ## Backlog file
 
