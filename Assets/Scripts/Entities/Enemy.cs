@@ -2073,6 +2073,9 @@ namespace CrowdDefense.Entities
             CameraController.Instance?.Shake(1.5f, CinematicDuration);
             AudioController.Instance?.Play("boss_death_roar", 1f);
             AudioController.Instance?.Play("boss_defeated", 1f);
+            // Tower kill bonus : louder pitched-up explosion + reverb cue
+            if (_lastDamageTower != null)
+                AudioController.Instance?.PlayPitched("boss_kill_special", 1.4f, 1.25f);
 
             // "BOSS VAINCU !" popup
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
