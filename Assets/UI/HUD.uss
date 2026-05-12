@@ -1023,6 +1023,29 @@
     -unity-text-align: middle-center;
 }
 
+/* === Wave intro banner (top-center, slides in from top, 2s total) === */
+.wave-banner {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    min-height: 90px;
+    background-color: rgba(10, 18, 36, 0.88);
+    border-bottom-width: 3px;
+    border-color: rgba(255, 210, 63, 0.7);
+    align-items: center;
+    justify-content: center;
+}
+
+.wave-banner-label {
+    color: rgb(255, 230, 100);
+    font-size: 52px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+    letter-spacing: 6px;
+}
+
 /* === Toast stack (generic toasts: perk, synergy, combo, modifier, achievement) === */
 .toast-stack {
     position: absolute;
