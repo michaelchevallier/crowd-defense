@@ -130,7 +130,7 @@ namespace CrowdDefense.Systems
 
         private void Update()
         {
-            var hero = UnityEngine.Object.FindFirstObjectByType<Hero>();
+            var hero = Hero.Current;
             if (hero != null) CheckProximity(hero.transform.position);
         }
 

@@ -21,6 +21,9 @@ namespace CrowdDefense.Entities
     /// </summary>
     public class Hero : MonoBehaviour
     {
+        // ── Singleton-ish access (cached on Awake/OnDestroy, no auto-create) ──
+        public static Hero? Current { get; private set; }
+
         // ── Serialized ────────────────────────────────────────────────────────
         [SerializeField] private GameObject? projectilePrefab;
 
@@ -1037,9 +1040,15 @@ namespace CrowdDefense.Entities
             _fireTrails.Clear();
         }
 
+        private void Awake()
+        {
+            Current = this;
+        }
+
         // ── OnDestroy — return dangling projectiles to pool ──────────────────
         private void OnDestroy()
         {
+            if (Current == this) Current = null;
             for (int i = _projectiles.Count - 1; i >= 0; i--)
             {
                 var p = _projectiles[i];
