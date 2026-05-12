@@ -36,7 +36,9 @@ namespace CrowdDefense.UI
         private void Awake()
         {
             _doc  = GetComponent<UIDocument>();
+            if (_doc == null) return;
             _root = _doc.rootVisualElement;
+            if (_root == null) return;
 
             _panel      = _root.Q<VisualElement>("skin-picker-panel");
             _tabBar     = _root.Q<VisualElement>("skin-tab-bar");

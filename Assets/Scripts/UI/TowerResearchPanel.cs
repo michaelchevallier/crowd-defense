@@ -36,6 +36,7 @@ namespace CrowdDefense.UI
             var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
             if (doc == null) { enabled = false; return; }
             var root = doc.rootVisualElement;
+            if (root == null) { Debug.LogError("[TowerResearchPanel] rootVisualElement is null"); enabled = false; return; }
 
             _panel = root.Q<VisualElement>("research-panel");
             _title = root.Q<Label>("research-title");

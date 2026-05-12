@@ -46,7 +46,18 @@ namespace CrowdDefense.UI
         protected override void OnAwakeSingleton()
         {
             var doc = GetComponent<UIDocument>();
-            _stack = doc.rootVisualElement.Q<VisualElement>("toast-stack");
+            if (doc == null)
+            {
+                Debug.LogError("[ToastController] UIDocument not found");
+                return;
+            }
+            var root = doc.rootVisualElement;
+            if (root == null)
+            {
+                Debug.LogError("[ToastController] rootVisualElement is null");
+                return;
+            }
+            _stack = root.Q<VisualElement>("toast-stack");
         }
 
         public void Enqueue(string title, string body, int durationMs, string? iconEmoji, ToastType type = ToastType.Generic)

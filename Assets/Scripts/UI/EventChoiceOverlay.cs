@@ -22,7 +22,17 @@ namespace CrowdDefense.UI
         private void Awake()
         {
             var doc = GetComponent<UIDocument>();
+            if (doc == null)
+            {
+                Debug.LogError("[EventChoiceOverlay] UIDocument not found");
+                return;
+            }
             var ve = doc.rootVisualElement;
+            if (ve == null)
+            {
+                Debug.LogError("[EventChoiceOverlay] rootVisualElement is null");
+                return;
+            }
             _root       = ve.Q<VisualElement>("event-root");
             _titleLabel = ve.Q<Label>("event-title");
             _bodyLabel  = ve.Q<Label>("event-body");

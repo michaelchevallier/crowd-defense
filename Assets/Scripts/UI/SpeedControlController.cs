@@ -17,6 +17,7 @@ namespace CrowdDefense.UI
             if (doc == null) return;
 
             var root = doc.rootVisualElement;
+            if (root == null) return;
             _btns[0] = root.Q<Button>("speed-0");
             _btns[1] = root.Q<Button>("speed-1");
             _btns[2] = root.Q<Button>("speed-2");

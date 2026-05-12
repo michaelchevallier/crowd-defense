@@ -42,6 +42,7 @@ namespace CrowdDefense.UI
             var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
             if (doc == null) { enabled = false; return; }
             var root = doc.rootVisualElement;
+            if (root == null) { Debug.LogError("[UpgradeMenuController] rootVisualElement is null"); enabled = false; return; }
 
             _panel          = root.Q<VisualElement>("l3-choice-panel");
             _titleLabel     = root.Q<Label>("l3-choice-title");

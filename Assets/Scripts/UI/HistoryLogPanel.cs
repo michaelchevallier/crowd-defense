@@ -21,7 +21,17 @@ namespace CrowdDefense.UI
         private void Start()
         {
             var doc  = GetComponent<UIDocument>();
+            if (doc == null)
+            {
+                Debug.LogError("[HistoryLogPanel] UIDocument not found");
+                return;
+            }
             var root = doc.rootVisualElement;
+            if (root == null)
+            {
+                Debug.LogError("[HistoryLogPanel] rootVisualElement is null");
+                return;
+            }
 
             _panel     = root.Q<VisualElement>("history-log-panel");
             _scroll    = root.Q<ScrollView>("history-log-scroll");
