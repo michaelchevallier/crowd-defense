@@ -183,7 +183,13 @@ namespace CrowdDefense.Systems
                 StartCoroutine(PlayProceduralBeep3DCo(clipKey, worldPos, volMul));
                 return;
             }
-            AudioSource.PlayClipAtPoint(clip, worldPos, Mathf.Clamp01(volMul));
+            // Use pool source with spatial audio + mixer routing (instead of PlayClipAtPoint bypass)
+            var src = _sfxPool[_nextIdx++ % PoolSize];
+            src.transform.position = worldPos;
+            src.clip = clip;
+            src.spatialBlend = 1.0f;  // Full 3D spatial audio
+            src.volume = Mathf.Clamp01(volMul);
+            src.Play();
         }
 
         // Plays a 3D clip with pitch shift. Falls back silently if clip missing.
