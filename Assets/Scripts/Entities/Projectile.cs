@@ -24,14 +24,17 @@ namespace CrowdDefense.Entities
 
         private void Awake()
         {
-            _trail = GetComponent<TrailRenderer>() ?? gameObject.AddComponent<TrailRenderer>();
-            _trail.time = 0.15f;
-            _trail.startWidth = 0.1f;
-            _trail.endWidth = 0f;
-            _trail.material = BuildAdditiveMat();
-            _trail.startColor = new Color(1f, 0.7f, 0.3f, 0.8f);
-            _trail.endColor   = new Color(1f, 0.7f, 0.3f, 0f);
-            _trail.emitting = false;
+            if (TryGetComponent(out TrailRenderer trail))
+            {
+                _trail = trail;
+                _trail.time = 0.15f;
+                _trail.startWidth = 0.1f;
+                _trail.endWidth = 0f;
+                _trail.material = BuildAdditiveMat();
+                _trail.startColor = new Color(1f, 0.7f, 0.3f, 0.8f);
+                _trail.endColor   = new Color(1f, 0.7f, 0.3f, 0f);
+                _trail.emitting = false;
+            }
         }
 
         private static Material BuildAdditiveMat()
