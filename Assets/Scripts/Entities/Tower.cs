@@ -144,6 +144,13 @@ namespace CrowdDefense.Entities
         private const float StreakWindow  = 0.5f;
         private const int   StreakMax     = 10;
 
+        // XP system — +5% dmg per 10 kills, max 50% (10 levels)
+        private int   _xpKills    = 0;
+        private float _xpDmgMul  = 1f;
+        private const int   XpKillsPerLevel = 10;
+        private const float XpDmgPerLevel   = 0.05f;
+        private const float XpDmgMax        = 1.50f;
+
         // DOT feedback popup throttle — skip if popup emitted within last 0.5s
         private float _lastDotPopupAt = -1f;
 
@@ -249,6 +256,15 @@ namespace CrowdDefense.Entities
             if (_streakCount > 3)
                 CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
                     $"x{_streakCount}", transform.position + Vector3.up * 2f, new Color(1f, 0.85f, 0.1f));
+
+            // XP level-up every XpKillsPerLevel kills
+            _xpKills++;
+            if (_xpKills % XpKillsPerLevel == 0 && _xpDmgMul < XpDmgMax)
+            {
+                _xpDmgMul = Mathf.Min(_xpDmgMul + XpDmgPerLevel, XpDmgMax);
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                    "+LVL", transform.position + Vector3.up * 2.5f, new Color(0.4f, 1f, 0.4f));
+            }
         }
 
         // HP system : 30 max, -1 per kill, repair = 10¢ per 5 HP missing (rounded up)
@@ -1001,7 +1017,8 @@ namespace CrowdDefense.Entities
             // _levelDmgScale encode le scaling Phaser : L1=0.75, L2=1.0, L3=1.30
             // L3DmgMul applique la divergence de branche (D1-03)
             // _heroBuffDmgMul: aura du Hero (ApplyHeroBuff / ClearHeroBuff)
-            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * ResearchDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+            // _xpDmgMul: XP level-up bonus (+5% per 10 kills, max 50%)
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * ResearchDamageMul * _buffMul * _heroBuffDmgMul * _xpDmgMul * _levelDmgScale * L3DmgMul;
             // Kill streak combo : +5% per stack, max 10 stacks (50%) — decays if gap > 0.5 s
             if (_streakCount > 0 && Time.time - _lastKillTime < StreakWindow * 4f)
                 dmg *= 1f + _streakCount * 0.05f;
@@ -1794,7 +1811,7 @@ namespace CrowdDefense.Entities
             if (cfg == null) return;
             if (ProjectilePool.Instance == null) return;
 
-            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * ResearchDamageMul * _buffMul * _heroBuffDmgMul * _levelDmgScale * L3DmgMul;
+            float dmg = cfg.Damage * BalanceConfig.Get().TowerDamageMul * TalentSystem.TowerDamageMul * ResearchDamageMul * _buffMul * _heroBuffDmgMul * _xpDmgMul * _levelDmgScale * L3DmgMul;
             if (_streakCount > 0 && Time.time - _lastKillTime < StreakWindow * 4f)
                 dmg *= 1f + _streakCount * 0.05f;
 
