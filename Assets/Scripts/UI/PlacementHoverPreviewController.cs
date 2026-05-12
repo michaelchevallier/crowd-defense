@@ -11,9 +11,15 @@ namespace CrowdDefense.UI
     /// while a tower type is selected. Hides when no valid cell is hovered.
     public class PlacementHoverPreviewController : MonoBehaviour
     {
+        private const float LerpSpeed = 18f; // approx 0.2s settle at 60fps
+
         private VisualElement? _card;
         private Label? _name;
         private Label? _stats;
+
+        // Smoothed panel position in UI-space (px)
+        private Vector2 _panelPos;
+        private bool    _posInitialized;
 
         private void Start()
         {
@@ -44,17 +50,29 @@ namespace CrowdDefense.UI
 
             // Screen coords → UI Toolkit panel coords (origin top-left, y axis flipped)
             var mp = Input.mousePosition;
-            float px = mp.x + 14f;
-            float py = Screen.height - mp.y - 14f;
+            float targetX = mp.x + 16f;
+            float targetY = Screen.height - mp.y - 16f;
 
             // Clamp so card stays within screen bounds
             float cardW = _card.resolvedStyle.width;
             float cardH = _card.resolvedStyle.height;
-            if (cardW > 0) px = Mathf.Min(px, Screen.width  - cardW - 4f);
-            if (cardH > 0) py = Mathf.Max(py, 4f);
+            if (cardW > 0) targetX = Mathf.Min(targetX, Screen.width  - cardW - 4f);
+            if (cardH > 0) targetY = Mathf.Max(targetY, 4f);
 
-            _card.style.left = px;
-            _card.style.top  = py;
+            if (!_posInitialized)
+            {
+                _panelPos       = new Vector2(targetX, targetY);
+                _posInitialized = true;
+            }
+            else
+            {
+                float t = 1f - Mathf.Exp(-LerpSpeed * Time.unscaledDeltaTime);
+                _panelPos.x = Mathf.Lerp(_panelPos.x, targetX, t);
+                _panelPos.y = Mathf.Lerp(_panelPos.y, targetY, t);
+            }
+
+            _card.style.left = _panelPos.x;
+            _card.style.top  = _panelPos.y;
         }
 
         private void OnHoverCell(Vector2Int? cell)
@@ -77,19 +95,19 @@ namespace CrowdDefense.UI
 
             _name.text = $"{type.DisplayName}  {type.Cost}g";
 
-            float dps = type.Damage / Mathf.Max(type.FireRateMs / 1000f, 0.001f);
-            _stats.text = $"DPS {dps:F0}  Range {type.Range:F1}";
+            float ratePerSec = 1000f / Mathf.Max(type.FireRateMs, 1);
+            _stats.text = $"Atk {type.Damage:F0}  Cadence {ratePerSec:F1}/s  Portee {type.Range:F1}m";
 
             if (poor)
-            {
                 _card.AddToClassList("tower-hover-card--poor");
-            }
             else
-            {
                 _card.RemoveFromClassList("tower-hover-card--poor");
-            }
 
-            _card.RemoveFromClassList("hidden");
+            if (_card.ClassListContains("hidden"))
+            {
+                _posInitialized = false; // snap to cursor on first show
+                _card.RemoveFromClassList("hidden");
+            }
         }
 
         private void HideCard() => _card?.AddToClassList("hidden");
