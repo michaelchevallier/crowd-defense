@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="ConfirmDialog.uss" />
+    <ui:VisualElement name="confirm-overlay" class="confirm-overlay hidden">
+        <ui:VisualElement name="confirm-panel" class="confirm-panel">
+            <ui:Label name="confirm-title" class="confirm-title" />
+            <ui:Label name="confirm-message" class="confirm-message" />
+            <ui:VisualElement class="confirm-buttons">
+                <ui:Button name="btn-confirm" text="Confirmer" class="confirm-btn confirm-btn-danger" />
+                <ui:Button name="btn-cancel" text="Annuler" class="confirm-btn confirm-btn-secondary" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

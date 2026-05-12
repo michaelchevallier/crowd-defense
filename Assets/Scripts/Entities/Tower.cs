@@ -519,9 +519,23 @@ namespace CrowdDefense.Entities
 
         /// <summary>
         /// Sell this tower : refund 80% of cumulative cost (Q8 BalanceConfig.SellRefundRatio).
-        /// Handles Economy refund, unregisters from PlacementController and destroys GameObject.
+        /// L3 towers prompt a confirmation dialog before selling.
         /// </summary>
         public void Sell()
+        {
+            if (cfg == null) return;
+            if (UpgradeLevel == 3)
+            {
+                CrowdDefense.UI.Confirm.Show(
+                    "Vendre une tour L3 ?",
+                    "Vraiment vendre cette tour L3 ?",
+                    () => DoSell());
+                return;
+            }
+            DoSell();
+        }
+
+        private void DoSell()
         {
             if (cfg == null) return;
             var bal = BalanceConfig.Get();
