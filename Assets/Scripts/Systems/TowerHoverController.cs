@@ -46,6 +46,8 @@ namespace CrowdDefense.Systems
 
             if (found == hoveredTower) return;
 
+            ClearClusterHighlights();
+
             if (hoveredTower != null)
             {
                 hoveredTower.ShowRangeRing(false);
@@ -56,12 +58,37 @@ namespace CrowdDefense.Systems
             {
                 hoveredTower.ShowRangeRing(true);
                 TowerTooltipController.Instance?.Show(hoveredTower);
+                ShowClusterHighlights(hoveredTower, towers);
             }
+        }
+
+        private void ShowClusterHighlights(Tower source, System.Collections.Generic.List<Tower> towers)
+        {
+            string? sourceId = source.Config?.Id;
+            if (sourceId == null) return;
+            Vector3 sourcePos = source.transform.position;
+            for (int i = 0; i < towers.Count; i++)
+            {
+                var t = towers[i];
+                if (t == null || t == source) continue;
+                if (t.Config?.Id != sourceId) continue;
+                if (Vector3.Distance(t.transform.position, sourcePos) > 2f) continue;
+                t.ShowClusterHighlight(true);
+            }
+        }
+
+        private void ClearClusterHighlights()
+        {
+            if (PlacementController.Instance == null) return;
+            var towers = PlacementController.Instance.PlacedTowers;
+            for (int i = 0; i < towers.Count; i++)
+                towers[i]?.ShowClusterHighlight(false);
         }
 
         private void ClearHover()
         {
             if (hoveredTower == null) return;
+            ClearClusterHighlights();
             hoveredTower.ShowRangeRing(false);
             hoveredTower = null;
             TowerTooltipController.Instance?.Hide();

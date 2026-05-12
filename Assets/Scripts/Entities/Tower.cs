@@ -71,6 +71,7 @@ namespace CrowdDefense.Entities
 
         // Range ring + synergy halo GameObjects
         private GameObject? _rangeRing;
+        private GameObject? _clusterHighlight;
         private Renderer? _synergyHaloRenderer;
         private MaterialPropertyBlock? _haloMpb;
         private static readonly int _haloColorId = Shader.PropertyToID("_BaseColor");
@@ -331,6 +332,7 @@ namespace CrowdDefense.Entities
             BuildSynergyHalo();
             BuildAimLine();
             BuildAffordableHighlight(type.Range);
+            BuildClusterHighlight();
         }
 
         /// <summary>
@@ -1053,6 +1055,63 @@ namespace CrowdDefense.Entities
 
             go.SetActive(false);
             _rangeRing = go;
+        }
+
+        // ── Cluster Highlight ─────────────────────────────────────────────────
+
+        public void ShowClusterHighlight(bool visible)
+        {
+            if (_clusterHighlight != null)
+                _clusterHighlight.SetActive(visible);
+        }
+
+        private void BuildClusterHighlight()
+        {
+            if (_clusterHighlight != null)
+                Destroy(_clusterHighlight);
+
+            var go = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            go.name = "ClusterHighlight";
+            go.transform.SetParent(transform);
+            go.transform.localPosition = new Vector3(0f, 0.05f, 0f);
+            go.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            go.transform.localScale = new Vector3(2.2f, 2.2f, 1f);
+            Object.Destroy(go.GetComponent<Collider>());
+
+            const int texSize = 64;
+            var tex = new Texture2D(texSize, texSize, TextureFormat.RGBA32, false);
+            tex.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color32[texSize * texSize];
+            float half = texSize * 0.5f;
+            for (int y = 0; y < texSize; y++)
+            for (int x = 0; x < texSize; x++)
+            {
+                float dx = (x - half) / half;
+                float dy = (y - half) / half;
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                // Ring : visible seulement près du bord (0.75..1.0)
+                float ring = Mathf.SmoothStep(0f, 1f, (dist - 0.72f) / 0.12f)
+                           * Mathf.SmoothStep(0f, 1f, (1f - dist) / 0.08f);
+                byte a = (byte)Mathf.RoundToInt(Mathf.Clamp01(ring * 0.75f) * 255f);
+                pixels[y * texSize + x] = new Color32(255, 220, 40, a);   // jaune subtil
+            }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.mainTexture = tex;
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3001;
+            }
+            var rend = go.GetComponent<Renderer>();
+            if (rend != null) rend.material = mat;
+
+            go.SetActive(false);
+            _clusterHighlight = go;
         }
 
         // ── Synergy Halo ──────────────────────────────────────────────────────
