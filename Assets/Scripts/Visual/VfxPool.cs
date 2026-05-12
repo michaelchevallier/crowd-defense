@@ -8,17 +8,14 @@ using CrowdDefense.UI;
 
 namespace CrowdDefense.Visual
 {
-    // Port de Particles.js (Phaser pool 400 sprites radial) → Unity ObjectPool<ParticleSystem>.
-    // Pools : Impact / Death / Explosion / CoinBurst / HitFlash.
-    // Prefabs optionnels via Inspector ; si non assignés, génère des ParticleSystem procéduraux.
-    // API canon C3. Tint via MainModule.startColor.
+    // Port de Particles.js → Unity ObjectPool<ParticleSystem>.
+    // Procedural builders + texture wiring in VfxPoolBindings.cs.
     public class VfxPool : MonoSingleton<VfxPool>
     {
         private static readonly Dictionary<float, WaitForSeconds> _waitCache = new();
         private const int DefaultCapacity = 24;
         private const int MaxPoolSize = 100;
 
-        // Auto-LOD : réduit maxParticles à 50% si FPS rolling avg < 30.
         private static float _lodMultiplier = 1f;
         private float _fpsAccum;
         private int   _fpsFrames;
@@ -61,37 +58,42 @@ namespace CrowdDefense.Visual
         {
             if (transform.parent != null) transform.SetParent(null);
             _root = transform;
-            _additiveMat = BuildAdditiveMaterial();
+            _additiveMat = VfxPoolBindings.BuildAdditiveMaterial();
+            VfxPoolBindings.LoadAllTextures();
 
-            impactPrefab    ??= BuildProceduralPrefab("Impact",    BuildImpactModule);
-            deathPrefab     ??= BuildProceduralPrefab("Death",     BuildDeathModule);
-            explosionPrefab ??= BuildProceduralPrefab("Explosion", BuildExplosionModule);
-            coinBurstPrefab ??= BuildProceduralPrefab("CoinBurst", BuildCoinBurstModule);
-            hitFlashPrefab  ??= BuildProceduralPrefab("HitFlash",  BuildHitFlashModule);
-            levelUpPrefab   ??= BuildProceduralPrefab("LevelUp",   BuildLevelUpModule);
-            perkPickupPrefab ??= BuildProceduralPrefab("PerkPickup", BuildPerkPickupModule);
-            frostPrefab     ??= BuildProceduralPrefab("Frost",     BuildFrostModule);
-            portalPrefab    ??= BuildProceduralPrefab("Portal",    BuildPortalModule);
-            fireBreathPrefab ??= BuildProceduralPrefab("FireBreath", BuildFireBreathModule);
-            muzzleFlashPrefab    ??= BuildProceduralPrefab("MuzzleFlash",    BuildMuzzleFlashModule);
-            upgradeBurstPrefab    ??= BuildProceduralPrefab("UpgradeBurst",    BuildUpgradeBurstModule);
-            sparkPrefab           ??= BuildProceduralPrefab("Spark",           BuildSparkModule);
-            upgradeConfettiPrefab ??= BuildProceduralPrefab("UpgradeConfetti", BuildUpgradeConfettiModule);
+            impactPrefab    ??= MakeProcPrefab("Impact",    ps => VfxPoolBindings.BuildImpactModule(ps, _additiveMat));
+            deathPrefab     ??= MakeProcPrefab("Death",     ps => VfxPoolBindings.BuildDeathModule(ps, _additiveMat));
+            explosionPrefab ??= MakeProcPrefab("Explosion", ps => VfxPoolBindings.BuildExplosionModule(ps, _additiveMat));
+            coinBurstPrefab ??= MakeProcPrefab("CoinBurst", ps => VfxPoolBindings.BuildCoinBurstModule(ps, _additiveMat));
+            hitFlashPrefab  ??= MakeProcPrefab("HitFlash",  ps => VfxPoolBindings.BuildHitFlashModule(ps, _additiveMat));
+            levelUpPrefab   ??= MakeProcPrefab("LevelUp",   ps => VfxPoolBindings.BuildLevelUpModule(ps, _additiveMat));
+            perkPickupPrefab ??= MakeProcPrefab("PerkPickup", ps => VfxPoolBindings.BuildPerkPickupModule(ps, _additiveMat));
+            frostPrefab     ??= MakeProcPrefab("Frost",     ps => VfxPoolBindings.BuildFrostModule(ps, _additiveMat));
+            portalPrefab    ??= MakeProcPrefab("Portal",    ps => VfxPoolBindings.BuildPortalModule(ps, _additiveMat));
+            fireBreathPrefab ??= MakeProcPrefab("FireBreath", ps => VfxPoolBindings.BuildFireBreathModule(ps, _additiveMat));
+            muzzleFlashPrefab    ??= MakeProcPrefab("MuzzleFlash",    ps => VfxPoolBindings.BuildMuzzleFlashModule(ps, _additiveMat));
+            upgradeBurstPrefab   ??= MakeProcPrefab("UpgradeBurst",   ps => VfxPoolBindings.BuildUpgradeBurstModule(ps, _additiveMat));
+            sparkPrefab          ??= MakeProcPrefab("Spark",          ps => VfxPoolBindings.BuildSparkModule(ps, _additiveMat));
+            upgradeConfettiPrefab ??= MakeProcPrefab("UpgradeConfetti", ps => VfxPoolBindings.BuildUpgradeConfettiModule(ps, _additiveMat));
 
-            _impactPool    = BuildPool(impactPrefab,    "Impact",    DefaultCapacity);
-            _deathPool     = BuildPool(deathPrefab,     "Death",     DefaultCapacity);
-            _explosionPool = BuildPool(explosionPrefab, "Explosion", DefaultCapacity);
-            _coinBurstPool = BuildPool(coinBurstPrefab, "CoinBurst", DefaultCapacity);
-            _hitFlashPool  = BuildPool(hitFlashPrefab,  "HitFlash",  DefaultCapacity);
-            _levelUpPool   = BuildPool(levelUpPrefab,   "LevelUp",   DefaultCapacity);
-            _perkPickupPool = BuildPool(perkPickupPrefab, "PerkPickup", DefaultCapacity);
-            _frostPool     = BuildPool(frostPrefab,     "Frost",     DefaultCapacity);
-            _portalPool    = BuildPool(portalPrefab,    "Portal",    DefaultCapacity);
-            _fireBreathPool  = BuildPool(fireBreathPrefab,  "FireBreath",  DefaultCapacity);
-            _muzzleFlashPool  = BuildPool(muzzleFlashPrefab,  "MuzzleFlash",  DefaultCapacity);
-            _upgradeBurstPool    = BuildPool(upgradeBurstPrefab,    "UpgradeBurst",    DefaultCapacity);
-            _sparkPool           = BuildPool(sparkPrefab,           "Spark",           DefaultCapacity);
-            _upgradeConfettiPool = BuildPool(upgradeConfettiPrefab, "UpgradeConfetti", DefaultCapacity);
+            // Sub-emitter smoke on explosion (fires on particle death)
+            var smokePrefab = MakeProcPrefab("ExplosionSmoke", ps => VfxPoolBindings.BuildExplosionSmokeModule(ps, _additiveMat));
+            VfxPoolBindings.AttachSubEmitter(explosionPrefab, smokePrefab);
+
+            _impactPool         = MakePool(impactPrefab,         "Impact");
+            _deathPool          = MakePool(deathPrefab,          "Death");
+            _explosionPool      = MakePool(explosionPrefab,      "Explosion");
+            _coinBurstPool      = MakePool(coinBurstPrefab,      "CoinBurst");
+            _hitFlashPool       = MakePool(hitFlashPrefab,       "HitFlash");
+            _levelUpPool        = MakePool(levelUpPrefab,        "LevelUp");
+            _perkPickupPool     = MakePool(perkPickupPrefab,     "PerkPickup");
+            _frostPool          = MakePool(frostPrefab,          "Frost");
+            _portalPool         = MakePool(portalPrefab,         "Portal");
+            _fireBreathPool     = MakePool(fireBreathPrefab,     "FireBreath");
+            _muzzleFlashPool    = MakePool(muzzleFlashPrefab,    "MuzzleFlash");
+            _upgradeBurstPool   = MakePool(upgradeBurstPrefab,   "UpgradeBurst");
+            _sparkPool          = MakePool(sparkPrefab,          "Spark");
+            _upgradeConfettiPool = MakePool(upgradeConfettiPrefab, "UpgradeConfetti");
 
             PreWarm();
         }
@@ -101,152 +103,86 @@ namespace CrowdDefense.Visual
             _fpsAccum  += Time.deltaTime;
             _fpsFrames += 1;
             _lodRecheckTimer += Time.deltaTime;
-
-            if (_lodRecheckTimer >= 2f)
+            if (_lodRecheckTimer < 2f) return;
+            _lodRecheckTimer = 0f;
+            if (_fpsFrames > 0)
             {
-                _lodRecheckTimer = 0f;
-                if (_fpsFrames > 0)
-                {
-                    float avgFps = _fpsFrames / _fpsAccum;
-                    _lodMultiplier = avgFps < 30f ? 0.5f : (avgFps > 50f ? 1f : _lodMultiplier);
-                }
-                _fpsAccum  = 0f;
-                _fpsFrames = 0;
+                float avg = _fpsFrames / _fpsAccum;
+                _lodMultiplier = avg < 30f ? 0.5f : (avg > 50f ? 1f : _lodMultiplier);
             }
+            _fpsAccum = 0f;
+            _fpsFrames = 0;
         }
 
         // ── API canon ─────────────────────────────────────────────────────────
 
-        public void SpawnImpact(Vector3 worldPos, Color tint)
-        {
-            if (!IsVfxEnabled() || _impactPool == null) return;
-            var ps = _impactPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ApplyTint(ps, tint);
-            PlayAndAutoRelease(ps, _impactPool);
-        }
+        public void SpawnImpact(Vector3 pos, Color tint) => SpawnFrom(_impactPool, pos, tint);
 
-        public void SpawnDeath(Vector3 worldPos, Color tint, float intensityMul = 1f)
+        public void SpawnDeath(Vector3 pos, Color tint, float intensityMul = 1f)
         {
             if (!IsVfxEnabled() || _deathPool == null) return;
             var ps = _deathPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
             ps.transform.localScale = Vector3.one * intensityMul;
-
             var main = ps.main;
             main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(280 * intensityMul));
-            var emission = ps.emission;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f,
-                (short)Mathf.RoundToInt(16 * intensityMul),
-                (short)Mathf.RoundToInt(28 * intensityMul), 1, 0.01f) });
-
+            var deathEmit = ps.emission;
+            deathEmit.SetBursts(new[] { new ParticleSystem.Burst(0f,
+                (short)Mathf.RoundToInt(16 * intensityMul), (short)Mathf.RoundToInt(28 * intensityMul), 1, 0.01f) });
             ApplyTint(ps, tint);
-            PlayAndAutoRelease(ps, _deathPool);
+            PlayRelease(ps, _deathPool);
         }
 
-        public void SpawnDeathPuff(Vector3 worldPos, int tier = 0)
+        public void SpawnDeathPuff(Vector3 pos, int tier = 0)
         {
-            Color tint = tier switch
-            {
-                2 => new Color(1f, 0.55f, 0.05f),
-                1 => new Color(0.9f, 0.3f, 0.9f),
-                _ => Color.white
-            };
-            float intensity = tier switch
-            {
-                2 => 5f,
-                1 => 2f,
-                _ => 1f
-            };
-            SpawnDeath(worldPos, tint, intensity);
+            Color tint = tier switch { 2 => new Color(1f, 0.55f, 0.05f), 1 => new Color(0.9f, 0.3f, 0.9f), _ => Color.white };
+            float intensity = tier switch { 2 => 5f, 1 => 2f, _ => 1f };
+            SpawnDeath(pos, tint, intensity);
         }
 
-        public void SpawnExplosion(Vector3 worldPos, float radius = 2f)
+        public void SpawnExplosion(Vector3 pos, float radius = 2f)
         {
             if (!IsVfxEnabled() || _explosionPool == null) return;
             var ps = _explosionPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            float scale = Mathf.Clamp(radius * 0.5f, 0.5f, 5f);
-            ps.transform.localScale = Vector3.one * scale;
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+            ps.transform.localScale = Vector3.one * Mathf.Clamp(radius * 0.5f, 0.5f, 5f);
             ApplyTint(ps, new Color(1f, 0.65f, 0.15f));
-            PlayAndAutoRelease(ps, _explosionPool);
+            PlayRelease(ps, _explosionPool);
         }
 
-        public void SpawnCoinBurst(Vector3 worldPos)
+        public void SpawnCoinBurst(Vector3 pos)  => SpawnFrom(_coinBurstPool, pos, new Color(1f, 0.88f, 0.15f));
+        public void SpawnCoinPickup(Vector3 pos) => SpawnCoinBurst(pos);
+
+        public void SpawnConfetti(Vector3 pos, float mul = 1f)
         {
             if (!IsVfxEnabled() || _coinBurstPool == null) return;
             var ps = _coinBurstPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ApplyTint(ps, new Color(1f, 0.88f, 0.15f));
-            PlayAndAutoRelease(ps, _coinBurstPool);
-        }
-
-        public void SpawnCoinPickup(Vector3 worldPos) => SpawnCoinBurst(worldPos);
-
-        // Confetti burst : wave clear = 1f, level complete = 1f, world complete = 4f, boss defeat = 2f.
-        public void SpawnConfetti(Vector3 worldPos, float intensityMul = 1f)
-        {
-            if (!IsVfxEnabled() || _coinBurstPool == null) return;
-            var ps = _coinBurstPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
             var main = ps.main;
-            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(50 * intensityMul * _lodMultiplier));
-
+            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(50 * mul * _lodMultiplier));
             var emission = ps.emission;
             emission.SetBursts(new[] { new ParticleSystem.Burst(0f,
-                (short)Mathf.RoundToInt(10 * intensityMul),
-                (short)Mathf.RoundToInt(30 * intensityMul), 1, 0.05f) });
-
+                (short)Mathf.RoundToInt(10 * mul), (short)Mathf.RoundToInt(30 * mul), 1, 0.05f) });
             var col = ps.colorOverLifetime;
             col.enabled = true;
-            col.color = new ParticleSystem.MinMaxGradient(BuildConfettiGradient());
-
-            PlayAndAutoRelease(ps, _coinBurstPool);
+            col.color   = new ParticleSystem.MinMaxGradient(VfxPoolBindings.BuildConfettiGradient());
+            PlayRelease(ps, _coinBurstPool);
         }
 
-        // Crit burst : solid tint overrides confetti gradient — used for tower critical hits.
-        public void SpawnConfetti(Vector3 worldPos, float intensityMul, Color tint)
+        public void SpawnConfetti(Vector3 pos, float mul, Color tint)
         {
             if (!IsVfxEnabled() || _coinBurstPool == null) return;
             var ps = _coinBurstPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
             var main = ps.main;
-            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(50 * intensityMul * _lodMultiplier));
-
+            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(50 * mul * _lodMultiplier));
             var emission = ps.emission;
             emission.SetBursts(new[] { new ParticleSystem.Burst(0f,
-                (short)Mathf.RoundToInt(10 * intensityMul),
-                (short)Mathf.RoundToInt(30 * intensityMul), 1, 0.05f) });
-
+                (short)Mathf.RoundToInt(10 * mul), (short)Mathf.RoundToInt(30 * mul), 1, 0.05f) });
             var col = ps.colorOverLifetime;
             col.enabled = false;
             ApplyTint(ps, tint);
-
-            PlayAndAutoRelease(ps, _coinBurstPool);
-        }
-
-        private static Gradient BuildConfettiGradient()
-        {
-            var grad = new Gradient();
-            grad.SetKeys(
-                new[]
-                {
-                    new GradientColorKey(new Color(1f, 0.22f, 0.22f), 0f),
-                    new GradientColorKey(new Color(1f, 0.85f, 0.1f),  0.25f),
-                    new GradientColorKey(new Color(0.2f, 0.85f, 0.3f), 0.5f),
-                    new GradientColorKey(new Color(0.15f, 0.55f, 1f),  0.75f),
-                    new GradientColorKey(new Color(0.8f, 0.2f, 1f),   1f)
-                },
-                new[]
-                {
-                    new GradientAlphaKey(1f, 0f),
-                    new GradientAlphaKey(0.85f, 0.5f),
-                    new GradientAlphaKey(0f, 1f)
-                }
-            );
-            return grad;
+            PlayRelease(ps, _coinBurstPool);
         }
 
         public void SpawnHitFlash(Transform target)
@@ -256,828 +192,247 @@ namespace CrowdDefense.Visual
             ps.transform.SetPositionAndRotation(target.position, Quaternion.identity);
             ps.transform.SetParent(target, worldPositionStays: true);
             ApplyTint(ps, Color.white);
-            PlayAndAutoRelease(ps, _hitFlashPool);
+            PlayRelease(ps, _hitFlashPool);
         }
 
-        public void SpawnLevelUp(Vector3 worldPos)
-        {
-            if (!IsVfxEnabled() || _levelUpPool == null) return;
-            var ps = _levelUpPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ApplyTint(ps, new Color(1f, 0.84f, 0f));
-            PlayAndAutoRelease(ps, _levelUpPool);
-        }
+        public void SpawnLevelUp(Vector3 pos)                => SpawnFrom(_levelUpPool,    pos, new Color(1f, 0.84f, 0f));
+        public void SpawnPerkPickup(Vector3 pos, Color tint)  => SpawnFrom(_perkPickupPool, pos, tint);
+        public void SpawnMuzzleFlash(Vector3 pos, Color tint) => SpawnFrom(_muzzleFlashPool, pos, tint);
+        public void SpawnSpark(Vector3 pos, Color tint)       => SpawnFrom(_sparkPool, pos, tint);
 
-        public void SpawnPerkPickup(Vector3 worldPos, Color tint)
-        {
-            if (!IsVfxEnabled() || _perkPickupPool == null) return;
-            var ps = _perkPickupPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ApplyTint(ps, tint);
-            PlayAndAutoRelease(ps, _perkPickupPool);
-        }
-
-        public void SpawnMuzzleFlash(Vector3 worldPos, Color tint)
-        {
-            if (!IsVfxEnabled() || _muzzleFlashPool == null) return;
-            var ps = _muzzleFlashPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ApplyTint(ps, tint);
-            PlayAndAutoRelease(ps, _muzzleFlashPool);
-        }
-
-        // Attack stream : 8 sparks distributed along tower → target trajectory, lifetime 0.15s.
-        // Particles spawned at 4 equidistant points (0.2 / 0.4 / 0.6 / 0.8 lerp) + origin, tiny scale.
         public void SpawnAttackStream(Vector3 from, Vector3 to, Color tint)
         {
             if (!IsVfxEnabled() || _sparkPool == null) return;
-            const int Steps = 4;
-            for (int i = 1; i <= Steps; i++)
+            for (int i = 1; i <= 4; i++)
             {
-                float t = i / (float)(Steps + 1);
-                var pos = Vector3.Lerp(from, to, t);
                 var ps = _sparkPool.Get();
-                ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
-                ps.transform.localScale = Vector3.one * 0.35f; // tiny
-
-                var main = ps.main;
-                main.startLifetime = new ParticleSystem.MinMaxCurve(0.10f, 0.15f);
-                main.startSize     = new ParticleSystem.MinMaxCurve(0.03f, 0.08f);
-
-                var emission = ps.emission;
-                emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 2, 2, 1, 0.01f) });
-
+                ps.transform.SetPositionAndRotation(Vector3.Lerp(from, to, i / 5f), Quaternion.identity);
+                ps.transform.localScale = Vector3.one * 0.35f;
+                var psMain = ps.main;
+                psMain.startLifetime   = new ParticleSystem.MinMaxCurve(0.10f, 0.15f);
+                psMain.startSize       = new ParticleSystem.MinMaxCurve(0.03f, 0.08f);
+                var psEmit = ps.emission;
+                psEmit.SetBursts(new[] { new ParticleSystem.Burst(0f, 2, 2, 1, 0.01f) });
                 ApplyTint(ps, tint);
-                PlayAndAutoRelease(ps, _sparkPool);
+                PlayRelease(ps, _sparkPool);
             }
         }
 
-        // Impact spark burst — 8 particles, cone outward 0.5 unit, lifetime 0.2s, tinted by element.
-        public void SpawnSpark(Vector3 worldPos, Color tint)
-        {
-            if (!IsVfxEnabled() || _sparkPool == null) return;
-            var ps = _sparkPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ApplyTint(ps, tint);
-            PlayAndAutoRelease(ps, _sparkPool);
-        }
-
-        // Radial burst on tower upgrade. level: 2=cyan, 3=rainbow gradient.
         public void SpawnUpgradeBurst(Vector3 pos, int level)
         {
             if (!IsVfxEnabled() || _upgradeBurstPool == null) return;
             var ps = _upgradeBurstPool.Get();
             ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
-
             if (level >= 3)
             {
-                // Rainbow: override colorOverLifetime with confetti gradient
                 var col = ps.colorOverLifetime;
                 col.enabled = true;
-                col.color = new ParticleSystem.MinMaxGradient(BuildConfettiGradient());
+                col.color   = new ParticleSystem.MinMaxGradient(VfxPoolBindings.BuildConfettiGradient());
             }
             else
             {
-                // L2 = cyan, L1 fallback = white (should not happen via UpgradeTo)
-                Color tint = level == 2 ? new Color(0.2f, 0.9f, 1f) : Color.white;
-                ApplyTint(ps, tint);
-                var col = ps.colorOverLifetime;
-                col.enabled = false;
+                ApplyTint(ps, level == 2 ? new Color(0.2f, 0.9f, 1f) : Color.white);
+                var col2 = ps.colorOverLifetime;
+                col2.enabled = false;
             }
-
-            PlayAndAutoRelease(ps, _upgradeBurstPool);
+            PlayRelease(ps, _upgradeBurstPool);
         }
 
         private static readonly Color[] _confettiPalette =
         {
-            new(1f,    0.85f, 0.2f),
-            new(0.3f,  0.85f, 1f),
-            new(1f,    0.4f,  0.7f),
-            new(0.3f,  0.95f, 0.5f),
+            new(1f, 0.85f, 0.2f), new(0.3f, 0.85f, 1f),
+            new(1f, 0.4f,  0.7f), new(0.3f, 0.95f, 0.5f),
         };
 
-        // Celebration confetti on tower upgrade. L3 uses rainbow HSV, lower levels use 4-color palette.
         public void SpawnUpgradeConfetti(Vector3 pos, int level)
         {
             if (!IsVfxEnabled() || _upgradeConfettiPool == null) return;
             var ps = _upgradeConfettiPool.Get();
             ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
-
-            int count = level >= 3 ? 50 : 30;
-            count = Mathf.Max(1, Mathf.RoundToInt(count * _lodMultiplier));
-
-            var main = ps.main;
-            main.maxParticles = count;
-
-            var emission = ps.emission;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count, (short)count, 1, 0.01f) });
-
+            int count = Mathf.Max(1, Mathf.RoundToInt((level >= 3 ? 50 : 30) * _lodMultiplier));
+            var confMain = ps.main;
+            confMain.maxParticles = count;
+            var confEmit = ps.emission;
+            confEmit.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count, (short)count, 1, 0.01f) });
             var col = ps.colorOverLifetime;
             col.enabled = true;
-            col.color = new ParticleSystem.MinMaxGradient(
-                level >= 3 ? BuildRainbowGradient() : BuildPaletteGradient());
+            col.color   = new ParticleSystem.MinMaxGradient(
+                level >= 3 ? VfxPoolBindings.BuildRainbowGradient() : BuildPaletteGradient());
+            PlayRelease(ps, _upgradeConfettiPool);
+        }
 
-            PlayAndAutoRelease(ps, _upgradeConfettiPool);
+        public void SpawnFrost(Vector3 pos, float radius)
+        {
+            if (!IsVfxEnabled() || _frostPool == null) return;
+            var ps = _frostPool.Get();
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+            var frostShape = ps.shape;
+            frostShape.radius = Mathf.Max(0.3f, radius);
+            ApplyTint(ps, new Color(0.5f, 0.9f, 1f));
+            PlayRelease(ps, _frostPool);
+        }
+
+        public void SpawnPortal(Vector3 pos)
+        {
+            if (!IsVfxEnabled() || _portalPool == null) return;
+            var ps = _portalPool.Get();
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+            ApplyTint(ps, new Color(0.4f, 0.2f, 0.6f));
+            PlayRelease(ps, _portalPool);
+            StartCoroutine(PortalLightRoutine(pos));
+        }
+
+        public void SpawnFireBreath(Vector3 origin, Vector3 dir, float dist)
+        {
+            if (!IsVfxEnabled() || _fireBreathPool == null || dir.sqrMagnitude < 0.0001f) return;
+            var ps = _fireBreathPool.Get();
+            var pivot = new GameObject("FireBreath_Pivot");
+            pivot.transform.SetPositionAndRotation(origin, Quaternion.LookRotation(dir));
+            ps.transform.SetParent(pivot.transform, false);
+            ps.transform.localPosition = Vector3.zero;
+            ps.transform.localRotation = Quaternion.identity;
+            var fbShape = ps.shape;
+            fbShape.length = dist;
+            ps.gameObject.SetActive(true);
+            ps.Play(true);
+            StartCoroutine(FireBreathRelease(ps, pivot, _fireBreathPool, _root));
+        }
+
+        // ── Coroutines ────────────────────────────────────────────────────────
+
+        private IEnumerator FireBreathRelease(ParticleSystem ps, GameObject pivot,
+                                              ObjectPool<ParticleSystem> pool, Transform? root)
+        {
+            yield return GetWait(0.7f);
+            ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
+            yield return GetWait(1.0f);
+            if (ps != null && ps.gameObject != null)
+            {
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                ps.transform.SetParent(root, false);
+                ps.transform.localScale = Vector3.one;
+                ps.gameObject.SetActive(false);
+                pool.Release(ps);
+            }
+            if (pivot != null) Destroy(pivot);
+        }
+
+        private IEnumerator PortalLightRoutine(Vector3 pos)
+        {
+            var go = new GameObject("PortalLight_VFX");
+            go.transform.position = pos;
+            var l = go.AddComponent<Light>();
+            l.type = LightType.Point;
+            l.color = new Color(0.4f, 0.2f, 0.6f);
+            l.range = 4f;
+            l.intensity = 5f;
+            float t = 0f;
+            while (t < 0.3f) { t += Time.deltaTime; l.intensity = Mathf.Lerp(5f, 0f, t / 0.3f); yield return null; }
+            Destroy(go);
+        }
+
+        // ── Pool internals ────────────────────────────────────────────────────
+
+        private ObjectPool<ParticleSystem> MakePool(GameObject prefab, string label)
+            => new ObjectPool<ParticleSystem>(
+                createFunc:       () => { var go = Instantiate(prefab, _root); go.name = $"{label}_VFX"; go.SetActive(false);
+                                          return go.GetComponent<ParticleSystem>() ?? go.AddComponent<ParticleSystem>(); },
+                actionOnGet:      ps => ps.gameObject.SetActive(true),
+                actionOnRelease:  ps => { ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                                          ps.transform.SetParent(_root, false); ps.transform.localScale = Vector3.one;
+                                          ps.gameObject.SetActive(false); },
+                actionOnDestroy:  ps => { if (ps) Destroy(ps.gameObject); },
+                collectionCheck:  false,
+                defaultCapacity:  DefaultCapacity,
+                maxSize:          MaxPoolSize);
+
+        private void PreWarm()
+        {
+            foreach (var pool in new[] { _impactPool, _deathPool, _explosionPool, _coinBurstPool,
+                _hitFlashPool, _levelUpPool, _perkPickupPool, _frostPool, _portalPool,
+                _fireBreathPool, _muzzleFlashPool, _upgradeBurstPool, _sparkPool, _upgradeConfettiPool })
+            {
+                if (pool == null) continue;
+                var buf = new ParticleSystem[DefaultCapacity];
+                for (int i = 0; i < DefaultCapacity; i++) buf[i] = pool.Get();
+                for (int i = 0; i < DefaultCapacity; i++) pool.Release(buf[i]);
+            }
+        }
+
+        private void SpawnFrom(ObjectPool<ParticleSystem>? pool, Vector3 pos, Color tint)
+        {
+            if (!IsVfxEnabled() || pool == null) return;
+            var ps = pool.Get();
+            ps.transform.SetPositionAndRotation(pos, Quaternion.identity);
+            ApplyTint(ps, tint);
+            PlayRelease(ps, pool);
+        }
+
+        private static void ApplyTint(ParticleSystem ps, Color tint)
+        {
+            var m = ps.main;
+            m.startColor = new ParticleSystem.MinMaxGradient(tint);
+        }
+
+        private static void ApplyLod(ParticleSystem ps)
+        {
+            if (_lodMultiplier >= 1f) return;
+            var m = ps.main;
+            m.maxParticles = Mathf.Max(1, Mathf.RoundToInt(m.maxParticles * _lodMultiplier));
+        }
+
+        private void PlayRelease(ParticleSystem ps, ObjectPool<ParticleSystem> pool)
+        {
+            ApplyLod(ps);
+            var stopMain = ps.main;
+            stopMain.stopAction = ParticleSystemStopAction.Callback;
+            var h = ps.gameObject.GetComponent<VfxPoolReleaseOnStop>() ?? ps.gameObject.AddComponent<VfxPoolReleaseOnStop>();
+            h.Setup(ps, pool, _root);
+            ps.Play(true);
+        }
+
+        private static WaitForSeconds GetWait(float s)
+        {
+            float k = Mathf.Round(s * 20f) / 20f;
+            if (!_waitCache.TryGetValue(k, out var w)) { w = new WaitForSeconds(k); _waitCache[k] = w; }
+            return w;
+        }
+
+        private static bool IsVfxEnabled() => SettingsRegistry.Instance?.VFXEnabled ?? true;
+
+        private GameObject MakeProcPrefab(string label, System.Action<ParticleSystem> configure)
+        {
+            var go = new GameObject($"Proc_{label}");
+            go.SetActive(false);
+            DontDestroyOnLoad(go);
+            var ps = go.AddComponent<ParticleSystem>();
+            var psr = go.GetComponent<ParticleSystemRenderer>();
+            if (psr != null && _additiveMat != null) psr.material = new Material(_additiveMat);
+            var main = ps.main;
+            main.loop            = false;
+            main.playOnAwake     = false;
+            main.simulationSpace = ParticleSystemSimulationSpace.World;
+            main.stopAction      = ParticleSystemStopAction.Disable;
+            configure(ps);
+            return go;
         }
 
         private static Gradient BuildPaletteGradient()
         {
             var g = new Gradient();
             g.SetKeys(
-                new[]
-                {
+                new[] {
                     new GradientColorKey(_confettiPalette[0], 0f),
                     new GradientColorKey(_confettiPalette[1], 0.33f),
                     new GradientColorKey(_confettiPalette[2], 0.66f),
                     new GradientColorKey(_confettiPalette[3], 1f),
                 },
-                new[]
-                {
+                new[] {
                     new GradientAlphaKey(1f, 0f),
                     new GradientAlphaKey(0.85f, 0.5f),
                     new GradientAlphaKey(0f, 1f),
-                }
-            );
+                });
             return g;
-        }
-
-        private static Gradient BuildRainbowGradient()
-        {
-            var g = new Gradient();
-            g.SetKeys(
-                new[]
-                {
-                    new GradientColorKey(Color.HSVToRGB(0f,    0.85f, 1f), 0f),
-                    new GradientColorKey(Color.HSVToRGB(0.2f,  0.85f, 1f), 0.2f),
-                    new GradientColorKey(Color.HSVToRGB(0.4f,  0.85f, 1f), 0.4f),
-                    new GradientColorKey(Color.HSVToRGB(0.6f,  0.85f, 1f), 0.6f),
-                    new GradientColorKey(Color.HSVToRGB(0.8f,  0.85f, 1f), 0.8f),
-                    new GradientColorKey(Color.HSVToRGB(1f,    0.85f, 1f), 1f),
-                },
-                new[]
-                {
-                    new GradientAlphaKey(1f, 0f),
-                    new GradientAlphaKey(0.9f, 0.5f),
-                    new GradientAlphaKey(0f, 1f),
-                }
-            );
-            return g;
-        }
-
-        public void SpawnFrost(Vector3 worldPos, float radius)
-        {
-            if (!IsVfxEnabled() || _frostPool == null) return;
-            var ps = _frostPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            // Scale the circle shape radius at runtime before play.
-            var shape = ps.shape;
-            shape.radius = Mathf.Max(0.3f, radius);
-            ApplyTint(ps, new Color(0.5f, 0.9f, 1f));
-            PlayAndAutoRelease(ps, _frostPool);
-        }
-
-        public void SpawnPortal(Vector3 worldPos)
-        {
-            if (!IsVfxEnabled() || _portalPool == null) return;
-            var ps = _portalPool.Get();
-            ps.transform.SetPositionAndRotation(worldPos, Quaternion.identity);
-            ApplyTint(ps, new Color(0.4f, 0.2f, 0.6f));
-            PlayAndAutoRelease(ps, _portalPool);
-            StartCoroutine(PortalLightFlashRoutine(worldPos));
-        }
-
-        // Cone de feu boss dragon/fire — orient via LookRotation, durée 0.7s, rateOverTime 200/sec.
-        // Un Transform pivot temporaire est créé pour aligner la shape Cone dans la direction voulue.
-        public void SpawnFireBreath(Vector3 origin, Vector3 direction, float distance)
-        {
-            if (!IsVfxEnabled() || _fireBreathPool == null) return;
-            if (direction.sqrMagnitude < 0.0001f) return;
-
-            var ps = _fireBreathPool.Get();
-
-            // Pivot temporaire aligné sur la direction — parente le PS pour orienter le cone
-            var pivot = new GameObject("FireBreath_Pivot");
-            pivot.transform.SetPositionAndRotation(origin, Quaternion.LookRotation(direction));
-            ps.transform.SetParent(pivot.transform, worldPositionStays: false);
-            ps.transform.localPosition = Vector3.zero;
-            ps.transform.localRotation = Quaternion.identity;
-
-            // Ajuster la longueur du cone à distance
-            var shape = ps.shape;
-            shape.length = distance;
-
-            ps.gameObject.SetActive(true);
-            ps.Play(true);
-            StartCoroutine(FireBreathReleaseRoutine(ps, pivot, _fireBreathPool, _root));
-        }
-
-        private IEnumerator FireBreathReleaseRoutine(ParticleSystem ps, GameObject pivot,
-                                                      ObjectPool<ParticleSystem> pool, Transform? root)
-        {
-            const float EmitDuration = 0.7f;
-            const float TailDuration = 1.0f; // lifetime max des particules
-            yield return GetWait(EmitDuration);
-
-            // Arrêter l'émission, laisser les particules existantes se consumer
-            ps.Stop(false, ParticleSystemStopBehavior.StopEmitting);
-
-            yield return GetWait(TailDuration);
-
-            if (ps != null && ps.gameObject != null)
-            {
-                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-                ps.transform.SetParent(root, worldPositionStays: false);
-                ps.transform.localScale = Vector3.one;
-                ps.gameObject.SetActive(false);
-                pool.Release(ps);
-            }
-            if (pivot != null)
-                Destroy(pivot);
-        }
-
-        private IEnumerator PortalLightFlashRoutine(Vector3 worldPos)
-        {
-            var lightGo = new GameObject("PortalLight_VFX");
-            lightGo.transform.position = worldPos;
-            var light = lightGo.AddComponent<Light>();
-            light.type      = LightType.Point;
-            light.color     = new Color(0.4f, 0.2f, 0.6f);
-            light.range     = 4f;
-            light.intensity = 5f;
-
-            float elapsed = 0f;
-            const float duration = 0.3f;
-            while (elapsed < duration)
-            {
-                elapsed += Time.deltaTime;
-                light.intensity = Mathf.Lerp(5f, 0f, elapsed / duration);
-                yield return null;
-            }
-            Destroy(lightGo);
-        }
-
-        // ── Pool internals ────────────────────────────────────────────────────
-
-        private ObjectPool<ParticleSystem> BuildPool(GameObject prefab, string label, int capacity)
-        {
-            return new ObjectPool<ParticleSystem>(
-                createFunc: () => CreateInstance(prefab, label),
-                actionOnGet: ps => ps.gameObject.SetActive(true),
-                actionOnRelease: ps =>
-                {
-                    ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-                    ps.transform.SetParent(_root, false);
-                    ps.transform.localScale = Vector3.one;
-                    ps.gameObject.SetActive(false);
-                },
-                actionOnDestroy: ps => { if (ps != null) Destroy(ps.gameObject); },
-                collectionCheck: false,
-                defaultCapacity: capacity,
-                maxSize: MaxPoolSize
-            );
-        }
-
-        private ParticleSystem CreateInstance(GameObject prefab, string label)
-        {
-            var go = Instantiate(prefab, _root);
-            go.name = $"{label}_VFX";
-            go.SetActive(false);
-            var ps = go.GetComponent<ParticleSystem>();
-            if (ps == null) ps = go.AddComponent<ParticleSystem>();
-            return ps;
-        }
-
-        private void PreWarm()
-        {
-            PreWarmPool(_impactPool,     DefaultCapacity);
-            PreWarmPool(_deathPool,      DefaultCapacity);
-            PreWarmPool(_explosionPool,  DefaultCapacity);
-            PreWarmPool(_coinBurstPool,  DefaultCapacity);
-            PreWarmPool(_hitFlashPool,   DefaultCapacity);
-            PreWarmPool(_levelUpPool,    DefaultCapacity);
-            PreWarmPool(_perkPickupPool, DefaultCapacity);
-            PreWarmPool(_frostPool,      DefaultCapacity);
-            PreWarmPool(_portalPool,     DefaultCapacity);
-            PreWarmPool(_fireBreathPool,  DefaultCapacity);
-            PreWarmPool(_muzzleFlashPool,  DefaultCapacity);
-            PreWarmPool(_upgradeBurstPool,    DefaultCapacity);
-            PreWarmPool(_sparkPool,           DefaultCapacity);
-            PreWarmPool(_upgradeConfettiPool, DefaultCapacity);
-        }
-
-        private static void PreWarmPool(ObjectPool<ParticleSystem>? pool, int count)
-        {
-            if (pool == null) return;
-            var buf = new ParticleSystem[count];
-            for (int i = 0; i < count; i++) buf[i] = pool.Get();
-            for (int i = 0; i < count; i++) pool.Release(buf[i]);
-        }
-
-        private static void ApplyTint(ParticleSystem ps, Color tint)
-        {
-            var main = ps.main;
-            main.startColor = new ParticleSystem.MinMaxGradient(tint);
-        }
-
-        private static void ApplyLod(ParticleSystem ps)
-        {
-            if (_lodMultiplier >= 1f) return;
-            var main = ps.main;
-            main.maxParticles = Mathf.Max(1, Mathf.RoundToInt(main.maxParticles * _lodMultiplier));
-        }
-
-        private void PlayAndAutoRelease(ParticleSystem ps, ObjectPool<ParticleSystem> pool)
-        {
-            ApplyLod(ps);
-            var main = ps.main;
-            main.stopAction = ParticleSystemStopAction.Callback;
-            var handler = ps.gameObject.GetComponent<VfxPoolReleaseOnStop>() ?? ps.gameObject.AddComponent<VfxPoolReleaseOnStop>();
-            handler.Setup(ps, pool, _root);
-            ps.Play(true);
-        }
-
-        private static WaitForSeconds GetWait(float seconds)
-        {
-            float key = Mathf.Round(seconds * 20f) / 20f;
-            if (!_waitCache.TryGetValue(key, out var w))
-            {
-                w = new WaitForSeconds(key);
-                _waitCache[key] = w;
-            }
-            return w;
-        }
-
-        private static bool IsVfxEnabled()
-            => SettingsRegistry.Instance?.VFXEnabled ?? true;
-
-        // ── Procedural prefab builders ────────────────────────────────────────
-
-        private GameObject BuildProceduralPrefab(string label, System.Action<ParticleSystem> configure)
-        {
-            var go = new GameObject($"Proc_{label}");
-            go.SetActive(false);
-            DontDestroyOnLoad(go);
-            var ps = go.AddComponent<ParticleSystem>();
-
-            var psr = go.GetComponent<ParticleSystemRenderer>();
-            if (psr != null && _additiveMat != null)
-                psr.material = _additiveMat;
-
-            var main = ps.main;
-            main.loop = false;
-            main.playOnAwake = false;
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-            main.stopAction = ParticleSystemStopAction.Disable;
-
-            configure(ps);
-            return go;
-        }
-
-        private static void BuildImpactModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.18f, 0.32f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(2.5f, 5.5f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.08f, 0.22f);
-            main.startColor     = Color.white;
-            main.maxParticles   = 160;
-            main.duration       = 0.1f;
-            main.gravityModifier = 0.6f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 8, 12, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled   = true;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius    = 0.1f;
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        private static void BuildDeathModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.35f, 0.65f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(3.5f, 8f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.12f, 0.38f);
-            main.startColor     = Color.white;
-            main.maxParticles   = 280;
-            main.duration       = 0.1f;
-            main.gravityModifier = 1.2f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 16, 28, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled   = true;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius    = 0.2f;
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        private static void BuildExplosionModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.5f, 0.9f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(5f, 12f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.2f, 0.6f);
-            main.startColor     = new Color(1f, 0.65f, 0.15f);
-            main.maxParticles   = 400;
-            main.duration       = 0.15f;
-            main.gravityModifier = 0.3f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 30, 50, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled   = true;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius    = 0.4f;
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        private static void BuildCoinBurstModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.5f, 0.9f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 6f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.07f, 0.18f);
-            main.startColor     = new Color(1f, 0.88f, 0.15f);
-            main.maxParticles   = 160;
-            main.duration       = 0.1f;
-            main.gravityModifier = 2f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 8, 14, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled      = true;
-            shape.shapeType    = ParticleSystemShapeType.Hemisphere;
-            shape.radius       = 0.1f;
-            shape.rotation     = new Vector3(-90f, 0f, 0f);
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        private static void BuildHitFlashModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.08f, 0.15f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(0.5f, 2f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.15f, 0.3f);
-            main.startColor     = Color.white;
-            main.maxParticles   = 100;
-            main.duration       = 0.05f;
-            main.gravityModifier = 0f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 6, 10, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled   = true;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius    = 0.05f;
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        private static void BuildLevelUpModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.7f, 1.3f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(4f, 11f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.14f, 0.48f);
-            main.startColor     = new Color(1f, 0.84f, 0f);
-            main.maxParticles   = 600;
-            main.duration       = 0.2f;
-            main.gravityModifier = -0.5f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 50, 70, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled   = true;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius    = 0.3f;
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        private static void BuildPerkPickupModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.3f, 0.6f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 5f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.08f, 0.25f);
-            main.startColor     = Color.white;
-            main.maxParticles   = 200;
-            main.duration       = 0.1f;
-            main.gravityModifier = 0.2f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 10, 18, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled      = true;
-            shape.shapeType    = ParticleSystemShapeType.Hemisphere;
-            shape.radius       = 0.2f;
-            shape.rotation     = new Vector3(-90f, 0f, 0f);
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        private static void BuildFrostModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(1.0f, 1.2f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(0.5f, 1.5f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.3f, 0.6f);
-            main.startColor     = new Color(0.5f, 0.9f, 1f);
-            main.maxParticles   = 400;
-            main.duration       = 0.8f;
-            main.gravityModifier = 0.05f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 25, 30, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled      = true;
-            shape.shapeType    = ParticleSystemShapeType.Circle;
-            shape.radius       = 1f; // overridden at runtime by SpawnFrost
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        private static void BuildPortalModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.3f, 0.5f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(1f, 3f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.1f, 0.3f);
-            main.startColor     = new Color(0.4f, 0.2f, 0.6f);
-            main.maxParticles   = 320;
-            main.duration       = 0.5f;
-            main.gravityModifier = -0.3f;
-            // Simulate in world space so particles stay put after spawn.
-            main.simulationSpace = ParticleSystemSimulationSpace.World;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 25, 25, 1, 0.01f) });
-
-            // Donut shape: circle with donutRadius for the hollow center effect.
-            var shape = ps.shape;
-            shape.enabled      = true;
-            shape.shapeType    = ParticleSystemShapeType.Donut;
-            shape.radius       = 0.7f;
-            shape.donutRadius  = 0.15f;
-            shape.rotation     = new Vector3(90f, 0f, 0f);
-
-            // Vortex via VelocityOverLifetime orbital.
-            var vol = ps.velocityOverLifetime;
-            vol.enabled        = true;
-            vol.space          = ParticleSystemSimulationSpace.Local;
-            // orbitalY in Unity = radians/s; 3.14 ≈ π = 180°/s swirl speed.
-            vol.orbitalY       = new ParticleSystem.MinMaxCurve(Mathf.PI);
-            vol.orbitalOffsetY = new ParticleSystem.MinMaxCurve(0f);
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        // Cone de particules feu boss dragon — rateOverTime 200/sec, shape Cone angle 20 deg.
-        // La couleur suit la ramp orange → rouge → fumée noire via colorOverLifetime gradient.
-        private static void BuildFireBreathModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.7f, 1.0f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(6f, 10f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.4f, 0.8f);
-            main.startColor     = new Color(1f, 0.5f, 0.1f);
-            main.maxParticles   = 400;
-            main.duration       = 0.7f;
-            main.gravityModifier = 0.05f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 200f;
-            emission.SetBursts(System.Array.Empty<ParticleSystem.Burst>());
-
-            // Cone aligné sur Z+ (le pivot parent sera orienté via LookRotation)
-            var shape = ps.shape;
-            shape.enabled         = true;
-            shape.shapeType       = ParticleSystemShapeType.Cone;
-            shape.angle           = 20f;
-            shape.length          = 8f;
-            shape.radius          = 0.15f;
-            shape.radiusThickness = 1f;
-
-            // Ramp couleur : orange → rouge → fumée sombre
-            var col = ps.colorOverLifetime;
-            col.enabled = true;
-            var grad = new Gradient();
-            grad.SetKeys(
-                new[]
-                {
-                    new GradientColorKey(new Color(1f, 0.5f, 0.1f),    0f),
-                    new GradientColorKey(new Color(0.9f, 0.2f, 0.05f), 0.55f),
-                    new GradientColorKey(new Color(0.2f, 0.1f, 0.05f), 1f)
-                },
-                new[]
-                {
-                    new GradientAlphaKey(0.9f, 0f),
-                    new GradientAlphaKey(0.7f, 0.5f),
-                    new GradientAlphaKey(0f,   1f)
-                }
-            );
-            col.color = new ParticleSystem.MinMaxGradient(grad);
-
-            SetSizeOverLifetimeFade(ps);
-        }
-
-        private static void BuildMuzzleFlashModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.10f, 0.15f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(2f, 5f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.10f, 0.20f);
-            main.startColor     = new Color(1f, 0.55f, 0.05f);
-            main.maxParticles   = 128;
-            main.duration       = 0.05f;
-            main.gravityModifier = 0.2f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 8, 8, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled   = true;
-            shape.shapeType = ParticleSystemShapeType.Cone;
-            shape.angle     = 15f;
-            shape.radius    = 0.05f;
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        // Radial outward sphere burst — 30 particles, lifetime 0.5s, speed 3.
-        // Color overridden at spawn time by SpawnUpgradeBurst (cyan / rainbow).
-        private static void BuildUpgradeBurstModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.4f, 0.6f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(2.5f, 3.5f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.12f, 0.28f);
-            main.startColor     = new Color(0.2f, 0.9f, 1f);
-            main.maxParticles   = 60;
-            main.duration       = 0.1f;
-            main.gravityModifier = -0.1f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 25, 35, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled   = true;
-            shape.shapeType = ParticleSystemShapeType.Sphere;
-            shape.radius    = 0.25f;
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        // Celebration confetti — 30/50 small cubes, upward shoot + gravity fall, lifetime 1.5s.
-        // Color gradient overridden at spawn (palette L1-L2, rainbow L3).
-        private static void BuildUpgradeConfettiModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(1.1f, 1.5f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(2.5f, 4.5f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.07f, 0.16f);
-            main.startColor     = Color.white;
-            main.startRotation  = new ParticleSystem.MinMaxCurve(0f, 360f * Mathf.Deg2Rad);
-            main.startRotation3D = true;
-            main.maxParticles   = 60;
-            main.duration       = 0.1f;
-            main.gravityModifier = 1.0f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 30, 30, 1, 0.01f) });
-
-            // Hemisphere biased upward: shoot up + slight spread
-            var shape = ps.shape;
-            shape.enabled      = true;
-            shape.shapeType    = ParticleSystemShapeType.Cone;
-            shape.angle        = 35f;
-            shape.radius       = 0.15f;
-            shape.radiusThickness = 0.8f;
-
-            // Rotation over lifetime for tumbling effect (separateAxes required for x/y/z)
-            var rotLife = ps.rotationOverLifetime;
-            rotLife.enabled       = true;
-            rotLife.separateAxes  = true;
-            rotLife.x = new ParticleSystem.MinMaxCurve(-180f * Mathf.Deg2Rad, 180f * Mathf.Deg2Rad);
-            rotLife.y = new ParticleSystem.MinMaxCurve(-180f * Mathf.Deg2Rad, 180f * Mathf.Deg2Rad);
-            rotLife.z = new ParticleSystem.MinMaxCurve(-180f * Mathf.Deg2Rad, 180f * Mathf.Deg2Rad);
-
-            // Size fade: 0.4 → 0 over lifetime
-            var sol = ps.sizeOverLifetime;
-            sol.enabled = true;
-            sol.size = new ParticleSystem.MinMaxCurve(1f,
-                new AnimationCurve(
-                    new Keyframe(0f, 0.4f, 0f, -0.5f),
-                    new Keyframe(1f, 0f,   -0.5f, 0f)));
-
-            SetColorAlphaFade(ps);
-        }
-
-        // Spark burst — 8 particles, cone outward, speed 0.5 unit/s, lifetime 0.2s.
-        // Tint applied by SpawnSpark caller (element color).
-        private static void BuildSparkModule(ParticleSystem ps)
-        {
-            var main = ps.main;
-            main.startLifetime  = new ParticleSystem.MinMaxCurve(0.15f, 0.22f);
-            main.startSpeed     = new ParticleSystem.MinMaxCurve(0.3f, 0.7f);
-            main.startSize      = new ParticleSystem.MinMaxCurve(0.05f, 0.12f);
-            main.startColor     = Color.white;
-            main.maxParticles   = 64;
-            main.duration       = 0.05f;
-            main.gravityModifier = 0.4f;
-
-            var emission = ps.emission;
-            emission.rateOverTime = 0;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 8, 8, 1, 0.01f) });
-
-            var shape = ps.shape;
-            shape.enabled         = true;
-            shape.shapeType       = ParticleSystemShapeType.Cone;
-            shape.angle           = 45f;
-            shape.radius          = 0.05f;
-            shape.radiusThickness = 1f;
-
-            SetSizeOverLifetimeFade(ps);
-            SetColorAlphaFade(ps);
-        }
-
-        // ── Shared curve helpers ──────────────────────────────────────────────
-
-        private static void SetSizeOverLifetimeFade(ParticleSystem ps)
-        {
-            var sol = ps.sizeOverLifetime;
-            sol.enabled = true;
-            sol.size = new ParticleSystem.MinMaxCurve(1f,
-                new AnimationCurve(
-                    new Keyframe(0f, 1f, 0f, -1.5f),
-                    new Keyframe(1f, 0.15f, -1.5f, 0f)));
-        }
-
-        private static void SetColorAlphaFade(ParticleSystem ps)
-        {
-            var col = ps.colorOverLifetime;
-            col.enabled = true;
-            var grad = new Gradient();
-            grad.SetKeys(
-                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
-                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0.8f, 0.4f), new GradientAlphaKey(0f, 1f) }
-            );
-            col.color = new ParticleSystem.MinMaxGradient(grad);
-        }
-
-        private static Material BuildAdditiveMaterial()
-        {
-            // Hidden/InternalErrorShader is always present in Unity — safe terminal fallback.
-            var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                      ?? Shader.Find("Particles/Standard Unlit")
-                      ?? Shader.Find("Sprites/Default")
-                      ?? Shader.Find("Standard")
-                      ?? Shader.Find("Hidden/InternalErrorShader")!;
-            var mat = new Material(shader) { name = "VfxParticle_Additive" };
-            mat.SetFloat("_Surface", 1f);
-            mat.SetFloat("_Blend", 3f);
-            mat.SetInt("_ZWrite", 0);
-            mat.SetInt("_SrcBlend", 1);
-            mat.SetInt("_DstBlend", 1);
-            mat.renderQueue = 3000;
-            return mat;
         }
     }
 
@@ -1088,19 +443,13 @@ namespace CrowdDefense.Visual
         private Transform? _root;
 
         public void Setup(ParticleSystem ps, ObjectPool<ParticleSystem> pool, Transform? root)
-        {
-            _ps = ps;
-            _pool = pool;
-            _root = root;
-        }
+            => (_ps, _pool, _root) = (ps, pool, root);
 
         private void OnParticleSystemStopped()
         {
-            if (_ps != null && _pool != null)
-            {
-                if (_root != null) _ps.transform.SetParent(_root, worldPositionStays: false);
-                _pool.Release(_ps);
-            }
+            if (_ps == null || _pool == null) return;
+            if (_root != null) _ps.transform.SetParent(_root, false);
+            _pool.Release(_ps);
         }
     }
 }
