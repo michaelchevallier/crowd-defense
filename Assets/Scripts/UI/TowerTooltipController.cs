@@ -161,6 +161,9 @@ namespace CrowdDefense.UI
                 _sb.Append('%');
             }
 
+            _sb.Append("\nTues: ");
+            _sb.Append(tower.TotalKills);
+
             if (_tooltipStats != null) _tooltipStats.text = _sb.ToString();
 
             // ── Synergies ────────────────────────────────────────────────────────
