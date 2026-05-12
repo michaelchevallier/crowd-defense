@@ -176,6 +176,18 @@ namespace CrowdDefense.UI
             else if (stars == 1) starsRow.AddToClassList("stars-bronze");
             tile.Add(starsRow);
 
+            if (cleared)
+            {
+                var hs = HighScores.Instance?.GetHighScore(levelId);
+                if (hs != null)
+                {
+                    string bestText = $"Meilleur: {HighScores.FormatTime(hs.bestTimeSec)}";
+                    var hsLabel = new Label(bestText);
+                    hsLabel.AddToClassList("tile-highscore");
+                    tile.Add(hsLabel);
+                }
+            }
+
             if (unlocked && data != null)
             {
                 string id = levelId;

@@ -495,6 +495,7 @@ namespace CrowdDefense.Systems
                 if (r.GemsRewarded > 0) SaveSystem.AddGems(r.GemsRewarded);
                 SaveSystem.AddLevelsCompleted(1);
                 SaveSystem.AddStarsEarned(r.StarsEarned);
+                HighScores.Instance?.Record(r.LevelId, r.PlaytimeSeconds, r.WaveReached, r.Kills);
             }
 
             SaveSystem.AddKills(r.Kills);
