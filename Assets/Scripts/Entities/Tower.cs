@@ -804,6 +804,52 @@ namespace CrowdDefense.Entities
             target = null; // force re-acquire with new priority
         }
 
+        // ── Aim Line ──────────────────────────────────────────────────────────
+
+        private void BuildAimLine()
+        {
+            var go = new GameObject("AimLine");
+            go.transform.SetParent(transform);
+            go.transform.localPosition = Vector3.zero;
+            _aimLine = go.AddComponent<LineRenderer>();
+            _aimLine.positionCount = 2;
+            _aimLine.useWorldSpace = true;
+            _aimLine.startWidth = 0.03f;
+            _aimLine.endWidth   = 0.03f;
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
+            mat.color = new Color(1f, 0.2f, 0.2f, 0.3f);
+            if (mat.HasProperty("_Surface"))
+            {
+                mat.SetFloat("_Surface", 1f);
+                mat.SetFloat("_ZWrite", 0f);
+                mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                mat.renderQueue = 3000;
+            }
+            _aimLine.material = mat;
+            go.SetActive(false);
+        }
+
+        private void TickAimLine()
+        {
+            if (_aimLine == null) return;
+            if (PlayerPrefs.GetInt("show_aim_lines_v1", 1) == 0)
+            {
+                if (_aimLine.gameObject.activeSelf) _aimLine.gameObject.SetActive(false);
+                return;
+            }
+            if (target == null || target.IsDead)
+            {
+                if (_aimLine.gameObject.activeSelf) _aimLine.gameObject.SetActive(false);
+                return;
+            }
+            if (!_aimLine.gameObject.activeSelf) _aimLine.gameObject.SetActive(true);
+            Vector3 start = _barrelTip != null
+                ? _barrelTip.position
+                : transform.position + Vector3.up * 0.5f;
+            _aimLine.SetPosition(0, start);
+            _aimLine.SetPosition(1, target.transform.position);
+        }
+
         // ── Range Ring ────────────────────────────────────────────────────────
 
         /// <summary>
