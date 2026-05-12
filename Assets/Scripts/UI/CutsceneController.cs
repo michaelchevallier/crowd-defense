@@ -13,11 +13,8 @@ namespace CrowdDefense.UI
     /// Add this component to the same GameObject that holds the UIDocument for the cutscene panel.
     /// Call Play(cutsceneId, onDone) to start; LevelRunner freezes Time.timeScale until callback.
     /// </summary>
-    [RequireComponent(typeof(UIDocument))]
-    public class CutsceneController : MonoBehaviour
+    public class CutsceneController : UIControllerBase
     {
-        private UIDocument? _doc;
-        private VisualElement? _root;
         private VisualElement? _panel;
         private VisualElement? _portraitLeft;
         private VisualElement? _portraitRight;
@@ -38,18 +35,20 @@ namespace CrowdDefense.UI
 
         private void Awake()
         {
-            _doc = GetComponent<UIDocument>();
-            if (_doc == null) { Debug.LogError("[Cutscene] UIDocument null"); return; }
-            _root = _doc.rootVisualElement;
-            if (_root == null) { Debug.LogError("[Cutscene] rootVisualElement null"); return; }
+            ResolveUI();
+        }
 
-            _panel         = _root.Q<VisualElement>("cutscene-panel");
-            _portraitLeft  = _root.Q<VisualElement>("portrait-left");
-            _portraitRight = _root.Q<VisualElement>("portrait-right");
-            _speakerLabel  = _root.Q<Label>("cutscene-speaker");
-            _textLabel     = _root.Q<Label>("cutscene-text");
-            _titleLabel    = _root.Q<Label>("cutscene-title");
-            _continueHint  = _root.Q<Label>("cutscene-hint");
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+
+            _panel         = Root.Q<VisualElement>("cutscene-panel");
+            _portraitLeft  = Root.Q<VisualElement>("portrait-left");
+            _portraitRight = Root.Q<VisualElement>("portrait-right");
+            _speakerLabel  = Root.Q<Label>("cutscene-speaker");
+            _textLabel     = Root.Q<Label>("cutscene-text");
+            _titleLabel    = Root.Q<Label>("cutscene-title");
+            _continueHint  = Root.Q<Label>("cutscene-hint");
 
             _panel?.AddToClassList("hidden");
         }

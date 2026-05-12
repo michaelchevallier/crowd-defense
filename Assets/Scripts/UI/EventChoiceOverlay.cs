@@ -8,8 +8,7 @@ namespace CrowdDefense.UI
 {
     // Port du flow event V5 : overlay 2-3 boutons apres un niveau ou une vague (30% chance via EventSystem).
     // Attacher a un GameObject avec UIDocument + EventChoice.uxml.
-    [RequireComponent(typeof(UIDocument))]
-    public class EventChoiceOverlay : MonoBehaviour
+    public class EventChoiceOverlay : UIControllerBase
     {
         private VisualElement? _root;
         private Label? _titleLabel;
@@ -21,24 +20,19 @@ namespace CrowdDefense.UI
 
         private void Awake()
         {
-            var doc = GetComponent<UIDocument>();
-            if (doc == null)
-            {
-                Debug.LogError("[EventChoiceOverlay] UIDocument not found");
-                return;
-            }
-            var ve = doc.rootVisualElement;
-            if (ve == null)
-            {
-                Debug.LogError("[EventChoiceOverlay] rootVisualElement is null");
-                return;
-            }
-            _root       = ve.Q<VisualElement>("event-root");
-            _titleLabel = ve.Q<Label>("event-title");
-            _bodyLabel  = ve.Q<Label>("event-body");
-            _btns[0]    = ve.Q<Button>("choice-btn-0");
-            _btns[1]    = ve.Q<Button>("choice-btn-1");
-            _btns[2]    = ve.Q<Button>("choice-btn-2");
+            ResolveUI();
+        }
+
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+
+            _root       = Root.Q<VisualElement>("event-root");
+            _titleLabel = Root.Q<Label>("event-title");
+            _bodyLabel  = Root.Q<Label>("event-body");
+            _btns[0]    = Root.Q<Button>("choice-btn-0");
+            _btns[1]    = Root.Q<Button>("choice-btn-1");
+            _btns[2]    = Root.Q<Button>("choice-btn-2");
 
             for (int i = 0; i < _btns.Length; i++)
             {

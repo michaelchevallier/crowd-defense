@@ -9,8 +9,7 @@ namespace CrowdDefense.UI
     // Shown when Application.absoluteURL contains "debug=1", in debug builds, or on F3 toggle.
     // Displays FPS, GC memory, entity counts, wave state, 60-frame spike graph.
     // Port of src-v3/ui/TickMetrics.js.
-    [RequireComponent(typeof(UIDocument))]
-    public class DebugHudController : MonoBehaviour
+    public class DebugHudController : UIControllerBase
     {
         private const int   HISTORY  = 60;
         private const float INTERVAL = 0.25f;   // text refresh 4x per second
@@ -38,26 +37,22 @@ namespace CrowdDefense.UI
 
         // ── Lifecycle ────────────────────────────────────────────────────────
 
+        private void Awake()
+        {
+            ResolveUI();
+        }
+
         private void Start()
         {
             _active = IsDebugEnabled();
 
-            var uiDoc = GetComponent<UIDocument>();
+            if (Root == null) return;
+            _panel = Root.Q<VisualElement>("debug-hud") ?? BuildPanel(Root);
 
-
-            if (uiDoc == null) return;
-
-
-            var root = uiDoc.rootVisualElement;
-
-
-            if (root == null) return;
-            _panel = root.Q<VisualElement>("debug-hud") ?? BuildPanel(root);
-
-            _lblFps      = _panel.Q<Label>("dbg-fps");
-            _lblEntities = _panel.Q<Label>("dbg-entities");
-            _lblWave     = _panel.Q<Label>("dbg-wave");
-            _lblMemory   = _panel.Q<Label>("dbg-memory");
+            _lblFps      = _panel?.Q<Label>("dbg-fps");
+            _lblEntities = _panel?.Q<Label>("dbg-entities");
+            _lblWave     = _panel?.Q<Label>("dbg-wave");
+            _lblMemory   = _panel?.Q<Label>("dbg-memory");
             _lblGraph    = _panel.Q<Label>("dbg-graph");
 
             ApplyVisibility();

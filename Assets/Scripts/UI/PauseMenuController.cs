@@ -5,13 +5,10 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class PauseMenuController : MonoBehaviour
+    public class PauseMenuController : UIControllerBase
     {
         public static PauseMenuController? Instance { get; private set; }
         public bool IsMenuOpen { get; private set; }
-
-        private VisualElement? _root;
         private VisualElement? _pauseOverlay;
         private Label?         _logoTitle;
         private Button?        _btnResume;
@@ -36,24 +33,19 @@ namespace CrowdDefense.UI
         private void Awake()
         {
             Instance = this;
-            var doc = GetComponent<UIDocument>();
-            if (doc == null)
-            {
-                Debug.LogError("[PauseMenuController] UIDocument component not found");
-                return;
-            }
-            var rootElem = doc.rootVisualElement;
-            if (rootElem == null)
-            {
-                Debug.LogError("[PauseMenuController] rootVisualElement is null");
-                return;
-            }
-            _root         = rootElem.Q("pause-root");
-            _pauseOverlay = _root?.Q("pause-overlay");
-            _logoTitle    = _root?.Q<Label>("logo-title");
-            _btnResume    = _root?.Q<Button>("btn-resume");
-            _btnRestart   = _root?.Q<Button>("btn-restart");
-            _btnMenu      = _root?.Q<Button>("btn-menu");
+            ResolveUI();
+        }
+
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+
+            var rootElem = Root.Q("pause-root");
+            _pauseOverlay = rootElem?.Q("pause-overlay");
+            _logoTitle    = rootElem?.Q<Label>("logo-title");
+            _btnResume    = rootElem?.Q<Button>("btn-resume");
+            _btnRestart   = rootElem?.Q<Button>("btn-restart");
+            _btnMenu      = rootElem?.Q<Button>("btn-menu");
 
             if (_pauseOverlay != null)
                 _pauseOverlay.pickingMode = PickingMode.Position;

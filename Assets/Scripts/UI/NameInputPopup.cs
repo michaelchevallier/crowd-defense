@@ -6,30 +6,25 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class NameInputPopup : MonoBehaviour
+    public class NameInputPopup : UIControllerBase
     {
         private VisualElement? _root;
         private TextField?     _nameField;
         private Button?        _confirmBtn;
         private Action?        _onConfirm;
 
-        private void Start()
+        private void Awake()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null)
-            {
-                Debug.LogError("[NameInputPopup] UIDocument not found");
-                return;
-            }
-            _root = uiDoc.rootVisualElement;
-            if (_root == null)
-            {
-                Debug.LogError("[NameInputPopup] rootVisualElement is null — UXML failed to load");
-                return;
-            }
-            _nameField  = _root.Q<TextField>("name-input");
-            _confirmBtn = _root.Q<Button>("name-confirm-btn");
+            ResolveUI();
+        }
+
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+
+            _root = Root;
+            _nameField  = Root.Q<TextField>("name-input");
+            _confirmBtn = Root.Q<Button>("name-confirm-btn");
 
             _confirmBtn?.RegisterCallback<ClickEvent>(_ => Confirm());
 

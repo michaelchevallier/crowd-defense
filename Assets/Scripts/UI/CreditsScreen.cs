@@ -5,8 +5,7 @@ using UnityEngine.UIElements;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class CreditsScreen : MonoBehaviour
+    public class CreditsScreen : UIControllerBase
     {
         public static CreditsScreen? Instance { get; private set; }
 
@@ -30,21 +29,18 @@ namespace CrowdDefense.UI
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
 
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
 
-            if (uiDoc == null) return;
+            _root    = Root.Q<VisualElement>("credits-root");
+            _scroll  = Root.Q<ScrollView>("credits-scroll");
+            _btnBack = Root.Q<Button>("btn-credits-back");
 
-
-            var doc = uiDoc.rootVisualElement;
-
-
-            if (doc == null) return;
-            _root    = doc.Q<VisualElement>("credits-root");
-            _scroll  = doc.Q<ScrollView>("credits-scroll");
-            _btnBack = doc.Q<Button>("btn-credits-back");
-
-            var textLabel = doc.Q<Label>("credits-text");
+            var textLabel = Root.Q<Label>("credits-text");
             if (textLabel != null) textLabel.text = CreditsBody;
 
             if (_btnBack != null) _btnBack.clicked += Hide;

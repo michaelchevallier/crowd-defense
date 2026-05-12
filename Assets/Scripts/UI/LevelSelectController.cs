@@ -6,46 +6,40 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class LevelSelectController : MonoBehaviour
+    public class LevelSelectController : UIControllerBase
     {
         private const int WorldCount     = 8;
         private const int LevelsPerWorld = 10;
 
         private VisualElement? _root;
 
+        private void Awake()
+        {
+            ResolveUI();
+        }
+
         private void OnDestroy() =>
             PlayerProfile.OnNameChanged -= OnPlayerNameChanged;
 
         private void OnPlayerNameChanged(string _) => RefreshGreeting(_root!);
 
-        private void Start()
+        protected override void OnUIReady()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null)
-            {
-                Debug.LogError("[LevelSelectController] UIDocument not found");
-                return;
-            }
-            _root = uiDoc.rootVisualElement;
-            if (_root == null)
-            {
-                Debug.LogError("[LevelSelectController] rootVisualElement is null — UXML failed to load");
-                return;
-            }
-            var root = _root;
+            if (Root == null) return;
+
+            _root = Root;
             PlayerProfile.OnNameChanged += OnPlayerNameChanged;
 
-            var titleLabel = root.Q<Label>("menu-title-label");
+            var titleLabel = Root.Q<Label>("menu-title-label");
             if (titleLabel != null) titleLabel.text = L.Get("menu.game_title");
 
-            RefreshGreeting(root);
+            RefreshGreeting(Root);
 
-            var btnSlots = root.Q<Button>("btn-open-slots");
+            var btnSlots = Root.Q<Button>("btn-open-slots");
             if (btnSlots != null)
                 btnSlots.clicked += () => SaveSlotController.Instance?.Show();
 
-            var btnBestiary = root.Q<Button>("btn-open-bestiary");
+            var btnBestiary = Root.Q<Button>("btn-open-bestiary");
             if (btnBestiary != null)
                 btnBestiary.clicked += () => BestiaryPanel.Instance?.Show();
 

@@ -8,8 +8,7 @@ namespace CrowdDefense.UI
 {
     // Modal scrollable list: action -> current key button -> press-to-remap.
     // Attached as sibling on the HUD UIDocument.
-    [RequireComponent(typeof(UIDocument))]
-    public class KeyBindingsPanel : MonoBehaviour
+    public class KeyBindingsPanel : UIControllerBase
     {
         private static readonly (string action, string labelFr)[] ActionMeta =
         {
@@ -32,16 +31,15 @@ namespace CrowdDefense.UI
         // Row buttons keyed by action
         private readonly Dictionary<string, Button> _rowBtns = new();
 
-        private void Start()
+        private void Awake()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
-
-            var docRoot = uiDoc.rootVisualElement;
-
-            if (docRoot == null) return;
-            _root = BuildPanel(docRoot);
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+            _root = BuildPanel(Root);
         }
 
         private void Update()

@@ -15,8 +15,7 @@ namespace CrowdDefense.UI
     /// Slot 3 (R) = ultimate ability — locked until Hero.Level >= 10 (shows "?" greyed).
     /// Wired as a sibling component on the HUD GameObject alongside HudController.
     /// </summary>
-    [RequireComponent(typeof(UIDocument))]
-    public class HeroSkillBarController : MonoBehaviour
+    public class HeroSkillBarController : UIControllerBase
     {
         private static readonly string[] SlotNames  = { "skill-slot-q", "skill-slot-w", "skill-slot-e", "skill-slot-r" };
         private static readonly string[] KeyLabels  = { "Q", "W", "E", "R" };
@@ -49,24 +48,23 @@ namespace CrowdDefense.UI
 
         private Hero? _hero;
 
-        private void Start()
+        private void Awake()
         {
-            var uiDoc = GetComponent<UIDocument>();
+            ResolveUI();
+        }
 
-            if (uiDoc == null) return;
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
 
-            var root = uiDoc.rootVisualElement;
-
-            if (root == null) return;
-
-            _tooltip     = root.Q<VisualElement>("skill-tooltip");
+            _tooltip     = Root.Q<VisualElement>("skill-tooltip");
             _tooltipName = _tooltip?.Q<Label>("skill-tooltip-name");
             _tooltipCd   = _tooltip?.Q<Label>("skill-tooltip-cd");
             _tooltipDesc = _tooltip?.Q<Label>("skill-tooltip-desc");
 
             for (int i = 0; i < 4; i++)
             {
-                _slots[i]    = root.Q<VisualElement>(SlotNames[i]);
+                _slots[i]    = Root.Q<VisualElement>(SlotNames[i]);
                 _overlays[i] = _slots[i]?.Q<VisualElement>("skill-cd-overlay");
                 _keyLabels[i] = _slots[i]?.Q<Label>("skill-key-label");
                 _cdLabels[i]  = _slots[i]?.Q<Label>("skill-cd-label");
@@ -83,6 +81,10 @@ namespace CrowdDefense.UI
                 _slots[captured]?.RegisterCallback<MouseEnterEvent>(_ => ShowTooltip(captured));
                 _slots[captured]?.RegisterCallback<MouseLeaveEvent>(_ => HideTooltip());
             }
+        }
+
+        private void Start()
+        {
         }
 
         private void Update()
