@@ -43,6 +43,8 @@ namespace CrowdDefense.UI
         {
             if (Input.GetKeyDown(KeyBindings.GetKey("help")) || Input.GetKeyDown(KeyCode.Slash) || Input.GetKeyDown(KeyCode.F1))
                 Toggle();
+            else if (_visible && Input.GetKeyDown(KeyCode.Escape))
+                Hide();
         }
 
         public void Show()
