@@ -420,16 +420,11 @@ namespace CrowdDefense.Systems
             _spawnCounter++;
             _waveTotalSpawned++;
 
-            DoSpawnEnemy(type, spawnPos, resolvedPathIdx, variant);
-        }
-
-        private void DoSpawnEnemy(EnemyType type, Vector3 spawnPos, int pathIdx, EnemyVariant variant)
-        {
-            var enemy = EnemyPool.Instance!.SpawnFromType(type, spawnPos, pathIdx, _currentWaveScaleMul, variant);
+            var enemy = EnemyPool.Instance!.SpawnFromType(type, spawnPos, resolvedPathIdx, _currentWaveScaleMul, variant);
             _activeEnemies.Add(enemy);
             EventManager.Instance?.Publish(new EnemySpawnedEvent(enemy));
 #if UNITY_EDITOR
-            Debug.Log($"[WaveManager] spawned {type.Id} pathIdx={pathIdx} active={_activeEnemies.Count}");
+            Debug.Log($"[WaveManager] spawned {type.Id} pathIdx={resolvedPathIdx} active={_activeEnemies.Count}");
 #endif
         }
 
