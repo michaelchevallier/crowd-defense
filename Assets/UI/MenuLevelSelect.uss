@@ -83,3 +83,23 @@
     background-color: rgba(40, 40, 40, 0.6);
     border-color: rgba(80, 80, 80, 0.5);
 }
+
+.menu-credits-btn {
+    margin-top: 14px;
+    width: 140px;
+    height: 36px;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(200, 200, 200, 0.25);
+    background-color: rgba(255, 255, 255, 0.07);
+    color: rgba(180, 180, 180, 0.85);
+    font-size: 13px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    cursor: link;
+}
+
+.menu-credits-btn:hover {
+    background-color: rgba(255, 210, 63, 0.12);
+    border-color: rgba(255, 210, 63, 0.5);
+    color: rgb(255, 210, 63);
+}

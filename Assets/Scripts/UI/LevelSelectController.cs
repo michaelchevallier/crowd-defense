@@ -19,6 +19,10 @@ namespace CrowdDefense.UI
             var titleLabel = root.Q<Label>("menu-title-label");
             if (titleLabel != null) titleLabel.text = L.Get("menu.game_title");
 
+            var btnCredits = root.Q<Button>("btn-open-credits");
+            if (btnCredits != null)
+                btnCredits.clicked += () => CreditsScreen.Instance?.Show();
+
             var grid = root.Q<VisualElement>("level-grid");
             if (grid == null)
             {

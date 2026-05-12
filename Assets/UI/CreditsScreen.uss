@@ -1,0 +1,75 @@
+.credits-root {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    align-items: center;
+    justify-content: center;
+}
+
+.credits-root.hidden {
+    display: none;
+}
+
+.credits-panel {
+    width: 540px;
+    height: 72%;
+    background-color: rgb(15, 20, 35);
+    border-radius: 12px;
+    border-width: 2px;
+    border-color: rgba(255, 210, 63, 0.4);
+    padding: 28px 32px;
+    align-items: center;
+}
+
+.credits-title {
+    color: rgb(255, 210, 63);
+    font-size: 28px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    margin-bottom: 20px;
+}
+
+.credits-scroll {
+    flex-grow: 1;
+    width: 100%;
+    overflow: hidden;
+}
+
+.credits-content {
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 40px;
+}
+
+.credits-text {
+    color: rgb(200, 210, 225);
+    font-size: 15px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: upper-center;
+    white-space: normal;
+    width: 100%;
+}
+
+.credits-back-btn {
+    margin-top: 18px;
+    width: 140px;
+    height: 40px;
+    border-radius: 8px;
+    border-width: 2px;
+    border-color: rgba(255, 210, 63, 0.5);
+    background-color: rgba(255, 255, 255, 0.10);
+    color: white;
+    font-size: 15px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    cursor: link;
+}
+
+.credits-back-btn:hover {
+    background-color: rgba(255, 210, 63, 0.20);
+    border-color: rgb(255, 210, 63);
+}
