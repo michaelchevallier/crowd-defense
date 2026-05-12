@@ -560,7 +560,94 @@ Si bug-fixer suggère revert (ex : `git revert 7817aeb`) → Mike notif T1 + att
 
 ## Status
 
-⏳ pending bug-fixer completion + exec ack STOP
+✅ bug-fixer 2 (URGENT UXML root cause) COMPLETE @ 17h38 — voir instruction suivante POST-RUNTIME-FIX-V2
+
+---
+
+### 2026-05-12 17h38 — 🟢 POST-RUNTIME-FIX-V2 (root cause identifié + 3 commits defensive + decision gate Mike)
+
+**Type** : INFO + DECISION-GATE
+**From** : Opus superviseur (bug-fixer 2 `a8993f6473547200f` completion)
+**Drift remediation status** : ✅ defensive complete, ⏳ pending Mike retest live pour LIFT D10/D11
+**Full findings** : `.claude/supervisor/drift-reports/2026-05-12-17h38-bug-fixer-2-complete.md`
+
+## Root cause identifié
+
+**Fichier** : `Assets/Scenes/Main.unity`
+**GameObject** : `#228555127 FloatingPopupController`
+**Component** : `&228555130` UIDocument **fantôme** (`sourceAsset {fileID: 0}` + `m_PanelSettings {fileID: 0}`)
+
+`GetComponent<UIDocument>()` retournait parfois ce ghost → `rootVisualElement` null → `Q<>()` ArgNull → WASM RuntimeError table OOB → Halting Program.
+
+## 3 commits defensive shipped
+
+- `443c816` : 33 UI controllers bulk null-check (pattern défensif systématique)
+- `e82d6e7` : FloatingPopupController fallback → emprunte HudController singleton UIDocument
+- `ef28060` : 7 controllers final sweep (patterns variés)
+
+**Total** : ~40 UI controllers patchés. ~15-20 restent (acceptable follow-up).
+
+## Action exec immédiate
+
+### 1. **LIFT STOP-RUNTIME-CRITICAL conditional**
+
+- Si `git log --oneline -5 origin/main` confirme HEAD ≥ `ef28060` → exec peut **reprendre activité limitée** :
+  - Auto-build-loop continue (no manual pause)
+  - Watch for next gh-pages deploy (commit R>1718 attendu)
+  - **No nouveau dispatch P2/P3 tant que retest Mike pas validé**
+- Aucun revert spontané. Aucun feature creep.
+
+### 2. **Attendre Mike retest live**
+
+Auto-build-loop devrait avoir re-deployé `/v6/` avec les 3 commits defensive (`443c816 + e82d6e7 + ef28060`).
+
+Mike retestera (cf chat live monitoring). 3 outcomes possibles :
+
+**Outcome A — Crash résolu** (softfail OK) :
+- Defensive patches travaillent, RuntimeError disparaît
+- HUD/UI peuvent avoir des features dégradées (FloatingPopup) mais jeu fonctionne
+- Sprint R6-PARITY-V4 = effectively complete. Mike décide P2/P3 OR stop sprint OR scene edit pour full fix.
+
+**Outcome B — Crash résolu mais FloatingPopup features broken** :
+- Defensive patches OK, mais une feature spécifique (popup info, dialogs ?) ne fonctionne plus
+- Decision Mike : scene edit Unity Editor (5 min manual) OR auto-edit YAML par superviseur (risqué)
+
+**Outcome C — Crash persiste** :
+- Defensive patches insuffisants, autre root cause non-identifié
+- Escalation T1 Mike obligatoire + propose plan (revert partial commits P1 `08d7229` / `7817aeb` / `a49ed12` ?)
+
+### 3. **Pas d'action proactive nouvelle**
+
+Sauf relay si bug-fixer ou autre agent pose une question via `questions-to-supervisor.md` catégorie B.
+
+## Si Mike demande scene edit
+
+**Option A — Unity Editor manual** (recommandé, plus sûr) :
+1. Mike ouvre projet Unity 6000.3.15f1
+2. Open `Assets/Scenes/Main.unity`
+3. Hierarchy → find `FloatingPopupController`
+4. Inspector → Remove component UIDocument (le vide, sourceAsset = None)
+5. Save scene + commit + push
+
+**Option B — Auto YAML edit par superviseur** (risque modéré) :
+- Superviseur édit direct `Main.unity` YAML pour supprimer le block component `&228555130` (16 lignes à supprimer)
+- Verify scene parse OK (no broken refs)
+- Commit `fix(scene): remove ghost UIDocument FloatingPopupController`
+- Risk : YAML corruption si parse off-by-one. Backup .unity avant.
+
+À faire seulement si Mike valide une option.
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-12-HHhMM-post-runtime-fix-v2-ack.md` :
+- Confirmation LIFT STOP-RUNTIME-CRITICAL (conditional)
+- Status auto-build-loop deploy (commit hash / R-number)
+- Attente retest Mike live
+- Acknowledge 3 outcomes possibles A/B/C
+
+## Status
+
+⏳ pending Mike retest live `/v6/` après next gh-pages deploy R>1718
 
 
 
