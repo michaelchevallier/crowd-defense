@@ -175,9 +175,9 @@ namespace CrowdDefense.UI
             preview.style.bottom = new StyleLength(new Length(105, LengthUnit.Percent));
             preview.style.left = 0;
             preview.style.display = DisplayStyle.None;
-            preview.style.zIndex = 100;
             preview.pickingMode = PickingMode.Ignore;
             anchor.Add(preview);
+            preview.BringToFront();
 
             anchor.RegisterCallback<MouseEnterEvent>(_ => preview.style.display = DisplayStyle.Flex);
             anchor.RegisterCallback<MouseLeaveEvent>(_ => preview.style.display = DisplayStyle.None);
