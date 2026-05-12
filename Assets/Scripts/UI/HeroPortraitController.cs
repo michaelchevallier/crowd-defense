@@ -31,6 +31,7 @@ namespace CrowdDefense.UI
         private VisualElement? _damageFlashOverlay;
         private VisualElement? _flameRing;
         private VisualElement? _hpCircle;
+        private VisualElement? _tooltip;
 
         protected override void OnAwakeSingleton()
         {
@@ -276,6 +277,35 @@ namespace CrowdDefense.UI
             _damageFlashOverlay.pickingMode = PickingMode.Ignore;
             _portrait.Add(_damageFlashOverlay);
 
+            // Tooltip: appears right of portrait on hover, hidden by default.
+            _tooltip = new VisualElement();
+            _tooltip.style.position          = Position.Absolute;
+            _tooltip.style.left              = new StyleLength(84f);
+            _tooltip.style.top               = new StyleLength(0f);
+            _tooltip.style.backgroundColor   = new StyleColor(new Color(0.05f, 0.05f, 0.1f, 0.92f));
+            _tooltip.style.borderTopWidth    = 1f; _tooltip.style.borderRightWidth  = 1f;
+            _tooltip.style.borderBottomWidth = 1f; _tooltip.style.borderLeftWidth   = 1f;
+            _tooltip.style.borderTopColor    = new StyleColor(new Color(1f, 0.5f, 0f, 0.7f));
+            _tooltip.style.borderRightColor  = new StyleColor(new Color(1f, 0.5f, 0f, 0.7f));
+            _tooltip.style.borderBottomColor = new StyleColor(new Color(1f, 0.5f, 0f, 0.7f));
+            _tooltip.style.borderLeftColor   = new StyleColor(new Color(1f, 0.5f, 0f, 0.7f));
+            _tooltip.style.borderTopLeftRadius     = new StyleLength(6f);
+            _tooltip.style.borderTopRightRadius    = new StyleLength(6f);
+            _tooltip.style.borderBottomLeftRadius  = new StyleLength(6f);
+            _tooltip.style.borderBottomRightRadius = new StyleLength(6f);
+            _tooltip.style.paddingTop    = new StyleLength(6f); _tooltip.style.paddingBottom = new StyleLength(6f);
+            _tooltip.style.paddingLeft   = new StyleLength(8f); _tooltip.style.paddingRight  = new StyleLength(8f);
+            _tooltip.style.minWidth      = new StyleLength(160f);
+            _tooltip.style.display       = DisplayStyle.None;
+            _tooltip.pickingMode         = PickingMode.Ignore;
+            root.Add(_tooltip);
+
+            root.RegisterCallback<PointerEnterEvent>(_ => RefreshTooltip());
+            root.RegisterCallback<PointerLeaveEvent>(_ =>
+            {
+                if (_tooltip != null) _tooltip.style.display = DisplayStyle.None;
+            });
+
             var info = new VisualElement();
             info.AddToClassList("hero-portrait-info");
             root.Add(info);
@@ -330,6 +360,71 @@ namespace CrowdDefense.UI
             }
 
             return root;
+        }
+
+        private void RefreshTooltip()
+        {
+            if (_tooltip == null) return;
+            var hero = LevelRunner.Instance?.Hero;
+            var cfg  = LevelRunner.Instance?.HeroTypeDef;
+            if (hero == null || cfg == null)
+            {
+                _tooltip.style.display = DisplayStyle.None;
+                return;
+            }
+
+            _tooltip.Clear();
+            bool atMax = hero.Level >= hero.MaxLevel;
+
+            void Row(string label, string value)
+            {
+                var row = new VisualElement();
+                row.style.flexDirection  = FlexDirection.Row;
+                row.style.justifyContent = Justify.SpaceBetween;
+                row.style.marginBottom   = new StyleLength(2f);
+
+                var lbl = new Label(label);
+                lbl.style.color    = new StyleColor(new Color(0.7f, 0.7f, 0.75f));
+                lbl.style.fontSize = new StyleLength(10f);
+                lbl.style.unityFontStyleAndWeight = FontStyle.Normal;
+
+                var val = new Label(value);
+                val.style.color    = new StyleColor(Color.white);
+                val.style.fontSize = new StyleLength(10f);
+                val.style.marginLeft = new StyleLength(8f);
+                val.style.unityFontStyleAndWeight = FontStyle.Bold;
+
+                row.Add(lbl); row.Add(val);
+                _tooltip.Add(row);
+            }
+
+            // Title row: avatar name + level
+            var title = new Label(HeroType.AvatarName(
+                System.Enum.TryParse<HeroAvatar>(PlayerPrefs.GetString("hero_avatar", ""), out var av) ? av : HeroAvatar.Warrior));
+            title.style.color    = new StyleColor(new Color(1f, 0.75f, 0.2f));
+            title.style.fontSize = new StyleLength(11f);
+            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            title.style.marginBottom = new StyleLength(4f);
+            _tooltip.Add(title);
+
+            float effectiveDmg   = cfg.Damage * hero.DamageMul;
+            float effectiveRange = cfg.Range  * hero.RangeMul;
+            float atkSpeedSec    = cfg.FireRateMs * hero.FireRateMul / 1000f;
+            float moveSpd        = cfg.MoveSpeed * hero.MoveSpeedMul;
+            float critPct        = hero.CritChance * 100f;
+            float ultRemaining   = hero.UltimateCooldownRemaining;
+
+            Row("Niveau",         atMax ? "MAX" : hero.Level.ToString());
+            Row("XP",             atMax ? "MAX" : $"{hero.Xp} / {hero.XpToNext}");
+            Row("DMG",            $"{effectiveDmg:F1}");
+            Row("Vitesse atk",    $"{atkSpeedSec:F2}s");
+            Row("Vitesse dep",    $"{moveSpd:F1}");
+            Row("Portee",         $"{effectiveRange:F1}");
+            Row("Crit",           $"{critPct:F0}%");
+            Row("Ult cooldown",   ultRemaining > 0f ? $"{ultRemaining:F0}s" : "PRET");
+            Row("Kills",          hero.KillCount.ToString());
+
+            _tooltip.style.display = DisplayStyle.Flex;
         }
 
         // Fallback: attempt to load USS directly from path (Editor only; runtime uses Resources).
