@@ -1,10 +1,13 @@
 #nullable enable
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using CrowdDefense.Common;
 using CrowdDefense.Systems;
+using CrowdDefense.Entities;
 
 namespace CrowdDefense.UI
 {
@@ -30,6 +33,16 @@ namespace CrowdDefense.UI
         private Text?      _statTime;
         private Text?      _statWaves;
 
+        // Top-3 tower leaderboard
+        private Text?      _lbHeader;
+        private Text?      _lbRow1;
+        private Text?      _lbRow2;
+        private Text?      _lbRow3;
+
+        // Bar chart "Kills par vague"
+        private RectTransform? _chartArea;
+        private readonly System.Collections.Generic.List<(Image bar, Text label)> _chartBars = new();
+
         private bool _isVictory;
 
         // ── Colours ─────────────────────────────────────────────────────────────
@@ -39,6 +52,8 @@ namespace CrowdDefense.UI
         private static readonly Color DefeatTitleColor   = new(1.00f, 0.30f, 0.20f, 1.00f);
         private static readonly Color ButtonNormalColor  = new(0.15f, 0.15f, 0.15f, 1.00f);
         private static readonly Color ButtonTextColor    = new(1.00f, 1.00f, 1.00f, 1.00f);
+        private static readonly Color LbHeaderColor      = new(1.00f, 0.84f, 0.00f, 1.00f);
+        private static readonly Color LbRowColor         = new(0.90f, 0.90f, 0.90f, 1.00f);
 
         protected override void OnAwakeSingleton()
         {
@@ -155,7 +170,7 @@ namespace CrowdDefense.UI
                 if (panelImg != null)
                 {
                     var c = panelImg.color;
-                    panelImg.color = new Color(c.r, c.g, c.b, (_isVictory ? 0.92f : 0.92f) * eased);
+                    panelImg.color = new Color(c.r, c.g, c.b, 0.92f * eased);
                 }
                 if (btnRect1 != null) btnRect1.anchoredPosition = Vector2.Lerp(btnFinal1 + btnOffset, btnFinal1, eased);
                 if (btnRect2 != null) btnRect2.anchoredPosition = Vector2.Lerp(btnFinal2 + btnOffset, btnFinal2, eased);
@@ -178,6 +193,13 @@ namespace CrowdDefense.UI
                     sl.color = new Color(c.r, c.g, c.b, eased);
                 }
 
+                foreach (var sl in new[] { _lbHeader, _lbRow1, _lbRow2, _lbRow3 })
+                {
+                    if (sl == null) continue;
+                    var c = sl.color;
+                    sl.color = new Color(c.r, c.g, c.b, eased);
+                }
+
                 elapsed += Time.unscaledDeltaTime;
                 yield return null;
             }
@@ -192,6 +214,13 @@ namespace CrowdDefense.UI
             if (btnRect2 != null) btnRect2.anchoredPosition = btnFinal2;
 
             foreach (var sl in new[] { _statKills, _statGold, _statTowers, _statTime, _statWaves })
+            {
+                if (sl == null) continue;
+                var c = sl.color;
+                sl.color = new Color(c.r, c.g, c.b, 1f);
+            }
+
+            foreach (var sl in new[] { _lbHeader, _lbRow1, _lbRow2, _lbRow3 })
             {
                 if (sl == null) continue;
                 var c = sl.color;
@@ -248,6 +277,123 @@ namespace CrowdDefense.UI
             if (_statTowers != null) _statTowers.text = $"Tours : {r.TowersPlaced}";
             if (_statTime   != null) _statTime.text   = $"Temps : {minutes}m {seconds:D2}s";
             if (_statWaves  != null) _statWaves.text  = $"Vagues : {r.WaveReached}/{totalWaves}";
+
+            RefreshKillsChart();
+            PopulateTowerLeaderboard();
+        }
+
+        private void PopulateTowerLeaderboard()
+        {
+            var placed = PlacementController.Instance?.PlacedTowers;
+            if (placed == null || placed.Count == 0)
+            {
+                if (_lbHeader != null) _lbHeader.text = "";
+                if (_lbRow1   != null) _lbRow1.text   = "";
+                if (_lbRow2   != null) _lbRow2.text   = "";
+                if (_lbRow3   != null) _lbRow3.text   = "";
+                return;
+            }
+
+            var top3 = placed
+                .Where(t => t != null && t.Config != null)
+                .OrderByDescending(t => t.TotalKills)
+                .Take(3)
+                .ToList();
+
+            if (_lbHeader != null) _lbHeader.text = "Top Tours";
+
+            var rows = new[] { _lbRow1, _lbRow2, _lbRow3 };
+            string[] medals = { "1.", "2.", "3." };
+            for (int i = 0; i < rows.Length; i++)
+            {
+                if (rows[i] == null) continue;
+                if (i < top3.Count)
+                {
+                    var t = top3[i];
+                    string name = t.Config!.DisplayName;
+                    int lvl = t.UpgradeLevel;
+                    int kills = t.TotalKills;
+                    rows[i]!.text = $"{medals[i]} {name} L{lvl}  -  {kills} kills";
+                }
+                else
+                {
+                    rows[i]!.text = "";
+                }
+            }
+        }
+
+        // Panel is 600x560. Chart anchor spans x:[0.04,0.96] y:[0.31,0.42].
+        private const float ChartW = 600f * (0.96f - 0.04f);
+        private const float ChartH = 560f * (0.42f - 0.31f);
+
+        private void RefreshKillsChart()
+        {
+            if (_chartArea == null) return;
+
+            var tracker = KillsPerWaveTracker.Instance;
+            var data    = tracker?.KillsByWave;
+            int maxK    = tracker?.MaxKillsInAnyWave ?? 0;
+
+            int waveCount = WaveManager.Instance?.TotalWaves ?? 0;
+            if (data != null)
+                foreach (var kv in data)
+                    if (kv.Key + 1 > waveCount) waveCount = kv.Key + 1;
+
+            if (waveCount <= 0 || maxK <= 0)
+            {
+                foreach (var (bar, lbl) in _chartBars) { bar.gameObject.SetActive(false); lbl.gameObject.SetActive(false); }
+                return;
+            }
+
+            while (_chartBars.Count < waveCount)
+            {
+                var barGo  = new GameObject($"Bar{_chartBars.Count}");
+                barGo.transform.SetParent(_chartArea, false);
+                var barImg = barGo.AddComponent<Image>();
+                barImg.color = new Color(0.20f, 0.75f, 0.35f, 0.85f);
+
+                var lblGo  = new GameObject($"Lbl{_chartBars.Count}");
+                lblGo.transform.SetParent(_chartArea, false);
+                var lblTxt = lblGo.AddComponent<Text>();
+                lblTxt.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                lblTxt.fontSize  = 10;
+                lblTxt.color     = new Color(0.85f, 0.85f, 0.85f, 1f);
+                lblTxt.alignment = TextAnchor.UpperCenter;
+
+                _chartBars.Add((barImg, lblTxt));
+            }
+
+            const float labelH = 18f;
+            const float barPad = 2f;
+            float barW = ChartW / waveCount;
+
+            for (int i = 0; i < _chartBars.Count; i++)
+            {
+                var (bar, lbl) = _chartBars[i];
+                if (i >= waveCount) { bar.gameObject.SetActive(false); lbl.gameObject.SetActive(false); continue; }
+
+                bar.gameObject.SetActive(true);
+                lbl.gameObject.SetActive(true);
+
+                int kills  = (data != null && data.TryGetValue(i, out int k)) ? k : 0;
+                float barH = Mathf.Max(2f, (ChartH - labelH) * ((float)kills / maxK));
+
+                var barRect = bar.GetComponent<RectTransform>();
+                barRect.anchorMin        = Vector2.zero;
+                barRect.anchorMax        = Vector2.zero;
+                barRect.pivot            = new Vector2(0.5f, 0f);
+                barRect.sizeDelta        = new Vector2(barW - barPad * 2f, barH);
+                barRect.anchoredPosition = new Vector2(i * barW + barW * 0.5f, 0f);
+
+                var lblRect = lbl.GetComponent<RectTransform>();
+                lblRect.anchorMin        = Vector2.zero;
+                lblRect.anchorMax        = Vector2.zero;
+                lblRect.pivot            = new Vector2(0.5f, 0f);
+                lblRect.sizeDelta        = new Vector2(barW, labelH);
+                lblRect.anchoredPosition = new Vector2(i * barW + barW * 0.5f, barH);
+
+                lbl.text = kills > 0 ? $"V{i + 1}\n{kills}" : $"V{i + 1}";
+            }
         }
 
         private void ClearStats()
@@ -257,9 +403,28 @@ namespace CrowdDefense.UI
             if (_statTowers != null) _statTowers.text = "";
             if (_statTime   != null) _statTime.text   = "";
             if (_statWaves  != null) _statWaves.text  = "";
+            if (_lbHeader   != null) _lbHeader.text   = "";
+            if (_lbRow1     != null) _lbRow1.text     = "";
+            if (_lbRow2     != null) _lbRow2.text     = "";
+            if (_lbRow3     != null) _lbRow3.text     = "";
+            foreach (var (bar, lbl) in _chartBars) { bar.gameObject.SetActive(false); lbl.gameObject.SetActive(false); }
         }
 
         // ── UGUI construction ───────────────────────────────────────────────────
+        // Panel: 600x560
+        // Layout (y anchors, bottom=0 top=1):
+        //   Buttons      0.02 – 0.12
+        //   LB row 3     0.12 – 0.20
+        //   LB row 2     0.20 – 0.28
+        //   LB row 1     0.28 – 0.36
+        //   LB header    0.36 – 0.43
+        //   Bar chart    0.31 – 0.42  (overlaps LB header base — shifted)
+        //   Wait — chart placed at 0.43 – 0.54
+        //   StatTime     0.54 – 0.63
+        //   StatTowers/Waves 0.63 – 0.73
+        //   StatKills/Gold   0.73 – 0.83
+        //   Subtitle     0.83 – 0.91
+        //   Title        0.91 – 1.00
 
         private void BuildUI()
         {
@@ -281,14 +446,14 @@ namespace CrowdDefense.UI
             var backdropImg = backdropGo.AddComponent<Image>();
             backdropImg.color = new Color(0f, 0f, 0f, 0.55f);
 
-            // Centred panel
+            // Centred panel — expanded to 560px height to fit leaderboard
             var panelGo = new GameObject("EndPanel");
             panelGo.transform.SetParent(canvasGo.transform, false);
             var panelRect = panelGo.AddComponent<RectTransform>();
             panelRect.anchorMin = new Vector2(0.5f, 0.5f);
             panelRect.anchorMax = new Vector2(0.5f, 0.5f);
             panelRect.pivot     = new Vector2(0.5f, 0.5f);
-            panelRect.sizeDelta = new Vector2(600f, 420f);
+            panelRect.sizeDelta = new Vector2(600f, 560f);
             var panelImg = panelGo.AddComponent<Image>();
             panelImg.color = VictoryPanelColor;
             _panel = panelGo;
@@ -297,48 +462,77 @@ namespace CrowdDefense.UI
 
             // Title
             _titleText = CreateLabel(panelGo.transform, "TitleLabel",
-                anchorMin: new Vector2(0f, 0.76f),
-                anchorMax: new Vector2(1f, 0.97f),
-                fontSize: 52, color: VictoryTitleColor);
+                anchorMin: new Vector2(0f, 0.91f),
+                anchorMax: new Vector2(1f, 1.00f),
+                fontSize: 48, color: VictoryTitleColor);
 
             // Subtitle (stars or castle HP)
             _subtitleText = CreateLabel(panelGo.transform, "SubtitleLabel",
-                anchorMin: new Vector2(0.05f, 0.64f),
-                anchorMax: new Vector2(0.95f, 0.77f),
-                fontSize: 22, color: statColor);
+                anchorMin: new Vector2(0.05f, 0.82f),
+                anchorMax: new Vector2(0.95f, 0.91f),
+                fontSize: 20, color: statColor);
 
-            // Stats grid — 2 columns × 3 rows (col left: kills/towers/time, col right: gold/waves)
-            // Row anchors: 0.48–0.62 / 0.34–0.48 / 0.20–0.34
+            // Stats grid — 2 columns x 3 rows
             _statKills  = CreateLabel(panelGo.transform, "StatKills",
-                anchorMin: new Vector2(0.04f, 0.48f), anchorMax: new Vector2(0.50f, 0.63f),
-                fontSize: 18, color: statColor);
+                anchorMin: new Vector2(0.04f, 0.72f), anchorMax: new Vector2(0.50f, 0.82f),
+                fontSize: 17, color: statColor);
             _statGold   = CreateLabel(panelGo.transform, "StatGold",
-                anchorMin: new Vector2(0.52f, 0.48f), anchorMax: new Vector2(0.97f, 0.63f),
-                fontSize: 18, color: statColor);
+                anchorMin: new Vector2(0.52f, 0.72f), anchorMax: new Vector2(0.97f, 0.82f),
+                fontSize: 17, color: statColor);
             _statTowers = CreateLabel(panelGo.transform, "StatTowers",
-                anchorMin: new Vector2(0.04f, 0.34f), anchorMax: new Vector2(0.50f, 0.49f),
-                fontSize: 18, color: statColor);
+                anchorMin: new Vector2(0.04f, 0.62f), anchorMax: new Vector2(0.50f, 0.72f),
+                fontSize: 17, color: statColor);
             _statWaves  = CreateLabel(panelGo.transform, "StatWaves",
-                anchorMin: new Vector2(0.52f, 0.34f), anchorMax: new Vector2(0.97f, 0.49f),
-                fontSize: 18, color: statColor);
+                anchorMin: new Vector2(0.52f, 0.62f), anchorMax: new Vector2(0.97f, 0.72f),
+                fontSize: 17, color: statColor);
             _statTime   = CreateLabel(panelGo.transform, "StatTime",
-                anchorMin: new Vector2(0.04f, 0.20f), anchorMax: new Vector2(0.97f, 0.35f),
-                fontSize: 18, color: statColor);
+                anchorMin: new Vector2(0.04f, 0.53f), anchorMax: new Vector2(0.97f, 0.62f),
+                fontSize: 17, color: statColor);
 
             // Left-align individual stat labels
             foreach (var lbl in new[] { _statKills, _statGold, _statTowers, _statWaves, _statTime })
                 if (lbl != null) lbl.alignment = TextAnchor.MiddleLeft;
 
+            // Bar chart "Kills par vague"
+            var chartGo = new GameObject("KillsChart");
+            chartGo.transform.SetParent(panelGo.transform, false);
+            _chartArea = chartGo.AddComponent<RectTransform>();
+            _chartArea.anchorMin = new Vector2(0.04f, 0.42f);
+            _chartArea.anchorMax = new Vector2(0.96f, 0.53f);
+            _chartArea.offsetMin = Vector2.zero;
+            _chartArea.offsetMax = Vector2.zero;
+
+            // Top-3 tower leaderboard — below chart
+            _lbHeader = CreateLabel(panelGo.transform, "LbHeader",
+                anchorMin: new Vector2(0.04f, 0.35f), anchorMax: new Vector2(0.96f, 0.42f),
+                fontSize: 15, color: LbHeaderColor);
+            _lbHeader.alignment = TextAnchor.MiddleLeft;
+
+            _lbRow1 = CreateLabel(panelGo.transform, "LbRow1",
+                anchorMin: new Vector2(0.04f, 0.27f), anchorMax: new Vector2(0.96f, 0.35f),
+                fontSize: 15, color: LbRowColor);
+            _lbRow1.alignment = TextAnchor.MiddleLeft;
+
+            _lbRow2 = CreateLabel(panelGo.transform, "LbRow2",
+                anchorMin: new Vector2(0.04f, 0.19f), anchorMax: new Vector2(0.96f, 0.27f),
+                fontSize: 15, color: LbRowColor);
+            _lbRow2.alignment = TextAnchor.MiddleLeft;
+
+            _lbRow3 = CreateLabel(panelGo.transform, "LbRow3",
+                anchorMin: new Vector2(0.04f, 0.12f), anchorMax: new Vector2(0.96f, 0.19f),
+                fontSize: 15, color: LbRowColor);
+            _lbRow3.alignment = TextAnchor.MiddleLeft;
+
             // Primary button (Rejouer) — left
             (_btnPrimary, _btnPrimaryLabel) = CreateButton(panelGo.transform, "BtnPrimary",
-                anchorMin: new Vector2(0.05f, 0.03f),
-                anchorMax: new Vector2(0.47f, 0.18f));
+                anchorMin: new Vector2(0.05f, 0.02f),
+                anchorMax: new Vector2(0.47f, 0.11f));
             _btnPrimary.onClick.AddListener(OnPrimaryClicked);
 
             // Secondary button (Continuer / Menu) — right
             (_btnSecondary, _btnSecondaryLabel) = CreateButton(panelGo.transform, "BtnSecondary",
-                anchorMin: new Vector2(0.53f, 0.03f),
-                anchorMax: new Vector2(0.95f, 0.18f));
+                anchorMin: new Vector2(0.53f, 0.02f),
+                anchorMax: new Vector2(0.95f, 0.11f));
             _btnSecondary.onClick.AddListener(OnSecondaryClicked);
 
             _panel.SetActive(false);
