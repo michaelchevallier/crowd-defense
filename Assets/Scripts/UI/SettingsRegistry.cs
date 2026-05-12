@@ -22,6 +22,7 @@ namespace CrowdDefense.UI
         private const string KLargeText = "cd.a11y.large_text";
         private const string KLocale = "cd.locale";
         private const string KGameSpeed = "cd.gameplay.speed";
+        private const string KAutoPauseOnBlur = "cd.gameplay.auto_pause_blur";
 
         public event Action? OnSettingsChanged;
 
@@ -40,6 +41,7 @@ namespace CrowdDefense.UI
         private bool _largeText;
         private string _locale = "en";
         private int _gameSpeed = 1;
+        private bool _autoPauseOnBlur = true;
 
         public float MasterVolume
         {
@@ -131,6 +133,12 @@ namespace CrowdDefense.UI
             set { value = value < 0 ? 0 : value > 3 ? 3 : value; if (_gameSpeed == value) return; _gameSpeed = value; Save(); Notify(); }
         }
 
+        public bool AutoPauseOnBlur
+        {
+            get => _autoPauseOnBlur;
+            set { if (_autoPauseOnBlur == value) return; _autoPauseOnBlur = value; Save(); Notify(); }
+        }
+
         protected override void OnAwakeSingleton()
         {
             Load();
@@ -155,6 +163,7 @@ namespace CrowdDefense.UI
             PlayerPrefs.SetInt(KLargeText, _largeText ? 1 : 0);
             PlayerPrefs.SetString(KLocale, _locale);
             PlayerPrefs.SetInt(KGameSpeed, _gameSpeed);
+            PlayerPrefs.SetInt(KAutoPauseOnBlur, _autoPauseOnBlur ? 1 : 0);
             PlayerPrefs.Save();
         }
 
@@ -175,6 +184,7 @@ namespace CrowdDefense.UI
             _largeText = PlayerPrefs.GetInt(KLargeText, 0) == 1;
             _locale = PlayerPrefs.GetString(KLocale, "en");
             _gameSpeed = PlayerPrefs.GetInt(KGameSpeed, 1);
+            _autoPauseOnBlur = PlayerPrefs.GetInt(KAutoPauseOnBlur, 1) == 1;
         }
 
         private void ApplyAudio()
