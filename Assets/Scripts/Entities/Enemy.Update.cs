@@ -89,7 +89,7 @@ namespace CrowdDefense.Entities
             }
 
             // Walk anim blend + footstep audio
-            if (_animator != null && _animator.runtimeAnimatorController != null && cfg != null && cfg.Speed > 0f)
+            if (_animator != null && _animator.runtimeAnimatorController != null && cfg!.Speed > 0f)
                 _animator.SetFloat("Speed", effSpeed / cfg.Speed);
             if (nowWalking)
             {
@@ -119,7 +119,7 @@ namespace CrowdDefense.Entities
             }
 
             // Fire trail for fiery enemies (imp, dragon, etc.)
-            if (cfg.IsFiery)
+            if (cfg!.IsFiery)
             {
                 _fieryTimer -= Time.deltaTime;
                 if (_fieryTimer <= 0f)

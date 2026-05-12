@@ -158,12 +158,13 @@ namespace CrowdDefense.Entities
             bool[] active = { slow, burn, freeze, armor };
             for (int i = 0; i < 4; i++)
             {
-                if (_debuffIcons[i] == null) continue;
+                var icon = _debuffIcons[i];
+                if (icon == null) continue;
                 bool show = active[i];
-                if (_debuffIcons[i].activeSelf != show)
-                    _debuffIcons[i].SetActive(show);
+                if (icon.activeSelf != show)
+                    icon.SetActive(show);
                 if (show && MainCameraCache.Main != null)
-                    _debuffIcons[i].transform.rotation = Quaternion.LookRotation(MainCameraCache.Main.transform.forward);
+                    icon.transform.rotation = Quaternion.LookRotation(MainCameraCache.Main.transform.forward);
             }
         }
 
@@ -196,6 +197,7 @@ namespace CrowdDefense.Entities
                     _decalSlowRend.receiveShadows = false;
                 }
                 if (!_decalSlow.activeSelf) _decalSlow.SetActive(true);
+                _decalMpb ??= new MaterialPropertyBlock();
                 // alpha pulse 0.3-0.6
                 float alpha = 0.3f + 0.3f * (0.5f + 0.5f * Mathf.Sin(now * 4f));
                 _decalMpb.Clear();

@@ -249,7 +249,7 @@ namespace CrowdDefense.UI
             tmp.alignment             = TextAlignmentOptions.Center;
             tmp.outlineWidth          = 0.2f;
             tmp.outlineColor          = new Color32(0, 0, 0, 255);
-            tmp.enableWordWrapping    = false;
+            tmp.textWrappingMode      = TMPro.TextWrappingModes.NoWrap;
             tmp.autoSizeTextContainer = false;
             tmp.rectTransform.sizeDelta = new Vector2(4f, 1.5f);
 

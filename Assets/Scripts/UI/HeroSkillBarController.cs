@@ -227,7 +227,7 @@ namespace CrowdDefense.UI
                 float t = (elapsed % PulsePeriodMs) / (float)PulsePeriodMs;
                 // Sine wave: 0→1→0 over one period
                 float s = 1f + (PulseScalePeak - 1f) * Mathf.Sin(t * Mathf.PI);
-                _slots[index]!.transform.scale = new Vector3(s, s, 1f);
+                _slots[index]!.style.scale = new Scale(new Vector3(s, s, 1f));
             }).Every(PulseTickMs);
         }
 
@@ -236,7 +236,7 @@ namespace CrowdDefense.UI
             _pulseItems[index]?.Pause();
             _pulseItems[index] = null;
             if (_slots[index] != null)
-                _slots[index]!.transform.scale = Vector3.one;
+                _slots[index]!.style.scale = new Scale(Vector3.one);
         }
     }
 }

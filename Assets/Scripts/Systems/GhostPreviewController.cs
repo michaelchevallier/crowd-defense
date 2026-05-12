@@ -179,12 +179,15 @@ namespace CrowdDefense.Systems
                 Object.Destroy(col);
 
             // Replace all materials with transparent variant + apply tint via MPB
-            foreach (var rend in ghost.GetComponentsInChildren<Renderer>(true))
+            if (ghostMatTransparent != null)
             {
-                var mats = new Material[rend.sharedMaterials.Length];
-                for (int i = 0; i < mats.Length; i++)
-                    mats[i] = ghostMatTransparent;
-                rend.sharedMaterials = mats;
+                foreach (var rend in ghost.GetComponentsInChildren<Renderer>(true))
+                {
+                    var mats = new Material[rend.sharedMaterials.Length];
+                    for (int i = 0; i < mats.Length; i++)
+                        mats[i] = ghostMatTransparent;
+                    rend.sharedMaterials = mats;
+                }
             }
 
             ApplyTintToGhost(ColorValid);
@@ -199,7 +202,7 @@ namespace CrowdDefense.Systems
             costLabel.alignment             = TextAlignmentOptions.Center;
             costLabel.outlineWidth          = 0.25f;
             costLabel.outlineColor          = new Color32(0, 0, 0, 220);
-            costLabel.enableWordWrapping    = false;
+            costLabel.textWrappingMode      = TMPro.TextWrappingModes.NoWrap;
             costLabel.autoSizeTextContainer = false;
             costLabel.rectTransform.sizeDelta = new Vector2(4f, 1f);
 

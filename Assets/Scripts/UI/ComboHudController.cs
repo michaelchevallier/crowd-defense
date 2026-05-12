@@ -118,7 +118,7 @@ namespace CrowdDefense.UI
             {
                 t += Time.unscaledDeltaTime;
                 float s = Mathf.Lerp(1f, PeakScale, t / GrowDuration);
-                _comboDisplay.transform.scale = new Vector3(s, s, 1f);
+                _comboDisplay.style.scale = new Scale(new Vector3(s, s, 1f));
                 yield return null;
             }
             t = 0f;
@@ -126,10 +126,10 @@ namespace CrowdDefense.UI
             {
                 t += Time.unscaledDeltaTime;
                 float s = Mathf.Lerp(PeakScale, 1f, t / ShrinkDuration);
-                _comboDisplay.transform.scale = new Vector3(s, s, 1f);
+                _comboDisplay.style.scale = new Scale(new Vector3(s, s, 1f));
                 yield return null;
             }
-            _comboDisplay.transform.scale = Vector3.one;
+            _comboDisplay.style.scale = new Scale(Vector3.one);
 
             // --- Horizontal shake ---
             float stepDuration = ShakeDuration / ShakeSteps;
@@ -137,10 +137,10 @@ namespace CrowdDefense.UI
             {
                 float dir = (i % 2 == 0) ? 1f : -1f;
                 float mag = ShakeMagnitudePx * (1f - (float)i / ShakeSteps);
-                _comboDisplay.transform.position = new Vector3(dir * mag, 0f, 0f);
+                _comboDisplay.style.translate = new Translate(dir * mag, 0f);
                 yield return new WaitForSecondsRealtime(stepDuration);
             }
-            _comboDisplay.transform.position = Vector3.zero;
+            _comboDisplay.style.translate = new Translate(0f, 0f);
             _animCo = null;
         }
 
@@ -167,7 +167,7 @@ namespace CrowdDefense.UI
             // Slide in: remove hidden, remove exit class
             _comboBanner.RemoveFromClassList("hidden");
             _comboBanner.RemoveFromClassList("combo-banner-exit");
-            _comboBanner.transform.scale = Vector3.one;
+            _comboBanner.style.scale = new Scale(Vector3.one);
 
             yield return new WaitForSecondsRealtime(BannerSlideInSec);
 
@@ -178,7 +178,7 @@ namespace CrowdDefense.UI
             {
                 t += Time.unscaledDeltaTime;
                 float s = Mathf.Lerp(1f, BannerPulsePeak, t / pulseDur);
-                _comboBanner.transform.scale = new Vector3(s, s, 1f);
+                _comboBanner.style.scale = new Scale(new Vector3(s, s, 1f));
                 yield return null;
             }
             t = 0f;
@@ -186,10 +186,10 @@ namespace CrowdDefense.UI
             {
                 t += Time.unscaledDeltaTime;
                 float s = Mathf.Lerp(BannerPulsePeak, 1f, t / pulseDur);
-                _comboBanner.transform.scale = new Vector3(s, s, 1f);
+                _comboBanner.style.scale = new Scale(new Vector3(s, s, 1f));
                 yield return null;
             }
-            _comboBanner.transform.scale = Vector3.one;
+            _comboBanner.style.scale = new Scale(Vector3.one);
 
             yield return new WaitForSecondsRealtime(BannerHoldSec);
 
@@ -205,15 +205,15 @@ namespace CrowdDefense.UI
         {
             if (_comboBanner == null) return;
             _comboBanner.RemoveFromClassList("combo-banner-exit");
-            _comboBanner.transform.scale = Vector3.one;
+            _comboBanner.style.scale = new Scale(Vector3.one);
             _comboBanner.AddToClassList("hidden");
         }
 
         private void ResetTransform()
         {
             if (_comboDisplay == null) return;
-            _comboDisplay.transform.scale = Vector3.one;
-            _comboDisplay.transform.position = Vector3.zero;
+            _comboDisplay.style.scale = new Scale(Vector3.one);
+            _comboDisplay.style.translate = new Translate(0f, 0f);
         }
 
         private void SetVisible(bool show)

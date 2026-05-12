@@ -106,7 +106,7 @@ namespace CrowdDefense.Entities
         private int            _decalFrame = 0;
         private MeshRenderer?  _decalSlowRend;
         private MeshRenderer?  _decalBurnRend;
-        private MaterialPropertyBlock _decalMpb = new MaterialPropertyBlock();
+        private MaterialPropertyBlock? _decalMpb;
 
         // ── Spawn pop-in state ────────────────────────────────────────────────
         private Coroutine?   _popInCoroutine;

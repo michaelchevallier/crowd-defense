@@ -82,7 +82,7 @@ namespace CrowdDefense.Entities
             tmp.color            = new Color(1f, 0.92f, 0.15f, 1f);
             tmp.outlineWidth     = 0.25f;
             tmp.outlineColor     = new Color32(80, 40, 0, 255);
-            tmp.enableWordWrapping   = false;
+            tmp.textWrappingMode     = TMPro.TextWrappingModes.NoWrap;
             tmp.rectTransform.sizeDelta = new Vector2(8f, 2f);
 
             var cam        = Camera.main;
