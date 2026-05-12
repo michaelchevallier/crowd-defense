@@ -40,23 +40,21 @@ namespace CrowdDefense.UI
 
         private void Update()
         {
-            if (_remappingAction == null) return;
-
-            // Capture any key press during remap mode
-            foreach (KeyCode kc in System.Enum.GetValues(typeof(KeyCode)))
+            if (_remappingAction != null)
             {
-                if (kc == KeyCode.None) continue;
-                if (!Input.GetKeyDown(kc)) continue;
-
-                if (kc == KeyCode.Escape)
+                foreach (KeyCode kc in System.Enum.GetValues(typeof(KeyCode)))
                 {
-                    CancelRemap();
+                    if (kc == KeyCode.None) continue;
+                    if (!Input.GetKeyDown(kc)) continue;
+                    if (kc == KeyCode.Escape) { CancelRemap(); return; }
+                    CommitRemap(_remappingAction, kc);
                     return;
                 }
-
-                CommitRemap(_remappingAction, kc);
                 return;
             }
+
+            if (_root != null && !_root.ClassListContains("hidden") && Input.GetKeyDown(KeyCode.Escape))
+                Hide();
         }
 
         public void Show()
@@ -132,11 +130,23 @@ namespace CrowdDefense.UI
             title.style.fontSize = 16;
             title.style.unityFontStyleAndWeight = FontStyle.Bold;
 
-            var closeBtn = new Button { text = "X" };
-            closeBtn.style.backgroundColor = new StyleColor(Color.clear);
+            var closeBtn = new Button { text = "✕" };
+            closeBtn.style.backgroundColor = new StyleColor(new Color(0.5f, 0.1f, 0.1f, 0.9f));
             closeBtn.style.color = new StyleColor(Color.white);
+            closeBtn.style.fontSize = 18;
+            closeBtn.style.unityFontStyleAndWeight = FontStyle.Bold;
+            closeBtn.style.width = 32;
+            closeBtn.style.height = 32;
+            closeBtn.style.paddingLeft = closeBtn.style.paddingRight = 0;
+            closeBtn.style.paddingTop = closeBtn.style.paddingBottom = 0;
+            closeBtn.style.marginLeft = 8;
+            closeBtn.style.borderTopLeftRadius = closeBtn.style.borderTopRightRadius =
+            closeBtn.style.borderBottomLeftRadius = closeBtn.style.borderBottomRightRadius = 6;
             closeBtn.style.borderTopWidth = closeBtn.style.borderBottomWidth =
-            closeBtn.style.borderLeftWidth = closeBtn.style.borderRightWidth = 0;
+            closeBtn.style.borderLeftWidth = closeBtn.style.borderRightWidth = 1;
+            closeBtn.style.borderTopColor = closeBtn.style.borderBottomColor =
+            closeBtn.style.borderLeftColor = closeBtn.style.borderRightColor =
+                new StyleColor(new Color(1f, 0.4f, 0.4f, 1f));
             closeBtn.clicked += Hide;
 
             titleRow.Add(title);
@@ -169,6 +179,12 @@ namespace CrowdDefense.UI
             box.Add(resetBtn);
             overlay.Add(box);
             docRoot.Add(overlay);
+
+            // Click outside modal closes panel
+            overlay.RegisterCallback<MouseDownEvent>(evt =>
+            {
+                if (evt.target == overlay) Hide();
+            });
 
             return overlay;
         }
