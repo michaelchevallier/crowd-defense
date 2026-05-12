@@ -16,8 +16,10 @@ namespace CrowdDefense.Visual
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
         private static readonly int ColorId     = Shader.PropertyToID("_Color");
 
-        // 8 core theme tints (roof / stone mix): distinct enough to read at a glance.
+        // 10 core theme tints (roof / stone mix): distinct enough to read at a glance.
         // Index mirrors LevelTheme enum order; Glacier mapped from Submarin, Marais from Apocalypse.
+        // Foire: hot-pink / yellow carnival placeholder (no texture imported yet).
+        // Medieval: saddle-brown / stone-grey placeholder (no texture imported yet).
         private static readonly (LevelTheme theme, Color primary, Color secondary)[] ThemeSkins =
         {
             (LevelTheme.Plaine,     new Color(0.62f, 0.80f, 0.42f), new Color(0.80f, 0.78f, 0.70f)),
@@ -28,6 +30,10 @@ namespace CrowdDefense.Visual
             (LevelTheme.Espace,     new Color(0.14f, 0.28f, 0.58f), new Color(0.06f, 0.06f, 0.16f)),
             (LevelTheme.Submarin,   new Color(0.30f, 0.72f, 0.84f), new Color(0.16f, 0.44f, 0.60f)),
             (LevelTheme.Cyberpunk,  new Color(0.72f, 0.06f, 0.80f), new Color(0.10f, 0.06f, 0.18f)),
+            // Placeholder — no castle_foire.png yet; hot-pink primary + yellow secondary (carnival).
+            (LevelTheme.Foire,      new Color(1.00f, 0.41f, 0.71f), new Color(1.00f, 0.84f, 0.00f)),
+            // Placeholder — no castle_medieval.png yet; saddle-brown primary + stone-grey secondary.
+            (LevelTheme.Medieval,   new Color(0.55f, 0.27f, 0.07f), new Color(0.50f, 0.48f, 0.44f)),
         };
 
         private MaterialPropertyBlock? _mpb;
