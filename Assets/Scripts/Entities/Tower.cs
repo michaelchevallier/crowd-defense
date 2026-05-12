@@ -1073,9 +1073,22 @@ namespace CrowdDefense.Entities
             VfxPool.Instance?.SpawnImpact(muzzlePos, cfg.ProjectileColor);
             if (Time.time - _lastMuzzleFlashAt >= 0.05f)
             {
-                VfxPool.Instance?.SpawnMuzzleFlash(
-                    _barrelTip?.position ?? transform.position + Vector3.up * 0.8f,
-                    cfg.ProjectileColor);
+                Vector3 flashPos = _barrelTip?.position ?? transform.position + Vector3.up * 0.8f;
+                VfxPool.Instance?.SpawnMuzzleFlash(flashPos, cfg.ProjectileColor);
+                bool isFrost = cfg.Id == "frost" || cfg.Id.Contains("ice");
+                if (!isFrost)
+                {
+                    var yellowOrange = new Color(1f, 0.65f, 0.1f);
+                    VfxPool.Instance?.SpawnSpark(flashPos, yellowOrange);
+                    StartCoroutine(MuzzleFlashLightRoutine(flashPos));
+                    if (ac != null)
+                    {
+                        float muzzlePitch = 0.9f + Random.value * 0.2f;
+                        bool hasMuzzleClip = ac.GetClip("muzzle_pop") != null;
+                        if (hasMuzzleClip)
+                            ac.Play3DPitched("muzzle_pop", flashPos, 0.4f, muzzlePitch);
+                    }
+                }
                 _lastMuzzleFlashAt = Time.time;
             }
             VfxPool.Instance?.SpawnAttackStream(muzzlePos, t.transform.position, cfg.ProjectileColor);
@@ -2013,6 +2026,31 @@ namespace CrowdDefense.Entities
             }
             _meshHead.transform.localPosition = origin;
             _recoiling = false;
+        }
+
+        // ── Muzzle Flash Light ────────────────────────────────────────────────
+
+        // Spawns a short-lived point light at the muzzle position; intensity lerps 4→0 over 0.1s then destroys GO.
+        private IEnumerator MuzzleFlashLightRoutine(Vector3 worldPos)
+        {
+            var go = new GameObject("MuzzleFlash");
+            go.transform.position = worldPos;
+            var light = go.AddComponent<Light>();
+            light.type      = LightType.Point;
+            light.color     = new Color(1f, 0.95f, 0.5f);
+            light.range     = 2f;
+            light.intensity = 4f;
+            light.shadows   = LightShadows.None;
+
+            float elapsed = 0f;
+            const float Duration = 0.1f;
+            while (elapsed < Duration)
+            {
+                elapsed += Time.deltaTime;
+                light.intensity = Mathf.Lerp(4f, 0f, elapsed / Duration);
+                yield return null;
+            }
+            Destroy(go);
         }
 
         // ── Utility ───────────────────────────────────────────────────────────
