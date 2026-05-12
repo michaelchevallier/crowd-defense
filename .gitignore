@@ -122,3 +122,7 @@ Unity_v6000.3.15f1.alf
 tools/mixamo/.progress.json
 tools/textures_v5_log.csv
 auto-build-*.log
+
+# TextMeshPro Examples & Extras — optional learning content, ~6.4MB
+/Assets/TextMesh Pro/Examples & Extras/
+/Assets/TextMesh Pro/Examples & Extras.meta
