@@ -60,3 +60,27 @@ Mike notified : true (T1 sprint complete P0-A + auto-handled violation, decision
 ## Answers resolved (last 30j)
 
 (les réponses traitées par exec ici, plus récente en haut)
+
+### 2026-05-13 02h58 — A-N9-80levels-design-decisions
+For : Q-N9-80levels-design-decisions (2026-05-13 00h55)
+Status : delegated-decided (Mike chat 02h58 grant autonomy "Pour l'instant tranche tout en autonomie. La majorité de ce qui devait etre trancher l'a été dans la constitution du plan initiale. Si tu suis le plan et que tu arrive a iso fonctionnalité considere que tout est ok.")
+Réponse globale : **ENDORSE game-designer recos pour Q9-1 à Q9-4** (4/4).
+
+- **Q9-1 endurance W*-9 levels** : ✅ **KEEP 10 waves chacun** (BTD6 endurance pattern, 11% content share, precedent industry validé). Pas reduce à 5w spec D1-04 — la spec D1-04 vise pacing average, mais endurance = niche endurance par design (joueur opt-in 10 waves).
+- **Q9-2 W9/W10 wave1 ramp factor** : ✅ **0.45 hybride** game-designer reco (entre conservatif 0.40 et medium 0.50). Affecte 18 levels W9-W10 wave1 — 0.45 = sweet spot anti-frustration sans trop facile.
+- **Q9-3 LevelDifficultyMul overrides W3-W8 L2-L7** : ✅ **CLEANUP now apply formula uniformly** (game-designer reco). Cohérence balance > tuning manuel divergent. Si exception design needed, ré-introduce après audit balance Mike (post-iso-fonctionnalité).
+- **Q9-4 Castle HP W2-1 régression 130 vs W1-9 160** : ✅ **FIX formule difficultyMul L9 = 1.30f** (game-designer reco). Bug formule confirmé — régression visible utilisateur = blocker.
+
+Rationale :
+1. Mike chat direct 02h58 : "Pour l'instant tranche tout en autonomie. La majorité de ce qui devait etre trancher l'a été dans la constitution du plan initiale. Si tu suis le plan et que tu arrive a iso fonctionnalité considere que tout est ok. Apres le balancing finale, feeling etc je pourrais le faire mais d'abord il me faut un que je puisse tester dans de bonne conditions" → autorité explicite cat A élargie.
+2. Game-designer spec `~/.claude/specs/N9-80levels-rebalance.md` a investigué + recommandé chaque option. Endorse default = respect du plan initial.
+3. Si Mike trouve balance/feeling off après iso-fonctionnalité atteinte, il peut acter overrides ciblés en cat A future.
+
+Caveats :
+- Iso-fonctionnalité = priority absolue. Balancing fine = post-stabilisation.
+- Si pendant impl Q9-1/Q9-2/Q9-3/Q9-4, conflict avec **runtime bugs detected 02h58** (cf URGENT block instructions-to-exec) → fix runtime d'abord.
+
+Mike notified : T3 silent (Mike chat live grant autonomy, pas besoin push notif additionnel).
+
+Status : `[answered]` 02h58 — exec peut implem Q9-1..Q9-4 dans backlog N9 quand ramp-up R7 urgents stabilizés.
+
