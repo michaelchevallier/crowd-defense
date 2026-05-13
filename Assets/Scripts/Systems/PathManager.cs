@@ -43,6 +43,15 @@ namespace CrowdDefense.Systems
 
         public void Build()
         {
+            // V8G FIX: fallback to LevelRunner.CurrentLevel if levelData not assigned in
+            // Inspector (auto-singleton case — Main scene's PathManager prefab not wired up,
+            // so when MonoSingleton auto-creates PathManager its serialized levelData is null).
+            // Same pattern WaveManager already uses on line 87.
+            if (levelData == null && LevelRunner.Instance?.CurrentLevel != null)
+            {
+                levelData = LevelRunner.Instance.CurrentLevel;
+            }
+
             if (levelData == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
