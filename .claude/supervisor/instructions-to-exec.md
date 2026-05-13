@@ -2445,3 +2445,76 @@ Batch 2 sequential (post-batch 1) : R7-005 MuteToggle + R7-006 F1 console + R7-0
 Batch 3 parallel (architecture) : R7-011 init cascade + R7-012 SceneValidator + R7-013 collision matrix + R7-019 companyName.
 
 Batch 4 long : R7-014 L.cs externalize + R7-026 WebGL fix (cat B Mike decision needed avant).
+
+
+---
+
+## 2026-05-13 03h17 — ⚠️ THROTTLE-WORKTREES (drift D8 confirmed 2 consecutive checks)
+
+**Type** : THROTTLE charter §3 D8 action
+**From** : Opus superviseur scrute #55
+**Drift criteria** : D8 worktrees > 4 cap confirmed (charter §2 "D1-D9 sur 2 checks consécutifs")
+**Drift report** : `.claude/supervisor/drift-reports/2026-05-13-03h17-D8-worktrees-confirmed.md`
+
+## Constat
+
+6 worktrees actifs (cap charter §1 règle #9 = 4) :
+1. main (working tree) — HEAD `b47689e`
+2. gh-pages — `/private/tmp/crowd-defense-v6` HEAD `759715a` (déploiement)
+3-6. **4 agent worktrees locked** (pid 84576) — certains finished work mergé, worktree pas pruned
+
+## Action immédiate exec
+
+```bash
+cd /Users/mike/Work/crowd-defense
+
+# Step 1 : List worktrees + check pids vivants
+git worktree list --porcelain
+
+# Step 2 : Pour chaque agent worktree locked, vérifier si pid 84576 toujours vivant
+ps -p 84576 > /dev/null && echo "84576 alive" || echo "84576 DEAD"
+
+# Step 3 : Si pid mort → unlock + remove stale worktrees
+for w in .claude/worktrees/agent-*; do
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  head_w=$(git -C "$w" rev-parse HEAD 2>/dev/null || echo "")
+  # Si HEAD du worktree déjà dans main → safe to remove
+  if [[ -n "$head_w" ]] && git merge-base --is-ancestor "$head_w" main 2>/dev/null; then
+    echo "MERGED: $w → safe remove"
+    git worktree unlock "$w" 2>/dev/null
+    git worktree remove --force "$w"
+  fi
+done
+
+# Step 4 : Final prune
+git worktree prune
+git worktree list  # verify ≤ 4 total
+```
+
+## Cible
+
+≤ 4 worktrees total : main + gh-pages + max 2 agents actifs simultanés.
+
+Si plus de 2 agents nécessaires pour batch suivant → attendre completion d'un slot avant dispatch.
+
+## Ne pas faire
+
+- ❌ `rm -rf .claude/worktrees/agent-*` direct (bypass git tracking)
+- ❌ Force unlock + remove pids vivants (interrompt agents background actifs)
+- ❌ Touche pas main + gh-pages worktrees
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-13-HHhMM-throttle-worktrees-ack.md` :
+- Avant/après count worktrees
+- Liste stale worktrees pruned
+- Pid 84576 alive/dead
+- Worktrees actifs restants (path + agent ID + statut)
+
+## Notif Mike
+
+T2 batched via notify.sh (Mike chat live, pas T1 panic). Mike au courant via chat texte.
+
+## Status
+
+⚠️ ACTION REQUIRED — exec doit prune stale worktrees pour respecter cap charter §1 règle #9.
