@@ -67,6 +67,11 @@ namespace CrowdDefense.UI
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
 
+        // Gems pill (top-bar)
+        private Label? _gemsValue;
+        private float _gemsRefreshTimer;
+        private const float GemsRefreshInterval = 0.5f;
+
         // Combo multiplier badge (top-right, persistent while combo active)
         private Label? _comboMultiplierLabel;
 
@@ -197,6 +202,8 @@ namespace CrowdDefense.UI
             ApplyDeviceClasses(Root);
             goldLabel = Root.Q<Label>("gold-label");
             goldValue = Root.Q<Label>("gold-value");
+            _gemsValue = Root.Q<Label>("gems-value");
+            RefreshGems();
             waveLabel = Root.Q<Label>("wave-label");
             waveValue = Root.Q<Label>("wave-value");
             hpLabel = Root.Q<Label>("hp-label");
@@ -456,6 +463,13 @@ namespace CrowdDefense.UI
             // Space — hero ultimate cast
             if (Input.GetKeyDown(KeyCode.Space))
                 TryCastUlt();
+
+            _gemsRefreshTimer -= Time.unscaledDeltaTime;
+            if (_gemsRefreshTimer <= 0f)
+            {
+                _gemsRefreshTimer = GemsRefreshInterval;
+                RefreshGems();
+            }
 
             TickBreakPill();
             TickWaveTime();
@@ -755,6 +769,11 @@ namespace CrowdDefense.UI
         private void OnGoldChanged(int gold)
         {
             if (goldValue != null) goldValue.text = $"${gold}";
+        }
+
+        private void RefreshGems()
+        {
+            if (_gemsValue != null) _gemsValue.text = Systems.SaveSystem.GetGems().ToString();
         }
 
         // gain=0 means bank reset (castle damaged); gain>0 means interest ticked
