@@ -241,3 +241,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 11h17 — scrute /loop. **0 new commits depuis `e4be476b`** (#86). **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 11h32 — scrute /loop. **0 new commits depuis `dfcc1ab9`** (#87). **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 11h46 — scrute /loop. **0 new commits depuis `928b396c`** (#88). **Drift 0/12** ✅. F1 upgrade Unity 6.4.6f1 en cours autonome (CLI install done, ProjectVersion.txt bumped, build #2 background `b4u5z1imf` après UnityGLTF 2.19.2→2.19.5 fix). Build #1 failed compile `org.khronos.unitygltf` URP 17.4 API change. **T3 silent** (Mike chat live, no drift, work in progress).
