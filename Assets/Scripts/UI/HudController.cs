@@ -193,7 +193,6 @@ namespace CrowdDefense.UI
             EnsureSibling<RuntimeProfilePanel>();
             EnsureSibling<AchievementToastController>();
             EnsureSibling<EncyclopediaController>();
-            EnsureSibling<WaveBannerController>();
 
             ApplyDeviceClasses(Root);
             goldLabel = Root.Q<Label>("gold-label");

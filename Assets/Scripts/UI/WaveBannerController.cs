@@ -37,16 +37,39 @@ namespace CrowdDefense.UI
             BuildBanner(root);
         }
 
+        private VisualElement? _startBannerUxml;
+        private VisualElement? _clearBannerUxml;
+        private Label?         _clearBannerN;
+        private Coroutine?     _clearAnim;
+
+        private const float ClearHoldS = 2.5f;
+
         private void Start()
         {
             if (WaveManager.Instance != null)
-                WaveManager.Instance.OnWaveStart += OnWaveStart;
+            {
+                WaveManager.Instance.OnWaveStart   += OnWaveStart;
+                WaveManager.Instance.OnWaveCleared += OnWaveCleared;
+            }
+
+            // Wire the UXML-declared clear banner (added by P0-UI-6 to HUD.uxml)
+            var uiDoc = GetComponent<UIDocument>();
+            var root = uiDoc?.rootVisualElement;
+            if (root != null)
+            {
+                _startBannerUxml = root.Q<VisualElement>("wave-start-banner");
+                _clearBannerUxml = root.Q<VisualElement>("wave-clear-banner");
+                _clearBannerN    = root.Q<Label>("wave-clear-n");
+            }
         }
 
         protected override void OnDestroySingleton()
         {
             if (WaveManager.Instance != null)
-                WaveManager.Instance.OnWaveStart -= OnWaveStart;
+            {
+                WaveManager.Instance.OnWaveStart   -= OnWaveStart;
+                WaveManager.Instance.OnWaveCleared -= OnWaveCleared;
+            }
         }
 
         private void OnWaveStart(int idx)
@@ -54,6 +77,23 @@ namespace CrowdDefense.UI
             int total = WaveManager.Instance?.TotalWaves ?? 0;
             var waveDef = WaveManager.Instance?.GetWaveDef(idx);
             Show(idx + 1, total, waveDef);
+        }
+
+        private void OnWaveCleared(int idx)
+        {
+            if (_clearBannerUxml == null) return;
+            if (_clearBannerN != null) _clearBannerN.text = (idx + 1).ToString();
+            if (_clearAnim != null) StopCoroutine(_clearAnim);
+            _clearAnim = StartCoroutine(AnimateClearBanner());
+        }
+
+        private IEnumerator AnimateClearBanner()
+        {
+            if (_clearBannerUxml == null) yield break;
+            _clearBannerUxml.RemoveFromClassList("wave-banner--hidden");
+            yield return new WaitForSeconds(ClearHoldS);
+            _clearBannerUxml.AddToClassList("wave-banner--hidden");
+            _clearAnim = null;
         }
 
         public void Show(int wave, int total, WaveDef? waveDef = null)
