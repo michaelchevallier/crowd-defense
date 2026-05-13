@@ -310,3 +310,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 19h25 — scrute /loop #117. **2 new commits** depuis #116 : `23fd4395` V8 raycastTarget fix (Level click bug ROOT CAUSE) + `6912896a` V8B NRE LoadingGroup typeof(RectTransform). Both fix R7-WORLDMAP-NAN remaining bugs post-V7-success. Build WebGL pending — batchmode 33733 stuck 27min post-V7 (99% CPU idle log), Mike Editor open conflit. **Drift 0/12** ✅ : D1 in-scope R7, D2 ~2h30 sur visible-blocker acceptable, D10 non-critical (V7 deployed partial fonctionnel). **T3 silent** (Mike T2 déjà envoyée 19h17 pour V8).
 
 2026-05-13 19h31 — scrute /loop #118. **0 new commits** depuis #117 (6 min). Mike idle. Batchmode 33733 toujours stuck 33min post-V7 build (99% CPU, log idle). V8/V8B fixes en attente Mike rebuild WebGL. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 19h47 — scrute /loop #119. **0 new commits** depuis #118 (16 min). Mike idle. Batchmode 33733 toujours 100% CPU à 49 min post-V7 build (log audio reset hang). V8/V8B fixes en attente Mike rebuild. gh-pages stable V7 deploy (28b0b132). **Drift 0/12** ✅. **T3 silent**.
