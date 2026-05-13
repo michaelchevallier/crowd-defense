@@ -43,7 +43,10 @@ namespace CrowdDefense.Entities
 
         public void Init(int hp, int world = 1)
         {
-            HP = HPMax = Systems.SaveSystem.IsHardcoreRun ? 1 : hp;
+            int effectiveHp = Systems.SaveSystem.IsHardcoreRun
+                ? 1
+                : Mathf.RoundToInt(hp * Systems.SupportMode.CastleHpMultiplier);
+            HP = HPMax = effectiveHp;
             _world = world;
             _meshFilter = GetComponentInChildren<MeshFilter>();
             _smokePs    = GetComponentInChildren<ParticleSystem>();

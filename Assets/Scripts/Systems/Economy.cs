@@ -58,7 +58,8 @@ namespace CrowdDefense.Systems
         public void AddGold(int amount)
         {
             if (amount <= 0) return;
-            SetGold(Gold + amount);
+            int effective = Mathf.RoundToInt(amount * SupportMode.GoldMultiplier);
+            SetGold(Gold + effective);
             LifetimeStats.Instance?.AddGold(amount);
             Achievements.Instance?.TrackEvent("gold_earned", amount);
         }

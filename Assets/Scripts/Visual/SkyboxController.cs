@@ -11,6 +11,9 @@ namespace CrowdDefense.Visual
     // Swaps RenderSettings.skybox per level theme using equirectangular panoramic materials.
     // Companion to ThemeAmbientController — handles the skybox image swap + ambient mode.
     // Attach to Main.unity (MonoSingleton auto-creates if missing).
+    // 10 Inspector slots — one per LevelTheme (Plaine…Foire). Dictionary-lookup fallback
+    // keeps the current skybox if a slot is null (no index-out-of-bounds risk).
+    // TODO Mike: assign panoramic Material assets for any unset world Inspector slots.
     [DefaultExecutionOrder(52)]
     public class SkyboxController : MonoSingleton<SkyboxController>
     {
