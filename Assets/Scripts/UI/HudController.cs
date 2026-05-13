@@ -44,6 +44,7 @@ namespace CrowdDefense.UI
 
         // Hero panel refs
         private VisualElement? heroPanel;
+        private VisualElement? _heroPortraitVE;
         private Label? heroHpLabel;
         private Label? heroLevelLabel;
         private VisualElement? heroXpBarFill;
@@ -192,6 +193,7 @@ namespace CrowdDefense.UI
             EnsureSibling<RuntimeProfilePanel>();
             EnsureSibling<AchievementToastController>();
             EnsureSibling<EncyclopediaController>();
+            EnsureSibling<WaveBannerController>();
 
             ApplyDeviceClasses(Root);
             goldLabel = Root.Q<Label>("gold-label");
@@ -237,6 +239,8 @@ namespace CrowdDefense.UI
             waveLaunchPillText = Root.Q<Label>("wave-launch-pill-text");
 
             heroPanel = Root.Q<VisualElement>("hero-panel");
+            _heroPortraitVE = Root.Q<VisualElement>("hero-portrait");
+            BindHeroPortraitColor();
             heroHpLabel = Root.Q<Label>("hero-hp-label");
             heroLevelLabel = Root.Q<Label>("hero-level");
             heroXpLabel = Root.Q<Label>("hero-xp-label");
@@ -267,6 +271,22 @@ namespace CrowdDefense.UI
 
             WireCallbacks();
             SubscribeSystems();
+        }
+
+        // Sets hero-portrait background-color from the avatar selection (mirrors HeroPortraitController logic).
+        private void BindHeroPortraitColor()
+        {
+            if (_heroPortraitVE == null) return;
+            var avatarKey = PlayerPrefs.GetString("hero_avatar", "");
+            Color color;
+            if (!string.IsNullOrEmpty(avatarKey) && System.Enum.TryParse<HeroAvatar>(avatarKey, out var avatar))
+                color = HeroType.AvatarColor(avatar);
+            else
+            {
+                var heroDef = LevelRunner.Instance?.HeroTypeDef;
+                color = heroDef != null ? heroDef.BodyColor : new Color(0.3f, 0.5f, 1f);
+            }
+            _heroPortraitVE.style.backgroundColor = new StyleColor(color);
         }
 
         private void WireCallbacks()
