@@ -210,6 +210,13 @@ namespace CrowdDefense.Systems
 
         public bool HasActiveMap() => _state != null && _state.nodes.Count > 0;
 
+        // Clears the active map state and removes the persisted PlayerPrefs entry.
+        public void ClearMap()
+        {
+            _state = null;
+            SaveSystem.ClearRunMapState();
+        }
+
         public bool IsNodeVisited(string nodeId) =>
             _state?.visitedNodeIds.Contains(nodeId) ?? false;
 
