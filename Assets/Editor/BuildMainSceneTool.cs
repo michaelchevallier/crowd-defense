@@ -255,6 +255,9 @@ namespace CrowdDefense.Editor
             if (hudGO.GetComponent<HudController>() == null)
                 hudGO.AddComponent<HudController>();
 
+            if (hudGO.GetComponent<RunSummaryController>() == null)
+                hudGO.AddComponent<RunSummaryController>();
+
             created++;
         }
 

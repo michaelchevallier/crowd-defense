@@ -25,6 +25,7 @@ namespace CrowdDefense.UI
         private Label?         _time;
         private Button?        _btnMenu;
         private Button?        _btnReplay;
+        private bool           _shown;
 
         private void Start()
         {
@@ -65,6 +66,8 @@ namespace CrowdDefense.UI
         public void Show(LevelResult r)
         {
             if (_panel == null) return;
+            if (_shown) return;
+            _shown = true;
             _panel.RemoveFromClassList("hidden");
 
             if (_title != null)
@@ -123,10 +126,28 @@ namespace CrowdDefense.UI
             _stars.text = new string('★', earned) + new string('☆', 3 - earned);
         }
 
-        private void OnContinue() => LevelLoader.GoToWorldMap();
+        private void OnContinue()
+        {
+            Time.timeScale = 1f;
+            _panel?.AddToClassList("hidden");
+
+            var nextId = RunContext.Instance?.NextLevelId;
+            if (!string.IsNullOrEmpty(nextId))
+            {
+                RunContext.Instance!.AdvanceLevel(nextId!);
+                LevelLoader.LoadLevel(nextId!);
+            }
+            else
+            {
+                LevelLoader.GoToWorldMap();
+            }
+        }
 
         private void OnReplay()
         {
+            Time.timeScale = 1f;
+            _panel?.AddToClassList("hidden");
+
             var id = LevelRunner.Instance?.CurrentLevel?.Id;
             if (!string.IsNullOrEmpty(id))
                 LevelLoader.LoadLevel(id!);
