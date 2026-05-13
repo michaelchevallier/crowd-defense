@@ -479,15 +479,18 @@ namespace CrowdDefense.UI
 
             if (unlocked && data != null)
             {
-                tile.RegisterCallback<ClickEvent>(_ => LevelLoader.LoadLevel(id));
+                // V8C FIX: use Clickable manipulator (same as Button's built-in click) instead of
+                // RegisterCallback<ClickEvent>. Plain ClickEvent doesn't reliably fire on bare
+                // VisualElement in WebGL — hover events arrive but click doesn't.
+                tile.AddManipulator(new Clickable(() => LevelLoader.LoadLevel(id)));
             }
             else if (!unlocked)
             {
                 var lockLabel = new Label(L.Get("worldmap.locked"));
                 lockLabel.AddToClassList("tile-lock-icon");
                 tile.Add(lockLabel);
-                tile.RegisterCallback<ClickEvent>(_ =>
-                    Toast.Show("Niveau verrouille", "Terminez le niveau precedent.", 2500, null, ToastType.Generic));
+                tile.AddManipulator(new Clickable(() =>
+                    Toast.Show("Niveau verrouille", "Terminez le niveau precedent.", 2500, null, ToastType.Generic)));
             }
 
             return tile;
