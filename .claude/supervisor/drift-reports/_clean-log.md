@@ -235,3 +235,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 10h32 — scrute /loop. **5 new commits depuis baseline `94e5cdd5`** (= seuil, pas >5 trigger) : `cb08fee3` investigation R7-026 livrée (420 lignes audit), `4fdc2b61` option H BuildScript fix Menu+WorldMap (regression prevent), `07ac320b` Q-R7-026-V2 filed Mike re-decision Unity upgrade, `bf969c14` R7-007 cleanup orphan refs, `665577e9` R7-016 V4 events 5 missing shipped. **Drift 0/12** ✅. Worktrees 2 stable. **R7 progress** : 22/27 (81%). Pending Mike : Q-R7-026-V2 décision Unity upgrade (F upgrade 6.4.6f1 / G alpha 6.5 / wait). **T3 silent**.
 
 2026-05-13 10h47 — scrute /loop. **0 new commits depuis `d27800b1`** (#84). **Drift 0/12** ✅. Worktrees 2 stable. Q-R7-026-V2 pending Mike décision (F1 upgrade 6.4.6f1 / F2 alpha / F3 Editor-only / F4 defer). **T3 silent**.
+
+2026-05-13 11h02 — scrute /loop. **0 new commits depuis `def80d52`** (#85). **Drift 0/12** ✅. Q-R7-026-V2 toujours pending Mike. **T3 silent**.
