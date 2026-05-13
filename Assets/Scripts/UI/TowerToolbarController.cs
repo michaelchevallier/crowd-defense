@@ -19,6 +19,8 @@ namespace CrowdDefense.UI
         private VisualElement? tooltipEl;
         private Label? tooltipName;
         private Label? tooltipDesc;
+        private VisualElement? tooltipBehaviorsRow;
+        private VisualElement? synTooltipEl;
 
         // Parallel arrays: one entry per tower in registry order
         private readonly List<TowerType> towerOrder = new();
@@ -110,7 +112,17 @@ namespace CrowdDefense.UI
             tooltipDesc.AddToClassList("toolbar-tooltip-desc");
             tooltipEl.Add(tooltipDesc);
 
+            tooltipBehaviorsRow = new VisualElement();
+            tooltipBehaviorsRow.AddToClassList("behaviors-row");
+            tooltipEl.Add(tooltipBehaviorsRow);
+
             toolbarRoot.Add(tooltipEl);
+
+            // Synergy tooltip — separate floating element
+            synTooltipEl = new VisualElement();
+            synTooltipEl.AddToClassList("tt-syn-tip");
+            synTooltipEl.AddToClassList("hidden");
+            toolbarRoot.Add(synTooltipEl);
         }
 
         private void BuildCells()
@@ -152,10 +164,14 @@ namespace CrowdDefense.UI
                     cell.AddToClassList("toolbar-cell--forbidden");
                 }
 
+                // Apply locked state based on world progression
+                bool isLocked = IsTowerLocked(tower);
+                cell.EnableInClassList("toolbar-cell--locked", isLocked);
+
                 int capturedIdx = towerOrder.Count;
                 cell.RegisterCallback<ClickEvent>(_ => OnCellClick(capturedIdx));
-                cell.RegisterCallback<MouseEnterEvent>(_ => ShowTooltip(capturedIdx, cell));
-                cell.RegisterCallback<MouseLeaveEvent>(_ => HideTooltip());
+                cell.RegisterCallback<MouseEnterEvent>(_ => { ShowTooltip(capturedIdx, cell); ShowSynergyTooltip(capturedIdx, cell); });
+                cell.RegisterCallback<MouseLeaveEvent>(_ => { HideTooltip(); HideSynergyTooltip(); });
 
                 // Mobile long-press
                 cell.RegisterCallback<PointerDownEvent>(_ => StartLongPress(capturedIdx));
@@ -221,12 +237,13 @@ namespace CrowdDefense.UI
             var tower = towerOrder[idx];
             var currentLevel = LevelRunner.Instance?.CurrentLevel;
 
-            // Block click if tower is forbidden
+            // Block click if tower is forbidden or locked
             if (currentLevel != null && currentLevel.ForbiddenTowers != null &&
                 currentLevel.ForbiddenTowers.Contains(tower))
             {
                 return;
             }
+            if (IsTowerLocked(tower)) return;
 
             var current = PlacementController.Instance.SelectedTowerType;
             // Toggle: clicking same tower deselects
@@ -274,6 +291,8 @@ namespace CrowdDefense.UI
             if (poor) tooltipEl.AddToClassList("toolbar-tooltip--poor");
             else tooltipEl.RemoveFromClassList("toolbar-tooltip--poor");
 
+            PopulateBehaviorBadges(tower);
+
             // Position: above the anchor cell, horizontally clamped
             tooltipEl.RemoveFromClassList("hidden");
         }
@@ -287,6 +306,113 @@ namespace CrowdDefense.UI
         {
             HideTooltip();
             // Rebuild cells to pick up new locale for cost labels (icon/cost don't change but names refresh on next hover)
+        }
+
+        // ── P1-UI-3 : Behavior badges ─────────────────────────────────────────
+        private void PopulateBehaviorBadges(TowerType tower)
+        {
+            if (tooltipBehaviorsRow == null) return;
+            tooltipBehaviorsRow.Clear();
+            var behaviors = tower.Behaviors;
+            if (behaviors == null || behaviors.Count == 0)
+            {
+                tooltipBehaviorsRow.style.display = DisplayStyle.None;
+                return;
+            }
+            tooltipBehaviorsRow.style.display = DisplayStyle.Flex;
+            foreach (var b in behaviors)
+            {
+                var chip = new Label(BehaviorEmoji(b) + " " + b);
+                chip.AddToClassList("behavior-badge");
+                tooltipBehaviorsRow.Add(chip);
+            }
+        }
+
+        private static string BehaviorEmoji(string b) => b switch
+        {
+            "explosion" => "\U0001F4A5",  // 💥
+            "perce"     => "\U0001F3AF",  // 🎯
+            "slow"      => "\U0001F40C",  // 🐌
+            "aura"      => "\U0001F52E",  // 🔮
+            "freeze"    => "\U0001F9CA",  // 🧊
+            "poison"    => "\U0001F9AA",  // 🧪
+            "pull"      => "\U0001F9F2",  // 🧲
+            _           => "\U00002699",  // ⚙
+        };
+
+        // ── P1-UI-4 : Synergy tooltip ────────────────────────────────────────
+        private void ShowSynergyTooltip(int idx, VisualElement cell)
+        {
+            if (synTooltipEl == null) return;
+            if (idx < 0 || idx >= towerOrder.Count) return;
+
+            var tower = towerOrder[idx];
+            var syns = tower.Synergies;
+            if (syns == null || syns.Count == 0)
+            {
+                synTooltipEl.AddToClassList("hidden");
+                return;
+            }
+
+            synTooltipEl.Clear();
+            foreach (var s in syns)
+            {
+                string line = BuildSynergyLine(s);
+                if (string.IsNullOrEmpty(line)) continue;
+                var lbl = new Label(line);
+                lbl.AddToClassList("syn-tip-line");
+                synTooltipEl.Add(lbl);
+            }
+
+            if (synTooltipEl.childCount == 0)
+            {
+                synTooltipEl.AddToClassList("hidden");
+                return;
+            }
+
+            synTooltipEl.RemoveFromClassList("hidden");
+            synTooltipEl.style.position = Position.Absolute;
+            synTooltipEl.style.left = new StyleLength(cell.worldBound.xMax + 4f);
+            synTooltipEl.style.top  = new StyleLength(cell.worldBound.y);
+        }
+
+        private static string BuildSynergyLine(SynergyDef s)
+        {
+            if (!string.IsNullOrEmpty(s.from))
+                return $"+ {s.from} : {DescribeSynergyEffect(s)}";
+            return DescribeSynergyEffect(s);
+        }
+
+        private static string DescribeSynergyEffect(SynergyDef s)
+        {
+            if (s.dmgMul > 1f)          return $"+{Mathf.RoundToInt((s.dmgMul - 1f) * 100)}% DMG";
+            if (s.pierceMega)           return "Pierce x99";
+            if (s.pierceBonus > 0)      return $"+{s.pierceBonus} Pierce";
+            if (s.multiShotBonus > 0)   return $"+{s.multiShotBonus} MultiShot";
+            if (s.flyerDmgBonus > 1f)   return $"+{Mathf.RoundToInt((s.flyerDmgBonus - 1f) * 100)}% Flyer DMG";
+            if (s.freezeOnHit)          return "Freeze on hit";
+            if (s.slowOnHit.mul > 0f)   return $"Slow {Mathf.RoundToInt(s.slowOnHit.mul * 100)}% on hit";
+            if (s.appliesSlow.mul > 0f) return $"Apply slow {Mathf.RoundToInt(s.appliesSlow.mul * 100)}%";
+            if (s.cascadeRadius > 0f)   return $"Cascade AoE {s.cascadeRadius:0.#}";
+            if (s.knockbackOnHit > 0f)  return $"Knockback {s.knockbackOnHit:0.#}";
+            if (s.pullToTank)           return "Pull enemies to tank";
+            if (s.propagateDebuff)      return "Propagate debuff";
+            if (s.coinMul > 1f)         return $"Coins x{s.coinMul:0.#}";
+            if (s.slowArea.mul > 0f)    return $"Slow area {Mathf.RoundToInt(s.slowArea.mul * 100)}%";
+            return "";
+        }
+
+        private void HideSynergyTooltip()
+        {
+            synTooltipEl?.AddToClassList("hidden");
+        }
+
+        // ── P1-UI-5 : Locked state ───────────────────────────────────────────
+        private static bool IsTowerLocked(TowerType tower)
+        {
+            if (tower.UnlockWorld <= 1) return false;
+            int worldReached = SaveSystem.Load().worldReached;
+            return worldReached < tower.UnlockWorld;
         }
     }
 }
