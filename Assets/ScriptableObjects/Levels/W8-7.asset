@@ -38,6 +38,10 @@ MonoBehaviour:
     eventType: sand_storm
     duration: 8.0
     param: 0.0
+  - waveIndex: 3
+    eventType: undertow
+    duration: 12.0
+    param: 0.0
   - waveIndex: 5
     eventType: zero_g
     duration: 8.0

@@ -33,6 +33,10 @@ MonoBehaviour:
   castleHPOverride: 235
   allowMultiMagnet: 0
   waveEvents:
+  - waveIndex: 3
+    eventType: undertow
+    duration: 12.0
+    param: 0.0
   - waveIndex: 8
     eventType: battle_cry
     duration: 12.0

@@ -35,6 +35,10 @@ MonoBehaviour:
   castleHPOverride: 400
   allowMultiMagnet: 0
   waveEvents:
+  - waveIndex: 3
+    eventType: undertow
+    duration: 12.0
+    param: 0.0
   - waveIndex: 5
     eventType: zero_g
     duration: 8.0

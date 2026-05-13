@@ -40,6 +40,10 @@ MonoBehaviour:
     eventType: void_pulse
     duration: 5.0
     param: 1.5
+  - waveIndex: 6
+    eventType: hack
+    duration: 7.0
+    param: 0.0
   - waveIndex: 8
     eventType: battle_cry
     duration: 12.0
