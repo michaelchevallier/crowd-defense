@@ -334,3 +334,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 22h17 — scrute /loop #129. **0 new commits** depuis #128 (11 min). Attente réponse Mike sur Editor vs WebGL iterations. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 22h32 — scrute /loop #130. **0 new commits** depuis #129 (15 min). Mike idle. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 22h47 — scrute /loop #131. **0 new commits** depuis #130 (15 min). Mike idle 30min. **Drift 0/12** ✅. **T3 silent**.
