@@ -281,7 +281,13 @@ namespace CrowdDefense.Systems
             string json = PlayerPrefs.GetString(ProgressKey(s), "");
             if (string.IsNullOrEmpty(json)) return null;
             try { return JsonUtility.FromJson<ProgressData>(json); }
-            catch { return null; }
+            catch (Exception ex)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SaveSystem] PeekSlot {s} load corrupted, reset: {ex.Message}");
+#endif
+                return null;
+            }
         }
 
         public static void DeleteSlot(int slot)
@@ -834,7 +840,13 @@ namespace CrowdDefense.Systems
             string json = PlayerPrefs.GetString(MidLevelKey(CurrentSlot), "");
             if (string.IsNullOrEmpty(json)) return null;
             try { return JsonUtility.FromJson<MidLevelStateData>(json); }
-            catch { return null; }
+            catch (Exception ex)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SaveSystem] LoadRunState corrupted, reset: {ex.Message}");
+#endif
+                return null;
+            }
         }
 
         public static void ClearMidLevelState()
@@ -864,7 +876,13 @@ namespace CrowdDefense.Systems
                 Save();
                 return true;
             }
-            catch { return false; }
+            catch (Exception ex)
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[SaveSystem] ImportFromJson failed: {ex.Message}");
+#endif
+                return false;
+            }
         }
 
     }
