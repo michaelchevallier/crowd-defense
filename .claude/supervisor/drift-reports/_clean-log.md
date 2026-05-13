@@ -296,3 +296,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 18h27 — scrute /loop (consolidated 4 cron fires stackup). **0 new commits** depuis #111. ~90min idle, Mike Unity Editor debug session présumée. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 18h30 — scrute /loop. **0 new commits**. Mike Unity Editor ouvert (16 procs helper). **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 18h50 — scrute /loop. **1 new commit `837b5801`** revert V6 Camera disable (was bad — Mike Editor test confirmed "No cameras rendering"). **Drift 0/12** ✅. D1 OK (revert commit). **Live finding Mike Editor Play test** : cards/tabs visible BRIEFLY then black — pas NaN never-render mais render-then-hide bug. Investigation continue Mike-side via Console screenshot. **T3 silent**.
