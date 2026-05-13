@@ -286,3 +286,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 16h00 — scrute /loop. **0 new commits** depuis self-scrute #106. 0 Unity builds. System idle stable. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 16h15 — scrute /loop. **0 new commits** depuis #107. System idle, Mike a Unity Editor instructions pour debug session. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 16h30 — scrute /loop. **0 new commits** depuis #108. System idle, Mike Unity Editor session ouverte (Hub re-install 6.4.6f1 + scene backup dialog dismissed). **Drift 0/12** ✅. **T3 silent**.
