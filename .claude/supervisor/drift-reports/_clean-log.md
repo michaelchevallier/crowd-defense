@@ -229,3 +229,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 09h47 — scrute /loop. **0 new commits depuis `12360ce3`** (#80). **25 consecutive idle ~6h15** R7 plateau 74%. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 10h02 — scrute /loop. **0 new commits depuis `04efdd33`** (#81). **26 consecutive idle ~6h30** R7 plateau 74%. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 10h17 — scrute /loop. **0 new commits depuis `8df9bb4b`** (Mike interview 4 answers). Worktrees 2→3 (investigation agent `a0d29ade` lancé worktree). **Drift 0/12** ✅. D8 OK ≤4. Q cat B status updated : R7-007/016 [answered] GO ticket pending exec dispatch, R7-018 [skipped] no-action, R7-026 [escalated-investigation] agent running. **T3 silent**.
