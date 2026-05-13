@@ -424,6 +424,8 @@ namespace CrowdDefense.UI
             if (heroHpLabel != null) heroHpLabel.text = L.Get("hud.hero_hp_label");
             if (heroXpLabel != null) heroXpLabel.text = L.Get("hud.hero_xp_label");
             if (keyboardHintsLabel != null) keyboardHintsLabel.text = L.Get("hud.keyboard_hints");
+            var wavePreviewTitle = Root?.Q<Label>("wave-preview-title");
+            if (wavePreviewTitle != null) wavePreviewTitle.text = L.Get("hud.wave_preview_next");
             OnBreakStateChanged();
         }
 
@@ -653,7 +655,7 @@ namespace CrowdDefense.UI
                     float sx = gvPanel.center.x;
                     float sy = gvPanel.center.y - 20f;
                     FloatingPopupController.Instance.SpawnAtScreenPos(
-                        $"+{cfg.SkipBonusGold}g Skip Bonus!", "popup-coin", sx, sy);
+                        L.Get("hud.skip_bonus_popup", cfg.SkipBonusGold), "popup-coin", sx, sy);
                 }
                 AudioController.Instance?.Play("gold_earn", 0.9f);
 
@@ -792,7 +794,7 @@ namespace CrowdDefense.UI
             _bankLabel.text = $"\U0001F3E6 {totalAccumulated}¢ (+5%)";
             // Update dynamic title with live amount
             var titleLabel = _bankTooltip?.Q<Label>("bank-tooltip-title");
-            if (titleLabel != null) titleLabel.text = $"Banque : {totalAccumulated}¢";
+            if (titleLabel != null) titleLabel.text = L.Get("hud.bank_tooltip_title", totalAccumulated);
         }
 
         private void ShowBankTooltip() => _bankTooltip?.RemoveFromClassList("hidden");
@@ -834,7 +836,7 @@ namespace CrowdDefense.UI
             // Show enemy count remaining label
             if (_enemyCountLabel != null)
             {
-                _enemyCountLabel.text = "Ennemis: ... / ...";
+                _enemyCountLabel.text = L.Get("hud.enemy_count_placeholder");
                 SetVisible(_enemyCountLabel, true);
             }
             // Reset and show wave timer
@@ -858,7 +860,7 @@ namespace CrowdDefense.UI
         {
             if (_enemyCountLabel == null) return;
             int remaining = Mathf.Max(0, total - kills);
-            _enemyCountLabel.text = $"Ennemis: {remaining} / {total}";
+            _enemyCountLabel.text = L.Get("hud.enemy_count", remaining, total);
         }
 
         private void OnBreakStateChanged()
@@ -893,7 +895,7 @@ namespace CrowdDefense.UI
                 {
                     bool endlessRun = LevelRunner.Instance?.IsEndlessRun == true;
                     waveLaunchSub.text = endlessRun
-                        ? $"Inf. Vague {wm.NextWaveDisplayNumber}"
+                        ? L.Get("hud.wave_endless_sub", wm.NextWaveDisplayNumber)
                         : L.Get("hud.wave_progress", wm.NextWaveDisplayNumber, wm.TotalWaves);
                 }
 
@@ -1235,7 +1237,7 @@ namespace CrowdDefense.UI
             _wavePreviewPanel  = root.Q<VisualElement>("wave-preview");
             _wavePreviewRoster = root.Q<VisualElement>("wave-preview-roster");
             var title = root.Q<Label>("wave-preview-title");
-            if (title != null) title.text = "Prochaine vague";
+            if (title != null) title.text = L.Get("hud.wave_preview_next");
         }
 
         private void RefreshWavePreviewRoster()
