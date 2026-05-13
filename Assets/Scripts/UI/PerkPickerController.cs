@@ -33,6 +33,9 @@ namespace CrowdDefense.UI
         private List<PerkDef?> currentOffers = new();
         private int heroLevel = 1;
 
+        // SO instances created by the fallback path — must be Destroyed to avoid leak.
+        private readonly List<PerkDef> fallbackInstances = new();
+
         private void Start()
         {
             ResolveUI();
@@ -64,6 +67,17 @@ namespace CrowdDefense.UI
             L.OnLocaleChanged -= RefreshLabels;
             if (LevelRunner.Instance != null)
                 LevelRunner.Instance.OnLevelComplete -= HandleLevelComplete;
+            DisposeFallbackInstances();
+        }
+
+        private void DisposeFallbackInstances()
+        {
+            for (int i = 0; i < fallbackInstances.Count; i++)
+            {
+                var inst = fallbackInstances[i];
+                if (inst != null) Destroy(inst);
+            }
+            fallbackInstances.Clear();
         }
 
         private void RefreshLabels()
@@ -116,6 +130,9 @@ namespace CrowdDefense.UI
 
         private List<PerkDef?> BuildOffers()
         {
+            // Dispose previously created fallback SOs before building a new batch.
+            DisposeFallbackInstances();
+
             var reg = PerkRegistry.Get();
             if (reg != null)
             {
@@ -127,7 +144,7 @@ namespace CrowdDefense.UI
                     return result;
                 }
             }
-            // Fallback: placeholder ids
+            // Fallback: placeholder ids (registry empty — should be rare).
             var pool = new List<string>(PlaceholderIds);
             var fallback = new List<PerkDef?>();
             for (int i = 0; i < 3 && pool.Count > 0; i++)
@@ -140,6 +157,7 @@ namespace CrowdDefense.UI
                 def.displayName = L.Get("perk.placeholder_name");
                 def.description = L.Get("perk.placeholder_desc");
                 def.rarity      = PerkRarity.Common;
+                fallbackInstances.Add(def);
                 fallback.Add(def);
             }
             return fallback;
