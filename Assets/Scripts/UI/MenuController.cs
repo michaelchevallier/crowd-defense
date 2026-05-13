@@ -146,16 +146,27 @@ namespace CrowdDefense.UI
 
         private static void OnNewRun()
         {
-            Debug.Log("[MenuController.OnNewRun] Clicked, calling LevelLoader.GoToWorldMap()");
-            try
+            // P0-UI-1: Start roguelike run. Show school select if available; fallback to Fire.
+            var schoolSelect = SchoolSelectController.Instance;
+            if (schoolSelect != null)
             {
-                LevelLoader.GoToWorldMap();
-                Debug.Log("[MenuController.OnNewRun] LevelLoader.GoToWorldMap() succeeded");
+                schoolSelect.Show(school =>
+                {
+                    var runMode = RunModeController.Instance;
+                    if (runMode != null)
+                        runMode.StartRun(school);
+                    else
+                        LevelLoader.GoToWorldMap(); // fallback: classic world map
+                });
             }
-            catch (System.Exception ex)
+            else
             {
-                Debug.LogError($"[MenuController.OnNewRun] Exception: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}");
-                throw;
+                // TODO P0-UI-2: replace by SchoolSelectController.Show() when wired in scene
+                var runMode = RunModeController.Instance;
+                if (runMode != null)
+                    runMode.StartRun(CrowdDefense.Data.MagicSchool.Fire);
+                else
+                    LevelLoader.GoToWorldMap();
             }
         }
 
