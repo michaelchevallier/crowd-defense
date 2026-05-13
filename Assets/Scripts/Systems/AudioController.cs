@@ -36,6 +36,7 @@ namespace CrowdDefense.Systems
         protected override void OnAwakeSingleton()
         {
             LoadAudioRegistry();
+            LoadAudioMixer();
 
             _sfxPool = new AudioSource[PoolSize];
             for (int i = 0; i < PoolSize; i++)
@@ -64,6 +65,20 @@ namespace CrowdDefense.Systems
             if (registry == null)
                 Debug.LogWarning("[AudioController] AudioClipRegistry not assigned and not found in Resources/.");
 #endif
+        }
+
+        public void LoadAudioMixer()
+        {
+            if (mixer != null) return;
+            mixer = Resources.Load<AudioMixer>("Audio/MainAudioMixer");
+            if (mixer == null)
+            {
+                Debug.LogWarning("[AudioController] AudioMixer not assigned and not found at Resources/Audio/MainAudioMixer.");
+                return;
+            }
+            sfxGroup = mixer.FindMatchingGroups("SFX")[0];
+            musicGroup = mixer.FindMatchingGroups("Music")[0];
+            uiGroup = mixer.FindMatchingGroups("UI")[0];
         }
 
         public void Play(string clipKey, float volMul = 1f)
