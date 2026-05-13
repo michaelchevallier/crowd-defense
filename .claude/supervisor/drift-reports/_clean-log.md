@@ -314,3 +314,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 19h47 — scrute /loop #119. **0 new commits** depuis #118 (16 min). Mike idle. Batchmode 33733 toujours 100% CPU à 49 min post-V7 build (log audio reset hang). V8/V8B fixes en attente Mike rebuild. gh-pages stable V7 deploy (28b0b132). **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 20h02 — scrute /loop #120. **0 new commits** depuis #119 (15 min). Mike idle 42min. Batchmode 33733 toujours 100% CPU à 1h03 (hung audio reset post-V7 build). Supervisor stack unchanged. V8/V8B fixes restent en attente. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 20h17 — scrute /loop #121. **0 new commits** depuis #120 (15 min). Mike idle ~57min depuis V8B commit. Batchmode 33733 100% CPU @ 1h18 stuck. V8/V8B fixes restent en attente Mike rebuild. **Drift 0/12** ✅. **T3 silent**.
