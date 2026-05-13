@@ -14,5 +14,21 @@
         <ui:ScrollView name="worldmap-scroll" class="worldmap-scroll" vertical-scroller-visibility="AlwaysVisible">
             <ui:VisualElement name="worldmap-level-grid" class="worldmap-level-grid" />
         </ui:ScrollView>
+        <ui:VisualElement name="special-tiles-row" class="special-tiles-row">
+            <ui:Button name="tile-endless" class="worldmap-tile worldmap-tile--special">
+                <ui:Label text="INF" class="tile-emoji"/>
+                <ui:Label text="Endless" class="tile-name"/>
+                <ui:Label name="endless-best" text="Best: V0" class="tile-stat"/>
+            </ui:Button>
+            <ui:Button name="tile-daily" class="worldmap-tile worldmap-tile--special">
+                <ui:Label text="CAL" class="tile-emoji"/>
+                <ui:Label text="Daily" class="tile-name"/>
+                <ui:Label name="daily-streak" text="0 jours" class="tile-stat"/>
+            </ui:Button>
+            <ui:Button name="tile-boss-rush" class="worldmap-tile worldmap-tile--special">
+                <ui:Label text="BOSS" class="tile-emoji"/>
+                <ui:Label text="Boss Rush" class="tile-name"/>
+            </ui:Button>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -210,3 +210,66 @@
     -unity-text-align: middle-center;
     margin-top: 1px;
 }
+
+/* ── Special mode tiles (Endless / Daily / Boss Rush) ───────────────── */
+
+.special-tiles-row {
+    flex-direction: row;
+    justify-content: center;
+    padding: 16px 20px;
+    background-color: rgb(10, 14, 28);
+    border-top-width: 1px;
+    border-color: rgba(255, 196, 60, 0.2);
+}
+
+.worldmap-tile--special {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 120px;
+    min-height: 80px;
+    margin: 0 8px;
+    padding: 10px 12px;
+    border-width: 2px;
+    border-color: rgb(255, 196, 60);
+    border-radius: 10px;
+    background-color: rgba(255, 196, 60, 0.08);
+    cursor: link;
+}
+
+.worldmap-tile--special:hover {
+    background-color: rgba(255, 196, 60, 0.22);
+    border-color: rgb(255, 220, 80);
+}
+
+.worldmap-tile--special:disabled {
+    opacity: 0.4;
+    cursor: arrow;
+    border-color: rgba(120, 120, 120, 0.5);
+    background-color: rgba(30, 30, 40, 0.5);
+}
+
+.tile-emoji {
+    font-size: 18px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgb(255, 220, 80);
+    -unity-text-align: middle-center;
+}
+
+.tile-name {
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgb(240, 240, 240);
+    -unity-text-align: middle-center;
+    margin-top: 2px;
+}
+
+.tile-stat {
+    font-size: 11px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    color: rgb(255, 196, 60);
+    -unity-text-align: middle-center;
+    margin-top: 2px;
+}
