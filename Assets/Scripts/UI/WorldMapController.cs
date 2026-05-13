@@ -96,6 +96,13 @@ namespace CrowdDefense.UI
             Debug.Log($"[WorldMapController] Root name={_root.name}, class={string.Join(",", _root.GetClasses())}");
             Debug.Log($"[WorldMapController] Root style display={_root.style.display}, visibility={_root.style.visibility}");
             Debug.Log($"[WorldMapController] Root style position={_root.style.position}, left={_root.style.left}, right={_root.style.right}, top={_root.style.top}, bottom={_root.style.bottom}");
+
+            _root.style.position = Position.Absolute;
+            _root.style.left     = 0;
+            _root.style.right    = 0;
+            _root.style.top      = 0;
+            _root.style.bottom   = 0;
+            Debug.Log("[WorldMapController] Forced unity-ui-document__root to absolute fill");
             _registry = LevelRegistry.Get();
             if (_registry == null)
             {
