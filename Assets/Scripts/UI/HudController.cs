@@ -192,6 +192,8 @@ namespace CrowdDefense.UI
             EnsureSibling<MuteToggleController>();
             EnsureSibling<HeroSkillBarController>();
             EnsureSibling<MinimapController>();
+            EnsureSibling<SpeedControlController>();
+            EnsureSibling<HudPerkBadges>();
             EnsureSibling<HelpOverlayController>();
             EnsureSibling<QuickSaveHotkey>();
             EnsureSibling<KeyBindingsPanel>();

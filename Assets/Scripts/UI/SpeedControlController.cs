@@ -11,7 +11,10 @@ namespace CrowdDefense.UI
         // index 0=0.5x 1=1x 2=2x 3=3x — must match LevelRunner.SpeedTable
         private Button?[] _btns = new Button?[4];
 
-        private void Awake()
+        // Start (not Awake) — UIDocument.OnEnable populates rootVisualElement during scene
+        // init; querying it from Awake races with that lifecycle and yields a null Root on
+        // a shared HUD GO. Start fires after all OnEnables, so Root is guaranteed bound.
+        private void Start()
         {
             ResolveUI();
         }

@@ -10,8 +10,7 @@ using CrowdDefense.Systems;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
-    public class TowerToolbarController : MonoBehaviour
+    public class TowerToolbarController : UIControllerBase
     {
         [SerializeField] private TowerRegistry? towerRegistry;
 
@@ -38,26 +37,17 @@ namespace CrowdDefense.UI
             KeyCode.Alpha9, KeyCode.Alpha0,
         };
 
+        // Start (not Awake) — shared UIDocument's root is populated by its OnEnable; Awake
+        // races that lifecycle. ResolveUI() in Start guarantees Root is bound.
         private void Start()
         {
-            var doc = GetComponent<UIDocument>();
-            if (doc == null)
-            {
-#if UNITY_EDITOR
-                Debug.LogWarning("[TowerToolbar] No UIDocument component found.");
-#endif
-                return;
-            }
+            ResolveUI();
+        }
 
-            var root = doc.rootVisualElement;
-            if (root == null)
-            {
-#if UNITY_EDITOR
-                Debug.LogWarning("[TowerToolbar] rootVisualElement is null");
-#endif
-                return;
-            }
-            toolbarRoot = root.Q<VisualElement>("tower-toolbar");
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
+            toolbarRoot = Root.Q<VisualElement>("tower-toolbar");
 
             if (towerRegistry == null || toolbarRoot == null)
             {

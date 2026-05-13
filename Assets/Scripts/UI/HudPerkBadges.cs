@@ -10,8 +10,7 @@ namespace CrowdDefense.UI
 {
     // HUD row showing active perk badges + set bonus progress (X/3 per tag).
     // Attaches to the same GameObject as HudController / UIDocument.
-    [RequireComponent(typeof(UIDocument))]
-    public class HudPerkBadges : MonoBehaviour
+    public class HudPerkBadges : UIControllerBase
     {
         private VisualElement? _row;
         private VisualElement? _setProgressRow;
@@ -21,13 +20,22 @@ namespace CrowdDefense.UI
 
         private Hero? _hero;
         private PerkRegistry? _registry;
+        private bool _eventsSubscribed;
 
-        public void Init(VisualElement hudRoot, Hero hero)
+        // Start (not Awake) — UIDocument shares its root with multiple HUD controllers;
+        // Root is populated by UIDocument.OnEnable, so Awake-based queries race that
+        // lifecycle and silent-fail.
+        private void Start()
         {
-            _hero = hero;
+            ResolveUI();
+        }
+
+        protected override void OnUIReady()
+        {
+            if (Root == null) return;
             _registry = PerkRegistry.Load();
-            _row = hudRoot.Q<VisualElement>("perk-badges-row");
-            _setProgressRow = hudRoot.Q<VisualElement>("perk-set-progress-row");
+            _row            = Root.Q<VisualElement>("perk-badges-row");
+            _setProgressRow = Root.Q<VisualElement>("perk-set-progress-row");
 
             if (_row == null)
             {
@@ -38,6 +46,21 @@ namespace CrowdDefense.UI
             }
 
             SubscribeEvents();
+            TryBindHero();
+        }
+
+        private void Update()
+        {
+            // Hero spawns after castle on LevelRunner.Start; bind lazily on the first
+            // frame it appears so badges populate without needing an external Init call.
+            if (_hero == null) TryBindHero();
+        }
+
+        private void TryBindHero()
+        {
+            var hero = LevelRunner.Instance?.Hero;
+            if (hero == null || hero == _hero) return;
+            _hero = hero;
             RebuildAll();
         }
 
@@ -48,16 +71,18 @@ namespace CrowdDefense.UI
 
         private void SubscribeEvents()
         {
-            if (PerkSystem.Instance == null) return;
+            if (_eventsSubscribed || PerkSystem.Instance == null) return;
             PerkSystem.Instance.OnPerkApplied       += OnPerkApplied;
             PerkSystem.Instance.OnSetBonusActivated += OnSetBonusActivated;
+            _eventsSubscribed = true;
         }
 
         private void UnsubscribeEvents()
         {
-            if (PerkSystem.Instance == null) return;
+            if (!_eventsSubscribed || PerkSystem.Instance == null) return;
             PerkSystem.Instance.OnPerkApplied       -= OnPerkApplied;
             PerkSystem.Instance.OnSetBonusActivated -= OnSetBonusActivated;
+            _eventsSubscribed = false;
         }
 
         private void OnPerkApplied(Hero hero, PerkDef def)
