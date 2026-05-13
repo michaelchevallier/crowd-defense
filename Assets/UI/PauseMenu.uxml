@@ -9,6 +9,8 @@
             <ui:Label text="PAUSE" name="pause-title" class="pause-title" />
             <ui:Button text="Reprendre" name="btn-resume" class="pause-btn" />
             <ui:Button text="Recommencer" name="btn-restart" class="pause-btn pause-btn-secondary" />
+            <ui:Button text="Reglages" name="btn-settings-from-pause" class="pause-btn pause-btn-secondary" />
+            <ui:Button text="Aide" name="btn-help-from-pause" class="pause-btn pause-btn-secondary" />
             <ui:Button text="Menu principal" name="btn-menu" class="pause-btn pause-btn-secondary" />
         </ui:VisualElement>
     </ui:VisualElement>
