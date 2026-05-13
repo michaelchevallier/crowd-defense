@@ -210,6 +210,72 @@
     background-color: rgba(100, 100, 100, 0.7);
 }
 
+/* === Overlay stats grid + stars (panel-victory / panel-game-over) === */
+.overlay-stars {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.overlay-star {
+    color: rgba(120, 120, 120, 0.7);
+    font-size: 56px;
+    -unity-font-style: bold;
+    margin-left: 6px;
+    margin-right: 6px;
+    -unity-text-align: middle-center;
+    transition-property: color, scale;
+    transition-duration: 0.25s, 0.25s;
+    scale: 1 1;
+}
+
+.overlay-star-lit {
+    color: rgb(255, 215, 0);
+    scale: 1.15 1.15;
+}
+
+.overlay-stats-grid {
+    width: 360px;
+    background-color: rgba(0, 0, 0, 0.45);
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 24px;
+}
+
+.overlay-stat-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.overlay-stat-label {
+    color: rgba(220, 220, 220, 0.85);
+    font-size: 18px;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.overlay-stat-value {
+    color: white;
+    font-size: 20px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+}
+
+.overlay-stat-row-score {
+    margin-top: 6px;
+    padding-top: 8px;
+    border-top-width: 1px;
+    border-top-color: rgba(255, 255, 255, 0.18);
+}
+
+.overlay-stat-value-score {
+    color: rgb(255, 215, 0);
+    font-size: 24px;
+}
+
 .hidden {
     display: none;
 }

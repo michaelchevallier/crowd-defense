@@ -353,6 +353,41 @@
         <ui:VisualElement name="panel-game-over" class="overlay-panel overlay-game-over hidden">
             <ui:Label text="GAME OVER" name="panel-game-over-title" class="overlay-title" />
             <ui:Label text="Le castle est tombé." name="panel-game-over-subtitle" class="overlay-subtitle" />
+            <ui:VisualElement name="overlay-stars" class="overlay-stars">
+                <ui:Label text="☆" name="overlay-star-1" class="overlay-star" />
+                <ui:Label text="☆" name="overlay-star-2" class="overlay-star" />
+                <ui:Label text="☆" name="overlay-star-3" class="overlay-star" />
+            </ui:VisualElement>
+            <ui:VisualElement name="overlay-stats-grid" class="overlay-stats-grid">
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Vagues" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-waves" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Ennemis tués" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-kills" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Or gagné" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-gold" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Tours posées" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-towers" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Perks" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-perks" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Temps" class="overlay-stat-label" />
+                    <ui:Label text="00:00" name="overlay-stat-time" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row overlay-stat-row-score">
+                    <ui:Label text="Score" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-score" class="overlay-stat-value overlay-stat-value-score" />
+                </ui:VisualElement>
+            </ui:VisualElement>
             <ui:Button text="Recommencer" name="btn-restart-go" class="overlay-button" />
             <ui:Button text="Retour au menu" name="btn-menu-go" class="overlay-button overlay-button-secondary" />
             <!-- Restart confirmation dialog (shown inline when Recommencer clicked) -->
@@ -370,6 +405,41 @@
         <ui:VisualElement name="panel-victory" class="overlay-panel overlay-victory hidden">
             <ui:Label text="VICTOIRE" name="panel-victory-title" class="overlay-title" />
             <ui:Label text="W1-1 clear." name="panel-victory-subtitle" class="overlay-subtitle" />
+            <ui:VisualElement name="overlay-stars" class="overlay-stars">
+                <ui:Label text="☆" name="overlay-star-1" class="overlay-star" />
+                <ui:Label text="☆" name="overlay-star-2" class="overlay-star" />
+                <ui:Label text="☆" name="overlay-star-3" class="overlay-star" />
+            </ui:VisualElement>
+            <ui:VisualElement name="overlay-stats-grid" class="overlay-stats-grid">
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Vagues" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-waves" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Ennemis tués" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-kills" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Or gagné" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-gold" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Tours posées" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-towers" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Perks" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-perks" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row">
+                    <ui:Label text="Temps" class="overlay-stat-label" />
+                    <ui:Label text="00:00" name="overlay-stat-time" class="overlay-stat-value" />
+                </ui:VisualElement>
+                <ui:VisualElement class="overlay-stat-row overlay-stat-row-score">
+                    <ui:Label text="Score" class="overlay-stat-label" />
+                    <ui:Label text="0" name="overlay-stat-score" class="overlay-stat-value overlay-stat-value-score" />
+                </ui:VisualElement>
+            </ui:VisualElement>
             <ui:Button text="Rejouer" name="btn-restart-victory" class="overlay-button" />
             <ui:Button text="Retour au menu" name="btn-menu-victory" class="overlay-button overlay-button-secondary" />
         </ui:VisualElement>
