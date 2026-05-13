@@ -70,7 +70,31 @@ Options :
 - (b) Skip squash (history hygiene < workflow risk)
 Reco interne (et superviseur spec) : (b) SKIP — commits supervisor T3 silent log non bruyant, ProjectilePool 3× = no-op asset state (verified R7-008)
 
-### 2026-05-13 03h00 — Q-R7-026 WebGL fix strategy [escalated-investigation] 10h15
+### 2026-05-13 10h45 — Q-R7-026-V2 WebGL fix strategy POST-INVESTIGATION
+Type : escalation (Mike decision après data-driven investigation)
+Category : B
+Blocking : false (live `/v6/` actuel OK, prochain rebuild stuck)
+Source investigation : `.claude/audit/R7-026-WEBGL-INVESTIGATION-2026-05-13.md` (commit `cb08fee3`, 420 lignes)
+
+**Root cause confirmé** : Unity 6000.3.15f1 bug structurel `Hidden/CoreSRP/CoreCopy` shader `FRAMEBUFFER_INPUT_X_FLOAT` non-supporté WebGL2. Bug officiel Unity Issue Tracker, affecte 6000.0.6f1 → 6000.4.0a1. **Fix complet landed in Unity 6000.5.0a2** (alpha future release). Notre version a fix WebGPU partiel mais pas WebGL2.
+
+**Workarounds Unity QA déjà tous appliqués** : MSAA off, HDR off, Forward (not Forward+), NativeRenderPass off, RenderGraph compat mode, shader stripping — bug persiste = structural Unity bug.
+
+**Action exec immédiate déjà appliquée** : `4fdc2b61` BuildScript.cs fix régression scenes (Loader+Menu+WorldMap+Main, avant juste Loader+Main → Menu absent → Loader stuck).
+
+**Options reformulées post-investigation** :
+- (F1) Upgrade Unity 6000.3.15f1 → 6000.4.6f1 stable LTS-track (~30-60 min Mike side, requires Unity Hub install, no breaking changes expected) — fix subpass shader si LTS contient ce patch (à vérifier release notes)
+- (F2) Upgrade Unity 6000.5.0a2+ alpha (~1-2h, fix CoreCopy officiel confirmé, mais alpha = instable)
+- (F3) Stop /v6/ deploy, Editor-only dev (current memory rule, no time cost mais perte distribution web)
+- (F4) Defer total (wait Unity 6.4/6.5 LTS, ETA mois)
+
+Reco interne (post-investigation) : (F1) upgrade LTS 6000.4.6f1 — risque faible, possible fix subpass dans release intermédiaire, Mike peut tester local. Si F1 ne fix pas → F2 alpha ou F3 nuclear.
+
+Context : R7-026 investigation complete + BuildScript regression fixed. Mike re-décide upgrade Unity ou stop deploy web.
+
+---
+
+### 2026-05-13 03h00 — Q-R7-026 WebGL fix strategy `[answered]` 10h15 — `[follow-up]` Q-R7-026-V2 10h45
 Type : escalation (Mike chat live directive long-terme)
 Category : B
 Blocking : false (test Editor mode actif suffit dev/test full pour le moment)
