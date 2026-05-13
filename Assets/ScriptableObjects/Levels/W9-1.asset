@@ -46,9 +46,9 @@ MonoBehaviour:
   waves:
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}
-      count: 80
+      count: 36
     - type: {fileID: 11400000, guid: a9e91ba41c5e14d28bfa17fed79199bd, type: 2}
-      count: 64
+      count: 29
     spawnRateMs: 580
     breakMs: 5000
     portalIdx: -1

@@ -48,13 +48,13 @@ MonoBehaviour:
   waves:
   - entries:
     - type: {fileID: 11400000, guid: 13bc9bbd1a374536b434c1974836c932, type: 2}
-      count: 32
+      count: 14
     - type: {fileID: 11400000, guid: b6f92f3b26dc4606a8721936c4200d18, type: 2}
-      count: 32
+      count: 14
     - type: {fileID: 11400000, guid: 277d1bd3c17d42ff8ef7421a30b2d755, type: 2}
-      count: 24
+      count: 11
     - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}
-      count: 16
+      count: 7
     spawnRateMs: 510
     breakMs: 4800
     portalIdx: -1
