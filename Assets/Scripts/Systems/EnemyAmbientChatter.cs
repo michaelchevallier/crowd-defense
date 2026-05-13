@@ -61,15 +61,7 @@ namespace CrowdDefense.Systems
             string key = ChatterKeys[Random.Range(0, ChatterKeys.Length)];
             Vector3 pos = picked.transform.position;
 
-            var audio = AudioController.Instance;
-            if (audio != null)
-            {
-                var clip = audio.GetClip(key);
-                if (clip != null)
-                    AudioSource.PlayClipAtPoint(clip, pos, 0.55f);
-                else
-                    audio.Play(key, 0.55f); // falls back to procedural beep
-            }
+            AudioController.Instance?.Play3D(key, pos, 0.55f);
 
             _globalCooldownUntil = Time.time + GlobalCooldown;
         }
