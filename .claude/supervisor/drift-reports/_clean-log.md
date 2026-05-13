@@ -223,3 +223,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 09h02 — scrute /loop. **0 new commits depuis `02a1f6b4`** (#77). **22 consecutive idle ~5h30** R7 plateau 74%. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 09h17 — scrute /loop. **0 new commits depuis `8a9e75f7`** (#78). **23 consecutive idle ~5h45** R7 plateau 74%. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 09h32 — scrute /loop. **0 new commits depuis `30c708a7`** (#79). **24 consecutive idle ~6h** R7 plateau 74%. **Drift 0/12** ✅. **T3 silent**.
