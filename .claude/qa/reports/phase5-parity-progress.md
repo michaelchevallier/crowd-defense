@@ -76,3 +76,18 @@ Baseline pas capturée (Unity Editor non actif au T0). Référence batchmode bui
 Boutons V4 confirmés (DOM `?debug=1`) : `🛒` Boutique méta, `🗺️` Carte des mondes, `⚙️` Réglages, `📚` Encyclopédie, `🔊` Mute, `×1`/`×2`/`×3` speed, `💰` debug gold, `U↑⬆️` upgrade, `Annuler`, `Carte`, `Boutique`, `Rejouer`, `Niveau suivant`, `Continuer →`. Canvas Three.js 3949×2068.
 
 Screenshots V4 PNG (Three.js canvas) : reportés en post-Wave 1 (Unity Editor + V6-after captures groupées).
+
+## Wave 3 polish progress (background runner)
+
+État live à T+30min :
+- **56 commits Phase 5** mergés (50→56 via Wave 3 polish dernières 15 min).
+- Wave 3 P2 mergés à date :
+  - `b834f610` HUD multi-controller UIDocument race fix
+  - `523f42a6` PerkPickerController ResolveUI Awake → Start
+  - `f22d451b` MaterialController cached toon helper
+  - `657a8fbd` Outline race fix
+  - `78fd9948` (merge) castle no-regen W6 + perkpicker leak fix + weather ambient audio
+- Wave 3 dispatched : 17/37 tickets via runner.sh + dispatch.sh (16 worktrees actives parallèles).
+- Polish covers : audit P2 items from R7-PUSH-100 backlog (UI fixes, perf, juice).
+
+Runner.sh continue loop dispatch jusqu'à tasks.txt épuisé (~20 tickets restants à dispatcher).
