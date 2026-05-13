@@ -35,7 +35,10 @@ namespace CrowdDefense.UI
         private bool _boundsReady;
         private bool _visible;
 
-        private void Awake()
+        // Start (not Awake) — sharing the HUD UIDocument means rootVisualElement is set
+        // up by UIDocument.OnEnable; Awake races that lifecycle and silent-fails on a
+        // null Root. Start runs after all OnEnables so Root is guaranteed valid.
+        private void Start()
         {
             ResolveUI();
         }
