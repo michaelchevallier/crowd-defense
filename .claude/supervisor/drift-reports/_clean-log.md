@@ -294,3 +294,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 17h00 — scrute /loop. **0 new commits** depuis #110. Mike Unity Editor Play mode test en cours sur WorldMap. **Key finding live** : Editor Play sur WorldMap.unity direct → "No cameras rendering" (V6 disable Camera = no render). Need Mike re-enable Camera + Play Loader.unity pour vrai flow test. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 18h27 — scrute /loop (consolidated 4 cron fires stackup). **0 new commits** depuis #111. ~90min idle, Mike Unity Editor debug session présumée. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 18h30 — scrute /loop. **0 new commits**. Mike Unity Editor ouvert (16 procs helper). **Drift 0/12** ✅. **T3 silent**.
