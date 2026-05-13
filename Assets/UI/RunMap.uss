@@ -1,4 +1,5 @@
 .runmap-root {
+    display: flex;
     width: 100%;
     height: 100%;
     background-color: rgb(8, 10, 22);
@@ -7,6 +8,7 @@
 }
 
 .runmap-header {
+    display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
@@ -36,6 +38,7 @@
 }
 
 .runmap-graph {
+    display: flex;
     flex-direction: column-reverse;
     align-items: center;
     padding: 24px 16px 32px 16px;
@@ -44,6 +47,7 @@
 /* ── Graph row ──────────────────────────────────────────────────────── */
 
 .runmap-row {
+    display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
@@ -54,6 +58,7 @@
 /* ── Node base ──────────────────────────────────────────────────────── */
 
 .runmap-node {
+    display: flex;
     width: 68px;
     height: 68px;
     margin: 0 10px;
@@ -148,6 +153,7 @@
 /* ── Footer hint ────────────────────────────────────────────────────── */
 
 .runmap-footer {
+    display: flex;
     padding: 10px 24px;
     background-color: rgb(12, 16, 34);
     border-top-width: 1px;
