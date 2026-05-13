@@ -2044,3 +2044,55 @@
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
 }
+
+/* === Hero portrait + emoji (P0-UI-4) === */
+.hero-portrait {
+    width: 32px;
+    height: 32px;
+    background-color: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.hero-emoji {
+    font-size: 14px;
+    margin-right: 4px;
+}
+
+/* === Wave start / clear banners (P0-UI-6) === */
+.wave-banner {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    translate: -50% 0;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 28px;
+    -unity-font-style: bold;
+    transition-property: opacity, translate;
+    transition-duration: 0.3s, 0.5s;
+}
+
+.wave-banner-prefix,
+.wave-banner-suffix,
+.wave-banner-number {
+    font-size: 28px;
+    margin-left: 4px;
+    margin-right: 4px;
+}
+
+.wave-banner--start {
+    background-color: rgba(230, 130, 40, 0.95);
+    color: rgb(255, 255, 255);
+}
+
+.wave-banner--clear {
+    background-color: rgba(60, 180, 90, 0.95);
+    color: rgb(255, 255, 255);
+}
+
+.wave-banner--hidden {
+    opacity: 0;
+    translate: -50% -100px;
+}

@@ -253,6 +253,8 @@
 
         <!-- Hero panel (bottom-left) -->
         <ui:VisualElement name="hero-panel" class="hero-panel">
+            <ui:VisualElement name="hero-portrait" class="hero-portrait"/>
+            <ui:Label name="hero-emoji" text="&#x1F451;" class="hero-emoji"/>
             <ui:VisualElement class="hero-panel-row">
                 <ui:Label text="Hero" name="hero-hp-label" class="hero-pill-label" />
                 <ui:Label text="Lv. 1" name="hero-level" class="hero-level" />
@@ -648,5 +650,18 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
+
+        <!-- Wave banners (WaveBannerController) -->
+        <ui:VisualElement name="wave-start-banner" class="wave-banner wave-banner--start wave-banner--hidden">
+            <ui:Label text="&#x26A0; Vague" class="wave-banner-prefix"/>
+            <ui:Label name="wave-start-n" text="1" class="wave-banner-number"/>
+            <ui:Label text="arrive" class="wave-banner-suffix"/>
+        </ui:VisualElement>
+        <ui:VisualElement name="wave-clear-banner" class="wave-banner wave-banner--clear wave-banner--hidden">
+            <ui:Label text="&#x2713; Vague" class="wave-banner-prefix"/>
+            <ui:Label name="wave-clear-n" text="1" class="wave-banner-number"/>
+            <ui:Label text="terminee" class="wave-banner-suffix"/>
+        </ui:VisualElement>
+
     </ui:VisualElement>
 </ui:UXML>
