@@ -46,32 +46,7 @@ namespace CrowdDefense.Visual
                 for (int i = 0; i < srcMats.Length; i++)
                 {
                     Texture? srcTex = srcMats[i]?.mainTexture;
-                    var key = (tint, transparent, srcTex);
-                    if (!_toonCache.TryGetValue(key, out var m))
-                    {
-                        m = new Material(_toonBase);
-                        m.SetColor("_BaseColor", tint);
-
-                        // Conserve texture originale du mesh (port de opts.map dans ToonMaterial.js)
-                        if (srcTex != null)
-                            m.mainTexture = srcTex;
-
-                        if (transparent)
-                        {
-                            // Stealth : transparent surface mode (cf Enemy stealth opacity)
-                            m.SetFloat("_Surface", 1f);
-                            m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                            m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                            m.SetFloat("_ZWrite", 0f);
-                            m.renderQueue = 3000;
-                            Color c = tint;
-                            c.a = 0.45f; // stealth initial opacity
-                            m.SetColor("_BaseColor", c);
-                        }
-
-                        _toonCache[key] = m;
-                    }
-                    newMats[i] = m;
+                    newMats[i] = GetCachedToon(tint, transparent, srcTex);
                 }
                 r.sharedMaterials = newMats;
             }
@@ -79,13 +54,60 @@ namespace CrowdDefense.Visual
 
         /// <summary>
         /// Mise à jour du tint seul sur les materials déjà appliqués (upgrade L3, etc.)
+        /// Route through le même cache que ApplyToon — évite alloc via r.materials.
         /// </summary>
         public static void UpdateTint(GameObject root, Color tint)
         {
+            if (_toonBase == null)
+                _toonBase = Resources.Load<Material>("ToonBase");
+            if (_toonBase == null) return;
+
             foreach (var r in root.GetComponentsInChildren<Renderer>())
-                foreach (var m in r.materials)
-                    if (m != null && m.HasProperty("_BaseColor"))
-                        m.SetColor("_BaseColor", tint);
+            {
+                var srcMats = r.sharedMaterials;
+                var newMats = new Material[srcMats.Length];
+                bool changed = false;
+                for (int i = 0; i < srcMats.Length; i++)
+                {
+                    var src = srcMats[i];
+                    if (src == null) { newMats[i] = null!; continue; }
+                    Texture? srcTex = src.mainTexture;
+                    var cached = GetCachedToon(tint, false, srcTex);
+                    if (!ReferenceEquals(cached, src)) changed = true;
+                    newMats[i] = cached;
+                }
+                if (changed)
+                    r.sharedMaterials = newMats;
+            }
+        }
+
+        private static Material GetCachedToon(Color tint, bool transparent, Texture? srcTex)
+        {
+            var key = (tint, transparent, srcTex);
+            if (_toonCache.TryGetValue(key, out var m)) return m;
+
+            m = new Material(_toonBase!);
+            m.SetColor("_BaseColor", tint);
+
+            // Conserve texture originale du mesh (port de opts.map dans ToonMaterial.js)
+            if (srcTex != null)
+                m.mainTexture = srcTex;
+
+            if (transparent)
+            {
+                // Stealth : transparent surface mode (cf Enemy stealth opacity)
+                m.SetFloat("_Surface", 1f);
+                m.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                m.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                m.SetFloat("_ZWrite", 0f);
+                m.renderQueue = 3000;
+                Color c = tint;
+                c.a = 0.45f; // stealth initial opacity
+                m.SetColor("_BaseColor", c);
+            }
+
+            _toonCache[key] = m;
+            return m;
         }
 
         // Ajoute un GO enfant portant un Renderer avec le shader overlay boss.
