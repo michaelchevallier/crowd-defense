@@ -24,6 +24,7 @@ namespace CrowdDefense.Entities
     {
         public int Pierce;
         public int MultiShot;
+        public float CascadeRadius;
         public bool FinalExplosion;
         public float FinalExplosionAoe;
         public float CritChance;
@@ -145,6 +146,7 @@ namespace CrowdDefense.Entities
         public float L3ArmorBreakMul { get; private set; } = 1f;
         public int L3ArmorBreakDurMs { get; private set; } = 0;
         public bool L3Knockback { get; private set; } = false;
+        public float L3CascadeRadius { get; private set; } = 0f;
 
         public bool  L3TankBlockAura { get; private set; } = false;
         public float L3TankBlockAuraRange { get; private set; } = 5f;
