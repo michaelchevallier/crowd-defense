@@ -53,6 +53,10 @@ namespace CrowdDefense.UI
             panel.transform.SetParent(transform, false);
             _overlay = panel.AddComponent<Image>();
             _overlay.color = Color.black;
+            // V8 FIX: overlay must not block raycasts when invisible — otherwise
+            // it eats all UI Toolkit clicks on the underlying scene panels.
+            // raycastTarget is toggled ON only during active fades (see Fade/LoadSceneFade).
+            _overlay.raycastTarget = false;
             var rect = panel.GetComponent<RectTransform>();
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
@@ -225,6 +229,10 @@ namespace CrowdDefense.UI
             bool showLoadingUi = _loadingOp.progress < 0.9f;
             Debug.Log($"[SceneTransition] Pre-fade checkpoint: showLoadingUi={showLoadingUi}, progress={_loadingOp.progress}");
 
+            // V8 FIX: enable raycast blocking during active fade so clicks
+            // don't slip through and trigger UI on the scene we're leaving.
+            _overlay.raycastTarget = true;
+
             // Fade to color
             Debug.Log($"[SceneTransition] Starting Fade(0→1, dur={fadeDur})");
             yield return StartCoroutine(Fade(0f, 1f, fadeDur));
@@ -274,7 +282,10 @@ namespace CrowdDefense.UI
             if (_overlay != null)
             {
                 _overlay.color = new Color(0f, 0f, 0f, 0f);
-                Debug.Log($"[SceneTransition] Fade-out complete, transition finished (overlay alpha forced to 0)");
+                // V8 FIX: disable raycast blocking now that we're invisible, so
+                // the underlying scene's UI Toolkit / UGUI clicks work normally.
+                _overlay.raycastTarget = false;
+                Debug.Log($"[SceneTransition] Fade-out complete, transition finished (overlay alpha forced to 0, raycastTarget=false)");
             }
             else
             {
