@@ -183,17 +183,30 @@ namespace CrowdDefense.UI
         IEnumerator FadeAndLoad(string sceneName, Color fadeColor, float fadeDur)
         {
             _busy = true;
+            Debug.Log($"[SceneTransition] FadeAndLoad start: scene='{sceneName}'");
+
+            if (_overlay == null)
+            {
+                Debug.LogError("[SceneTransition] _overlay is null in FadeAndLoad — BuildOverlay not called");
+                _busy = false;
+                _isLoading = false;
+                yield break;
+            }
+
             _overlay.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 0f);
 
             // Start async load immediately, hold activation
+            Debug.Log($"[SceneTransition] Starting LoadSceneAsync('{sceneName}')");
             _loadingOp = SceneManager.LoadSceneAsync(sceneName);
             if (_loadingOp == null)
             {
                 Debug.LogError($"[SceneTransition] Failed to load scene '{sceneName}' — check EditorBuildSettings.scenes");
                 _busy = false;
+                _isLoading = false;
                 yield break;
             }
             _loadingOp.allowSceneActivation = false;
+            Debug.Log($"[SceneTransition] LoadSceneAsync success, allowSceneActivation=false");
 
             // Wait up to 500 ms — skip loading UI entirely if load is already done
             float waited = 0f;
@@ -205,9 +218,12 @@ namespace CrowdDefense.UI
             }
 
             bool showLoadingUi = _loadingOp.progress < 0.9f;
+            Debug.Log($"[SceneTransition] Pre-fade checkpoint: showLoadingUi={showLoadingUi}, progress={_loadingOp.progress}");
 
             // Fade to color
+            Debug.Log($"[SceneTransition] Starting Fade(0→1, dur={fadeDur})");
             yield return StartCoroutine(Fade(0f, 1f, fadeDur));
+            Debug.Log($"[SceneTransition] Fade complete");
 
             if (showLoadingUi)
             {
@@ -238,12 +254,25 @@ namespace CrowdDefense.UI
                 yield return StartCoroutine(FadeGroup(_loadingGroup, 1f, 0f, 0.2f));
             }
 
+            Debug.Log($"[SceneTransition] Activating scene '{sceneName}'");
             _loadingOp.allowSceneActivation = true;
             _loadingOp = null;
+            Debug.Log($"[SceneTransition] Scene activated, waiting for new scene to initialize");
+            yield return new WaitForSeconds(0.1f); // Brief pause for scene Awake/Start
 
             // Fade out overlay, then restore to black for next default transition
+            Debug.Log($"[SceneTransition] Starting fade-out (1→0)");
             yield return StartCoroutine(Fade(1f, 0f, FadeDuration));
-            _overlay.color = Color.black;
+            if (_overlay != null)
+            {
+                _overlay.color = Color.black;
+                Debug.Log($"[SceneTransition] Fade-out complete, transition finished");
+            }
+            else
+            {
+                Debug.LogError($"[SceneTransition] _overlay is null during fade-out");
+            }
+
             _busy = false;
             _isLoading = false;
         }

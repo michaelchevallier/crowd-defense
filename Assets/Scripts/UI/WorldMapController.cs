@@ -77,21 +77,37 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
+            Debug.Log("[WorldMapController] Start() called");
             var uiDoc = GetComponent<UIDocument>();
             if (uiDoc == null)
             {
                 Debug.LogError("[WorldMapController] UIDocument not found");
                 return;
             }
+            Debug.Log("[WorldMapController] UIDocument found");
             _root     = uiDoc.rootVisualElement;
             if (_root == null)
             {
                 Debug.LogError("[WorldMapController] rootVisualElement is null — UXML failed to load");
                 return;
             }
+            Debug.Log("[WorldMapController] rootVisualElement found");
             _registry = LevelRegistry.Get();
+            if (_registry == null)
+            {
+                Debug.LogError("[WorldMapController] LevelRegistry.Get() returned null");
+                return;
+            }
+            Debug.Log("[WorldMapController] LevelRegistry loaded");
             _runMap   = RunMap.Instance;
+            if (_runMap == null)
+            {
+                Debug.LogError("[WorldMapController] RunMap.Instance is null");
+                return;
+            }
+            Debug.Log("[WorldMapController] RunMap instance acquired, starting BuildUI()");
             BuildUI();
+            Debug.Log("[WorldMapController] BuildUI() complete");
         }
 
         private void BuildUI()
