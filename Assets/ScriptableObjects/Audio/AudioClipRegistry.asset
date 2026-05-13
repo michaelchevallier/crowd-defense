@@ -36,7 +36,7 @@ MonoBehaviour:
   - Key: boss_spawn_drone
     Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
   - Key: cancel
-    Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
+    Clip: {fileID: 8300000, guid: 7b0b6a4c7143d42529ab240963addef7, type: 3}
   - Key: castle_hit
     Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
   - Key: castle_lost
@@ -70,7 +70,7 @@ MonoBehaviour:
   - Key: hero_shoot
     Clip: {fileID: 8300000, guid: 0c58db39650b3439cb7f3a34c670cc32, type: 3}
   - Key: hero_ult
-    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
+    Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: level_up
     Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: menu_button_hover
@@ -100,7 +100,7 @@ MonoBehaviour:
   - Key: star
     Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: step_dirt
-    Clip: {fileID: 8300000, guid: c7ecb9fccfd27498c968a77196909424, type: 3}
+    Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
   - Key: toast_generic
     Clip: {fileID: 8300000, guid: d71753f03394240d1aafa4bd905e5a2f, type: 3}
   - Key: toast_achievement
