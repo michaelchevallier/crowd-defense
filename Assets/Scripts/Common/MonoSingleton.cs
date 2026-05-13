@@ -45,6 +45,7 @@ namespace CrowdDefense.Common
 
         protected virtual void Awake()
         {
+            _destroying = false;
             if (_instance != null && _instance != this)
             {
                 // Destroy only the duplicate component, NOT the GameObject — the GameObject

@@ -187,9 +187,9 @@ namespace CrowdDefense.Systems
             RestoreMidLevelStateIfPending();
 
             var bounds = default(Bounds);
-            if (PathManager.Instance?.Grid != null)
+            var grid = PathManager.Instance?.Grid;
+            if (grid != null)
             {
-                var grid = PathManager.Instance.Grid;
                 float halfW = (grid.Width - 1) / 2f * grid.CellSize;
                 float halfH = (grid.Height - 1) / 2f * grid.CellSize;
                 bounds = new Bounds(Vector3.zero, new Vector3(halfW * 2f, 100f, halfH * 2f));
@@ -667,9 +667,8 @@ namespace CrowdDefense.Systems
 
         private void SpawnCastle()
         {
-            if (currentLevel == null || PathManager.Instance?.Grid == null) return;
-
-            var grid = PathManager.Instance.Grid;
+            var grid = PathManager.Instance?.Grid;
+            if (currentLevel == null || grid == null) return;
             if (grid.Castles.Count == 0) return;
 
             var castleCell = grid.Castles[0];
