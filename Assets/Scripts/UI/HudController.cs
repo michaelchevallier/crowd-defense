@@ -300,6 +300,8 @@ namespace CrowdDefense.UI
             btnMenuVictory?.RegisterCallback<ClickEvent>(_ => GoToMenu());
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
             Root?.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
+            Root?.Q<Button>("btn-shop")?.RegisterCallback<ClickEvent>(_ => Systems.LevelLoader.GoToShop());
+            Root?.Q<Button>("btn-map")?.RegisterCallback<ClickEvent>(_ => Systems.LevelLoader.GoToWorldMap());
             Root?.Q<Button>("btn-settings")?.RegisterCallback<ClickEvent>(_ => _settingsCtrl?.Show());
             Root?.Q<Button>("btn-encyclopedia")?.RegisterCallback<ClickEvent>(_ => EncyclopediaController.Instance?.Show());
 

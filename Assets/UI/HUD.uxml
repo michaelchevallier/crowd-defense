@@ -54,6 +54,8 @@
             </ui:VisualElement>
 
             <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines [D]" />
+            <ui:Button text="&#x1F6D2;" name="btn-shop" class="hud-shop-btn" tooltip="Boutique" />
+            <ui:Button text="&#x1F5FA;" name="btn-map" class="hud-map-btn" tooltip="Carte des mondes" />
             <ui:Button text="&#x2699;" name="btn-settings" class="hud-settings-btn" tooltip="Settings" />
             <ui:Button text="&#x1F50A;" name="btn-mute" class="hud-mute-btn" tooltip="Mute audio" />
             <ui:Button text="&#x1F4DA;" name="btn-encyclopedia" class="hud-encyclopedia-btn" tooltip="Encyclopedie [I]" />
