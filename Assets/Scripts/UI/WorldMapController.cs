@@ -144,6 +144,7 @@ namespace CrowdDefense.UI
 
             RefreshHeader();
             ShowWorld(_activeWorld);
+            WireSpecialTiles();
 
             // ── Final diagnostics ──
             Debug.Log($"[WorldMap] After BuildUI: levelGrid children={_levelGrid?.childCount ?? -1}");
@@ -496,6 +497,44 @@ namespace CrowdDefense.UI
             // Click handler is now wired into the Button constructor above (V8F).
 
             return tile;
+        }
+
+        private void WireSpecialTiles()
+        {
+            if (_root == null) return;
+
+            var tileEndless = _root.Q<Button>("tile-endless");
+            if (tileEndless != null)
+            {
+                tileEndless.clicked += LoadEndlessMode;
+                var bestLabel = _root.Q<Label>("endless-best");
+                if (bestLabel != null)
+                    bestLabel.text = $"Best: V{EndlessMode.Instance?.BestWave ?? 0}";
+            }
+
+            var tileDaily = _root.Q<Button>("tile-daily");
+            if (tileDaily != null)
+            {
+                tileDaily.clicked += () => DailyChallengeModal.Instance?.Show();
+                var streakLabel = _root.Q<Label>("daily-streak");
+                if (streakLabel != null)
+                {
+                    int streak = PlayerPrefs.GetInt("daily_streak", 0);
+                    streakLabel.text = streak > 0 ? $"{streak} jours" : "0 jours";
+                }
+            }
+
+            var tileBossRush = _root.Q<Button>("tile-boss-rush");
+            if (tileBossRush != null)
+            {
+                tileBossRush.SetEnabled(false);
+                tileBossRush.tooltip = "Boss Rush - bientot disponible";
+            }
+        }
+
+        private static void LoadEndlessMode()
+        {
+            EndlessMode.Instance?.StartEndless();
         }
 
         private void RefreshHeader()
