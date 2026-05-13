@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace CrowdDefense.Visual
 {
-    // Water + lava tile 8-frame colour animation (8 fps = 125 ms/frame).
-    // No frame textures required — uses MaterialPropertyBlock colour palettes as
-    // placeholder animation until water_01..08 / lava_01..08 PNGs are imported.
+    // Water + lava tile 8-frame texture animation (4 fps = 250 ms/frame).
+    // Loads PNG frames from Resources/Tiles/Water and Resources/Tiles/Lava.
+    // Falls back to colour-only palette when textures are unavailable.
     // Lava tiles also receive a sine-wave emissive pulse (0.5–2.0 intensity).
     // Attach to any persistent GameObject in the scene (e.g. MapRenderer parent).
     [DefaultExecutionOrder(60)]   // after MapRenderer (50) + PathTilesController (55)
@@ -21,15 +21,8 @@ namespace CrowdDefense.Visual
         public static WaterLavaAnimController? Instance { get; private set; }
 
         // -------------------------------------------------------------------------
-        // 8-frame colour palettes (placeholder — swap to texture frames later)
+        // 8-frame colour palettes (fallback when PNG textures are missing)
         // -------------------------------------------------------------------------
-        // TODO (C1-VISUAL-004): Replace colour animation with texture frame loading
-        //   - Create Editor tool: Assets/Editor/BuildWaterLavaFrames.cs MenuItem
-        //   - Generate 8 PNG water frames (deep blue → cyan oscillation)
-        //   - Generate 8 PNG lava frames (orange-red flicker)
-        //   - Save to Assets/Resources/Textures/Water_Frames/ + Lava_Frames/
-        //   - Update here: Load Resources textures + swap via MaterialPropertyBlock.SetTexture("_BaseMap", frame)
-        //   - Or: Accept placeholder colour (works, just less visual quality)
 
         // Water: gentle oscillation from deep blue → cyan-teal
         private static readonly Color[] _waterFrames =
@@ -64,6 +57,18 @@ namespace CrowdDefense.Visual
         private const float LavaEmissivePeriod = 1.6f; // seconds per cycle
 
         // -------------------------------------------------------------------------
+        // Texture frames (loaded from Resources)
+        // -------------------------------------------------------------------------
+
+        private Texture2D?[] _waterTextures = new Texture2D?[8];
+        private Texture2D?[] _lavaTextures  = new Texture2D?[8];
+        private bool _texturesLoaded;
+
+        private static readonly int BaseMapId    = Shader.PropertyToID("_BaseMap");
+        private static readonly int BaseColorId  = Shader.PropertyToID("_BaseColor");
+        private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+
+        // -------------------------------------------------------------------------
         // Runtime state
         // -------------------------------------------------------------------------
 
@@ -71,7 +76,7 @@ namespace CrowdDefense.Visual
         private readonly List<MeshRenderer> _lavaRenderers  = new();
         private MaterialPropertyBlock? _mpb;
 
-        private const float FrameInterval = 1f / 8f;  // 125 ms
+        private const float FrameInterval = 1f / 4f;  // 4 fps = 250 ms per frame
         private float _frameTimer;
         private int  _frameIndex;
 
@@ -85,6 +90,7 @@ namespace CrowdDefense.Visual
         {
             if (Instance != null && Instance != this) { Destroy(gameObject); return; }
             Instance = this;
+            LoadTextures();
         }
 
         private void OnEnable()
@@ -138,7 +144,7 @@ namespace CrowdDefense.Visual
             _active = _waterRenderers.Count > 0 || _lavaRenderers.Count > 0;
 
 #if UNITY_EDITOR
-            Debug.Log($"[WaterLavaAnim] active={_active} water={_waterRenderers.Count} lava={_lavaRenderers.Count}");
+            Debug.Log($"[WaterLavaAnim] active={_active} water={_waterRenderers.Count} lava={_lavaRenderers.Count} textures={_texturesLoaded}");
 #endif
         }
 
@@ -147,6 +153,29 @@ namespace CrowdDefense.Visual
             _active = false;
             _waterRenderers.Clear();
             _lavaRenderers.Clear();
+        }
+
+        // -------------------------------------------------------------------------
+        // Texture loading from Resources
+        // -------------------------------------------------------------------------
+
+        private void LoadTextures()
+        {
+            int loaded = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                string waterPath = $"Tiles/Water/water_frame_{i + 1:D2}";
+                string lavaPath  = $"Tiles/Lava/lava_frame_{i + 1:D2}";
+                _waterTextures[i] = Resources.Load<Texture2D>(waterPath);
+                _lavaTextures[i]  = Resources.Load<Texture2D>(lavaPath);
+                if (_waterTextures[i] != null) loaded++;
+                if (_lavaTextures[i] != null) loaded++;
+            }
+            _texturesLoaded = loaded > 0;
+
+#if UNITY_EDITOR
+            Debug.Log($"[WaterLavaAnim] Loaded {loaded}/16 tile textures");
+#endif
         }
 
         // -------------------------------------------------------------------------
@@ -193,13 +222,18 @@ namespace CrowdDefense.Visual
 
         private void ApplyWaterFrame(int frame)
         {
-            var color = _waterFrames[frame & 7];
+            int idx = frame & 7;
+            var tex = _waterTextures[idx];
+            var color = _waterFrames[idx];
+
             foreach (var mr in _waterRenderers)
             {
                 if (mr == null) continue;
                 _mpb ??= new MaterialPropertyBlock();
                 mr.GetPropertyBlock(_mpb);
-                _mpb.SetColor("_BaseColor", color);
+                if (tex != null)
+                    _mpb.SetTexture(BaseMapId, tex);
+                _mpb.SetColor(BaseColorId, color);
                 mr.SetPropertyBlock(_mpb);
             }
         }
@@ -211,8 +245,9 @@ namespace CrowdDefense.Visual
             float t = (Mathf.Sin(time * (Mathf.PI * 2f / LavaEmissivePeriod)) + 1f) * 0.5f;
             float intensity = Mathf.Lerp(LavaEmissiveMin, LavaEmissiveMax, t);
 
-            int frame = _frameIndex & 7;
-            var baseColor = _lavaFrames[frame];
+            int idx = _frameIndex & 7;
+            var tex = _lavaTextures[idx];
+            var baseColor = _lavaFrames[idx];
             var emissive  = _lavaEmissiveBase * intensity;
 
             foreach (var mr in _lavaRenderers)
@@ -220,8 +255,10 @@ namespace CrowdDefense.Visual
                 if (mr == null) continue;
                 _mpb ??= new MaterialPropertyBlock();
                 mr.GetPropertyBlock(_mpb);
-                _mpb.SetColor("_BaseColor", baseColor);
-                _mpb.SetColor("_EmissionColor", emissive);
+                if (tex != null)
+                    _mpb.SetTexture(BaseMapId, tex);
+                _mpb.SetColor(BaseColorId, baseColor);
+                _mpb.SetColor(EmissionColorId, emissive);
                 mr.SetPropertyBlock(_mpb);
             }
         }
