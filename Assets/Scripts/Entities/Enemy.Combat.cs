@@ -210,10 +210,20 @@ namespace CrowdDefense.Entities
                 EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
                 CoinPullManager.Instance?.SpawnCoinFlyTo(transform.position, reward);
                 Economy.Instance?.AddGoldFromKill(reward, transform.position + Vector3.up * 1.2f);
+                // P1-EN-1.1: green +reward popup on regular enemy kill
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                    $"+{reward}", transform.position + Vector3.up * 1f, Color.green);
             }
+            else
+            {
 #if UNITY_EDITOR
-            else Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
+                Debug.Log($"[Enemy] boss killed type={cfg?.Id} reward=0 (D1-01 boss=0x)");
 #endif
+                // P1-EN-1.2: BOSS DOWN! gold popup + ring VFX on boss kill
+                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
+                    "BOSS DOWN!", transform.position + Vector3.up * 2f, new Color(1f, 0.82f, 0.1f), 1.4f);
+                VfxPool.Instance?.SpawnExplosion(transform.position, 4f);
+            }
 
             if (cfg != null) Bestiary.Instance?.RecordKill(cfg.Id);
             Achievements.Instance?.Unlock("first_blood");
