@@ -1,138 +1,133 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Crowd Defense — Multi-Version Launcher</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0; padding: 20px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #eee;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #00d4ff;
-            text-shadow: 0 0 10px rgba(0,212,255,0.5);
-        }
-        .versions {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 16px;
-            margin-top: 40px;
-        }
-        .card {
-            background: rgba(255,255,255,0.08);
-            border: 2px solid #00d4ff;
-            border-radius: 8px;
-            padding: 24px;
-            text-align: center;
-            transition: all 0.3s;
-            backdrop-filter: blur(10px);
-        }
-        .card:hover {
-            background: rgba(0,212,255,0.15);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,212,255,0.3);
-        }
-        .card h2 {
-            color: #00d4ff;
-            margin-top: 0;
-            font-size: 24px;
-        }
-        .card p {
-            margin: 12px 0;
-            font-size: 14px;
-            color: #aaa;
-        }
-        .card a {
-            display: inline-block;
-            background: #00d4ff;
-            color: #1a1a2e;
-            padding: 10px 24px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 16px;
-            transition: all 0.2s;
-        }
-        .card a:hover {
-            background: #00ffff;
-            box-shadow: 0 0 12px rgba(0,212,255,0.6);
-        }
-        .footer {
-            text-align: center;
-            margin-top: 60px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 12px;
-            color: #666;
-        }
-        .footer a {
-            color: #00d4ff;
-            text-decoration: none;
-        }
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>🎮 Crowd Defense</h1>
-        
-        <div class="versions">
-            <div class="card">
-                <h2>V6 (Current)</h2>
-                <p>Latest refactored build with strategic economy updates</p>
-                <p><small>Commit: <a href="https://github.com/michaelchevallier/crowd-defense/commit/EOHTML
-echo "$COMMIT_HASH" >> index.html
-cat >> index.html <<'EOHTML'
-" target="_blank" style="color:inherit">EOHTML
-echo "$COMMIT_HASH" >> index.html
-cat >> index.html <<'EOHTML'
-</a></small></p>
-                <a href="/crowd-defense/v6/">Play V6</a>
-            </div>
-
-            <div class="card">
-                <h2>V4 (Stable Reference)</h2>
-                <p>Park Defense V3 — stable before strategic refactor</p>
-                <p><small>Tag: v4.0-pre-refonte-strategique</small></p>
-                <a href="/crowd-defense/v4/">Play V4</a>
-            </div>
-
-            <div class="card">
-                <h2>V3 (Archive)</h2>
-                <p>Crowd Defense V3 legacy build</p>
-                <p><small>Tag: v3.1-pre-gridmap</small></p>
-                <a href="/crowd-defense/v3/">Play V3</a>
-            </div>
-
-            <div class="card">
-                <h2>V1 (KAPLAY)</h2>
-                <p>Original KAPLAY version (immutable archive)</p>
-                <p><small>Tag: v1.0-kaplay-final</small></p>
-                <a href="/crowd-defense/v1/">Play V1</a>
-            </div>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity Web Player | crowd-defense</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+  </head>
+  <body>
+    <div id="unity-container" class="unity-desktop">
+      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
         </div>
-
-        <div class="footer">
-            <p>Crowd Defense — Strategic Tower Defense Tower · <a href="https://github.com/michaelchevallier/crowd-defense" target="_blank">GitHub</a></p>
-            <p>Build timestamp: 2026-05-13 · <a href="https://github.com/michaelchevallier/crowd-defense/commit/EOHTML
-echo "$COMMIT_HASH" >> index.html
-cat >> index.html <<'EOHTML'
-" target="_blank">Commit detailsEOHTML
-echo "$COMMIT_HASH" >> index.html
-cat >> index.html <<'EOHTML'
-</a></p>
-        </div>
+      </div>
+      <div id="unity-warning"> </div>
+      <div id="unity-footer">
+        <div id="unity-logo-title-footer"></div>
+        <div id="unity-fullscreen-button"></div>
+        <div id="unity-build-title">crowd-defense</div>
+      </div>
     </div>
-</body>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+
+      // Shows a temporary message banner/ribbon for a few seconds, or
+      // a permanent error message on top of the canvas if type=='error'.
+      // If type=='warning', a yellow highlight color is used.
+      // Modify or remove this function to customize the visually presented
+      // way that non-critical warnings and error messages are presented to the
+      // user.
+      function unityShowBanner(msg, type) {
+        var warningBanner = document.querySelector("#unity-warning");
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/WebGL.loader.js";
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebGL.data.unityweb",
+        frameworkUrl: buildUrl + "/WebGL.framework.js.unityweb",
+        codeUrl: buildUrl + "/WebGL.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "Milan Defense Studio",
+        productName: "crowd-defense",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+        // errorHandler: function(err, url, line) {
+        //    alert("error " + err + " occurred at line " + line);
+        //    // Return 'true' if you handled this error and don't want Unity
+        //    // to process it further, 'false' otherwise.
+        //    return true;
+        // },
+      };
+
+      // By default, Unity keeps WebGL canvas render target size matched with
+      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
+      // Set this to false if you want to decouple this synchronization from
+      // happening inside the engine, and you would instead like to size up
+      // the canvas DOM size and WebGL render target sizes yourself.
+      // config.matchWebGLToCanvasSize = false;
+
+      // If you would like all file writes inside Unity Application.persistentDataPath
+      // directory to automatically persist so that the contents are remembered when
+      // the user revisits the site the next time, uncomment the following line:
+      // config.autoSyncPersistentDataPath = true;
+      // This autosyncing is currently not the default behavior to avoid regressing
+      // existing user projects that might rely on the earlier manual
+      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
+      // expected to change.
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        // Mobile device style: fill the whole browser client area with the game canvas:
+
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+        document.querySelector("#unity-container").className = "unity-mobile";
+        canvas.className = "unity-mobile";
+
+        // To lower canvas resolution on mobile devices to gain some
+        // performance, uncomment the following line:
+        // config.devicePixelRatio = 1;
+
+
+      } else {
+        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
+        canvas.style.width = "960px";
+        canvas.style.height = "600px";
+      }
+
+      document.querySelector("#unity-loading-bar").style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+              }).then((unityInstance) => {
+                document.querySelector("#unity-loading-bar").style.display = "none";
+                document.querySelector("#unity-fullscreen-button").onclick = () => {
+                  unityInstance.SetFullscreen(1);
+                };
+
+              }).catch((message) => {
+                alert(message);
+              });
+            };
+
+      document.body.appendChild(script);
+
+    </script>
+  </body>
 </html>
