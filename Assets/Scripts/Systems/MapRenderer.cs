@@ -76,13 +76,22 @@ namespace CrowdDefense.Systems
                     if (col != null) Destroy(col);
 
                     var mr = slab.GetComponent<MeshRenderer>();
-                    mr.sharedMaterial = GetMat(ch, _theme);
+                    // Bridges sit on water/lava — use the underlying liquid material on the
+                    // slab so the animated stream is visible at the edges of the plank tile.
+                    char surfaceCh = ch switch
+                    {
+                        GridCoords.BRIDGE_WATER => GridCoords.WATER,
+                        GridCoords.BRIDGE_LAVA  => GridCoords.LAVA,
+                        _                       => ch,
+                    };
+                    mr.sharedMaterial = GetMat(surfaceCh, _theme);
                     _slabRenderers.Add(mr);
 
-                    // Register animated tiles with WaterLavaAnimController
-                    if (ch == GridCoords.WATER)
+                    // Register animated tiles with WaterLavaAnimController. Bridges register too
+                    // so the stream beneath them animates in sync (their plank quad covers ~70%).
+                    if (ch == GridCoords.WATER || ch == GridCoords.BRIDGE_WATER)
                         WaterLavaAnimController.Instance?.RegisterWater(mr);
-                    else if (ch == GridCoords.LAVA)
+                    else if (ch == GridCoords.LAVA || ch == GridCoords.BRIDGE_LAVA)
                         WaterLavaAnimController.Instance?.RegisterLava(mr);
                 }
             }
