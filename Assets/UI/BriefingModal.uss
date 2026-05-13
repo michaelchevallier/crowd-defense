@@ -1,0 +1,44 @@
+.briefing-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
+.briefing-frame {
+    background-color: rgba(20, 20, 20, 0.95);
+    padding: 32px;
+    border-radius: 12px;
+    min-width: 400px;
+    max-width: 600px;
+    align-items: center;
+}
+
+.briefing-title {
+    font-size: 24px;
+    -unity-font-style: bold;
+    color: rgb(255, 196, 60);
+    margin-bottom: 16px;
+    -unity-text-align: middle-center;
+}
+
+.briefing-text {
+    font-size: 14px;
+    color: rgb(220, 220, 220);
+    margin-bottom: 24px;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.briefing-countdown {
+    font-size: 64px;
+    -unity-font-style: bold;
+    color: rgb(255, 90, 50);
+    -unity-text-align: middle-center;
+}
+
+.hidden {
+    display: none;
+}

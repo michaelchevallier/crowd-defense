@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance"
+         engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements"
+         noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="BriefingModal.uss" />
+    <ui:VisualElement name="briefing-modal-overlay" class="briefing-overlay hidden">
+        <ui:VisualElement class="briefing-frame">
+            <ui:Label name="briefing-title" text="" class="briefing-title" />
+            <ui:Label name="briefing-text" text="" class="briefing-text" />
+            <ui:Label name="briefing-countdown" text="" class="briefing-countdown" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
