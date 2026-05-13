@@ -26,16 +26,23 @@ namespace CrowdDefense.Systems
 
         public static void LoadLevel(string levelId)
         {
+            // V8E FIX: AvatarPickPanel + HeroPickScreen UGUI Canvas auto-built at NaN-derived
+            // positions (Canvas.ScaleMode mismatch with PanelSettings) so cards land off-screen
+            // and user can't click them. Until those panels are wired to scene prefabs with
+            // proper layouts, auto-assign defaults on first run so player isn't soft-locked at
+            // WorldMap. Defaults: Warrior avatar + first hero in HeroRegistry.
             if (!HasAvatarChoice())
             {
-                UI.AvatarPickPanel.Instance?.Show(() => LoadLevel(levelId));
-                return;
+                Debug.Log("[LevelLoader] No avatar choice — auto-assigning Warrior default (V8E bypass)");
+                PlayerPrefs.SetString(UI.AvatarPickPanel.PrefsKey, "Warrior");
+                PlayerPrefs.Save();
             }
 
             if (!HasHeroChoice())
             {
-                HeroPickScreen.Instance?.Show(levelId, () => LoadLevel(levelId));
-                return;
+                Debug.Log("[LevelLoader] No hero choice — auto-assigning default hero (V8E bypass)");
+                PlayerPrefs.SetString(HeroPickScreen.PrefsKey, "BluePill");
+                PlayerPrefs.Save();
             }
 
             SaveSystem.IsHardcoreRun = false;

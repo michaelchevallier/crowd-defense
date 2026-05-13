@@ -479,33 +479,18 @@ namespace CrowdDefense.UI
 
             if (unlocked && data != null)
             {
-                // V8D FIX: PointerUpEvent + ClickEvent + Clickable manipulator (defensive triple
-                // registration). UI Toolkit in WebGL doesn't reliably dispatch ClickEvent on bare
-                // VisualElement, even with Clickable manipulator. PointerUpEvent fires raw and is
-                // reliable. Diagnostic Debug.Logs included to identify which path actually fires.
-                tile.RegisterCallback<PointerDownEvent>(evt =>
-                    Debug.Log($"[WorldMap.Tile {id}] PointerDown"));
-                tile.RegisterCallback<PointerUpEvent>(evt =>
-                {
-                    Debug.Log($"[WorldMap.Tile {id}] PointerUp → LoadLevel");
-                    LevelLoader.LoadLevel(id);
-                });
-                tile.AddManipulator(new Clickable(() =>
-                {
-                    Debug.Log($"[WorldMap.Tile {id}] Clickable → LoadLevel");
-                    LevelLoader.LoadLevel(id);
-                }));
+                // V8C FIX: use Clickable manipulator (same as Button's built-in click) instead of
+                // RegisterCallback<ClickEvent>. Plain ClickEvent doesn't reliably fire on bare
+                // VisualElement in WebGL — hover events arrive but click doesn't.
+                tile.AddManipulator(new Clickable(() => LevelLoader.LoadLevel(id)));
             }
             else if (!unlocked)
             {
                 var lockLabel = new Label(L.Get("worldmap.locked"));
                 lockLabel.AddToClassList("tile-lock-icon");
                 tile.Add(lockLabel);
-                tile.RegisterCallback<PointerUpEvent>(evt =>
-                {
-                    Debug.Log($"[WorldMap.Tile {id}] PointerUp → Locked Toast");
-                    Toast.Show("Niveau verrouille", "Terminez le niveau precedent.", 2500, null, ToastType.Generic);
-                });
+                tile.AddManipulator(new Clickable(() =>
+                    Toast.Show("Niveau verrouille", "Terminez le niveau precedent.", 2500, null, ToastType.Generic)));
             }
 
             return tile;
