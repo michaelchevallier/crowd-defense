@@ -81,7 +81,15 @@ namespace CrowdDefense.Systems
         public static void Fade(string sceneName, Color fadeColor = default, float fadeDur = 0.5f)
         {
             SceneTransition.EnsureExists();
-            SceneTransition.Instance?.LoadSceneFade(sceneName, fadeColor, fadeDur);
+            if (SceneTransition.Instance != null)
+            {
+                Debug.Log($"[LevelLoader.Fade] Fading to '{sceneName}', Instance ready");
+                SceneTransition.Instance.LoadSceneFade(sceneName, fadeColor, fadeDur);
+            }
+            else
+            {
+                Debug.LogError($"[LevelLoader.Fade] SceneTransition.Instance is null after EnsureExists() — LoadSceneFade skipped for '{sceneName}'");
+            }
         }
 
         public static void FadeVictory(string sceneName)

@@ -174,6 +174,11 @@ namespace CrowdDefense.UI
 
         public void LoadSceneFade(string sceneName, Color fadeColor = default, float fadeDur = 0.5f)
         {
+            if (_overlay == null)
+            {
+                Debug.LogError("[SceneTransition.LoadSceneFade] _overlay is null — Awake/BuildOverlay may not have completed. Skipping load.");
+                return;
+            }
             if (fadeColor == default) fadeColor = Color.black;
             if (_isLoading) return;
             _isLoading = true;
