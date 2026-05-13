@@ -326,3 +326,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 21h17 — scrute /loop #125. **0 new commits** depuis #124 (15 min). Mike idle ~1h57. Batchmode 33733 stuck @ 2h18. V8/V8B pending. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 21h34 — scrute /loop #126. **0 new commits** depuis #125 (17 min). Mike chat live 21h26 ("on en est ou? fais tests"). **Action prise** : kill batchmode 33733 stuck 2h+ (V7 build OK, post-build hang), Editor arm64 Mike (PID 20015, sans WebGL module) → save+exit via UnityMCP, batchmode non-arm64 (PID 56015) lancé pour build V8+V8B → en cours Brotli compression 56s, ETA 1-2 min. **Drift 0/12** ✅. **T3 silent** (Mike chat live, pas besoin notif).
+
+2026-05-13 21h47 — scrute /loop #127. **1 new commit `331b767a`** fix(worldmap)(R7-WORLDMAP-NAN-V8C) Clickable manipulator (remplace RegisterCallback<ClickEvent> qui ne fire pas sur bare VisualElement en WebGL). Build V8C non-arm64 SUCCESS 4m10s + deploy gh-pages `ac1f2b7e`. V8 raycastTarget fix confirmed working but tile clicks still not firing → V8C should fix that. CDN propagating. Mike chat live. **Drift 0/12** ✅. **T3 silent**.
