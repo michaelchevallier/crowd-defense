@@ -273,3 +273,10 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 15h13 — scrute /loop. **0 new commits** depuis self-scrute #102. Système idle stable, awaiting Mike. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 15h13 — scrute /loop. **1 new commit `f6849407`** fix(worldmap)(R7-WORLDMAP-NAN-V5) Menu-style CSS exact (width:100%/height:100% sans flex/position). **Drift 0/12** ✅. D1 OK ref. Worktrees 2 stable. 1 Unity build clean V5 actif (Opus-side). **T3 silent**. Scene yaml audit fait : différence Menu vs WorldMap = WorldMap a une Camera, Menu non. V5 test si CSS pure Menu-replicate fix le NaN, sinon fallback Camera-disable.
+
+2026-05-13 15h30 — scrute /loop. **2 new commits** : `f6849407` (V5 Menu-style CSS) + `a710b0cd` (V6 Camera disabled). **Drift 0/12** ✅. Test browser /v6/ deploy `bd5d2020` :
+- ✅ NRE FIXED par V5 (no more NRE on click NEW GAME)
+- ❌ width=NaN PERSIST malgré V5 CSS + V6 Camera disabled
+- Conclusion : ni CSS ni Camera étaient la root cause
+- Bug est structurel deeper (PanelSettings init race ? UXML root element ?)
+**T2 notif Mike** sent (terminal only, remote inactive). Need Mike-side Unity Editor Inspector debug session. **T3 silent supervisor side** (informational notif, not drift).
