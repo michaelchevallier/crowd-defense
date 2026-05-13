@@ -205,6 +205,11 @@ namespace CrowdDefense.Systems
 
             // Defer LevelStart event until next frame so all OnEnable() subscribers (MinimapController, etc.) are wired.
             StartCoroutine(RaiseLevelStartDeferred(currentLevel, bounds));
+
+            // P1-UI-6: briefing modal before waves are available
+            if (UI.BriefingModalController.Instance != null && currentLevel != null)
+                StartCoroutine(UI.BriefingModalController.Instance.ShowAndCountdown(
+                    currentLevel.DisplayName, currentLevel.Briefing));
         }
 
         private void Update()
@@ -548,6 +553,8 @@ namespace CrowdDefense.Systems
             {
                 int score = _killsThisLevel * 10 + (WaveManager.Instance?.TotalWaves ?? 5) * 100;
                 Daily.SetScore(score);
+                DailyChallenge.Instance?.MarkCompleted();
+                DailyChallenge.Instance?.OnDailyVictory();
             }
             else if (currentLevel != null)
             {
