@@ -271,3 +271,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 15h00 — scrute /loop. **0 new commits depuis `b937ee29`** (self-scrute #101). gh-pages stable `26cb1dd6` (V3 rollback). 0 Unity builds. **Drift 0/12** ✅. D1 1× warning (76101f31) — pas escalable yet, pas de 2e occurrence. Système idle, awaiting Mike decision sur WorldMap Scene debug. **T3 silent**.
 
 2026-05-13 15h13 — scrute /loop. **0 new commits** depuis self-scrute #102. Système idle stable, awaiting Mike. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 15h13 — scrute /loop. **1 new commit `f6849407`** fix(worldmap)(R7-WORLDMAP-NAN-V5) Menu-style CSS exact (width:100%/height:100% sans flex/position). **Drift 0/12** ✅. D1 OK ref. Worktrees 2 stable. 1 Unity build clean V5 actif (Opus-side). **T3 silent**. Scene yaml audit fait : différence Menu vs WorldMap = WorldMap a une Camera, Menu non. V5 test si CSS pure Menu-replicate fix le NaN, sinon fallback Camera-disable.
