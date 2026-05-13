@@ -134,13 +134,34 @@ else
   POST_WARNS=0
 fi
 
+# Detect MCP failure markers vs real responses (HONEST verdict)
+mcp_failed() {
+  local body="$1"
+  if [[ -z "$body" ]] || echo "$body" | grep -qE '"success":false|not ready|disconnected|PARSE_ERR'; then
+    return 0  # failed
+  fi
+  return 1
+}
+
+PRE_STATUS="ok"
+mcp_failed "$PRE" && PRE_STATUS="MCP_FAILURE"
+POST_STATUS="ok"
+PLAY_STATUS="ok"
+TEST_STATUS="ok"
+if [[ $DO_PLAY -eq 1 ]]; then
+  mcp_failed "$PLAY_RES" && PLAY_STATUS="MCP_FAILURE"
+  mcp_failed "$TEST_RES" && TEST_STATUS="MCP_FAILURE"
+  mcp_failed "$POST" && POST_STATUS="MCP_FAILURE"
+fi
+
 echo "[9/9] write report $REPORT_OUT..."
 {
   echo "# R7 auto-loop report — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
   echo
   echo "HEAD: $(cd /Users/mike/Work/crowd-defense && git rev-parse --short HEAD)"
+  echo "MCP session: $SESSION"
   echo
-  echo "## Pre-play console"
+  echo "## Pre-play console ($PRE_STATUS)"
   echo "- Errors: $PRE_ERRORS"
   echo "- Warnings: $PRE_WARNS"
   echo
@@ -152,12 +173,17 @@ echo "[9/9] write report $REPORT_OUT..."
   echo "</details>"
   echo
   if [[ $DO_PLAY -eq 1 ]]; then
-    echo "## Base mechanics test"
+    echo "## Play mode trigger ($PLAY_STATUS)"
     echo '```'
-    echo "$TEST_RES"
+    echo "$PLAY_RES" | head -5
     echo '```'
     echo
-    echo "## Post-play console"
+    echo "## Base mechanics test ($TEST_STATUS)"
+    echo '```'
+    echo "$TEST_RES" | head -30
+    echo '```'
+    echo
+    echo "## Post-play console ($POST_STATUS)"
     echo "- Errors: $POST_ERRORS"
     echo "- Warnings: $POST_WARNS"
     echo
@@ -171,13 +197,27 @@ echo "[9/9] write report $REPORT_OUT..."
   echo
   echo "## Verdict"
   TOTAL_ERR=$((PRE_ERRORS + POST_ERRORS))
-  if [[ $TOTAL_ERR -eq 0 ]]; then
-    echo "PASS — 0 errors detected. Warnings $((PRE_WARNS + POST_WARNS))."
+  FAILED_STAGES=""
+  [[ "$PRE_STATUS" == "MCP_FAILURE" ]] && FAILED_STAGES="$FAILED_STAGES pre-play"
+  [[ $DO_PLAY -eq 1 && "$PLAY_STATUS" == "MCP_FAILURE" ]] && FAILED_STAGES="$FAILED_STAGES play-trigger"
+  [[ $DO_PLAY -eq 1 && "$TEST_STATUS" == "MCP_FAILURE" ]] && FAILED_STAGES="$FAILED_STAGES base-mechanics"
+  [[ $DO_PLAY -eq 1 && "$POST_STATUS" == "MCP_FAILURE" ]] && FAILED_STAGES="$FAILED_STAGES post-play"
+  if [[ -n "$FAILED_STAGES" ]]; then
+    echo "**UNKNOWN — Unity MCP failed on stages:$FAILED_STAGES**"
+    echo
+    echo "Cause probable : Unity Editor busy (compile / play / scene transition) ou MCP server disconnect. Retry quand Unity stable Edit mode."
+    echo "0 errors/warnings count IS NOT trustworthy — no real read happened."
+  elif [[ $TOTAL_ERR -eq 0 ]]; then
+    echo "**PASS — 0 errors detected via real MCP read. Warnings $((PRE_WARNS + POST_WARNS)).**"
   else
-    echo "FAIL — $TOTAL_ERR errors (pre=$PRE_ERRORS, post=$POST_ERRORS). Investigate."
+    echo "**FAIL — $TOTAL_ERR errors (pre=$PRE_ERRORS, post=$POST_ERRORS). Investigate.**"
   fi
 } > "$REPORT_OUT"
 
 echo "DONE. Report: $REPORT_OUT"
+if [[ -n "$FAILED_STAGES" ]]; then
+  echo "VERDICT: UNKNOWN (MCP failure)"
+  exit 2
+fi
 TOTAL_ERR=$((PRE_ERRORS + POST_ERRORS))
 [[ $TOTAL_ERR -eq 0 ]] && exit 0 || exit 1
