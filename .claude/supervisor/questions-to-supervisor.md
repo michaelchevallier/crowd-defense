@@ -36,6 +36,54 @@ Quand question `[resolved]`, déplacer la section dans `_archive.md` (ou laisser
 
 (les questions actives en attente d'ack ici, plus récente en bas)
 
+### 2026-05-13 03h00 — Q-R7-007 cleanup diag code
+Type : escalation
+Category : B
+Blocking : false (autres tickets parallèle continue)
+Question : Supprimer `Assets/Scripts/Systems/EnsureMainCamera.cs` + `Assets/Scripts/Systems/ImguiDiagOverlay.cs` (diag iter#9 + #12 cascade post-WebGL épuisée) ?
+Risque : Si Menu.unity n'a aucune Camera explicite, suppression EnsureMainCamera → écran noir Editor Play mode.
+Options envisagées :
+- (a) Supprimer les deux (cleanup intégral)
+- (b) Garder EnsureMainCamera (failsafe utile), supprimer ImguiDiagOverlay (debug-only orphelin)
+- (c) Garder les deux (no-op pas urgent)
+Reco interne (et superviseur spec) : (b) — failsafe utile, ImguiDiagOverlay = debug pur post-cascade
+Context : R7-007 P1 ticket open-ended
+
+### 2026-05-13 03h00 — Q-R7-016 events V4 fidelity
+Type : escalation (design Mike)
+Category : B
+Blocking : false (autres tickets pioche continue)
+Question : Refacto DynamicEventManager → V4 strict (8 events data-driven via `level.events[]`) OU keep Unity simplification (3 events random `% 5`) + documenter divergence intentionnelle ?
+- V4 strict : void_pulse + zero_g + undertow + battle_cry + hack (5 missing) + sand_storm + lava_surge + carousel_spin (3 OK) = 8 events full parity. Effort 2-3h.
+- Unity keep : 3 random events fonctionnel mais moins variety. Effort 0h.
+Reco interne : V4 strict si parity priority (sprint nom "R7-PUSH-100") sinon keep
+Context : R7-016 P3 ticket
+
+### 2026-05-13 03h00 — Q-R7-018 squash supervisor commits
+Type : escalation
+Category : B
+Blocking : false
+Question : Squash 5 supervisor commits + 3 ProjectilePool redondants via `git rebase -i` + force-push ?
+Risque : Rewrites public history origin/main. Si Mike a worktree local pointant commits squashés, sync break.
+Options :
+- (a) Squash + force-push (hygiene clean, risk break local refs)
+- (b) Skip squash (history hygiene < workflow risk)
+Reco interne (et superviseur spec) : (b) SKIP — commits supervisor T3 silent log non bruyant, ProjectilePool 3× = no-op asset state (verified R7-008)
+
+### 2026-05-13 03h00 — Q-R7-026 WebGL fix strategy
+Type : escalation (Mike chat live directive long-terme)
+Category : B
+Blocking : false (test Editor mode actif suffit dev/test full pour le moment)
+Question : Quelle option fix WebGL distribution (V4 marchait nickel, V6 cassé Unity 6 + URP 17.3 + WebGL2 subpass input shader) ?
+Options envisagées :
+- (a) Wait Unity 6.1 / URP 17.4+ patch official (0h effort, ETA inconnue semaines-mois)
+- (b) Downgrade Unity 2022.3 LTS + URP 14.x stable WebGL2 (4-8h migration + retest 60 levels, perte features Unity 6 input v2 etc.)
+- (c) Switch BiRP Built-in Render Pipeline (6-12h migration shaders/materials, perte URP custom passes)
+- (d) Strip URP CoreCopy custom + force fallback shader path (2-4h R&D pragmatique)
+- (e) Switch WebGPU experimental target (2-3h test, browser compat Chrome only stable)
+Reco interne (et superviseur spec) : (a) si patience OK (Editor mode permet dev/test full), sinon (d) pour pragmatisme rapide.
+Context : R7-026 P1 long-terme. Mike chat 02h55 : "WebGL medium distribution #1, V4 marchait nickel, V6 doit re-marcher web une fois"
+
 ### 2026-05-13 00h55 — Q-N9-80levels-design-decisions
 Type : escalation (design Mike)
 Category : B
