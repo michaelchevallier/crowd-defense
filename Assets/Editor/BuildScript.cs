@@ -12,6 +12,8 @@ namespace CrowdDefense.Build
     {
         private const string OutputFolder = "Builds/WebGL";
         private const string LoaderScene = "Assets/Scenes/Loader.unity";
+        private const string MenuScene = "Assets/Scenes/Menu.unity";
+        private const string WorldMapScene = "Assets/Scenes/WorldMap.unity";
         private const string MainScene = "Assets/Scenes/Main.unity";
 
         [MenuItem("CrowdDefense/Build WebGL")]
@@ -27,6 +29,8 @@ namespace CrowdDefense.Build
 
             var scenesList = new System.Collections.Generic.List<string>();
             if (File.Exists(LoaderScene)) scenesList.Add(LoaderScene);
+            if (File.Exists(MenuScene)) scenesList.Add(MenuScene);
+            if (File.Exists(WorldMapScene)) scenesList.Add(WorldMapScene);
             scenesList.Add(MainScene);
 
             var opts = new BuildPlayerOptions
