@@ -43,6 +43,23 @@
     color: rgb(255, 210, 63);
 }
 
+.pill-gems {
+    background-color: rgba(80, 30, 130, 0.7);
+    border-color: rgb(180, 100, 255);
+    border-width: 1px;
+    border-radius: 14px;
+}
+
+.pill-gems .pill-value {
+    color: rgb(220, 180, 255);
+}
+
+.pill-icon {
+    font-size: 20px;
+    margin-right: 4px;
+    align-self: center;
+}
+
 .coin-icon {
     font-size: 20px;
     margin-right: 4px;
@@ -428,8 +445,10 @@
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
 
-/* === Top-right buttons (Doctrine, Settings, Mute, Encyclopedia) === */
+/* === Top-right buttons (Doctrine, Shop, Map, Settings, Mute, Encyclopedia) === */
 .hud-doctrine-btn,
+.hud-shop-btn,
+.hud-map-btn,
 .hud-settings-btn,
 .hud-mute-btn,
 .hud-encyclopedia-btn {
@@ -445,6 +464,8 @@
 }
 
 .hud-doctrine-btn:hover,
+.hud-shop-btn:hover,
+.hud-map-btn:hover,
 .hud-settings-btn:hover,
 .hud-mute-btn:hover,
 .hud-encyclopedia-btn:hover {

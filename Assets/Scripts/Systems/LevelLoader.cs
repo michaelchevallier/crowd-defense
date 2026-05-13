@@ -73,6 +73,12 @@ namespace CrowdDefense.Systems
             Fade("WorldMap");
         }
 
+        public static void GoToShop()
+        {
+            NextLevelId = null;
+            Fade("Shop");
+        }
+
         public static void GoToMenu()
         {
             NextLevelId = null;
