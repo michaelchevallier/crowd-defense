@@ -25,6 +25,22 @@ namespace CrowdDefense.UI
         private VisualElement? panelVictory;
         private Label? panelVictoryTitle;
         private Label? panelVictorySubtitle;
+
+        // Score breakdown overlays — bound for panel-victory + panel-game-over
+        private sealed class OverlayStatsRefs
+        {
+            public Label?[] Stars = System.Array.Empty<Label?>();
+            public Label? Waves;
+            public Label? Kills;
+            public Label? Gold;
+            public Label? Towers;
+            public Label? Perks;
+            public Label? Time;
+            public Label? Score;
+        }
+        private OverlayStatsRefs? _victoryStats;
+        private OverlayStatsRefs? _defeatStats;
+        private Coroutine? _starsCoroutine;
         private Button? btnRestartGo;
         private Button? btnRestartVictory;
         private Button? btnMenuGo;
@@ -237,6 +253,8 @@ namespace CrowdDefense.UI
             _confirmRestartPanel = Root.Q<VisualElement>("confirm-restart-panel");
             _confirmRestartYes = Root.Q<Button>("btn-confirm-restart-yes");
             _confirmRestartNo = Root.Q<Button>("btn-confirm-restart-no");
+            _victoryStats = BindOverlayStats(panelVictory);
+            _defeatStats  = BindOverlayStats(panelGameOver);
 
             waveLaunchBtn = Root.Q<VisualElement>("wave-launch-btn");
             waveLaunchPill = Root.Q<VisualElement>("wave-launch-pill");
@@ -334,6 +352,7 @@ namespace CrowdDefense.UI
             {
                 LevelRunner.Instance.OnTotalHPChanged += OnHPChanged;
                 LevelRunner.Instance.OnStateChanged += OnStateChanged;
+                LevelRunner.Instance.OnSummaryReady += OnSummaryReady;
                 OnHPChanged(LevelRunner.Instance.TotalCastleHP, LevelRunner.Instance.TotalCastleHPMax);
                 OnStateChanged(LevelRunner.Instance.State);
             }
@@ -375,6 +394,7 @@ namespace CrowdDefense.UI
             {
                 LevelRunner.Instance.OnTotalHPChanged -= OnHPChanged;
                 LevelRunner.Instance.OnStateChanged -= OnStateChanged;
+                LevelRunner.Instance.OnSummaryReady -= OnSummaryReady;
             }
             if (Castle.Instance != null)
                 Castle.Instance.OnHPChanged -= OnCastleHPChanged;
@@ -934,6 +954,91 @@ namespace CrowdDefense.UI
                 if (waveLaunchPill != null) SetVisible(waveLaunchPill, false);
                 if (_wavePreviewPanel != null) _wavePreviewPanel.AddToClassList("hidden");
             }
+        }
+
+        // ── Score breakdown overlay (panel-victory / panel-game-over) ──────────
+
+        private static OverlayStatsRefs? BindOverlayStats(VisualElement? panel)
+        {
+            if (panel == null) return null;
+            var refs = new OverlayStatsRefs
+            {
+                Stars = new[]
+                {
+                    panel.Q<Label>("overlay-star-1"),
+                    panel.Q<Label>("overlay-star-2"),
+                    panel.Q<Label>("overlay-star-3"),
+                },
+                Waves  = panel.Q<Label>("overlay-stat-waves"),
+                Kills  = panel.Q<Label>("overlay-stat-kills"),
+                Gold   = panel.Q<Label>("overlay-stat-gold"),
+                Towers = panel.Q<Label>("overlay-stat-towers"),
+                Perks  = panel.Q<Label>("overlay-stat-perks"),
+                Time   = panel.Q<Label>("overlay-stat-time"),
+                Score  = panel.Q<Label>("overlay-stat-score"),
+            };
+            return refs;
+        }
+
+        private void OnSummaryReady(LevelResult r)
+        {
+            var refs = r.IsVictory ? _victoryStats : _defeatStats;
+            if (refs == null) return;
+
+            int totalWaves = WaveManager.Instance != null && WaveManager.Instance.TotalWaves > 0
+                ? WaveManager.Instance.TotalWaves
+                : Mathf.Max(r.WaveReached, 1);
+            int wavesCleared = r.IsVictory
+                ? totalWaves
+                : Mathf.Max(0, r.WaveReached - 1);
+
+            if (refs.Waves  != null) refs.Waves.text  = $"{wavesCleared} / {totalWaves}";
+            if (refs.Kills  != null) refs.Kills.text  = r.Kills.ToString();
+            if (refs.Gold   != null) refs.Gold.text   = $"{r.GoldEarned}¢";
+            if (refs.Towers != null) refs.Towers.text = r.TowersPlaced.ToString();
+            if (refs.Perks  != null) refs.Perks.text  = r.PerksAcquired.ToString();
+            if (refs.Time   != null) refs.Time.text   = FormatPlaytime(r.PlaytimeSeconds);
+            if (refs.Score  != null) refs.Score.text  = r.Score.ToString();
+
+            ResetStars(refs.Stars);
+            if (_starsCoroutine != null) StopCoroutine(_starsCoroutine);
+            if (r.IsVictory)
+                _starsCoroutine = StartCoroutine(AnimateOverlayStars(refs.Stars, r.StarsEarned));
+        }
+
+        private static void ResetStars(Label?[] stars)
+        {
+            foreach (var s in stars)
+            {
+                if (s == null) continue;
+                s.text = "☆";
+                s.RemoveFromClassList("overlay-star-lit");
+            }
+        }
+
+        private static System.Collections.IEnumerator AnimateOverlayStars(Label?[] stars, int earned)
+        {
+            yield return new WaitForSecondsRealtime(0.4f);
+            for (int i = 0; i < stars.Length; i++)
+            {
+                var star = stars[i];
+                if (star == null) continue;
+                bool lit = i < earned;
+                star.text = lit ? "★" : "☆";
+                if (lit)
+                {
+                    star.AddToClassList("overlay-star-lit");
+                    AudioController.Instance?.Play("star");
+                }
+                yield return new WaitForSecondsRealtime(0.3f);
+            }
+        }
+
+        private static string FormatPlaytime(float seconds)
+        {
+            int m = (int)(seconds / 60f);
+            int s = (int)(seconds % 60f);
+            return $"{m:D2}:{s:D2}";
         }
 
         // Castle regen icon — fires when HP increases (Regen / GrantBonusHP)
