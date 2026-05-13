@@ -265,13 +265,16 @@ namespace CrowdDefense.UI
             Debug.Log($"[SceneTransition] Scene activated, waiting for new scene to initialize");
             yield return new WaitForSeconds(0.1f); // Brief pause for scene Awake/Start
 
-            // Fade out overlay, then restore to black for next default transition
+            // Fade out overlay, keep it transparent (alpha 0) so it doesn't cover the new scene.
+            // Previous bug: setting _overlay.color = Color.black after fade-out re-set alpha=1
+            // (Color.black = rgba(0,0,0,1)), making the overlay fully opaque black and hiding the
+            // newly loaded scene. Fix: explicitly set color with alpha=0 (transparent black).
             Debug.Log($"[SceneTransition] Starting fade-out (1→0)");
             yield return StartCoroutine(Fade(1f, 0f, FadeDuration));
             if (_overlay != null)
             {
-                _overlay.color = Color.black;
-                Debug.Log($"[SceneTransition] Fade-out complete, transition finished");
+                _overlay.color = new Color(0f, 0f, 0f, 0f);
+                Debug.Log($"[SceneTransition] Fade-out complete, transition finished (overlay alpha forced to 0)");
             }
             else
             {
