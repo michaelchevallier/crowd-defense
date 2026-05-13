@@ -318,3 +318,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 20h17 — scrute /loop #121. **0 new commits** depuis #120 (15 min). Mike idle ~57min depuis V8B commit. Batchmode 33733 100% CPU @ 1h18 stuck. V8/V8B fixes restent en attente Mike rebuild. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 20h32 — scrute /loop #122. **0 new commits** depuis #121 (15 min). Mike idle ~1h12. Batchmode 33733 stuck @ 1h33. V8/V8B pending. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 20h47 — scrute /loop #123. **0 new commits** depuis #122 (15 min). Mike idle ~1h27. Batchmode 33733 stuck @ 1h48. V8/V8B pending. **Drift 0/12** ✅. **T3 silent**.
