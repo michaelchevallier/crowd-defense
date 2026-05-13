@@ -97,9 +97,6 @@ namespace CrowdDefense.UI
             Debug.Log($"[WorldMapController] Root style display={_root.style.display}, visibility={_root.style.visibility}");
             Debug.Log($"[WorldMapController] Root style position={_root.style.position}, left={_root.style.left}, right={_root.style.right}, top={_root.style.top}, bottom={_root.style.bottom}");
 
-            _root.style.width  = new Length(100, LengthUnit.Percent);
-            _root.style.height = new Length(100, LengthUnit.Percent);
-            Debug.Log("[WorldMapController] Set root to 100% width/height");
             _registry = LevelRegistry.Get();
             if (_registry == null)
             {

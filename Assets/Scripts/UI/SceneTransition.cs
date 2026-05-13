@@ -323,8 +323,28 @@ namespace CrowdDefense.UI
         public static void EnsureExists()
         {
             if (Instance != null) return;
-            var go = new GameObject("SceneTransition");
-            go.AddComponent<SceneTransition>();
+            Debug.Log("[SceneTransition.EnsureExists] Creating new SceneTransition GameObject");
+            try
+            {
+                var go = new GameObject("SceneTransition");
+                if (go == null)
+                {
+                    Debug.LogError("[SceneTransition.EnsureExists] Failed to create GameObject");
+                    return;
+                }
+                var component = go.AddComponent<SceneTransition>();
+                if (component == null)
+                {
+                    Debug.LogError("[SceneTransition.EnsureExists] Failed to add SceneTransition component");
+                    Destroy(go);
+                    return;
+                }
+                Debug.Log("[SceneTransition.EnsureExists] SceneTransition created successfully");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[SceneTransition.EnsureExists] Exception: {ex}");
+            }
         }
     }
 }
