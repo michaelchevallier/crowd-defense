@@ -25,15 +25,6 @@ namespace CrowdDefense.Visual
             string? idleClipName,
             string? walkClipName)
         {
-            if (!meshRoot.TryGetComponent(out Animator animator))
-            {
-                animator = meshRoot.AddComponent<Animator>();
-                if (animator == null) return null;
-            }
-
-            // Disable root motion to avoid sliding animations
-            animator.applyRootMotion = false;
-
             // meshRoot.name may be "Mesh_knight" — strip "Mesh_" prefix, try exact then lowercase
             string rawName = meshRoot.name;
             if (rawName.StartsWith("Mesh_", System.StringComparison.OrdinalIgnoreCase))
@@ -42,6 +33,36 @@ namespace CrowdDefense.Visual
             var controller =
                 Resources.Load<RuntimeAnimatorController>(k_ControllerBasePath + rawName)
                 ?? Resources.Load<RuntimeAnimatorController>(k_ControllerBasePath + rawName.ToLowerInvariant());
+
+            // KayKit characters: the GLB root node is named "Rig_Medium" but UnityGLTF renames
+            // the prefab root to the file name (e.g. "Knight"). Their animation clips use paths
+            // "Rig_Medium/root/hips/..." so the Animator must be on the PARENT of meshRoot,
+            // and meshRoot must be renamed to "Rig_Medium" to match the binding paths.
+            // Detection: meshRoot has a direct child named "root" (KayKit rig structure)
+            // but no direct child named "CharacterArmature" (Quaternius rig structure).
+            bool isKayKit = meshRoot.transform.Find("root") != null
+                         && meshRoot.transform.Find("CharacterArmature") == null;
+
+            GameObject animatorTarget;
+            if (isKayKit && meshRoot.transform.parent != null)
+            {
+                // Rename meshRoot to match the clip binding prefix "Rig_Medium"
+                meshRoot.name = "Rig_Medium";
+                animatorTarget = meshRoot.transform.parent.gameObject;
+            }
+            else
+            {
+                animatorTarget = meshRoot;
+            }
+
+            if (!animatorTarget.TryGetComponent(out Animator animator))
+            {
+                animator = animatorTarget.AddComponent<Animator>();
+                if (animator == null) return null;
+            }
+
+            // Disable root motion to avoid sliding animations
+            animator.applyRootMotion = false;
 
             if (controller != null)
             {
