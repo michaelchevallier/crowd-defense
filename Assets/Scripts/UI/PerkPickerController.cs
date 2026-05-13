@@ -33,7 +33,7 @@ namespace CrowdDefense.UI
         private List<PerkDef?> currentOffers = new();
         private int heroLevel = 1;
 
-        private void Awake()
+        private void Start()
         {
             ResolveUI();
         }
