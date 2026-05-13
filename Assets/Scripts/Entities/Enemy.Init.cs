@@ -71,7 +71,7 @@ namespace CrowdDefense.Entities
             // D1-04 mob pressure: scale HP and speed by world pressure
             int currentWorld = LevelRunner.Instance?.CurrentLevel?.World ?? 1;
             var pressure = BalanceConfig.Get().GetPressure(currentWorld);
-            hp       = type.Hp * pressure.mobHpMul * endlessMul;
+            hp       = type.Hp * pressure.mobHpMul * endlessMul * SupportMode.MobHpMultiplier;
             maxHp    = hp;
             pressureSpeedMul = pressure.mobSpeedMul;
 
