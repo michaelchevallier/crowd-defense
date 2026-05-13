@@ -13,6 +13,8 @@ namespace CrowdDefense.UI
         private Label?         _logoTitle;
         private Button?        _btnResume;
         private Button?        _btnRestart;
+        private Button?        _btnSettings;
+        private Button?        _btnHelp;
         private Button?        _btnMenu;
 
         // Overlay fade constants
@@ -45,14 +47,18 @@ namespace CrowdDefense.UI
             _logoTitle    = rootElem?.Q<Label>("logo-title");
             _btnResume    = rootElem?.Q<Button>("btn-resume");
             _btnRestart   = rootElem?.Q<Button>("btn-restart");
+            _btnSettings  = rootElem?.Q<Button>("btn-settings-from-pause");
+            _btnHelp      = rootElem?.Q<Button>("btn-help-from-pause");
             _btnMenu      = rootElem?.Q<Button>("btn-menu");
 
             if (_pauseOverlay != null)
                 _pauseOverlay.pickingMode = PickingMode.Position;
 
-            if (_btnResume  != null) _btnResume.clicked  += OnResumeClicked;
-            if (_btnRestart != null) _btnRestart.clicked += OnRestartClicked;
-            if (_btnMenu    != null) _btnMenu.clicked    += OnMenuClicked;
+            if (_btnResume   != null) _btnResume.clicked   += OnResumeClicked;
+            if (_btnRestart  != null) _btnRestart.clicked  += OnRestartClicked;
+            if (_btnSettings != null) _btnSettings.clicked += OnSettingsClicked;
+            if (_btnHelp     != null) _btnHelp.clicked     += OnHelpClicked;
+            if (_btnMenu     != null) _btnMenu.clicked     += OnMenuClicked;
         }
 
         private void Update()
@@ -153,6 +159,8 @@ namespace CrowdDefense.UI
 
         private void OnResumeClicked()  => LevelRunner.Instance?.Resume();
         private void OnRestartClicked() => LevelRunner.Instance?.RestartLevel();
+        private void OnSettingsClicked() => SettingsPanelController.Instance?.Show();
+        private void OnHelpClicked()     => FindFirstObjectByType<HelpOverlayController>()?.Show();
         private void OnMenuClicked()
         {
             // Restore timeScale before scene switch so it doesn't carry over.
