@@ -237,3 +237,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 10h47 — scrute /loop. **0 new commits depuis `d27800b1`** (#84). **Drift 0/12** ✅. Worktrees 2 stable. Q-R7-026-V2 pending Mike décision (F1 upgrade 6.4.6f1 / F2 alpha / F3 Editor-only / F4 defer). **T3 silent**.
 
 2026-05-13 11h02 — scrute /loop. **0 new commits depuis `def80d52`** (#85). **Drift 0/12** ✅. Q-R7-026-V2 toujours pending Mike. **T3 silent**.
+
+2026-05-13 11h17 — scrute /loop. **0 new commits depuis `e4be476b`** (#86). **Drift 0/12** ✅. **T3 silent**.
