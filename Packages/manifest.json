@@ -7,7 +7,7 @@
     "com.unity.probuilder": "6.0.9",
     "com.unity.render-pipelines.universal": "17.3.0",
     "com.unity.visualeffectgraph": "17.3.0",
-    "org.khronos.unitygltf": "https://github.com/KhronosGroup/UnityGLTF.git#release/2.19.2",
+    "org.khronos.unitygltf": "https://github.com/KhronosGroup/UnityGLTF.git#release/2.19.5",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
     "com.unity.modules.ai": "1.0.0",
