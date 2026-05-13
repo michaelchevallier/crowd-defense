@@ -187,6 +187,12 @@ namespace CrowdDefense.UI
 
             // Start async load immediately, hold activation
             _loadingOp = SceneManager.LoadSceneAsync(sceneName);
+            if (_loadingOp == null)
+            {
+                Debug.LogError($"[SceneTransition] Failed to load scene '{sceneName}' — check EditorBuildSettings.scenes");
+                _busy = false;
+                yield break;
+            }
             _loadingOp.allowSceneActivation = false;
 
             // Wait up to 500 ms — skip loading UI entirely if load is already done
