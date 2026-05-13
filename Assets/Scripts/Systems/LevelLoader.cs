@@ -85,6 +85,13 @@ namespace CrowdDefense.Systems
             GoToWorldMap();
         }
 
+        // Navigate to the RunMap scene (roguelike map between encounters).
+        public static void GoToRunMap()
+        {
+            NextLevelId = null;
+            Fade("WorldMap");
+        }
+
         public static void Fade(string sceneName, Color fadeColor = default, float fadeDur = 0.5f)
         {
             SceneTransition.EnsureExists();
