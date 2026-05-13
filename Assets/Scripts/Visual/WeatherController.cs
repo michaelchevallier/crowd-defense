@@ -239,12 +239,29 @@ namespace CrowdDefense.Visual
 
         public void StopAmbientAudio() => AudioController.Instance?.StopChannel("ambient");
 
+        // Camera uses SolidColor clearFlags (see EnsureMainCamera) so the skybox tint
+        // alone is invisible — Camera.main.backgroundColor must be set to surface the
+        // theme palette. SkyTints are mid-bright drift colors; darken to ~55% so the
+        // background stays gameplay-readable instead of saturating the viewport.
+        private const float SkyBackgroundDarken = 0.55f;
+
         public static void ApplySkyGradient(WeatherType type)
         {
             if (!SkyTints.TryGetValue(type, out var tint)) return;
             RenderSettings.ambientLight = tint;
             if (RenderSettings.skybox != null)
                 RenderSettings.skybox.SetColor("_Tint", tint);
+
+            var cam = Camera.main;
+            if (cam != null)
+            {
+                cam.clearFlags = CameraClearFlags.SolidColor;
+                cam.backgroundColor = new Color(
+                    tint.r * SkyBackgroundDarken,
+                    tint.g * SkyBackgroundDarken,
+                    tint.b * SkyBackgroundDarken,
+                    1f);
+            }
         }
 
         public static void ApplySkyGradient(LevelTheme theme)
