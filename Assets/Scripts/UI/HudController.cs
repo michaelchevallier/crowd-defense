@@ -191,31 +191,16 @@ namespace CrowdDefense.UI
         protected override void OnUIReady()
         {
             if (Root == null) return;
+            BindUiRefs();
+            WireCallbacks();
+            SubscribeSystems();
+        }
 
-            _doctrineCtrl = GetComponent<DoctrineController>();
+        private void BindUiRefs()
+        {
+            if (Root == null) return;
 
-            // Auto-add UI sibling controllers that share the HUD UIDocument (each Qs its own
-            // elements out of HUD.uxml). Idempotent: only added when not already present.
-            EnsureSibling<SettingsPanelController>();
-            _settingsCtrl = GetComponent<SettingsPanelController>();
-            EnsureSibling<PauseMenuController>();
-            EnsureSibling<TowerToolbarController>();
-            EnsureSibling<TowerTooltipController>();
-            EnsureSibling<SynergyHudController>();
-            EnsureSibling<FloatingPopupController>();
-            EnsureSibling<RadialMenuController>();
-            EnsureSibling<TowerSelectMenuController>();
-            EnsureSibling<MuteToggleController>();
-            EnsureSibling<HeroSkillBarController>();
-            EnsureSibling<MinimapController>();
-            EnsureSibling<SpeedControlController>();
-            EnsureSibling<HudPerkBadges>();
-            EnsureSibling<HelpOverlayController>();
-            EnsureSibling<QuickSaveHotkey>();
-            EnsureSibling<KeyBindingsPanel>();
-            EnsureSibling<RuntimeProfilePanel>();
-            EnsureSibling<AchievementToastController>();
-            EnsureSibling<EncyclopediaController>();
+            EnsureSiblingControllers();
 
             ApplyDeviceClasses(Root);
             goldLabel = Root.Q<Label>("gold-label");
@@ -294,9 +279,34 @@ namespace CrowdDefense.UI
             if (goldValue != null) goldValue.text = "$0";
             if (waveValue != null) waveValue.text = "—";
             if (hpValue != null) hpValue.text = "—";
+        }
 
-            WireCallbacks();
-            SubscribeSystems();
+        // Auto-add UI sibling controllers that share the HUD UIDocument (each Qs its own
+        // elements out of HUD.uxml). Idempotent: only added when not already present.
+        private void EnsureSiblingControllers()
+        {
+            _doctrineCtrl = GetComponent<DoctrineController>();
+
+            EnsureSibling<SettingsPanelController>();
+            _settingsCtrl = GetComponent<SettingsPanelController>();
+            EnsureSibling<PauseMenuController>();
+            EnsureSibling<TowerToolbarController>();
+            EnsureSibling<TowerTooltipController>();
+            EnsureSibling<SynergyHudController>();
+            EnsureSibling<FloatingPopupController>();
+            EnsureSibling<RadialMenuController>();
+            EnsureSibling<TowerSelectMenuController>();
+            EnsureSibling<MuteToggleController>();
+            EnsureSibling<HeroSkillBarController>();
+            EnsureSibling<MinimapController>();
+            EnsureSibling<SpeedControlController>();
+            EnsureSibling<HudPerkBadges>();
+            EnsureSibling<HelpOverlayController>();
+            EnsureSibling<QuickSaveHotkey>();
+            EnsureSibling<KeyBindingsPanel>();
+            EnsureSibling<RuntimeProfilePanel>();
+            EnsureSibling<AchievementToastController>();
+            EnsureSibling<EncyclopediaController>();
         }
 
         // Sets hero-portrait background-color from the avatar selection (mirrors HeroPortraitController logic).
