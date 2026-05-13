@@ -452,10 +452,13 @@ namespace CrowdDefense.Systems
                 LevelRunner.Instance?.PrimaryCastle?.Regen(5);
         }
 
-        // D1-04: pressure mob — linear rate 0% W1 → 60% W10, spawned 3s after wave start, speed ×1.5
+        // D1-04: pressure mob — world-based curve 0% W1 → 60% W10, + per-wave-cleared boost
+        // (+5%/wave depuis W1 si currentWorld >= 1), spawned 3s after wave start, speed ×1.5
         private void SpawnPressureMob(int waveIdx, int worldId)
         {
-            float pressureRate = Mathf.Clamp01((worldId - 1) / 9f * 0.6f);
+            float worldRate = Mathf.Clamp01((worldId - 1) / 9f * 0.6f);
+            float waveBoost = worldId >= 1 ? waveIdx * 0.05f : 0f;
+            float pressureRate = Mathf.Clamp01(worldRate + waveBoost);
             if (UnityEngine.Random.value > pressureRate) return;
             StartCoroutine(SpawnPressureDelayed(3f, 1.5f, waveIdx, worldId));
         }

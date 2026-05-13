@@ -208,6 +208,24 @@ namespace CrowdDefense.Entities
         protected void Update()
         {
             UpdateDangerLightFlicker();
+            UpdatePassiveRegen();
+        }
+
+        private float _passiveRegenAccum;
+        private const float PassiveRegenHpPerSec = 0.5f;
+
+        // D1-04 Q11 : passive regen 0.5 HP/s, gated by NoRegenWorldThreshold (W6+ → 0).
+        private void UpdatePassiveRegen()
+        {
+            if (IsDead || HP >= HPMax) { _passiveRegenAccum = 0f; return; }
+            if (_world >= BalanceConfig.Get().NoRegenWorldThreshold) return;
+            _passiveRegenAccum += PassiveRegenHpPerSec * Time.deltaTime;
+            if (_passiveRegenAccum < 1f) return;
+            int amount = Mathf.FloorToInt(_passiveRegenAccum);
+            _passiveRegenAccum -= amount;
+            HP = Mathf.Min(HPMax, HP + amount);
+            OnHPChanged?.Invoke(HP, HPMax);
+            RefreshHpBar();
         }
 
         protected void UpdateDangerLightFlicker()
