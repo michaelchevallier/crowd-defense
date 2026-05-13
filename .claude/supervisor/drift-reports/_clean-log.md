@@ -284,3 +284,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 15h45 — scrute /loop. **0 new commits depuis `fe062e2d`** (self-scrute #105). **Drift 0/12** ✅. Killed orphan V6 Unity build (PID 12865 spinning licensing loop 23min post-completion). System idle awaiting Mike Unity Editor debug session. **T3 silent**.
 
 2026-05-13 16h00 — scrute /loop. **0 new commits** depuis self-scrute #106. 0 Unity builds. System idle stable. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 16h15 — scrute /loop. **0 new commits** depuis #107. System idle, Mike a Unity Editor instructions pour debug session. **Drift 0/12** ✅. **T3 silent**.
