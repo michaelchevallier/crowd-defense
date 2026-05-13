@@ -9,6 +9,7 @@ namespace CrowdDefense.Systems
     {
         private static readonly Dictionary<string, KeyCode> Defaults = new()
         {
+            { "console",          KeyCode.F1 },
             { "pause",            KeyCode.Escape },
             { "pause_alt",        KeyCode.P },
             { "speed",            KeyCode.Space },
