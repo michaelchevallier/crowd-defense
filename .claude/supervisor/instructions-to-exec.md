@@ -1848,3 +1848,600 @@ Sprint R6-PARITY-V4-FINAL **OFFICIELLEMENT 95%+ COMPLETE** (commit `e678a34` CLA
 
 **Si tout fait, idle acceptable**. Mike peut stopper monitor 5min via TaskStop si veut.
 
+
+
+---
+
+## 2026-05-13 02h47 — 🚀 R7-PUSH-100-GO (Mike chat override "avance jusque parité")
+
+**Type** : NEW-SPRINT-GO + dispatch autonome backlog épais
+**From** : Opus superviseur post-reset rôle (Mike rappel chat live "tu as full switch sur faire le dev v6 toi meme")
+**Sprint** : **R7-PUSH-100** (push 85-90% → 95-100% visible parity)
+**Trigger** : Mike chat direct 2026-05-13 (charter §5 override) : "Et avance jusque parité"
+
+## Mike chat context
+
+Mike a explicitement validé l'ouverture R7 en chat live :
+> "fais un full reboot unity et mets une regle dans ta mémoire et dans celle de l'autre projet de pas tester sur web pour l'instant. Une fois que ça c'est fait refait ton état des lieux et continue ici et sur ton agent de délégation. Et avance jusque parité."
+
+Puis correction de scope superviseur :
+> "j'ai l'impression que tu as completement laché ton role de supervision depuis la codebase v4 et que tu as full switch sur faire le dev v6 toi emme"
+> "il faut quand meme lui donner des trucs a faire a l'autre"
+> "donne lui un vrai backlog pas juste ce que tu estime qu'il peut faire entre deux wakeup a toi"
+
+**Implications scope** :
+- Superviseur : redevient read-only sur code, écrit instructions/drift-reports/acks
+- Exec session : pioche backlog R7 ci-dessous, autonomie max, dispatch worktrees parallèles
+- Time cap : open-ended (Mike chat live, surveille drift criteria charter §2)
+- Push notif Mike : T3 silent default, escalate T2 si batch ack utile, T1 si drift D10/D11 ou Mike escalation cat B
+
+## Constraint critique (memory rule active)
+
+⚠️ **PAS DE TEST WEB / WebGL** tant que Unity n'a pas patch URP+WebGL2.
+
+- Unity 6.0.3.15f1 + URP 17.3.0 + WebGL2 = subpass input shader fail (cf scrute #37-51 _clean-log.md + iter cascade #1-13 documenté)
+- Le jeu marche 100% en Unity Editor Play mode (Mike confirmed screenshot)
+- Validation feature/parity : **EXCLUSIVEMENT** Unity Editor Play mode OU UnityMCP HTTP `http://127.0.0.1:8080/mcp` (refresh_unity + manage_editor + read_console + execute_code + manage_scene)
+- Auto-build-loop SUSPENDU pour le web tant que pas de fix Unity
+- Build WebGL test = false negative (canvas pur noir) → NE PAS spawner qa-tester via Chrome MCP sur /v6/
+
+## In-flight supervisor side (NE PAS PIOCHER, NE PAS DUPER)
+
+- **T-VISUAL-002** Animator state machines wire (hero + 28 enemies idle/walk transitions) → agent `a5dc5492ebc56126f` background, supervisor-spawned avant reset rôle, Mike approuvé "laisse finir". Worktree `agent-a203f9d46f1056019` locked. Si ce ticket reapparait dans le backlog ci-dessous → SKIP, vérifier git log post-completion notif.
+- **T-AUDIO-001** SFX clips real wire → ✅ DONE commit `d97d57f` (3 SFX wired : enemy_die_basic + castle_hit proxy + boss_charge proxy). Fallback procédural conservé pour clips inconnus futurs.
+- **PERF-3FIX** EnemyPathing + MuzzleFlash pool + HasAnimatorParam → ✅ DONE déjà shippé via commits `0f386f9` + `afc6cce` + `1cf88ce` (no-op revérifié 2026-05-13 02h45).
+
+## Process exec (rappel charter §1 + §4)
+
+1. Read this bloc en intégralité
+2. Write `.claude/supervisor/acks/2026-05-13-HHhMM-r7-push-100-go-ack.md` avec timestamp lu + tickets piochés batch 1
+3. Dispatch batch 1 (max 4 worktrees simultanés charter §1 règle #9, isolation:"worktree")
+4. Self-report par agent : LOC ±, compile clean, console clean, commits livrés (charter §1 règle #8)
+5. Each commit push autonome après build clean
+6. Move to next batch quand ≥1 slot libéré
+7. Si question cat A → write `questions-to-supervisor.md`, continue non-bloquant
+8. Si question cat B → tag `escalation:true` + attend `answers-from-supervisor.md`
+
+---
+
+## Backlog R7-PUSH-100 — 25 tickets prioritisés
+
+Source : `.claude/audit/SPRINT-R6-PARITY-V4-FINAL-completion.md` §§ "Residual gaps" + "Next sprint candidates" + master plan `.claude/specs/R6-PARITY-V4/*.md` + `.claude/backlog/R6-found-during-exec.md`.
+
+Codes : `[Pn]` priorité, `[Em]` effort estimé (min ou h), `[Df]` fichiers cibles, `[Vf]` verification, `[Cf]` commit format.
+
+### P0 — Mike-visible direct impact (parity finish)
+
+#### R7-001 — T-VISUAL-004 Water/Lava 8 PNG frames anim
+
+- **[P0]** **[Em : 1-2h]**
+- **Ref** : completion doc ligne 44 ("Frames non importés ; placeholder colors"), residual gap #5
+- **Mission** : Animer tiles water + lava via 8 PNG frames each (4 fps loop ou Frames/Sprite anim Unity).
+- **[Df]** :
+  - V4 ref animation (Park Defense Phaser) : `milan project/src-v3/data/textures/` ou `src-v3/entities/TextureWater.js` (chercher 8 frames patterns)
+  - V6 : `Assets/Resources/Tiles/Water/*.png` + `Assets/Resources/Tiles/Lava/*.png` (à créer)
+  - Sprite animator : `Assets/Resources/Animations/TileWaterAnim.controller` + `TileLavaAnim.controller`
+  - Tile prefab : `Assets/Prefabs/Tiles/WaterTile.prefab` + `LavaTile.prefab` (ajouter SpriteRenderer + Animator)
+- **Pipeline gen frames** :
+  - Option A (recommandée) : Flux Schnell local pipeline (cf memory `reference_flux_local.md` : ComfyUI:8188 + `tools/gen_textures.py`). Prompts : "tileable seamless 256x256 water surface frame {i+1} of 8, soft ripples cycling animation"
+  - Option B : Procédural Unity (ShaderGraph displacement noise) si Flux pas dispo
+- **[Vf]** :
+  - Compile clean (UnityMCP `refresh_unity` + `read_console` Error count 0)
+  - Play mode Unity Editor : water/lava tiles animées en boucle visible
+  - UnityMCP `execute_code` snippet : check `FindFirstObjectByType<Animator>()` sur tile water → state Playing
+- **[Cf]** :
+  - `feat(visual)(R7-001): water+lava 8-frame sprite anim — V4 parity tile motion`
+
+#### R7-002 — Castle real .fbx art assets
+
+- **[P0]** **[Em : 2-3h]**
+- **Ref** : completion doc ligne 26 "Procedural placeholder (vrai .fbx art TBD)", residual gap #4
+- **Mission** : Remplacer les 4 procedural meshes Castle (intact/cracked/ruined/critical) par vrais .fbx art assets V4-style.
+- **[Df]** :
+  - Current : `Assets/Editor/BuildCastleProceduralMeshes.cs` (procedural) + Castle GO Main.unity ref 4 placeholders
+  - V4 art ref : `milan project/src-v3/entities/Castle.js` + `src-v3/data/castle_art.json` ou similar
+  - Target : `Assets/Resources/Models/Castle/castle_intact.fbx`, `castle_cracked.fbx`, `castle_ruined.fbx`, `castle_critical.fbx`
+  - Wire : Castle.cs (probably Castle.VFX.cs ligne CastleSkinController.cs) — assign MeshFilter.sharedMesh selon HP threshold
+- **Source assets** :
+  - Option A : Mike fournit .fbx via Asset Store / 3D modeling
+  - Option B : ProBuilder package (déjà importé d'après workspace dirty `ProjectSettings/Packages/com.unity.probuilder/`) → modéliser 4 stages castle low-poly directement Unity
+  - Option C : Procedural amélioré (current = placeholder, can iterate to ressemble V4 look)
+- **[Vf]** :
+  - Compile clean
+  - Play mode Unity Editor : Castle se dégrade visuellement selon HP (100%→intact, 75%→cracked, 50%→ruined, 25%→critical)
+  - Mike screenshot validation post-implem
+- **[Cf]** :
+  - `feat(art)(R7-002): real castle .fbx 4 stages (intact/cracked/ruined/critical) — V4 parity`
+
+#### R7-003 — T-INTEGRATION-001 Loader.unity → EditorBuildSettings
+
+- **[P0]** **[Em : 30min]**
+- **Ref** : completion doc ligne 49 "Loader.unity créé mais pas ajouté à EditorBuildSettings", residual gap #7
+- **Mission** : Ajouter Loader.unity en scene 0 dans EditorBuildSettings (skip splash native flow).
+- **[Df]** :
+  - `ProjectSettings/EditorBuildSettings.asset` — ajouter entry `Loader.unity` scene 0 enabled
+  - Vérifier `Assets/Scenes/Loader.unity` existe (créé via `BuildLoaderSceneTool` éditeur précédemment, voir git log)
+  - Loader.unity → load Menu.unity async via `SceneManager.LoadSceneAsync("Menu")` ou similar — read existing implem
+- **[Vf]** :
+  - Compile clean
+  - Unity Editor : Open Loader scene → Play → switch to Menu automatiquement
+  - UnityMCP `execute_code` : `EditorBuildSettings.scenes[0].path == "Assets/Scenes/Loader.unity"`
+- **[Cf]** :
+  - `fix(integration)(R7-003): Loader.unity scene 0 in EditorBuildSettings — skip splash`
+
+#### R7-004 — T-VALIDATE-10CHECKS Mike validation checklist + UnityMCP self-tests
+
+- **[P0]** **[Em : 1h]**
+- **Ref** : completion doc ligne 163-176 "Manual verification plan for Mike (top 10 checks Unity Editor Play mode)", residual gap #10
+- **Mission** : Préparer 2 livrables :
+  1. Checklist Mike side `.claude/qa/MIKE-VALIDATION-R7.md` — 10 checks détaillés Play mode (audio, visual, castle, BuildPoint, ULT, animations, RadialMenu, 5-wave smoke, achievements)
+  2. UnityMCP self-test script `.claude/qa/r7-self-test.sh` qui automate ce qui est automatisable (compile state, Play mode 30s no NRE, console error count, Object.FindFirstObjectByType checks)
+- **[Df]** :
+  - Create `.claude/qa/MIKE-VALIDATION-R7.md` (markdown checklist 10 items + screenshots placeholders)
+  - Create `.claude/qa/r7-self-test.sh` (curl UnityMCP HTTP JSON-RPC pattern, voir `.claude/supervisor/tools/notify.sh` pour pattern shell)
+- **[Vf]** :
+  - r7-self-test.sh runs end-to-end : init Unity Play → 30s → read console → assert error count 0 → exit code 0
+  - Mike checklist sentinel : 10 sections complètes avec UnityMCP commande de check si applicable + verification critère
+- **[Cf]** :
+  - `chore(qa)(R7-004): Mike validation checklist + UnityMCP self-test r7-self-test.sh`
+
+### P1 — Polish + dev UX
+
+#### R7-005 — T-UI-002 MuteToggleController scene wire
+
+- **[P1]** **[Em : 30min]**
+- **Ref** : completion doc ligne 46 ("Component absent du scene"), master plan T-UI-002
+- **Mission** : MuteToggleController existe (cf `Assets/Scripts/UI/MuteToggleController.cs` 30+ LOC déjà lu superviseur). Le component cherche `Button "btn-mute"` dans UIDocument. Need : 1) ajouter `btn-mute` à `Assets/UI/HUD.uxml`, 2) attacher MuteToggleController component au GO HUD ou créer dedicated GO, 3) verify icône sprite "muted/unmuted" assigné.
+- **[Df]** :
+  - `Assets/UI/HUD.uxml` — ajouter `<Button name="btn-mute" class="hud-btn-mute" text="🔊" />` dans top-right cluster
+  - `Assets/UI/HUD.uss` — style `.hud-btn-mute` (24×24, top-right anchor)
+  - `Assets/Scenes/Main.unity` — attach `MuteToggleController` à GO HUD existant (ou créer "MuteToggle" GO child)
+  - `Assets/Scripts/UI/MuteToggleController.cs` — verify Audio.SetMuted() existe dans `Assets/Scripts/Systems/Audio.cs`
+- **[Vf]** :
+  - Compile clean
+  - Play mode : bouton 🔊 visible top-right HUD, click → toggle mute (icône 🔇), reload scene → state persiste (PlayerPrefs `cd.audio.muted`)
+  - UnityMCP : `execute_code` query VisualElement btn-mute display style != none
+- **[Cf]** :
+  - `fix(ui)(R7-005): MuteToggle button wire HUD + Audio.SetMuted persistence — V4 parity`
+
+#### R7-006 — T-DEBUG-001 F1 cheat console __cd.* API
+
+- **[P1]** **[Em : 1h]**
+- **Ref** : completion doc ligne 47 ("F3 HUD existe, F1 console absent"), master plan T-DEBUG-001
+- **Mission** : Réactiver F1 toggle cheat console (DebugConsole.cs existe `Assets/Scripts/Common/DebugConsole.cs`). Wire input + populate __cd.* API parity V4 console (`window.__cd.runner`, `__cd.scene`, `__cd.goto`, `__cd.debugOn/Off`, `__cd.unlockAll`, `__cd.toggleCornerLabels`).
+- **[Df]** :
+  - `Assets/Scripts/Common/DebugConsole.cs` — verify component existe + Toggle() method
+  - `Assets/Scripts/Common/KeyBindings.cs` (ou InputManager.cs) — bind F1 → DebugConsole.Toggle()
+  - Create new file `Assets/Scripts/Common/CdDebugApi.cs` static class avec :
+    - `Goto(string levelId)` → LevelRunner.LoadLevel(levelId)
+    - `DebugOn()` / `DebugOff()` → PlayerPrefs cd_debug + reload
+    - `UnlockAll()` → SaveSystem.UnlockAllLevels()
+    - `ToggleCornerLabels()` → MapRenderer.toggleCornerLabels (si existe)
+    - `Runner` property → LevelRunner.Instance
+  - DebugConsole UI : add inputfield + parse "goto W1-1", "unlock", "debug on"
+- **[Vf]** :
+  - Compile clean
+  - Play mode : F1 → console panel apparaît, type "goto W2-3" + Enter → switch level
+  - Type "unlock" → tous niveaux débloqués (savefile updated)
+- **[Cf]** :
+  - `feat(debug)(R7-006): F1 cheat console + CdDebugApi static (__cd.* parity V4)`
+
+#### R7-007 — T-CLEANUP-DIAG Remove EnsureMainCamera + ImguiDiagOverlay
+
+- **[P1]** **[Em : 20min]**
+- **Ref** : commits `d053fe7` + `664dfc1` (diagnostic code post-cascade WebGL épuisée)
+- **Mission** : Le jeu fonctionne 100% en Unity Editor (Mike screenshot confirmed). Les 2 composants diagnostic sont devenus orphelins/cruft.
+- **Decision Mike-side avant exec** : ⚠️ Catégorie B (decision Mike) — Mike doit confirmer "OUI supprime EnsureMainCamera + ImguiDiagOverlay, je verrai si tout marche encore sans". L'exec écrit dans `questions-to-supervisor.md` :
+
+```
+[QUESTION] R7-007 cleanup diagnostic code — Catégorie B
+Q: Supprimer EnsureMainCamera.cs + ImguiDiagOverlay.cs (diag iter#9 + #12) ?
+Risque: Si Mike teste Unity Editor sans ces 2, et que Menu.unity n'a pas de Camera explicite, écran noir.
+Recommendation supervisor: GARDER EnsureMainCamera (utile failsafe), supprimer ImguiDiagOverlay (debug-only).
+Blocking: false (continue autres tickets entre temps)
+```
+
+Attend `answers-from-supervisor.md` (qui transite par superviseur → Mike notif T2 → Mike répond → superviseur écrit).
+
+- **[Df]** (si GO de Mike) :
+  - `Assets/Scripts/Systems/EnsureMainCamera.cs` (delete ou comment-out)
+  - `Assets/Scripts/Systems/ImguiDiagOverlay.cs` (delete)
+  - Vérifier qu'aucun reference dans Main.unity (chercher GUID dans scene .unity)
+- **[Vf]** :
+  - Compile clean
+  - Play mode Unity Editor : jeu rendu identique avant/après suppression
+- **[Cf]** :
+  - `chore(cleanup)(R7-007): remove EnsureMainCamera + ImguiDiagOverlay diag code post-Editor-validate`
+
+#### R7-008 — T-VISUAL-DEDUP Squash 3× ProjectilePool wires
+
+- **[P1]** **[Em : 15min]**
+- **Ref** : completion doc ligne 78 "ProjectilePool.projectilePrefab wire (3× redondant)" + residual gap #9
+- **Mission** : 3 commits redondants `1917b0a` + `ed76df8` + `4dcfed2` wirent ProjectilePool.projectilePrefab. Dedup au niveau code (vérifier asset state actuel) — pas de squash git history (rewriting public history forbidden).
+- **[Df]** :
+  - `Assets/Scenes/Main.unity` — chercher ProjectilePool GO → vérifier 1 seul prefab assigné (pas 3 inspector entries)
+  - `Assets/Scripts/Systems/ProjectilePool.cs` — verify field `[SerializeField] GameObject projectilePrefab` single (not list)
+  - Si OK actuellement → just documenter dans backlog "DEDUP NOT NEEDED, asset state correct"
+- **[Vf]** :
+  - Inspector ProjectilePool : 1 prefab assigné, pas N redondants
+- **[Cf]** :
+  - `chore(cleanup)(R7-008): verify ProjectilePool single prefab assigned — dedup confirm`
+
+#### R7-009 — T-AUDIO-003 3D AudioMixer routing pool AudioSource
+
+- **[P1]** **[Em : 1h]**
+- **Ref** : completion doc ligne 45 "PlayClipAtPoint legacy en place", master plan T-AUDIO-003
+- **Mission** : Remplacer les call `AudioSource.PlayClipAtPoint(...)` legacy par pool de AudioSource préalloués routés via AudioMixer (output bus + spatialBlend selon 2D/3D).
+- **[Df]** :
+  - `Assets/Scripts/Systems/Audio.cs` (chercher PlayClipAtPoint usage)
+  - Create new `Assets/Scripts/Systems/AudioSourcePool.cs` :
+    - Pool de 8 AudioSources préalloués (round-robin)
+    - Method `Play3D(AudioClip clip, Vector3 pos, AudioMixerGroup output)` → set position + assign output + Play
+    - Method `Play2D(AudioClip clip, AudioMixerGroup output)`
+  - Update Audio.cs callers (towers shoot, enemy hit, etc.) → use pool
+- **[Vf]** :
+  - Compile clean
+  - Play mode : SFX entendus avec spatialisation (tower shoot loin = quiet, près = loud)
+  - Profiler : zero `new GameObject` allocations sur SFX play (vs PlayClipAtPoint qui en crée 1 à chaque call)
+- **[Cf]** :
+  - `perf(audio)(R7-009): AudioSourcePool 8 préalloués vs PlayClipAtPoint legacy`
+
+### P2 — Architecture debt
+
+#### R7-010 — T-ARCH-001 CONFIRM Hero.cs partition done
+
+- **[P2]** **[Em : 15min]**
+- **Ref** : completion doc ligne 54 "Sprint suivant", master plan T-ARCH-001
+- **Statut actuel verified par superviseur** : Hero.cs = 199 LOC (main) + 5 partials (Movement 100, Abilities 250, Anim 351, Combat 408, Perks 276). Total 2599 LOC, **tous partials sub-500 charter §1 règle #3** ✅. Ticket = de facto closed.
+- **Mission** : Documenter closure dans `.claude/audit/R7-ARCH-001-CLOSE.md` avec table partials + LOC + responsibilities.
+- **[Vf]** :
+  - Document écrit, table claire
+- **[Cf]** :
+  - `docs(arch)(R7-010): T-ARCH-001 close — Hero.cs partition 5 partials sub-500 ✅`
+
+#### R7-011 — T-ARCH-002 PlacementController cascade init audit
+
+- **[P2]** **[Em : 1-2h]**
+- **Ref** : completion doc ligne 55, master plan T-ARCH-002
+- **Mission** : Audit ordre init des singletons (PlacementController, MapRenderer, EnemyPathing, TowerRegistry, etc.). Identifier dépendances + risk cascade NRE si scene reload.
+- **[Df]** :
+  - Scan `Assets/Scripts/**/*.cs` pour patterns `Awake() / Start() / OnEnable()`
+  - Output `.claude/audit/R7-ARCH-002-init-cascade.md` : graph dépendances + recommandations (Awake order, manual init from GameLoop.Awake, etc.)
+- **[Vf]** :
+  - Document complet (table singletons × init phases × dependencies)
+- **[Cf]** :
+  - `docs(arch)(R7-011): T-ARCH-002 init cascade audit — Awake/Start order graph`
+
+#### R7-012 — T-ARCH-004 Scene validator missing singletons
+
+- **[P2]** **[Em : 2-3h]**
+- **Ref** : completion doc ligne 57, master plan T-ARCH-004
+- **Mission** : Tool éditeur qui scan scene au load et warn si singletons critiques manquent (PlacementController, MapRenderer, MusicManager, etc.).
+- **[Df]** :
+  - Create `Assets/Editor/SceneValidator.cs` (Editor-only)
+  - Hook `EditorSceneManager.sceneOpened` → scan + warn console si manquant
+  - List of required singletons (config inline ou ScriptableObject)
+- **[Vf]** :
+  - Open Main.unity → console log "Scene OK 0 missing singletons"
+  - Open Menu.unity (UI-only) → adapter list (no PlacementController expected)
+- **[Cf]** :
+  - `feat(editor)(R7-012): T-ARCH-004 SceneValidator scan singletons on open`
+
+#### R7-013 — T-ARCH-005 Layer collision matrix Tower/Enemy/UI
+
+- **[P2]** **[Em : 1h]**
+- **Ref** : completion doc ligne 58, master plan T-ARCH-005
+- **Mission** : Configure ProjectSettings/Physics2DSettings.asset layer collision matrix : Tower never collides with Tower, Enemy with Enemy, UI with anything.
+- **[Df]** :
+  - `ProjectSettings/Physics2DSettings.asset` (m_LayerCollisionMatrix)
+  - `ProjectSettings/TagManager.asset` (verify layers : Tower, Enemy, UI, Castle, Hero, Projectile defined)
+- **[Vf]** :
+  - Physics2D.Raycast(...) sur Enemy ignore Enemy layer
+  - Profiler : moins de Physics2D.Update CPU si N enemies clusterred
+- **[Cf]** :
+  - `chore(physics)(R7-013): T-ARCH-005 collision matrix Tower/Enemy/UI/Projectile`
+
+#### R7-014 — T-INTEGRATION-002 L.cs externalize CSV/JSON
+
+- **[P2]** **[Em : 8-12h]** (LONG ticket — peut être splitté)
+- **Ref** : completion doc ligne 59, master plan T-INTEGRATION-002
+- **Mission** : `Assets/Scripts/Data/L.cs` = 47k LOC hardcoded strings (i18n). Externalize vers CSV/JSON + loader runtime.
+- **[Df]** :
+  - Read L.cs structure (probably static class with `public const string Foo = "..."`)
+  - Create `Assets/Resources/Strings/strings-en.csv` (key,value rows)
+  - Create `Assets/Scripts/Data/StringLoader.cs` runtime → load CSV au boot
+  - Refactor L.Foo → L.Get("Foo") au call site (mass find&replace par script)
+- **[Vf]** :
+  - Compile clean
+  - Play mode : tous les strings affichés identiques avant/après refactor (smoke test 5 levels)
+- **[Cf]** :
+  - `refactor(i18n)(R7-014): T-INTEGRATION-002 L.cs externalize CSV + StringLoader runtime`
+
+#### R7-015 — T-INTEGRATION-003 Atomic SaveSystem transactions
+
+- **[P2]** **[Em : 2-3h]**
+- **Ref** : completion doc ligne 60, master plan T-INTEGRATION-003
+- **Mission** : SaveSystem actuel = write JSON directement (risque corruption si crash mid-write). Wrap dans transaction atomique : write to .tmp → fsync → rename .tmp → .json.
+- **[Df]** :
+  - `Assets/Scripts/Systems/SaveSystem.cs`
+  - Pattern : `File.WriteAllText(savePath + ".tmp", json)` → `File.Move(savePath + ".tmp", savePath)`
+  - Plus backup .bak conservé last good save
+- **[Vf]** :
+  - Compile clean
+  - Test : kill Play mode mid-save → verify .json pas corrupted (.tmp orphelin OK)
+- **[Cf]** :
+  - `fix(save)(R7-015): T-INTEGRATION-003 atomic write .tmp+rename + .bak backup`
+
+### P3 — Gameplay fidelity (catégorie B Mike decision needed)
+
+#### R7-016 — R6-PARITY-012-V4-FIDELITY 5 events V4 missing
+
+- **[P3 — escalation cat B Mike]** **[Em : 2-3h si Mike GO]**
+- **Ref** : instructions-to-exec.md ligne 471-478 "5 events V4 absents", master plan R6-PARITY-012
+- **Decision Mike needed** : V4 EventManager = 8 events data-driven via `level.events[]`. Unity DynamicEventManager = 3 events random `% 5`. 5 events V4 absents : void_pulse / zero_g / undertow / battle_cry / hack.
+- **Action exec immédiate** :
+  1. Write `questions-to-supervisor.md` entry :
+
+```
+[ESCALATION cat B] R7-016 — events V4 fidelity
+Q: Revenir à data-driven level.events[] per V4 fidelity (porter 5 events + refactor DynamicEventManager) OU keep Unity simplification 3 events random + documenter comme intentional divergence ?
+Effort: 2-3h si V4 strict. 0h si Unity keep.
+Impact: V4 strict = nostalgic player surprise gating per-level. Unity keep = simpler, less gameplay variety.
+Blocking: false (autres tickets en parallèle)
+```
+
+  2. Wait `answers-from-supervisor.md` Mike answer.
+  3. Si GO V4-strict : implem 5 events + refactor.
+- **[Cf]** :
+  - `feat(gameplay)(R7-016): 5 V4 events void_pulse/zero_g/undertow/battle_cry/hack + data-driven level.events[]`
+
+#### R7-017 — R6-PARITY-011-COMPLETE Foire + Medieval castle skin
+
+- **[P3]** **[Em : 1h]**
+- **Ref** : instructions-to-exec.md ligne 480-484, master plan R6-PARITY-011
+- **Mission** : ThemeSkins[] couvre 8/10 themes. Foire + Medieval default tint silent. Créer 2 ThemeSkin entries texture-swap mapped.
+- **[Df]** :
+  - `Assets/Resources/Skins/ThemeSkins.asset` (chercher SO ScriptableObject)
+  - Add 2 entries : Foire (carnival textures pre-existing ? sinon flux gen) + Medieval (knights stone walls)
+- **[Vf]** :
+  - Play mode : Load W6-1 (Foire) → castle skin foire visible. Load W9-1 (Medieval) → castle skin medieval visible.
+- **[Cf]** :
+  - `feat(visual)(R7-017): Foire + Medieval castle ThemeSkins (R6-PARITY-011 complete)`
+
+### P3 — Cleanup hygiène
+
+#### R7-018 — T-CLEANUP-SUPERVISOR squash 5 supervisor commits
+
+- **[P3]** **[Em : 30min — needs Mike validation history rewrite]**
+- **Ref** : completion doc ligne 158 + 192, residual gap #9
+- **Action immédiate exec** : Write `questions-to-supervisor.md` (cat B Mike) :
+
+```
+[ESCALATION cat B] R7-018 squash supervisor commits
+Q: Squash 5 supervisor commits + 3 ProjectilePool redondants → git rebase -i + force-push ?
+Risque: Rewrites public history (origin/main) → si Mike a worktree local pointant ces commits, sync break.
+Recommendation supervisor: SKIP squash (history hygiene < workflow risk). Commits supervisor sont T3 silent log, pas un bruit user-facing.
+Blocking: false
+```
+
+- **[Cf]** :
+  - Pas de commit si Mike confirme SKIP (recommandation).
+
+#### R7-019 — T-CONFIG-001 companyName + pin packages
+
+- **[P3]** **[Em : 30min]**
+- **Ref** : completion doc ligne 61, master plan T-CONFIG-001
+- **Mission** : ProjectSettings/ProjectSettings.asset → fix `companyName` (default "DefaultCompany" → "Milan Defense Studio" ou similar Mike-validated). Plus pin package versions exactes (Packages/manifest.json).
+- **[Df]** :
+  - `ProjectSettings/ProjectSettings.asset` : `companyName` field
+  - `Packages/manifest.json` : remplace `^X.Y.Z` ranges par versions exactes (snapshot)
+- **[Vf]** :
+  - Compile clean post Edit
+  - File diff <20 lines (cosmétique)
+- **[Cf]** :
+  - `chore(config)(R7-019): companyName + packages pin exact versions`
+
+#### R7-020 — T-WORKSPACE-CLEAN resolve recurring dirty files
+
+- **[P3]** **[Em : 1h]**
+- **Mission** : Investigate why workspace dirty files récurrents :
+  - `Assets/Prefabs/VFX/Explosion.prefab` modified
+  - `Packages/manifest.json` + `packages-lock.json` (ProBuilder install récent ?)
+  - `ProjectSettings/QualitySettings.asset` + `VFXManager.asset` (modif sans intent)
+  - Untracked : `Assets/Plugins/` + `Assets/Resources/Animations/Controllers/boss_submarin_kraken.controller` (T-VISUAL-002 WIP)
+- **[Df]** :
+  - `git diff Packages/manifest.json` — confirmer ProBuilder add intentional
+  - `git diff ProjectSettings/*.asset` — diff small unintended ? auto-revert
+  - Asset Explosion.prefab : check si MeshSplitter ou similar auto-touched
+- **[Vf]** :
+  - Workspace clean après commit ou revert decision
+- **[Cf]** :
+  - Multiple commits selon resolution (probably : `chore(config): ProBuilder package add` + `chore(scene): clean workspace dirty residuals`)
+
+### P3 — QA broader
+
+#### R7-021 — T-QA-10WORLDS-SMOKE Smoke test 10 worlds
+
+- **[P3]** **[Em : 2h]**
+- **Mission** : Via UnityMCP `execute_code` script qui :
+  1. LoadScene Main
+  2. For each level id W1-1 to W10-N : `LevelRunner.LoadLevel(id)` → wait 30s → check Castle.HP > 0 + no NRE → unload
+  3. Output `.claude/qa/r7-10worlds-smoke.md` table (level × FPS × errors)
+- **[Df]** :
+  - Create `.claude/qa/r7-10worlds-smoke-script.cs` (UnityMCP execute_code snippet)
+  - Loop 60 levels, capture metrics
+- **[Vf]** :
+  - All 60 levels load successfully, 0 NRE, FPS ≥ 30 average
+- **[Cf]** :
+  - `chore(qa)(R7-021): 10-worlds smoke test 60 levels x 30s — all green`
+
+#### R7-022 — T-QA-AUDIT-RERUN baseline audit `adb68ee` rerun
+
+- **[P3]** **[Em : 2h]**
+- **Mission** : Rerun audit baseline `adb68ee` (audit `2026-05-12-23h00-v6-user-facing.md`) sur HEAD courant. Confirm 85-90% → target 95%.
+- **[Df]** :
+  - Copy/adapt audit script template
+  - Output `.claude/audit/2026-05-13-v6-rerun-r7.md` (table 80 features × baseline % × current %)
+- **[Vf]** :
+  - Score delta delta documenté
+- **[Cf]** :
+  - `chore(audit)(R7-022): rerun user-facing audit baseline adb68ee → R7 progress`
+
+#### R7-023 — T-QA-EDITOR-VALIDATION-MIKE (passive — wait Mike)
+
+- **[P3]** **[Em : Mike-side]**
+- **Mission** : Generate `.claude/qa/MIKE-VALIDATION-R7.md` (cf R7-004). Mike fait les 10 checks Editor Play mode. Exec ne pioche pas ce ticket — c'est Mike qui agit.
+- Status : ne pas démarrer. Document checklist seulement (R7-004 livre ce doc).
+
+### NEVER-IDLE filler
+
+#### R7-024 — T-N9-CONTINUATION pioche N9-N38
+
+- **[P3]** **[Em : illimité — autonome filler]**
+- **Mission** : Si tous tickets P0-P2 done et waiting Mike validation, pioche tickets N9 à N38 du backlog précédent (réf retrospective doc + `.claude/backlog/_backlog.md`).
+- Examples N-series : UIControllerBase migration restantes, R6-found-during-exec.md items, polish suggestions hors scope POLISH.
+
+#### R7-025 — T-AUTO-LOG-UPDATE auto-update logs/audit/STATUS
+
+- **[P3]** **[Em : ongoing]**
+- **Mission** : Après chaque batch de 3-5 commits, update `.claude/status/STATUS.md` avec :
+  - Tickets shipped depuis last update
+  - LOC delta cumulatif
+  - Compile state
+  - Open questions
+- Persist autonomie multi-session — quand Mike revient ou prochaine Opus session ouvre, STATUS.md raconte tout.
+
+---
+
+## Coordination notes
+
+- **Max 4 worktrees simultanés** (charter §1 règle #9). 1 actuellement locked (T-VISUAL-002). Reste 3 slots.
+- **Zones conflit prévisibles** :
+  - `Assets/Scenes/Main.unity` : R7-005 (MuteToggle wire) + R7-002 (Castle GO assign) + R7-006 (DebugConsole prefab) → **SERIAL** ces 3 (charter §1 règle #9 + memory `feedback_parallelize_serialize_unity.md`)
+  - `Assets/UI/HUD.uxml` + `HUD.uss` : R7-005 + R7-006 → **SERIAL** (1 fichier shared)
+  - `Assets/Scripts/Common/KeyBindings.cs` : R7-006 → SERIAL with any future input ticket
+  - `Assets/Resources/Tiles/*.png` (Water/Lava) + `Assets/Resources/Models/Castle/*.fbx` : safe parallel (different folders)
+- **Parallel-safe batch suggéré (batch 1)** :
+  - R7-001 Water/Lava frames (Assets/Resources/Tiles)
+  - R7-003 Loader build settings (ProjectSettings)
+  - R7-008 ProjectilePool dedup verify (read-only mostly)
+  - R7-010 Hero.cs partition close docs
+- **Sequential batch 2 (Main.unity scene wire)** :
+  - R7-005 MuteToggle
+  - R7-006 F1 cheat console
+  - R7-002 Castle real art
+- **Parallel batch 3 (architecture audits)** :
+  - R7-011 Init cascade audit (read-only)
+  - R7-012 SceneValidator (Editor-only new file)
+  - R7-013 Collision matrix (ProjectSettings)
+  - R7-019 companyName + pin
+
+## Constraints rappel charter §1
+
+1. Trigger Mike validé (R7 = chat override ✅)
+2. Tickets référencés (master plan + completion doc + above brief)
+3. Hard cap 500 LOC C# (sauf justification écrite)
+4. No-feature-creep — opportunités → `.claude/backlog/R6-found-during-exec.md`
+5. Compile + console gate post-commit obligatoire (UnityMCP `read_console`)
+6. Pas de polish hors POLISH (sauf R7-001 + R7-002 polish autorisés Mike chat)
+7. Coordination centrale par sprint : ce bloc
+8. Self-report agent ≤100 mots
+9. Max 4 worktrees simultanés
+10. No Sub-Opus spawn (Sonnet feature-dev / bug-fixer / quality-maintainer uniquement)
+11. **PAS DE TEST WEB / WebGL** (memory rule active)
+12. Validation EXCLUSIVEMENT Unity Editor Play mode + UnityMCP HTTP
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-13-HHhMM-r7-push-100-go-ack.md` :
+- Timestamp lu
+- Tickets batch 1 dispatched (paths agent IDs)
+- Worktrees count post-dispatch (cible ≤ 3 nouveaux, T-VISUAL-002 toujours actif)
+- Time estimate batch 1 completion
+- Questions cat A → écrites `questions-to-supervisor.md`
+- Questions cat B → tag escalation:true → superviseur notif Mike
+
+## Status
+
+🚀 **NEW SPRINT R7-PUSH-100 OPEN** — dispatch immédiat batch 1 (R7-001 + R7-003 + R7-008 + R7-010 parallel-safe). Target 95-100% visible parity.
+
+---
+
+## 2026-05-13 02h55 — Addendum Mike chat live (2 tickets supplémentaires R7)
+
+### R7-026 — WEBGL-FIX-LONG-TERM Fix Unity 6 + URP 17.3 + WebGL2 cassé
+
+- **[P1 long-terme — pas urgent immédiat mais bloquant distribution]**
+- **[Em : 4-8h investigation + test, OU 0h wait Unity patch]**
+- **Mike chat directive (2026-05-13)** :
+  > "il faudra fixer la version web quand meme a un moment donné c'est notre medium de distribution de test numero 1 et ca fonctionnait nickel en v4 donc bon"
+
+- **Contexte** : 13 iterations cascade épuisée 2026-05-12/13 — Unity 6.0.3.15f1 + URP 17.3.0 + WebGL2 = subpass input shader (Hidden/CoreSRP/CoreCopy FRAMEBUFFER_INPUT_X_FLOAT) incompatible WebGL2. Workaround temporaire = test exclusivement Unity Editor (memory rule). MAIS web = medium distribution #1 Mike, V4 (Phaser) marchait nickel, donc V6 doit re-marcher web une fois.
+- **Options à investiguer (catégorie B Mike decision avant exec)** :
+  - **Option A** : Wait Unity 6.1 (URP 17.4+) qui peut patch subpass input WebGL2. ETA : Unity roadmap inconnue (semaines-mois). Effort : 0h (wait).
+  - **Option B** : Downgrade Unity 2022.3 LTS + URP 14.x (known stable WebGL2). Effort : 4-8h migration + verify pas regression Editor + retest 60 levels. Risque : pertes features Unity 6 (input system v2, etc.).
+  - **Option C** : Switch BiRP (Built-in Render Pipeline). Effort : 6-12h migration (shaders, materials, lighting). Risque : perte URP features (post-processing 2D stack, custom passes).
+  - **Option D** : Custom WebGL2 build config avec strip URP CoreCopy + force fallback shader path. Effort : 2-4h R&D Unity. Risque : maintained sur soi.
+  - **Option E** : Switch WebGPU build target (Unity 6 supporte WebGPU experimental). Effort : 2-3h test. Risque : compat browser limitée (Chrome only stable).
+- **Action exec immédiate** : Write `questions-to-supervisor.md` pour Mike decision :
+
+```
+[ESCALATION cat B] R7-026 — WebGL fix strategy
+Q: Quelle option pour fix WebGL distribution ?
+A: Wait Unity 6.1 patch (0h, ETA inconnue)
+B: Downgrade Unity 2022.3 + URP 14.x (4-8h, perte features)
+C: Switch BiRP (6-12h, perte URP custom)
+D: Strip URP CoreCopy custom (2-4h R&D)
+E: WebGPU experimental (2-3h, Chrome-only)
+Recommendation supervisor: A si patience OK (le Editor mode actuel permet dev/test full), sinon D pour pragmatisme rapide.
+Blocking: false (continue R7 P0-P2 en parallèle pendant Mike réfléchit)
+```
+
+- **[Vf]** post-implementation (selon option choisie) :
+  - Build WebGL successful (`BuildAchievementAssets.Run()` + `BuildWebGL` no errors)
+  - Deploy `/v6/` gh-pages → load `https://michaelchevallier.github.io/crowd-defense/v6/` → render visible (pas pure noir)
+  - 5-wave smoke OK browser (BuildPoint walk-in, tower placement, wave 1-5 complete)
+  - FPS ≥ 30 Chrome desktop
+- **[Cf]** :
+  - Selon option choisie, multiple commits possibles. Tag final éventuel `v6.1-webgl-restored`.
+
+### R7-027 — CAMERA-FIX-GREY-EDITOR Adjust camera position Editor
+
+- **[P0]** **[Em : 30min-1h]**
+- **Mike chat directive (2026-05-13)** :
+  > "il faut ajuster la position de la caméra qui ne nous montre que du gris au debut."
+
+- **Contexte** : Mike teste Unity Editor Play mode et voit du gris au début. Hypothèses :
+  1. **EnsureMainCamera-Auto** (Assets/Scripts/Systems/EnsureMainCamera.cs) crée Camera à pos `(0f, 1f, -10f)` avec `backgroundColor = (0.06, 0.07, 0.09, 1f)` (dark blue-grey). Si Menu.unity ne définit aucune Camera explicite, cette caméra "fallback" se déclenche et montre son fond gris → Mike voit gris.
+  2. Ou bien Main.unity Camera position pointée mauvais endroit (map hors frustum).
+  3. Ou bien la caméra Hero-follow n'a pas son target initial → reste à origin.
+- **Debugging steps recommandés exec** :
+  1. UnityMCP `find_gameobjects` type:Camera → liste toutes Cameras actives au start
+  2. Read Main.unity dans yaml — combien de Camera GameObjects définis ? Quelle position/rotation ?
+  3. Vérifier `HeroFollowCameraController.cs` (existe d'après file listing) — target setup au start ? Default pos si target null ?
+  4. Compare V4 (Phaser ScalaCamera) reference angles : V4 `de6eec1` "camera + input bindings match V4 reference" — vérifier ces angles V4 actuellement appliqués
+- **[Df]** :
+  - `Assets/Scripts/Systems/HeroFollowCameraController.cs` — verify follow logic, default position fallback
+  - `Assets/Scenes/Main.unity` — Camera GO position/rotation/orthographicSize/fov values
+  - `Assets/Scripts/Systems/EnsureMainCamera.cs` — verify si actif et conflict avec Main.unity Camera
+  - Voir si `Camera.main` est la bonne (priorité depth) ou si auto-fallback prend dessus
+- **[Vf]** :
+  - Play mode Unity Editor : caméra montre la map dès le start (pas gris)
+  - Mike screenshot validation (T2 batched notif post-fix)
+- **[Cf]** :
+  - `fix(camera)(R7-027): adjust default position to show map at start — V4 angles match`
+
+---
+
+## Updated batch suggéré (batch 1 — recommandé pour exec dispatch IMMÉDIAT)
+
+**R7-027 CAMERA-FIX-GREY-EDITOR (P0 priorité #1 — Mike user-visible NOW)**
+**R7-001 Water/Lava 8 frames anim (P0 parity)**
+**R7-003 Loader build settings (P0 quick win 30min)**
+**R7-010 Hero.cs partition close docs (P2 quick docs)**
+
+Batch 2 sequential (post-batch 1) : R7-005 MuteToggle + R7-006 F1 console + R7-002 Castle real art.
+
+Batch 3 parallel (architecture) : R7-011 init cascade + R7-012 SceneValidator + R7-013 collision matrix + R7-019 companyName.
+
+Batch 4 long : R7-014 L.cs externalize + R7-026 WebGL fix (cat B Mike decision needed avant).

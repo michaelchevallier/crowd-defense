@@ -15,12 +15,14 @@ Mike's clarifications (chat 14h47-14h49) :
 
 ## Current
 
-- **Sprint** : **R6-PARITY-V4 P1 ACTIVE 16h01** (Mike GO autonome 4h cap fin ~20h00)
-- **Mode** : autonome dispatch P1 8 tickets (REFACTOR + 005-IMPL + 004-IMPL + 010 + 012 + 013 + 014 + 011) + addendum Unity capabilities
-- **Status P0-A** : ✅ COMPLETE 5/5 en 22 min (textures + PathTiles + Skybox + VFX + enemy audit) — instruction PARITY-V4-P1-GO publiée
-- **Next action** : exec ack + dispatch batch P1-A 4 worktrees parallèles (REFACTOR priority + 005-IMPL + 004-IMPL + 014 boss)
-- **Audit sources** : `.claude/audit/2026-05-12-v4-parity-gap.md` (V6 = 55-65% gameplay / 40-45% look&feel V4) + `.claude/audit/2026-05-12-batch-p0-audit.md` (1 violation auto-handled VfxPoolBindings 555 LOC split P1)
-- **Deploy status** : auto-build-loop.sh lancé bg 15:56:20 pour HEAD efd23e5 (P0-A complete + Hero.cs fix)
+- **Sprint** : **R7-PUSH-100 ACTIVE 2026-05-13** (Mike chat direct override "avance jusque parité")
+- **Sprint précédent** : R6-PARITY-V4-FINAL ✅ CLOSED 2026-05-13 ~02h35 (commit `16fe830`, 98 commits, 85-90% parité visible)
+- **Mode** : autonome dispatch backlog R7 (25 tickets P0/P1/P2/P3) — Mike chat live, time cap open-ended
+- **Target** : 85-90% → 95-100% visible parity. 10/14 DoD critères encore TBD du R6.
+- **Constraint critique** : ⚠️ **PAS DE TEST WEB / WebGL** — Unity 6 + URP 17.3 + WebGL2 cassé (13 iter cascade épuisée). Validate via Unity Editor Play mode + UnityMCP HTTP `http://127.0.0.1:8080/mcp` UNIQUEMENT.
+- **Next action exec** : ack instruction `2026-05-13-02h47-R7-PUSH-100-GO` dans `acks/`, puis pioche backlog P0 → P1 → P2 → P3 ordre déclaré
+- **Backlog source** : `instructions-to-exec.md` bloc 2026-05-13 02h47 (25 tickets) + résiduels SPRINT-R6-PARITY-V4-FINAL-completion.md §§ "Residual gaps" + "Next sprint candidates"
+- **In-flight supervisor side (NE PAS PIOCHER)** : T-VISUAL-002 Animator state machines (agent `a5dc5492ebc56126f`, supervisor-spawned avant reset rôle, Mike approuvé "laisse finir")
 
 ## R6-02 paused — historique partiel
 
