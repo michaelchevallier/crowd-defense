@@ -131,6 +131,10 @@ namespace CrowdDefense.Entities
             AudioController.Instance?.Play3D("tower_upgrade", transform.position);
             AudioController.Instance?.Play3D("powerup", transform.position);
             JuiceFX.Instance?.PunchScale(transform, 1.25f, 0.4f);
+            var jcUpgrade = JuiceConfig.Get();
+            JuiceFX.Instance?.Flash(
+                new Color(1f, 0.84f, 0f, jcUpgrade.TowerUpgradeFlashAlpha),
+                jcUpgrade.TowerUpgradeFlashMs);
             CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
                 $"L{level}!", transform.position + Vector3.up * 2f, Color.cyan);
 

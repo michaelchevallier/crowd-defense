@@ -368,7 +368,11 @@ namespace CrowdDefense.Systems
         private void HandleLevelCompleteEntry()
         {
             AudioController.Instance?.Play("level_up", 1f);
-            JuiceFX.Instance?.Flash(new Color(1f, 0.84f, 0f, 0.4f), 500);
+            var jcVictory = JuiceConfig.Get();
+            JuiceFX.Instance?.Flash(
+                new Color(1f, 0.84f, 0f, jcVictory.VictoryFlashAlpha),
+                jcVictory.VictoryFlashMs);
+            JuiceFX.Instance?.Shake(jcVictory.VictoryShakeAmp, jcVictory.VictoryFlashMs);
             JuiceFX.Instance?.SlowMo(0.5f, 1200);
 
             bool isWorldEnd = currentLevel?.Level == 1; // Level 1-of-world = last level (world gate)

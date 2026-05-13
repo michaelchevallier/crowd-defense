@@ -187,8 +187,9 @@ namespace CrowdDefense.Entities
 
             if (isBoss)
             {
-                JuiceFX.Instance?.Shake(0.6f, 400);
-                JuiceFX.Instance?.Flash(Color.white, 250);
+                var jcBoss = JuiceConfig.Get();
+                JuiceFX.Instance?.Shake(jcBoss.BossHitShakeAmp, jcBoss.BossHitShakeMs);
+                JuiceFX.Instance?.Flash(new Color(1f, 1f, 1f, jcBoss.BossHitFlashAlpha), jcBoss.BossHitFlashMs);
                 StartCoroutine(BossCinematic());
             }
             else if (isMedium)
