@@ -59,6 +59,11 @@
     color: rgb(220, 80, 60);
 }
 
+.toolbar-cell--forbidden {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
 .toolbar-key {
     color: rgba(180, 200, 230, 0.65);
     font-size: 10px;

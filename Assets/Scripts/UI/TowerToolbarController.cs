@@ -1,5 +1,7 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Data;
@@ -118,6 +120,7 @@ namespace CrowdDefense.UI
             towerOrder.Clear();
             cells.Clear();
 
+            var currentLevel = LevelRunner.Instance?.CurrentLevel;
             var towers = towerRegistry.Towers;
             for (int i = 0; i < towers.Length; i++)
             {
@@ -141,6 +144,13 @@ namespace CrowdDefense.UI
                 var costLbl = new Label($"{tower.Cost}");
                 costLbl.AddToClassList("toolbar-cost");
                 cell.Add(costLbl);
+
+                // Apply forbidden state if tower is in current level's forbidden list
+                if (currentLevel != null && currentLevel.ForbiddenTowers != null &&
+                    currentLevel.ForbiddenTowers.Contains(tower))
+                {
+                    cell.AddToClassList("toolbar-cell--forbidden");
+                }
 
                 int capturedIdx = towerOrder.Count;
                 cell.RegisterCallback<ClickEvent>(_ => OnCellClick(capturedIdx));
@@ -209,6 +219,15 @@ namespace CrowdDefense.UI
             if (PlacementController.Instance == null) return;
 
             var tower = towerOrder[idx];
+            var currentLevel = LevelRunner.Instance?.CurrentLevel;
+
+            // Block click if tower is forbidden
+            if (currentLevel != null && currentLevel.ForbiddenTowers != null &&
+                currentLevel.ForbiddenTowers.Contains(tower))
+            {
+                return;
+            }
+
             var current = PlacementController.Instance.SelectedTowerType;
             // Toggle: clicking same tower deselects
             PlacementController.Instance.SelectTowerForPlacement(current == tower ? null : tower);

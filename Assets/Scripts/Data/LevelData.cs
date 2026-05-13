@@ -45,6 +45,13 @@ namespace CrowdDefense.Data
         [Header("Dynamic Events (R6-PARITY-012)")]
         [SerializeField] private List<WaveEvent> waveEvents = new();
 
+        [Header("Tower Restrictions (Phase 5 — P0-LVL-1)")]
+        [SerializeField, Tooltip("Towers forbidden for this level (toolbar grayed out, click disabled)")]
+        private List<TowerType> forbiddenTowers = new();
+
+        [SerializeField, Tooltip("Towers with bonus +20% damage for this level")]
+        private List<TowerType> bonusTowers = new();
+
         [Header("Waves")]
         [SerializeField] private List<WaveDef> waves = new();
 
@@ -64,6 +71,8 @@ namespace CrowdDefense.Data
         public string CutsceneIdAtStart => cutsceneIdAtStart;
         public bool IsEndless => isEndless;
         public bool AllowMultiMagnet => allowMultiMagnet;
+        public IReadOnlyList<TowerType> ForbiddenTowers => forbiddenTowers;
+        public IReadOnlyList<TowerType> BonusTowers => bonusTowers;
         public IReadOnlyList<WaveDef> Waves => waves;
         public IReadOnlyList<WaveEvent> WaveEvents => waveEvents;
 
