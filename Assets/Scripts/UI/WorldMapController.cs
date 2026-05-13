@@ -411,7 +411,18 @@ namespace CrowdDefense.UI
             bool bookmarked,
             LevelData? data)
         {
-            var tile = new VisualElement();
+            // V8F FIX: use Button instead of VisualElement so built-in Clickable manipulator
+            // dispatches click events reliably in WebGL UI Toolkit. Tabs (also Button) work
+            // while bare VisualElement+AddManipulator(Clickable) was silently dropping clicks.
+            string id = levelId;
+            bool isUnlocked = unlocked;
+            bool hasData = data != null;
+            var tile = new Button(() =>
+            {
+                Debug.Log($"[WorldMap.Tile {id}] Button click fired (unlocked={isUnlocked}, hasData={hasData})");
+                if (isUnlocked && hasData) LevelLoader.LoadLevel(id);
+                else if (!isUnlocked) Toast.Show("Niveau verrouille", "Terminez le niveau precedent.", 2500, null, ToastType.Generic);
+            });
             tile.AddToClassList("level-tile");
 
             if (!unlocked)       tile.AddToClassList("locked");
@@ -427,7 +438,6 @@ namespace CrowdDefense.UI
             numLabel.AddToClassList("tile-number");
             header.Add(numLabel);
 
-            string id = levelId;
             var starBtn = new Button(() => ToggleBookmark(id));
             starBtn.AddToClassList("tile-star-btn");
             starBtn.text = bookmarked ? "S" : "s";
@@ -477,21 +487,13 @@ namespace CrowdDefense.UI
                 }
             }
 
-            if (unlocked && data != null)
-            {
-                // V8C FIX: use Clickable manipulator (same as Button's built-in click) instead of
-                // RegisterCallback<ClickEvent>. Plain ClickEvent doesn't reliably fire on bare
-                // VisualElement in WebGL — hover events arrive but click doesn't.
-                tile.AddManipulator(new Clickable(() => LevelLoader.LoadLevel(id)));
-            }
-            else if (!unlocked)
+            if (!unlocked)
             {
                 var lockLabel = new Label(L.Get("worldmap.locked"));
                 lockLabel.AddToClassList("tile-lock-icon");
                 tile.Add(lockLabel);
-                tile.AddManipulator(new Clickable(() =>
-                    Toast.Show("Niveau verrouille", "Terminez le niveau precedent.", 2500, null, ToastType.Generic)));
             }
+            // Click handler is now wired into the Button constructor above (V8F).
 
             return tile;
         }
