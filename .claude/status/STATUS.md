@@ -7,21 +7,71 @@
 
 ## Current sprint
 
-**R6-PARITY-V4-FINAL** — ✅ **COMPLETE** (95%+ parity atteint, closure `16fe830`).
+**R7-PUSH-100** — 🚀 **ACTIF** (push 85-90% → 95-100% visible parity, Mike chat override "avance jusque parité").
 
-- Sprint dates : 2026-05-12 16h05 → 2026-05-13 02h35 (~10h30 wall)
-- Total commits : **98** (`739efc7..HEAD`)
-- Retrospective : `.claude/audit/SPRINT-R6-RETROSPECTIVE.md`
-- Tag : `v6.0-parity-v4-sprint-r6`
-- Live build : `https://michaelchevallier.github.io/crowd-defense/v6/`
+- Sprint open : 2026-05-13 02h47 (supervisor instruction R7-PUSH-100-GO)
+- **19 R7 tickets shippés** batch 1-6 (P0 + P1 + P2 + P3 + Q9 balance + AUDIO-REMAP)
+- Audit rerun R7-022 (`b0ab333`) : baseline 33% raw / 65% weighted → HEAD **80% raw / 85% weighted** (+47 pts raw)
+- Top 3 gaps remaining : Audio SFX remaps ✅ done R7-AUDIO-REMAP `ab8c212` + Animator runtime verify (T-VISUAL-002 in-flight) + Castle real .fbx art (R7-002 deferred Mike asset)
 
-## Next sprint
+### Tickets R7 shippés (chronologique)
 
-**Candidates** (à arbitrer Mike) :
-- **R7 polish** : Foire/Medieval castle textures + 80 levels art + L3 upgrade branching
+| # | Ticket | Type | Commit |
+|---|---|---|---|
+| 1 | R7-027 | Camera grey Editor fix (P0) | `35e8877` |
+| 2 | R7-001 | Water/Lava 8 frames anim (P0) | `d745c1d` |
+| 3 | R7-003 | Loader BuildSettings scene 0 (P0) | `c38e790` |
+| 4 | R7-010 | Hero.cs partition close docs (P2) | `7db9f2c` |
+| 5 | R7-005 | MuteToggle HUD wire (P1) | `8de976e` |
+| 6 | R7-011 | Init cascade audit (P2) | `d42b014` |
+| 7 | R7-011-FIX | NRE quick wins R1+R2 (P1) | `f5dfd15` |
+| 8 | R7-013 | Collision matrix layers (P2) | `a584720` |
+| 9 | R7-019 | companyName + packages pin (P3) | `33f0c76` |
+| 10 | R7-006 | F1 console + CdDebugApi (P1) | `c2a6730` |
+| 11 | R7-012 | SceneValidator tool (P2) | `4518717` |
+| 12 | R7-009 | AudioSourcePool 3D (P1) | `ebeef5a` |
+| 13 | R7-017 | Foire+Medieval skins (P3) | `7270690` |
+| 14 | R7-015 | atomic SaveSystem (P2) | `c9e3dc3` |
+| 15 | R7-Q9-BALANCE | Q9-1..Q9-4 balance fixes (P1) | `45a2a87` + `50b6af9` |
+| 16 | R7-022 | audit rerun baseline (P3) | `b0ab333` |
+| 17 | R7-020 | workspace clean (P3) | `6ee82db` |
+| 18 | R7-008 | ProjectilePool dedup verify (P1) | `6ee82db` |
+| 19 | R7-AUDIO-REMAP | 3 SFX semantic fixes (P1) | `ab8c212` |
+| - | T-VISUAL-002 | Animator state machines (P0 supervisor) | (in-flight a203f9d) |
+
+### Tickets R7 cat B Mike pending (4 questions)
+
+- **Q-R7-007** Supprimer EnsureMainCamera + ImguiDiagOverlay diag code ?
+- **Q-R7-016** Events V4 fidelity strict 8 events vs Unity simplification 3 random ?
+- **Q-R7-018** Squash 5 supervisor commits + 3 ProjectilePool redondants ?
+- **Q-R7-026** WebGL fix strategy (5 options A-E) ?
+
+### Tickets R7 remaining backlog
+
+- R7-002 Castle real .fbx art (P0, needs Mike asset / improved procedural)
+- R7-004 Mike validation checklist (partial done supervisor `70c49d7` + `872cd8d`)
+- R7-014 L.cs externalize CSV/JSON (P2, 8-12h LONG, defer R8/R10)
+- R7-021 10worlds smoke test (P3, UnityMCP needed exec direct)
+
+## Next sprint candidates
+
+- **R7-FINISH** (continuation) : Castle real art + R7-021 smoke test + 4 cat B Mike answers
 - **R8 perf** : 3 perf-3fix profilage live (60 FPS desktop / 30 FPS mobile)
 - **R9 playable MVP** : 5-wave loop polish + onboarding tutorial + FTUE
-- **STOP** : break + replayability self-test
+- **R10 i18n** : L.cs externalize CSV/JSON (R7-014 deferred)
+- **R11 WebGL restore** : selon Mike answer Q-R7-026 (wait Unity patch ou strip URP)
+
+---
+
+## R6 closed sprint summary
+
+**R6-PARITY-V4-FINAL** — ✅ COMPLETE (95%+ parity, closure `16fe830`).
+
+- Sprint dates : 2026-05-12 16h05 → 2026-05-13 02h35 (~10h30 wall)
+- Total commits : 98 (`739efc7..fbf17fe`)
+- Retrospective : `.claude/audit/SPRINT-R6-RETROSPECTIVE.md`
+- Tag : `v6.0-parity-v4-sprint-r6`
+- Live build : `https://michaelchevallier.github.io/crowd-defense/v6/` (⚠️ WebGL broken Unity 6+URP 17.3, voir Q-R7-026)
 
 ---
 
