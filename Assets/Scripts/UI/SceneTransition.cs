@@ -63,8 +63,11 @@ namespace CrowdDefense.UI
             rect.offsetMin = Vector2.zero;
             rect.offsetMax = Vector2.zero;
 
-            // Loading UI group (progress bar + tip), positioned bottom-center
-            var loadingGo = new GameObject("LoadingGroup");
+            // Loading UI group (progress bar + tip), positioned bottom-center.
+            // V8 FIX: explicitly request RectTransform — CanvasGroup alone does NOT
+            // auto-add it like Image/Slider/Text do, leaving GetComponent<RectTransform>
+            // returning null on plain Transform → NRE on anchor assignments.
+            var loadingGo = new GameObject("LoadingGroup", typeof(RectTransform));
             loadingGo.transform.SetParent(transform, false);
             _loadingGroup = loadingGo.AddComponent<CanvasGroup>();
             _loadingGroup.interactable = false;
