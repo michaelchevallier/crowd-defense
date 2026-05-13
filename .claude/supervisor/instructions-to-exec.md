@@ -2518,3 +2518,93 @@ T2 batched via notify.sh (Mike chat live, pas T1 panic). Mike au courant via cha
 ## Status
 
 ⚠️ ACTION REQUIRED — exec doit prune stale worktrees pour respecter cap charter §1 règle #9.
+
+
+---
+
+## 2026-05-13 10h15 — 🎯 4 Q cat B answered Mike interview — 3 GO tickets dispatch
+
+**Type** : MIKE-OVERRIDE batch 4 answers (charter §5)
+**From** : Opus superviseur post-Mike chat interview AskUserQuestion
+**Source** : `.claude/supervisor/answers-from-supervisor.md` § 10h15 A-R7-007/016/018/026
+
+## Mike's decisions (4 Q tranchées)
+
+| Q | Decision | Action exec |
+|---|---|---|
+| **R7-007** cleanup diag | **(b) Garder Camera failsafe, supprimer ImguiDiag** | GO ticket simple |
+| **R7-016** events V4 fidelity | **V4 strict : porter 5 events missing** | GO ticket 2-3h |
+| **R7-018** squash supervisor | **Skip** | RESOLVED no-action |
+| **R7-026** WebGL fix strategy | **Investigation needed** | Superviseur dispatch general-purpose |
+
+## GO ticket 1 — R7-007 cleanup ImguiDiagOverlay
+
+- **[Em : 15min]** **bug-fixer Sonnet** ou exec direct
+- **[Df]** :
+  - Delete `Assets/Scripts/Systems/ImguiDiagOverlay.cs` + `Assets/Scripts/Systems/ImguiDiagOverlay.cs.meta`
+  - Grep Main.unity (et autres .unity) pour GUID du ImguiDiagOverlay.cs.meta — si référence GameObject → cleanup composant aussi
+  - **KEEP** `Assets/Scripts/Systems/EnsureMainCamera.cs` (failsafe Mike validé)
+- **[Vf]** :
+  - Compile clean (UnityMCP `refresh_unity` + `read_console` 0 Error)
+  - Play mode Unity Editor : pas de banner OnGUI debug bleu visible
+- **[Cf]** :
+  - `chore(cleanup)(R7-007): remove ImguiDiagOverlay debug orphan — keep EnsureMainCamera failsafe`
+
+## GO ticket 2 — R7-016 V4 strict events port 5 missing
+
+- **[Em : 2-3h]** **feature-dev Sonnet worktree**
+- **Mission** : Refacto `DynamicEventManager` de `% 5` random → data-driven `level.events[]` (V4 pattern). Implémenter 5 events missing : `void_pulse`, `zero_g`, `undertow`, `battle_cry`, `hack`.
+- **[Df]** :
+  - V4 ref : `milan project/src-v3/systems/EventManager.js` + `src-v3/data/levels/*.js` event definitions
+  - V6 current : `Assets/Scripts/Systems/DynamicEventManager.cs` (% 5 random pattern)
+  - V6 target : DynamicEventManager subscribe `LevelEvents.OnWaveStarted` → check `LevelData.events[wave]` → trigger event def
+  - LevelData schema : add `[Serializable] class LevelEvent { int waveIndex; string type; float duration; }` + `List<LevelEvent> events`
+  - Per-event implem :
+    - `void_pulse` : gravity inverted on enemies (jump arc inversé) 5s
+    - `zero_g` : enemies float slow 8s
+    - `undertow` : enemies sucked toward portal direction 5s
+    - `battle_cry` : enemy speed +50% 6s (animaux only)
+    - `hack` : random towers disabled 4s
+  - Verify : audit `R7-022` user-facing rerun expect +5-10 pts Gameplay
+- **[Vf]** :
+  - Compile clean
+  - Play mode 5-wave smoke : déclencher manuellement chaque event via console (`__cd.triggerEvent("void_pulse")`)
+  - UnityMCP `execute_code` : `DynamicEventManager.Instance.TriggerEvent("hack")` + observe behaviour 4s
+- **[Cf]** :
+  - `feat(gameplay)(R7-016): 5 V4 events void_pulse/zero_g/undertow/battle_cry/hack + data-driven level.events[]`
+
+## GO ticket 3 — R7-018 squash supervisor SKIP
+
+- **No action**. Q-R7-018 résolu. Commits supervisor T3 + ProjectilePool 3× restent comme-tels.
+
+## Investigation R7-026 WebGL — dispatched superviseur side
+
+Mike chat : "Je pense qu'il faut continuer a trouver d'ou vient le probleme, est-ce que des majs unity existe ? est-ce qu'on peut bisect pour voir quand le probleme est arrivé ? est-ce que c'est pas juste un soucis de caméra ou autre, je sais pas."
+
+Superviseur dispatch `general-purpose` agent (background) avec mission :
+1. Check Unity 6.0.x patches récents (6.0.4/5/6+ ? release notes URP fixes WebGL ?)
+2. Git bisect : quand bug WebGL canvas noir est apparu — Unity migration initial vs commits récents ?
+3. Investigate root cause : shader CoreCopy FRAMEBUFFER_INPUT_X_FLOAT vraie cause ou autre (camera setup spécifique WebGL build, post-process stack, scene setup) ?
+4. Output : `.claude/audit/R7-026-WEBGL-INVESTIGATION-2026-05-13.md`
+5. Recommandation data-driven options A/B/C/D/E ou nouvelle option F
+
+**Exec ne touche pas R7-026** tant que investigation pas livrée. Quand rapport disponible → Mike re-décide.
+
+## Process exec
+
+Batch 1 immédiat (parallel-safe) :
+- R7-007 cleanup (15min, no Main.unity conflict)
+- R7-016 V4 events (worktree, 2-3h, touches LevelData + DynamicEventManager)
+
+Q-N9-80levels-design-decisions : superviseur a endorsed Q9-1..Q9-4 reco game-designer (cf `answers-from-supervisor.md` § A-N9-80levels-design-decisions 2026-05-13 02h58). Q9-2 ramp 0.45 déjà shipped `45a2a87`. Si Mike veut override Q9-1/Q9-3/Q9-4 → écrire dans questions-to-supervisor.md, sinon exec pioche Q9-1/Q9-3/Q9-4 implem.
+
+## Ack expected
+
+`.claude/supervisor/acks/2026-05-13-HHhMM-mike-interview-4answers-ack.md` :
+- Batch 1 dispatch agents (paths IDs)
+- R7-018 noted as no-action resolved
+- R7-026 awaiting investigation rapport
+
+## Status
+
+🎯 4 Q cat B answered Mike interview — 3 GO tickets prêts à dispatch. R7-026 investigation parallel.

@@ -36,7 +36,7 @@ Quand question `[resolved]`, déplacer la section dans `_archive.md` (ou laisser
 
 (les questions actives en attente d'ack ici, plus récente en bas)
 
-### 2026-05-13 03h00 — Q-R7-007 cleanup diag code
+### 2026-05-13 03h00 — Q-R7-007 cleanup diag code [answered] 10h15
 Type : escalation
 Category : B
 Blocking : false (autres tickets parallèle continue)
@@ -49,7 +49,7 @@ Options envisagées :
 Reco interne (et superviseur spec) : (b) — failsafe utile, ImguiDiagOverlay = debug pur post-cascade
 Context : R7-007 P1 ticket open-ended
 
-### 2026-05-13 03h00 — Q-R7-016 events V4 fidelity
+### 2026-05-13 03h00 — Q-R7-016 events V4 fidelity [answered] 10h15
 Type : escalation (design Mike)
 Category : B
 Blocking : false (autres tickets pioche continue)
@@ -59,7 +59,7 @@ Question : Refacto DynamicEventManager → V4 strict (8 events data-driven via `
 Reco interne : V4 strict si parity priority (sprint nom "R7-PUSH-100") sinon keep
 Context : R7-016 P3 ticket
 
-### 2026-05-13 03h00 — Q-R7-018 squash supervisor commits
+### 2026-05-13 03h00 — Q-R7-018 squash supervisor commits [answered] 10h15
 Type : escalation
 Category : B
 Blocking : false
@@ -70,7 +70,7 @@ Options :
 - (b) Skip squash (history hygiene < workflow risk)
 Reco interne (et superviseur spec) : (b) SKIP — commits supervisor T3 silent log non bruyant, ProjectilePool 3× = no-op asset state (verified R7-008)
 
-### 2026-05-13 03h00 — Q-R7-026 WebGL fix strategy
+### 2026-05-13 03h00 — Q-R7-026 WebGL fix strategy [escalated-investigation] 10h15
 Type : escalation (Mike chat live directive long-terme)
 Category : B
 Blocking : false (test Editor mode actif suffit dev/test full pour le moment)

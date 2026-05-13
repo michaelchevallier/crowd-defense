@@ -84,3 +84,51 @@ Mike notified : T3 silent (Mike chat live grant autonomy, pas besoin push notif 
 
 Status : `[answered]` 02h58 — exec peut implem Q9-1..Q9-4 dans backlog N9 quand ramp-up R7 urgents stabilizés.
 
+
+
+### 2026-05-13 10h15 — A-R7-007 cleanup diag code
+For : Q-R7-007 (2026-05-13 03h00)
+Status : mike-override
+Réponse Mike : **(b) Garder EnsureMainCamera failsafe, supprimer ImguiDiagOverlay**
+Rationale Mike : Recommended supervisor accepté — Camera failsafe utile (peu LOC, no-op si Camera existe), ImguiDiag = debug pur orphelin post-cascade.
+Caveats exec :
+- Supprimer `Assets/Scripts/Systems/ImguiDiagOverlay.cs` + son .meta
+- Vérifier qu'aucune référence GUID dans Main.unity (grep par GUID)
+- Garder `Assets/Scripts/Systems/EnsureMainCamera.cs` intact
+Mike notified : true (chat direct via interview AskUserQuestion)
+
+### 2026-05-13 10h15 — A-R7-016 events V4 fidelity
+For : Q-R7-016 (2026-05-13 03h00)
+Status : mike-override
+Réponse Mike : **V4 strict — porter les 5 events missing**
+Rationale Mike : Sprint nom R7-PUSH-100 = parité, donc V4 strict cohérent.
+Caveats exec :
+- 5 events à porter : `void_pulse` + `zero_g` + `undertow` + `battle_cry` + `hack`
+- Refacto DynamicEventManager : data-driven via `level.events[]` (V4 pattern) au lieu de `% 5` random
+- 2-3h estimé. Spawn feature-dev worktree (charter §1 règle #10 Sonnet).
+- Verify via UnityMCP Play mode 1 event triggered per type
+Mike notified : true
+
+### 2026-05-13 10h15 — A-R7-018 squash supervisor commits
+For : Q-R7-018 (2026-05-13 03h00)
+Status : mike-override
+Réponse Mike : **Skip squash**
+Rationale Mike : Recommended supervisor accepté — commits T3 silent log non-bruyant + ProjectilePool 3× verified no-op (R7-008 audit). Risk break local refs > gain hygiene.
+Caveats exec : Aucune action. Q-R7-018 résolu sans commit.
+Mike notified : true
+
+### 2026-05-13 10h15 — A-R7-026 WebGL fix strategy (investigation needed)
+For : Q-R7-026 (2026-05-13 03h00)
+Status : escalated-investigation-dispatched
+Réponse Mike : **Investigation more — ne pas trancher options A-E sans data**
+Rationale Mike : "Je pense qu'il faut continuer a trouver d'ou vient le probleme, est-ce que des majs unity existe ? est-ce qu'on peut bisect pour voir quand le probleme est arrivé ? est-ce que c'est pas juste un soucis de caméra ou autre, je sais pas."
+
+Action superviseur : Dispatch `general-purpose` agent investigation WebGL deep avec mission :
+1. Check Unity 6.0.x patches disponibles (6.0.4, 6.0.5, 6.0.6+) — release notes URP WebGL fixes ?
+2. Bisect git : quand le bug WebGL canvas noir est apparu ? Premier commit Unity migration vs commits récents ?
+3. Investigate root cause : shader `Hidden/CoreSRP/CoreCopy` FRAMEBUFFER_INPUT_X_FLOAT vraie cause, OU autre (camera, post-process, scene setup spécifique au build WebGL) ?
+4. Documenter findings : `.claude/audit/R7-026-WEBGL-INVESTIGATION-2026-05-13.md`
+5. Recommandation finale data-driven : option A/B/C/D/E ou nouvelle option F (Unity patch X.Y.Z disponible)
+
+Caveats exec : Pas d'action sur R7-026 tant que investigation pas livrée. Quand rapport livré, Mike re-décide.
+Mike notified : true
