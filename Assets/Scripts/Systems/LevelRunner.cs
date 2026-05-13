@@ -54,7 +54,10 @@ namespace CrowdDefense.Systems
         }
     }
 
-    [DefaultExecutionOrder(-50)]
+    // V8H FIX: ExecutionOrder -200 (was -50) so LevelRunner.Awake runs BEFORE
+    // PathManager (-100). PathManager.Build reads LevelRunner.CurrentLevel as fallback;
+    // if LevelRunner Awake hasn't fired yet, CurrentLevel is null → no map mesh spawned.
+    [DefaultExecutionOrder(-200)]
     public class LevelRunner : MonoSingleton<LevelRunner>
     {
         [SerializeField] private LevelData? currentLevel;
