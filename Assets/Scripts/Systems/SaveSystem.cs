@@ -291,10 +291,19 @@ namespace CrowdDefense.Systems
             _cachedRuns[s]    = null;
             _cachedRunMaps[s] = null;
             PlayerPrefs.DeleteKey(ProgressKey(s));
+            PlayerPrefs.DeleteKey(ProgressTmpKey(s));
+            PlayerPrefs.DeleteKey(ProgressBakKey(s));
             PlayerPrefs.DeleteKey(RunKey(s));
             PlayerPrefs.DeleteKey(RunMapKey(s));
             PlayerPrefs.Save();
         }
+
+        // Suffix constants for atomic-write staging and backup keys
+        private const string TMP_SUFFIX = "_tmp";
+        private const string BAK_SUFFIX = "_bak";
+
+        private static string ProgressTmpKey(int slot) => $"{KEY_PREFIX}{slot}{TMP_SUFFIX}";
+        private static string ProgressBakKey(int slot) => $"{KEY_PREFIX}{slot}{BAK_SUFFIX}";
 
         public static ProgressData Load()
         {
@@ -303,26 +312,53 @@ namespace CrowdDefense.Systems
             string json = PlayerPrefs.GetString(ProgressKey(s), "");
             if (string.IsNullOrEmpty(json))
             {
+                // Try backup before giving up
+                string bakJson = PlayerPrefs.GetString(ProgressBakKey(s), "");
+                if (!string.IsNullOrEmpty(bakJson))
+                {
+                    var restored = TryParseProgress(bakJson, s, "backup");
+                    if (restored != null)
+                    {
+                        _cachedSlots[s] = restored;
+                        Save();
+                        return _cachedSlots[s]!;
+                    }
+                }
                 _cachedSlots[s] = new ProgressData();
                 Save();
                 return _cachedSlots[s]!;
             }
+            var loaded = TryParseProgress(json, s, "primary");
+            if (loaded == null)
+            {
+                // Primary corrupted — try backup
+                string bakJson = PlayerPrefs.GetString(ProgressBakKey(s), "");
+                if (!string.IsNullOrEmpty(bakJson))
+                    loaded = TryParseProgress(bakJson, s, "backup");
+            }
+            _cachedSlots[s] = loaded ?? new ProgressData();
+            if (loaded?.Version != CurrentSaveVersion) Save();
+            return _cachedSlots[s]!;
+        }
+
+        private static ProgressData? TryParseProgress(string json, int s, string label)
+        {
             try
             {
-                var loaded = JsonUtility.FromJson<ProgressData>(json) ?? new ProgressData();
-                bool needsMigration = loaded.Version != CurrentSaveVersion;
-                _cachedSlots[s] = MigrateIfNeeded(loaded);
-                if (needsMigration) Save();
+                var parsed = JsonUtility.FromJson<ProgressData>(json) ?? new ProgressData();
+                bool needsMigration = parsed.Version != CurrentSaveVersion;
+                var migrated = MigrateIfNeeded(parsed);
+                return migrated;
             }
             catch (Exception ex)
             {
 #if UNITY_EDITOR
-                PlayerPrefs.SetString(ProgressKey(s) + "_corrupted", json);
-                Debug.LogWarning($"[SaveSystem] Progression slot{s} corrompue, reset silencieux: {ex.Message}");
+                if (label == "primary")
+                    PlayerPrefs.SetString(ProgressKey(s) + "_corrupted", json);
+                Debug.LogWarning($"[SaveSystem] Progression slot{s} {label} corrompue, reset silencieux: {ex.Message}");
 #endif
-                _cachedSlots[s] = new ProgressData();
+                return null;
             }
-            return _cachedSlots[s]!;
         }
 
         public static void Save()
@@ -332,8 +368,37 @@ namespace CrowdDefense.Systems
             var data = _cachedSlots[s]!;
             data.lastPlayedDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
             string json = JsonUtility.ToJson(data);
-            PlayerPrefs.SetString(ProgressKey(s), json);
-            PlayerPrefs.Save();
+            AtomicWriteProgress(s, json);
+        }
+
+        // Atomic write: write to _tmp key, backup current to _bak, promote _tmp to primary.
+        // If anything fails mid-way the previous primary or backup remains recoverable.
+        private static void AtomicWriteProgress(int s, string json)
+        {
+            try
+            {
+                // Stage in tmp key
+                PlayerPrefs.SetString(ProgressTmpKey(s), json);
+                PlayerPrefs.Save();
+
+                // Rotate current primary → backup
+                string current = PlayerPrefs.GetString(ProgressKey(s), "");
+                if (!string.IsNullOrEmpty(current))
+                    PlayerPrefs.SetString(ProgressBakKey(s), current);
+
+                // Promote tmp → primary
+                PlayerPrefs.SetString(ProgressKey(s), json);
+                PlayerPrefs.DeleteKey(ProgressTmpKey(s));
+                PlayerPrefs.Save();
+            }
+            catch (Exception ex)
+            {
+#if UNITY_EDITOR
+                Debug.LogError($"[SaveSystem] AtomicWrite slot{s} failed: {ex.Message}");
+#endif
+                // Clean up tmp to avoid stale staging on next launch
+                try { PlayerPrefs.DeleteKey(ProgressTmpKey(s)); PlayerPrefs.Save(); } catch { }
+            }
         }
 
         // ── Game Mode ─────────────────────────────────────────────────────────
