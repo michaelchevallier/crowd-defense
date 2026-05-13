@@ -136,3 +136,6 @@ auto-build-*.log
 # Unity Editor mono crash dumps (Burst compiler / GC crashes — Unity bug, not project state)
 mono_crash.*.json
 mono_crash.*.json.meta
+
+# R7 QA auto-loop run reports (ephemeral per-run output, .claude/qa/reports/ holds permanent ones)
+.claude/qa/r7-auto-loop-*.md
