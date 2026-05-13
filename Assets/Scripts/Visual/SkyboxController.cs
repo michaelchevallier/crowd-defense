@@ -27,7 +27,18 @@ namespace CrowdDefense.Visual
 
         private Dictionary<LevelTheme, Material?> _skyboxMap = new();
 
-        protected override void OnAwakeSingleton() => BuildMap();
+        protected override void OnAwakeSingleton()
+        {
+            BuildMap();
+            // V8I FIX: Mike noted no skybox in browser /v6/ → gray background. The OnLevelStart
+            // event may not fire in time, or Main.unity default RenderSettings.skybox uses a URP
+            // shader that doesn't compile in WebGL2 (we see Hidden/Universal RP shader errors at
+            // load). Apply Plaine skybox immediately so the player isn't staring at gray clear-color
+            // before any LevelData propagates.
+            var lr = LevelRunner.Instance;
+            var theme = lr?.CurrentLevel?.LevelTheme ?? LevelTheme.Plaine;
+            ApplyTheme(theme);
+        }
 
         private void OnEnable()  => LevelEvents.OnLevelStart += HandleLevelStart;
         private void OnDisable() => LevelEvents.OnLevelStart -= HandleLevelStart;
