@@ -191,3 +191,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 05h02 — scrute /loop (manuel Mike trigger). **0 new commits depuis baseline `1c835c6`** (scrute #61). **6 consecutive idle scrutes** ~1h30 R7 plateau 74%. **Drift criteria : 0/12** ✅. D8 stable 2 worktrees. 5 Unity processes (Editor + 4 workers asset import lingering). **T3 silent**. Mike chat informé scrute #61 — décision (acter cat B / vérifier exec / close / wait) lui revient. Pattern OK pour R7-014 long ticket en cours (estimé 8-12h, idle commit-wise normal pendant que worktree progresse).
 
 2026-05-13 05h17 — scrute /loop. **0 new commits depuis baseline `4b525a1`** (#62). **7 consecutive idle scrutes** ~1h45 R7 plateau 74%. **Drift 0/12** ✅. D8 stable 2 wt. 5 Unity processes. **T3 silent**.
+
+2026-05-13 05h31 — scrute /loop. **0 new commits depuis `ef58b061`** (#63). **8 consecutive idle ~2h** R7 plateau 74%. **Drift 0/12** ✅. D8 stable 2 wt. **T3 silent**.
