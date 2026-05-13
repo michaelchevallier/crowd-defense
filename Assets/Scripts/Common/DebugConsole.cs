@@ -20,6 +20,11 @@ namespace CrowdDefense.Common
         private GUIStyle? _boxStyle;
         private GUIStyle? _textStyle;
 
+        public static void Toggle()
+        {
+            if (Instance != null) Instance._visible = !Instance._visible;
+        }
+
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.F1))
@@ -101,11 +106,6 @@ namespace CrowdDefense.Common
             {
                 switch (cmd)
                 {
-                    case "unlockall":
-                        UnlockAll();
-                        AddLog("All content unlocked!");
-                        break;
-
                     case "addgold":
                         if (tokens.Length < 2 || !int.TryParse(tokens[1], out int gold))
                             AddLog("Usage: addGold N");
@@ -153,6 +153,24 @@ namespace CrowdDefense.Common
                             AddLog("Give skin deferred");
                         break;
 
+                    case "debug":
+                        if (tokens.Length >= 2 && tokens[1].ToLower() == "off")
+                            CdDebugApi.DebugOff();
+                        else
+                            CdDebugApi.DebugOn();
+                        AddLog($"Debug mode {(tokens.Length >= 2 && tokens[1].ToLower() == "off" ? "OFF" : "ON")}");
+                        break;
+
+                    case "unlock":
+                    case "unlockall":
+                        UnlockAll();
+                        break;
+
+                    case "corners":
+                        CdDebugApi.ToggleCornerLabels();
+                        AddLog("Corner labels toggled");
+                        break;
+
                     case "winlevel":
                         WinLevel();
                         AddLog("Level won!");
@@ -164,7 +182,7 @@ namespace CrowdDefense.Common
                         break;
 
                     case "help":
-                        AddLog("Commands: unlockAll, addGold N, goto LEVELID, killAll, setHP N, spawn TYPE, give SKIN, winLevel, loseLevel");
+                        AddLog("Commands: unlock, addGold N, goto LEVELID, killAll, debug on|off, corners, winLevel, loseLevel");
                         break;
 
                     default:
@@ -180,14 +198,14 @@ namespace CrowdDefense.Common
 
         private void UnlockAll()
         {
-            // CampaignDataManager removed — unlock logic deferred to progression system integration
-            AddLog("unlockAll deferred — requires SaveSystem progression integration");
+            CdDebugApi.UnlockAll();
+            AddLog($"All levels unlocked!");
         }
 
         private void GotoLevel(string levelId)
         {
-            // Load level by ID (deferred to campaign system)
-            AddLog($"Goto {levelId} — deferred to level loader integration");
+            CdDebugApi.Goto(levelId);
+            AddLog($"Loading level: {levelId}");
         }
 
         private void KillAllEnemies()
