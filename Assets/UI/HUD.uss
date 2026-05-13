@@ -43,6 +43,23 @@
     color: rgb(255, 210, 63);
 }
 
+.pill-gems {
+    background-color: rgba(80, 30, 130, 0.7);
+    border-color: rgb(180, 100, 255);
+    border-width: 1px;
+    border-radius: 14px;
+}
+
+.pill-gems .pill-value {
+    color: rgb(220, 180, 255);
+}
+
+.pill-icon {
+    font-size: 20px;
+    margin-right: 4px;
+    align-self: center;
+}
+
 .coin-icon {
     font-size: 20px;
     margin-right: 4px;

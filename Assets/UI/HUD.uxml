@@ -21,6 +21,12 @@
                 <ui:Label text="120" name="gold-value" class="pill-value" />
             </ui:VisualElement>
 
+            <ui:VisualElement name="gems-pill" class="pill pill-gems">
+                <ui:Label text="&#x1F48E;" class="pill-icon" />
+                <ui:Label text="GEMS" class="pill-label" />
+                <ui:Label name="gems-value" text="0" class="pill-value" />
+            </ui:VisualElement>
+
             <ui:VisualElement class="pill pill-wave" name="pill-wave">
                 <ui:Label text="WAVE" name="wave-label" class="pill-label" />
                 <ui:Label text="1/4" name="wave-value" class="pill-value" />
