@@ -101,6 +101,8 @@ namespace CrowdDefense.Systems
         private float _playtimeAccum;
         private int   _goldEarned;
 
+        public int KillsThisLevel => _killsThisLevel;
+
         // ── Speed / pause state ────────────────────────────────────────────────
         private float _targetSpeed = 1f;
         private bool  _paused;
