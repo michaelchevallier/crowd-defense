@@ -557,6 +557,7 @@ namespace CrowdDefense.Systems
             }
 
             LifetimeStats.Instance?.AddLevelWon();
+            ClearDefeatStreak(currentLevel?.Id ?? "");
 
             if (Hero != null)
                 RunContext.Instance?.SnapshotHero(Hero);
@@ -670,8 +671,35 @@ namespace CrowdDefense.Systems
 
         private void SaveLostResult()
         {
-            // Record defeat for support-mode offer logic (mirrors V5 SaveSystem.incrementDefeat).
-            // SaveSystem has no IncrementDefeat yet; stub preserved for future extension.
+            string levelId = currentLevel?.Id ?? "";
+            if (string.IsNullOrEmpty(levelId)) return;
+
+            var streakKey   = $"defeats_streak_{levelId}";
+            var proposedKey = $"support_proposed_{levelId}";
+            int count       = PlayerPrefs.GetInt(streakKey, 0) + 1;
+            PlayerPrefs.SetInt(streakKey, count);
+            PlayerPrefs.Save();
+
+            if (count >= 2 && !SupportMode.IsActive && !PlayerPrefs.HasKey(proposedKey))
+            {
+                PlayerPrefs.SetInt(proposedKey, 1);
+                PlayerPrefs.Save();
+                // Deferred so the dialog appears after the defeat animation finishes.
+                StartCoroutine(ShowSupportDialogDeferred(levelId, 3.2f));
+            }
+        }
+
+        private System.Collections.IEnumerator ShowSupportDialogDeferred(string levelId, float delay)
+        {
+            yield return new WaitForSecondsRealtime(delay);
+            UI.SupportProposalDialog.Instance?.Show(levelId);
+        }
+
+        private void ClearDefeatStreak(string levelId)
+        {
+            if (string.IsNullOrEmpty(levelId)) return;
+            PlayerPrefs.DeleteKey($"defeats_streak_{levelId}");
+            PlayerPrefs.Save();
         }
 
         // ── Castle / Hero spawning ──────────────────────────────────────────────
