@@ -46,10 +46,6 @@ namespace CrowdDefense.Systems
             var listenerExisting = Object.FindFirstObjectByType<AudioListener>();
             if (listenerExisting == null)
                 go.AddComponent<AudioListener>();
-
-            // IMGUI diag overlay: lives on the camera GO, renders via OnGUI (no URP dependency)
-            if (Object.FindFirstObjectByType<ImguiDiagOverlay>() == null)
-                go.AddComponent<ImguiDiagOverlay>();
         }
     }
 }
