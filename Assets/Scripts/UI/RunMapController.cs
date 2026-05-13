@@ -158,6 +158,20 @@ namespace CrowdDefense.UI
             var node = FindNodeById(nodeId);
             if (node == null) return;
 
+            // Delegate to RunModeController when a run is active — it handles all node types.
+            var runMode = RunModeController.Instance;
+            if (runMode != null && runMode.IsRunActive())
+            {
+                runMode.OnNodeClick(node);
+                // Shop / Rest / Mystery don't navigate away; rebuild the graph to reflect traversal.
+                if (node.type != RunMapNodeType.Combat
+                 && node.type != RunMapNodeType.Elite
+                 && node.type != RunMapNodeType.Boss)
+                    Rebuild();
+                return;
+            }
+
+            // Legacy fallback (no active RunModeController).
             _runMap.MoveTo(nodeId);
 
             if (node.type == RunMapNodeType.Boss)
