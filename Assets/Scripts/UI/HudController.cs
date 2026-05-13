@@ -417,6 +417,17 @@ namespace CrowdDefense.UI
                 OnBreakStateChanged();
             }
 
+            // I hotkey — toggle encyclopedia
+            if (Input.GetKeyDown(KeyCode.I))
+            {
+                var enc = EncyclopediaController.Instance;
+                if (enc != null)
+                {
+                    if (enc.IsOpen) enc.Hide();
+                    else enc.Show();
+                }
+            }
+
             // N hotkey — debounced, shared with click (Q7)
             if (Input.GetKeyDown(KeyCode.N))
                 TryLaunchWave();

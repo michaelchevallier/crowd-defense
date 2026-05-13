@@ -34,6 +34,12 @@ namespace CrowdDefense.UI
             Hide();
         }
 
+        private void Update()
+        {
+            if (IsOpen && Input.GetKeyDown(KeyCode.Escape))
+                Hide();
+        }
+
         public bool IsOpen
         {
             get
