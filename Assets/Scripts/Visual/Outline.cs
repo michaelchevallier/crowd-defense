@@ -9,7 +9,10 @@ namespace CrowdDefense.Visual
     // material noir Cull Front (back-face only → silhouette noire autour du mesh).
     public static class Outline
     {
-        private static Material? _outlineMat;
+        // Per-color cache: 2 spawns avec couleurs différentes même frame partagent shader
+        // mais pas le Material (sinon SetColor du second clobbers le premier).
+        // Dictionary<Color, Material> préféré à MaterialPropertyBlock car shader URP
+        // déclare _OutlineColor dans CBUFFER UnityPerMaterial → MPB casserait SRP Batcher.
         private static readonly Dictionary<Color, Material> _outlineMatCache = new();
 
         /// <summary>
