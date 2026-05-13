@@ -59,9 +59,41 @@ namespace CrowdDefense.Systems
     {
         private const string CompletedKeyPrefix = "daily_completed_";
         private const string CompletedKeySuffix = "_v1";
+        private const string StreakKey           = "daily_streak";
+        private const string LastWinKey          = "daily_last_win";
 
         private ChallengeSpec? _cached;
         private string         _cachedDate = "";
+
+        public int CurrentStreak => PlayerPrefs.GetInt(StreakKey, 0);
+
+        public void OnDailyVictory()
+        {
+            var lastWinDate = PlayerPrefs.GetString(LastWinKey, "");
+            var today = DateTime.UtcNow.Date.ToString("yyyy-MM-dd");
+            if (lastWinDate == today) return;
+
+            var yesterday = DateTime.UtcNow.AddDays(-1).Date.ToString("yyyy-MM-dd");
+            int streak = (lastWinDate == yesterday) ? CurrentStreak + 1 : 1;
+            PlayerPrefs.SetInt(StreakKey, streak);
+            PlayerPrefs.SetString(LastWinKey, today);
+            PlayerPrefs.Save();
+        }
+
+        public void CheckStreakBreak()
+        {
+            var lastWinDate = PlayerPrefs.GetString(LastWinKey, "");
+            if (string.IsNullOrEmpty(lastWinDate)) return;
+            var lastDate = DateTime.Parse(lastWinDate).Date;
+            var daysSince = (DateTime.UtcNow.Date - lastDate).Days;
+            if (daysSince >= 2)
+            {
+                PlayerPrefs.SetInt(StreakKey, 0);
+                PlayerPrefs.Save();
+            }
+        }
+
+        protected override void OnAwakeSingleton() => CheckStreakBreak();
 
         public ChallengeSpec GetTodayChallenge()
         {

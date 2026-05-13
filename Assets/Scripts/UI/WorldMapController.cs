@@ -30,7 +30,7 @@ namespace CrowdDefense.UI
             { RunMapNodeType.Boss,    "BOSS" },
         };
 
-        private const int WorldCount     = 8;
+        private const int WorldCount     = 10;
         private const int LevelsPerWorld = 10;
 
         private static readonly string[] WorldThemeKeys =
@@ -43,6 +43,8 @@ namespace CrowdDefense.UI
             "worldmap.world6",
             "worldmap.world7",
             "worldmap.world8",
+            "worldmap.world9",
+            "worldmap.world10",
         };
 
         private static readonly Color[] WorldThemeColors =
@@ -55,12 +57,15 @@ namespace CrowdDefense.UI
             new Color(0.75f, 0.88f, 0.95f), // W6 Glace   — bleu pale
             new Color(0.38f, 0.25f, 0.12f), // W7 Marais  — brun
             new Color(0.12f, 0.12f, 0.18f), // W8 Nebula  — noir bleu
+            new Color(0.85f, 0.62f, 0.28f), // W9 Apocalypse — ambre
+            new Color(0.15f, 0.45f, 0.65f), // W10 Espace — cyan foncé
         };
 
         private static readonly string[] WorldThemeNames =
         {
             "Plaine", "Desert", "Ocean", "Volcan",
             "Foret",  "Glace",  "Marais", "Nebula",
+            "Apocalypse", "Espace",
         };
 
         private VisualElement? _root;
@@ -527,8 +532,9 @@ namespace CrowdDefense.UI
             var tileBossRush = _root.Q<Button>("tile-boss-rush");
             if (tileBossRush != null)
             {
-                tileBossRush.SetEnabled(false);
-                tileBossRush.tooltip = "Boss Rush - bientot disponible";
+                tileBossRush.SetEnabled(true);
+                tileBossRush.tooltip = null;
+                tileBossRush.clicked += () => BossRushMode.Instance?.StartBossRush();
             }
         }
 

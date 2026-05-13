@@ -538,6 +538,12 @@ namespace CrowdDefense.Systems
 
         private void HandleAllWavesCompleted()
         {
+            if (BossRushMode.Instance != null && BossRushMode.Instance.IsActive)
+            {
+                BossRushMode.Instance.OnBossDefeated(PrimaryCastle?.HP ?? 0);
+                return;
+            }
+
             if (IsDailyRun)
             {
                 int score = _killsThisLevel * 10 + (WaveManager.Instance?.TotalWaves ?? 5) * 100;

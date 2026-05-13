@@ -169,6 +169,9 @@ namespace CrowdDefense.Data
         [Header("Synergies")]
         [SerializeField] private List<SynergyDef> synergies = new();
 
+        [Header("Behaviors")]
+        [SerializeField] private List<string> behaviors = new();
+
         [Header("Damage Type")]
         [SerializeField] private DamageType damageType = DamageType.Physical;
 
@@ -221,6 +224,7 @@ namespace CrowdDefense.Data
         public bool HasArmorBreak => hasArmorBreak;
         public ArmorBreakDef ArmorBreak => armorBreak;
         public IReadOnlyList<SynergyDef> Synergies => synergies;
+        public IReadOnlyList<string> Behaviors => behaviors;
         public DamageType DamageType => damageType;
         public string AssetKey => assetKey;
         public Color BodyColor => bodyColor;
