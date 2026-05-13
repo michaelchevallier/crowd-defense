@@ -74,7 +74,6 @@ namespace CrowdDefense.Data
         public float[] ComboMultipliers = { 1f, 1.5f, 2f, 2.5f, 3f };
 
         [Header("Perk system")]
-        public float ForteresseCastleHpMul = 1.5f;
         public float DefaultTowerAuraRange = 8f;
 
         public float DifficultyMulFor(int world)

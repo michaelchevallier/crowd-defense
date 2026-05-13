@@ -62,6 +62,8 @@ namespace CrowdDefense.Data
         [SerializeField] public bool glaciation;
         [SerializeField] public bool cristalGlace;
         [SerializeField] public bool forteressePerk;
+        [Range(1f, 3f)]
+        [SerializeField] public float forteresseCastleHpMul = 1.5f;
         [SerializeField] public bool mursPierre;
 
         // Magnet perk (D1-01 Q3)

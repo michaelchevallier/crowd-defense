@@ -250,7 +250,7 @@ namespace CrowdDefense.Systems
             if (def.glaciation)     hero.Glaciation     = true;
             if (def.cristalGlace)   hero.CristalGlace   = true;
             if (def.mursPierre)     hero.MursPierre     = true;
-            if (def.forteressePerk) { hero.ForteressePerk = true; hero.CastleHPMaxMul *= BalanceConfig.Get().ForteresseCastleHpMul; }
+            if (def.forteressePerk) { hero.ForteressePerk = true; hero.CastleHPMaxMul *= def.forteresseCastleHpMul; }
 
             // Magnet perk (D1-01 Q3): boosts coin pull range + fly speed via CoinPullManager
             if (def.magnetRangeMul  > 1f) CoinPullManager.Instance?.ApplyMagnetRangeMul(def.magnetRangeMul);
