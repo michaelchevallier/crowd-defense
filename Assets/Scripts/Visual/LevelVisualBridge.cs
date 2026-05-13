@@ -32,12 +32,17 @@ namespace CrowdDefense.Visual
             EnsureParallax().Init(theme);
 
             var pm = Systems.PathManager.Instance;
-            if (pm?.Grid == null || PathTiles.Instance == null) return;
+            if (pm?.Grid == null) return;
 
             var grid = pm.Grid;
             // Use first portal as BFS origin for stagger; fall back to (0,0) if none.
             var spawnPos = grid.Portals.Count > 0 ? grid.Portals[0] : UnityEngine.Vector2Int.zero;
-            PathTiles.Instance.BuildForLevelProgressive(grid, theme, spawnPos);
+
+            // Stream + bridge visual layers spawn instantly; the reveal animation is
+            // owned by MapRenderer, which hides path slabs and re-activates them
+            // grouped by Manhattan distance × 60ms from the portal.
+            PathTiles.Instance?.BuildForLevel(grid, theme);
+            Systems.MapRenderer.Instance?.RevealFromSpawn(spawnPos);
         }
 
         private static void HandleLevelEnd()
