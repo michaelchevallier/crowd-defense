@@ -338,3 +338,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 22h47 — scrute /loop #131. **0 new commits** depuis #130 (15 min). Mike idle 30min. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 23h02 — scrute /loop #132. **1 new commit `7648d543`** V8E REAL FIX. Editor diagnostic via UnityMCP révèle : Click DID fire depuis V8C, blocked sur AvatarPickPanel UGUI Canvas auto-built avec layout NaN (cards at 1920,1058 in 3840x2160 canvas → invisible). V8E bypass : auto-set PlayerPrefs Warrior + BluePill au 1er run, skip broken pick panels. Build via UnityMCP en cours (data 23.9MB/27 target). **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-13 23h16 — scrute /loop #133. **1 new commit `10a543c4`** V8F : tile = Button (not VisualElement+Clickable). Test V8E browser confirmé Click NE FIRE PAS sur tile en WebGL (même avec V8C Clickable manipulator). Hypothèse : Button.clicked battle-tested fonctionne en WebGL (tabs déjà Button). V8F build via UnityMCP en cours. Mike autonomie totale demandée ("travaille en autonomie t'arrête uniquement si bloqué ferme OU fini"). **Drift 0/12** ✅. **T3 silent**.
