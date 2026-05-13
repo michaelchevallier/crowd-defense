@@ -282,3 +282,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 **T2 notif Mike** sent (terminal only, remote inactive). Need Mike-side Unity Editor Inspector debug session. **T3 silent supervisor side** (informational notif, not drift).
 
 2026-05-13 15h45 — scrute /loop. **0 new commits depuis `fe062e2d`** (self-scrute #105). **Drift 0/12** ✅. Killed orphan V6 Unity build (PID 12865 spinning licensing loop 23min post-completion). System idle awaiting Mike Unity Editor debug session. **T3 silent**.
+
+2026-05-13 16h00 — scrute /loop. **0 new commits** depuis self-scrute #106. 0 Unity builds. System idle stable. **Drift 0/12** ✅. **T3 silent**.
