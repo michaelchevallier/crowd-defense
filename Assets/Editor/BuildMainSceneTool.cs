@@ -60,6 +60,49 @@ namespace CrowdDefense.Editor
             // SchoolRegistry is a static registry — no MonoBehaviour, skip EnsureSingleton.
             EnsureSingleton<TutorialState>      (systems, "TutorialState",       ref created, ref existing);
             EnsureSingleton<StatsTracker>       (systems, "StatsTracker",        ref created, ref existing);
+
+            // Audio stack
+            EnsureSingleton<MusicManager>       (systems, "MusicManager",        ref created, ref existing);
+            EnsureSingleton<AudioMixerController>(systems, "AudioMixerController", ref created, ref existing);
+            EnsureSingleton<AudioSourcePool>    (systems, "AudioSourcePool",     ref created, ref existing);
+
+            // Event hubs
+            EnsureSingleton<EventManager>       (systems, "EventManager",        ref created, ref existing);
+            EnsureSingleton<DynamicEventManager>(systems, "DynamicEventManager", ref created, ref existing);
+            EnsureSingleton<EventBridge>        (systems, "EventBridge",         ref created, ref existing);
+
+            // Wave / progression
+            EnsureSingleton<WaveHistoryLog>     (systems, "WaveHistoryLog",      ref created, ref existing);
+            EnsureSingleton<WaveRewardSpawner>  (systems, "WaveRewardSpawner",   ref created, ref existing);
+            EnsureSingleton<KillsPerWaveTracker>(systems, "KillsPerWaveTracker", ref created, ref existing);
+
+            // Meta progression & profile
+            EnsureSingleton<PerkSystem>         (systems, "PerkSystem",          ref created, ref existing);
+            EnsureSingleton<PlayerProfile>      (systems, "PlayerProfile",       ref created, ref existing);
+            EnsureSingleton<HighScores>         (systems, "HighScores",          ref created, ref existing);
+            EnsureSingleton<LifetimeStats>      (systems, "LifetimeStats",       ref created, ref existing);
+            EnsureSingleton<Bestiary>           (systems, "Bestiary",            ref created, ref existing);
+            EnsureSingleton<DailyChallenge>     (systems, "DailyChallenge",      ref created, ref existing);
+            EnsureSingleton<KeyBindings>        (systems, "KeyBindings",         ref created, ref existing);
+
+            // Gameplay subsystems
+            EnsureSingleton<LootSpawner>        (systems, "LootSpawner",         ref created, ref existing);
+            EnsureSingleton<TreasureSpawner>    (systems, "TreasureSpawner",     ref created, ref existing);
+            EnsureSingleton<BluePill>           (systems, "BluePill",            ref created, ref existing);
+            EnsureSingleton<EnemyPathingSystem> (systems, "EnemyPathingSystem",  ref created, ref existing);
+            EnsureSingleton<HiddenAchievementTracker>(systems, "HiddenAchievementTracker", ref created, ref existing);
+
+            // Game modes
+            EnsureSingleton<EndlessMode>        (systems, "EndlessMode",         ref created, ref existing);
+            EnsureSingleton<BossRushMode>       (systems, "BossRushMode",        ref created, ref existing);
+
+            // Visual / map / weather
+            EnsureSingleton<MapRenderer>        (systems, "MapRenderer",         ref created, ref existing);
+            EnsureSingleton<LevelVisualBridge>  (systems, "LevelVisualBridge",   ref created, ref existing);
+            EnsureSingleton<FogOfWar>           (systems, "FogOfWar",            ref created, ref existing);
+            EnsureSingleton<WeatherController>  (systems, "WeatherController",   ref created, ref existing);
+            EnsureSingleton<SkyboxController>   (systems, "SkyboxController",    ref created, ref existing);
+            EnsureSingleton<PostProcessController>(systems, "PostProcessController", ref created, ref existing);
             // TODO: MapPathfinder (needs nav mesh config), SceneTransition (needs animator refs)
 
             EnsureCastle(ref created, ref existing);
