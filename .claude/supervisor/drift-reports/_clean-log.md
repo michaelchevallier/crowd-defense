@@ -243,3 +243,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-13 11h32 — scrute /loop. **0 new commits depuis `dfcc1ab9`** (#87). **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-13 11h46 — scrute /loop. **0 new commits depuis `928b396c`** (#88). **Drift 0/12** ✅. F1 upgrade Unity 6.4.6f1 en cours autonome (CLI install done, ProjectVersion.txt bumped, build #2 background `b4u5z1imf` après UnityGLTF 2.19.2→2.19.5 fix). Build #1 failed compile `org.khronos.unitygltf` URP 17.4 API change. **T3 silent** (Mike chat live, no drift, work in progress).
+
+2026-05-13 12h02 — scrute /loop. **1 new commit `7850247b`** R7-026 Unity 6.4.6f1 upgrade F1 SUCCESS (WebGL build clean, 0 CoreCopy errors, deploy gh-pages 6cf5032a). T1 notif Mike envoyée. **Drift 0/12** ✅. D1 clean (commit R7-026 ref). Sprint R7 = **23/27 (85%)** — sprint complete imminent → trigger spawn qa-tester smoke /v6/ (memory rule "no WebGL test" RESCINDED ce matin). Agent qa-tester launched background. Worktrees 2 stable. **Memory rules updated** dans 2 projets (milan + crowd-defense). **T3 silent** sauf si qa-tester remonte bug critique.
