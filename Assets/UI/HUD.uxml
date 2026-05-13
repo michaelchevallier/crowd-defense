@@ -11,6 +11,7 @@
     <Style src="FloatingPopup.uss" />
     <Style src="SettingsPanel.uss" />
     <Style src="HelpOverlay.uss" />
+    <Style src="EncyclopediaPanel.uss" />
     <ui:VisualElement name="hud-root" class="hud-root">
         <!-- Top bar pills -->
         <ui:VisualElement class="top-bar">
@@ -55,6 +56,7 @@
             <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines [D]" />
             <ui:Button text="&#x2699;" name="btn-settings" class="hud-settings-btn" tooltip="Settings" />
             <ui:Button text="&#x1F50A;" name="btn-mute" class="hud-mute-btn" tooltip="Mute audio" />
+            <ui:Button text="&#x1F4DA;" name="btn-encyclopedia" class="hud-encyclopedia-btn" tooltip="Encyclopedie [I]" />
         </ui:VisualElement>
 
         <!-- Doctrine panel (fullscreen modal, managed by DoctrineController) -->
@@ -625,5 +627,26 @@
         <ui:Label name="profile-overlay" class="profile hidden" />
         <!-- Debug spawn overlay — toggle F4 -->
         <ui:Label name="spawn-overlay" class="profile hidden" />
+
+        <!-- Encyclopedia overlay (EncyclopediaController — I key or btn-encyclopedia) -->
+        <ui:VisualElement name="encyclopedia-overlay" class="encyclopedia-overlay hidden">
+            <ui:VisualElement class="encyclopedia-frame">
+                <ui:VisualElement class="encyclopedia-header">
+                    <ui:Label text="&#x1F4DA; Encyclopedie" class="encyclopedia-title" />
+                    <ui:Button name="btn-close-encyclopedia" text="&#x2715;" class="encyclopedia-close-btn" />
+                </ui:VisualElement>
+                <ui:VisualElement class="encyclopedia-tabs">
+                    <ui:Button name="tab-towers" text="Tours" class="enc-tab enc-tab--active" />
+                    <ui:Button name="tab-enemies" text="Ennemis" class="enc-tab" />
+                    <ui:Button name="tab-perks" text="Perks" class="enc-tab" />
+                </ui:VisualElement>
+                <ui:VisualElement class="encyclopedia-body">
+                    <ui:ScrollView name="entry-list" class="enc-entry-list" />
+                    <ui:VisualElement name="entry-detail" class="enc-entry-detail">
+                        <ui:Label name="detail-placeholder" text="Selectionnez une entree" class="enc-detail-placeholder" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

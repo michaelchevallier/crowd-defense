@@ -191,6 +191,7 @@ namespace CrowdDefense.UI
             EnsureSibling<KeyBindingsPanel>();
             EnsureSibling<RuntimeProfilePanel>();
             EnsureSibling<AchievementToastController>();
+            EnsureSibling<EncyclopediaController>();
 
             ApplyDeviceClasses(Root);
             goldLabel = Root.Q<Label>("gold-label");
@@ -281,6 +282,7 @@ namespace CrowdDefense.UI
             waveLaunchBtn?.RegisterCallback<ClickEvent>(_ => TryLaunchWave());
             Root?.Q<Button>("btn-doctrine")?.RegisterCallback<ClickEvent>(_ => _doctrineCtrl?.Show());
             Root?.Q<Button>("btn-settings")?.RegisterCallback<ClickEvent>(_ => _settingsCtrl?.Show());
+            Root?.Q<Button>("btn-encyclopedia")?.RegisterCallback<ClickEvent>(_ => EncyclopediaController.Instance?.Show());
 
             _bankLabel?.RegisterCallback<MouseEnterEvent>(_ => ShowBankTooltip());
             _bankLabel?.RegisterCallback<MouseLeaveEvent>(_ => HideBankTooltip());

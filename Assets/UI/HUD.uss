@@ -428,10 +428,11 @@
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
 
-/* === Top-right buttons (Doctrine, Settings, Mute) === */
+/* === Top-right buttons (Doctrine, Settings, Mute, Encyclopedia) === */
 .hud-doctrine-btn,
 .hud-settings-btn,
-.hud-mute-btn {
+.hud-mute-btn,
+.hud-encyclopedia-btn {
     background-color: transparent;
     border-color: rgba(255, 255, 255, 0.2);
     border-width: 1px;
@@ -445,7 +446,8 @@
 
 .hud-doctrine-btn:hover,
 .hud-settings-btn:hover,
-.hud-mute-btn:hover {
+.hud-mute-btn:hover,
+.hud-encyclopedia-btn:hover {
     background-color: rgba(255, 255, 255, 0.12);
     color: white;
 }
