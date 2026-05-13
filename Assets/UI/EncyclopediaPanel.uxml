@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance"
+         engine="UnityEngine.UIElements"
+         noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="EncyclopediaPanel.uss" />
+    <ui:VisualElement name="encyclopedia-overlay" class="encyclopedia-overlay hidden">
+        <ui:VisualElement class="encyclopedia-frame">
+            <ui:VisualElement class="encyclopedia-header">
+                <ui:Label text="&#x1F4DA; Encyclopedie" class="encyclopedia-title" />
+                <ui:Button name="btn-close-encyclopedia" text="&#x2715;" class="encyclopedia-close-btn" />
+            </ui:VisualElement>
+            <ui:VisualElement class="encyclopedia-tabs">
+                <ui:Button name="tab-towers" text="Tours" class="enc-tab enc-tab--active" />
+                <ui:Button name="tab-enemies" text="Ennemis" class="enc-tab" />
+                <ui:Button name="tab-perks" text="Perks" class="enc-tab" />
+            </ui:VisualElement>
+            <ui:VisualElement class="encyclopedia-body">
+                <ui:ScrollView name="entry-list" class="enc-entry-list" />
+                <ui:VisualElement name="entry-detail" class="enc-entry-detail">
+                    <ui:Label name="detail-placeholder" text="Selectionnez une entree" class="enc-detail-placeholder" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
