@@ -49,6 +49,8 @@ MonoBehaviour:
     Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: cutscene_start
     Clip: {fileID: 8300000, guid: 7b0b6a4c7143d42529ab240963addef7, type: 3}
+  - Key: enemy_die
+    Clip: {fileID: 8300000, guid: e4b1e123611e84c9bbff4da6225ed67b, type: 3}
   - Key: enemy_die_basic
     Clip: {fileID: 8300000, guid: e4b1e123611e84c9bbff4da6225ed67b, type: 3}
   - Key: enemy_die_boss
@@ -75,6 +77,8 @@ MonoBehaviour:
     Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
   - Key: menu_open_woosh
     Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
+  - Key: no_gold
+    Clip: {fileID: 8300000, guid: 8b3a035d685ca450186ca7f3f89f9db4, type: 3}
   - Key: overrun_alert
     Clip: {fileID: 8300000, guid: 99c537d49e8f049829782a2556a643a4, type: 3}
   - Key: path_reveal
@@ -131,6 +135,8 @@ MonoBehaviour:
     Clip: {fileID: 8300000, guid: 52f59db10033142a79b1f74f2c77f402, type: 3}
   - Key: tower_upgrade
     Clip: {fileID: 8300000, guid: 4864c4da0857b494691a5e5ec52c851a, type: 3}
+  - Key: ult_cast
+    Clip: {fileID: 8300000, guid: 58476ec8e4846432490ff4e0736b89d1, type: 3}
   - Key: tutorial_complete
     Clip: {fileID: 8300000, guid: 7f0ca146035ff4470b2f1a1b982d8f6a, type: 3}
   - Key: tutorial_progress
