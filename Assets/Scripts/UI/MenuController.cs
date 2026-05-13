@@ -144,7 +144,20 @@ namespace CrowdDefense.UI
 
         private static void OnContinue() => SaveSlotController.Instance?.Show();
 
-        private static void OnNewRun() => LevelLoader.GoToWorldMap();
+        private static void OnNewRun()
+        {
+            Debug.Log("[MenuController.OnNewRun] Clicked, calling LevelLoader.GoToWorldMap()");
+            try
+            {
+                LevelLoader.GoToWorldMap();
+                Debug.Log("[MenuController.OnNewRun] LevelLoader.GoToWorldMap() succeeded");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[MenuController.OnNewRun] Exception: {ex.GetType().Name}: {ex.Message}\n{ex.StackTrace}");
+                throw;
+            }
+        }
 
         private static void OnSettings() => SettingsPanelController.Instance?.Show();
 
