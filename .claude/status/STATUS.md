@@ -10,9 +10,10 @@
 **R7-PUSH-100** — 🚀 **ACTIF** (push 85-90% → 95-100% visible parity, Mike chat override "avance jusque parité").
 
 - Sprint open : 2026-05-13 02h47 (supervisor instruction R7-PUSH-100-GO)
-- **19 R7 tickets shippés** batch 1-6 (P0 + P1 + P2 + P3 + Q9 balance + AUDIO-REMAP)
+- **20 R7 tickets shippés** batch 1-7 (P0 + P1 + P2 + P3 + Q9 balance + AUDIO-REMAP + Castle procedural improved)
 - Audit rerun R7-022 (`b0ab333`) : baseline 33% raw / 65% weighted → HEAD **80% raw / 85% weighted** (+47 pts raw)
-- Top 3 gaps remaining : Audio SFX remaps ✅ done R7-AUDIO-REMAP `ab8c212` + Animator runtime verify (T-VISUAL-002 in-flight) + Castle real .fbx art (R7-002 deferred Mike asset)
+- Audit category breakdown : Visual 35→83% / Audio 4→72% / Gameplay 50→84% / UI 30→87%
+- Top 3 gaps remaining : Animator runtime verify (T-VISUAL-002 in-flight) + Castle real .fbx art deferred Mike asset (R7-002 procedural amélioré shipped `ef1b419` comme intérim) + A-05 castle alarm SFX (low prio)
 
 ### Tickets R7 shippés (chronologique)
 
@@ -37,6 +38,7 @@
 | 17 | R7-020 | workspace clean (P3) | `6ee82db` |
 | 18 | R7-008 | ProjectilePool dedup verify (P1) | `6ee82db` |
 | 19 | R7-AUDIO-REMAP | 3 SFX semantic fixes (P1) | `ab8c212` |
+| 20 | R7-002 | Castle improved procedural 4 stages (P0) | `ef1b419` |
 | - | T-VISUAL-002 | Animator state machines (P0 supervisor) | (in-flight a203f9d) |
 
 ### Tickets R7 cat B Mike pending (4 questions)
