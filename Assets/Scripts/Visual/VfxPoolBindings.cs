@@ -14,6 +14,8 @@ namespace CrowdDefense.Visual
             if (parent == null || smokeGo == null) return;
             var parentPs = parent.GetComponent<ParticleSystem>();
             if (parentPs == null) return;
+            // Instantiate smoke prefab to avoid SetParent error on prefab assets
+            smokeGo = Object.Instantiate(smokeGo);
             smokeGo.transform.SetParent(parent.transform, false);
             smokeGo.transform.localPosition = Vector3.zero;
             var sub = parentPs.subEmitters;
