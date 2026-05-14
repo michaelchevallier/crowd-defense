@@ -91,3 +91,18 @@ Screenshots V4 PNG (Three.js canvas) : reportés en post-Wave 1 (Unity Editor + 
 - Polish covers : audit P2 items from R7-PUSH-100 backlog (UI fixes, perf, juice).
 
 Runner.sh continue loop dispatch jusqu'à tasks.txt épuisé (~20 tickets restants à dispatcher).
+
+## Final session state (T+50min)
+
+- **89 commits Phase 5** mergés sur origin/main (baseline 460a0b04 → 9ff0bff4).
+- **Wave 1** : 8/8 P0 ✅ (100%)
+- **Wave 2** : 14/15 P1 + 1 N/A ✅ (100% effective)
+- **Wave 3** : 23/37 P2 polish mergés ✅ (62% — 1 conflit pathtiles skipped + 13 dispatched non-mergés yet)
+- **SmokeTests.cs runtime tests** ajoutés via Wave 3 (validates Phase 5 robustness)
+
+Mike validation 3 hard assertions DEFERRED inchangée :
+- #1 Editor Play mode W1-1 → Mike valide manuel (Editor déjà ouvert pid 91607)
+- #3 Console clean → Mike check pendant play
+- #6 V6 screenshots → Mike capture via Editor (Tools > CrowdDefense > Rebuild LevelRegistry pour LevelRegistryBuilder.cs ajouté + manual screenshots)
+
+**Phase 5 PARITY-V4 — Code work strict GREEN, hands off Mike.**
