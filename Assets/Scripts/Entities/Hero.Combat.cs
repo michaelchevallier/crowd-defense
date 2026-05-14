@@ -297,21 +297,10 @@ namespace CrowdDefense.Entities
         {
             if (cfg == null) return;
 
-            HeroProjectile proj;
-            if (HeroProjectilePool.Instance != null)
-            {
-                proj = HeroProjectilePool.Instance.Get(origin);
-            }
-            else
-            {
-                var go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                go.name = "HeroProj";
-                go.transform.localScale = Vector3.one * 0.22f;
-                go.transform.position   = origin;
-                Object.Destroy(go.GetComponent<Collider>());
-                proj = go.AddComponent<HeroProjectile>();
-            }
+            var pool = HeroProjectilePool.Instance;
+            if (pool == null) return;
 
+            var proj = pool.Get(origin);
             proj.Init(
                 speed:          cfg.ProjectileSpeed,
                 dir:            dir,

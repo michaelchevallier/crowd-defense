@@ -29,9 +29,6 @@ namespace CrowdDefense.Entities
         // ── Singleton-ish access (cached on Awake/OnDestroy, no auto-create) ──
         public static Hero? Current { get; private set; }
 
-        // ── Serialized ────────────────────────────────────────────────────────
-        [SerializeField] private GameObject? projectilePrefab;
-
         // ── Config ────────────────────────────────────────────────────────────
         protected HeroType? cfg;
 
