@@ -2,6 +2,7 @@
          xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
          editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
     <Style src="WorldMap.uss" />
+    <Style src="RunMap.uss" />
     <ui:VisualElement name="worldmap-root" class="worldmap-root">
         <ui:VisualElement name="worldmap-header" class="worldmap-header">
             <ui:Label text="CROWD DEFENSE" name="worldmap-title" class="worldmap-title" />
