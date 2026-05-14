@@ -172,6 +172,7 @@ namespace CrowdDefense.Entities
         private void ApplyL3Stats(L3Stats stats)
         {
             if (stats.MultiShot != 0) L3MultiShot = stats.MultiShot;
+            if (stats.CascadeRadius != 0f) L3CascadeRadius = stats.CascadeRadius;
             if (stats.FinalExplosion) L3FinalExplosion = true;
             if (stats.FinalExplosionAoe != 0) L3FinalExplosionAoe = stats.FinalExplosionAoe;
             if (stats.FinalExplosion && cfg != null)

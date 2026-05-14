@@ -291,10 +291,13 @@ namespace CrowdDefense.Entities
                 Visual.VfxPool.Instance?.SpawnImpact(hitPos + Vector3.up * 0.4f, new Color(0.63f, 0.31f, 1f));
             }
 
-            // CascadeRadius (cannon→X cross-effect) — chain damage at reduced power
-            if (sourceTower._cascadeRadius > 0f && WaveManager.Instance != null)
+            // CascadeRadius — chain damage at reduced power.
+            // Source can be either a synergy (Synergies._cascadeRadius, reset on rebuild)
+            // or an L3 branch (Tower.L3CascadeRadius, persistent). Take the max.
+            float cascadeR = Mathf.Max(sourceTower._cascadeRadius, sourceTower.L3CascadeRadius);
+            if (cascadeR > 0f && WaveManager.Instance != null)
             {
-                float r2 = sourceTower._cascadeRadius * sourceTower._cascadeRadius;
+                float r2 = cascadeR * cascadeR;
                 var enemies = WaveManager.Instance.ActiveEnemies;
                 Vector3 hitPos = e.transform.position;
                 float chainDmg = damage * 0.5f * Mathf.Max(1f, sourceTower._buffMul);
@@ -303,7 +306,10 @@ namespace CrowdDefense.Entities
                     var e2 = enemies[i];
                     if (e2 == null || e2 == e || e2.IsDead) continue;
                     if ((e2.transform.position - hitPos).sqrMagnitude <= r2)
+                    {
                         e2.TakeDamage(chainDmg);
+                        Visual.VfxPool.Instance?.SpawnSpark(e2.transform.position + Vector3.up * 0.5f, _projectileColor);
+                    }
                 }
             }
         }
