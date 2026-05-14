@@ -201,8 +201,8 @@ namespace CrowdDefense.Visual
                 if (col < 0 || col >= grid.Width || row < 0 || row >= grid.Height) continue;
 
                 char ch = grid.At(col, row);
-                if (ch == GridCoords.WATER) _waterRenderers.Add(mr);
-                else if (ch == GridCoords.LAVA) _lavaRenderers.Add(mr);
+                if (ch == GridCoords.WATER || ch == GridCoords.BRIDGE_WATER) _waterRenderers.Add(mr);
+                else if (ch == GridCoords.LAVA || ch == GridCoords.BRIDGE_LAVA) _lavaRenderers.Add(mr);
             }
         }
 
