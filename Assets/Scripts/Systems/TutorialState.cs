@@ -37,7 +37,8 @@ namespace CrowdDefense.Systems
 
         private TutorialRegistry? _registry;
         private int _coinsAtStep5Entry;
-        private Vector3 _proximityTarget;
+        private Vector3? _proximityTarget;
+        private const float ProximityRadius = 3f;
 
         public static bool IsCompleted() => SaveSystem.IsTutorialCompleted();
         public static bool HasCompletedBefore => PlayerPrefs.GetInt("tutorial_done_v1", 0) > 0;
@@ -141,21 +142,28 @@ namespace CrowdDefense.Systems
             AdvanceStep();
         }
 
-        // World-space position the player must approach to auto-advance Step6
+        // World-space position the player must approach to auto-advance a Proximity-trigger step
         public void SetProximityTarget(Vector3 worldPos) => _proximityTarget = worldPos;
+        public void ClearProximityTarget() => _proximityTarget = null;
 
         // ── Proximity auto-advance ────────────────────────────────────────────────
 
         private void Update()
         {
+            if (!IsActive) return;
             var hero = Hero.Current;
             if (hero != null) CheckProximity(hero.transform.position);
         }
 
         private void CheckProximity(Vector3 playerPos)
         {
-            if (CurrentStep != TutorialStep.Step6_ChoosePerk || _proximityTarget == Vector3.zero) return;
-            if (Vector3.Distance(playerPos, _proximityTarget) < 3f) AdvanceStep();
+            if (!_proximityTarget.HasValue) return;
+            if (CurrentStepDef?.advanceTrigger != TutorialAdvanceTrigger.Proximity) return;
+            if (Vector3.Distance(playerPos, _proximityTarget.Value) < ProximityRadius)
+            {
+                _proximityTarget = null;
+                AdvanceStep();
+            }
         }
 
         // ── FSM ────────────────────────────────────────────────────────────────────
