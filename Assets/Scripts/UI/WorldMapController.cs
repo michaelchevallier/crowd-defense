@@ -167,11 +167,16 @@ namespace CrowdDefense.UI
         {
             if (_root == null || _runMap == null) return;
 
-            // Hide the linear grid + world tabs if present.
+            // Hide the linear grid + world tabs + header + special tiles when entering run mode.
+            // RunMap occupies the full screen — leave only its own header/graph/footer visible.
             var levelGrid = _root.Q<VisualElement>("worldmap-level-grid");
             if (levelGrid != null) levelGrid.style.display = DisplayStyle.None;
             var tabBar = _root.Q<VisualElement>("worldmap-tabs");
             if (tabBar != null) tabBar.style.display = DisplayStyle.None;
+            var header = _root.Q<VisualElement>("worldmap-header");
+            if (header != null) header.style.display = DisplayStyle.None;
+            var specialTiles = _root.Q<VisualElement>("special-tiles-row");
+            if (specialTiles != null) specialTiles.style.display = DisplayStyle.None;
 
             // Act label.
             var actLabel = _root.Q<Label>("runmap-act-label");

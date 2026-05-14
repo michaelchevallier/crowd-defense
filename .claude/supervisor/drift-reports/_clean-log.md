@@ -426,3 +426,5 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-14 13h55 — scrute /loop #164. **2 new commits** depuis #163 (HEAD `0effb0b8`). Mike confirme hard #3 console clean **PASS** post-fix `eb6acc5d` (MapRenderer.AsSpan). Commit `82feb743` fix warning CS0114 (RunModeController.OnDestroy → override MonoSingleton base). **1/3 deferred hard assertions validées Mike**. Reste #1 Editor Play E2E + #6 V6 screenshots. 39 worktrees. **Drift 0/12** ✅. **T3 silent** (Mike chat live, autre 2 deferred encore à valider).
 
 2026-05-14 14h25 — scrute /loop #165. **0 new commit** depuis #164 (HEAD `0effb0b8`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-14 14h55 — scrute /loop #166. **2 new commits** depuis #165 (HEAD `e186bcac`) : `d8e3a33c` fix(unity-6.4) batch deprecation fixes (FindFirstObjectByType→FindAnyObjectByType, FindObjectsSortMode, GetInstanceID, 2 nullable warnings) — résout ~40 warnings CS0618. `e186bcac` fix(ui)(P0-UI-2) SchoolSelectController self-bootstrap UIDocument + Fire fallback. LevelRunner.cs modifié intentionnellement par Mike/linter. 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
