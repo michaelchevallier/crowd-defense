@@ -148,10 +148,11 @@ namespace CrowdDefense.Entities
             var  popup     = CrowdDefense.UI.FloatingPopupController.Instance;
             if (actualDmg >= 5f)
             {
+                Vector3 popupPos = transform.position + Vector3.up * 1.2f;
                 if (isBossHit)
-                    popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
+                    popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", popupPos, Color.white, 1.2f);
                 else
-                    popup?.SpawnReward($"-{Mathf.RoundToInt(actualDmg)}", transform.position + Vector3.up * 1.2f, Color.white);
+                    popup?.SpawnDamage(actualDmg, popupPos);
             }
 
             // Juice screen shake on hit for bosses
