@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
+using CrowdDefense.Entities;
 using CrowdDefense.Systems;
 using CrowdDefense.UI;
 
@@ -77,15 +78,25 @@ namespace CrowdDefense.Visual
 
         private void OnBossDefeated(BossDefeatedEvent _)
         {
-            Shake(0.30f, 600);
-            SlowMo(0.05f, 100);
+            var jc = JuiceConfig.Get();
+            Shake(jc.BossHitShakeAmp, jc.BossHitShakeMs);
+            Flash(new Color(1f, 1f, 1f, jc.BossHitFlashAlpha), jc.BossHitFlashMs);
         }
 
         private void OnCastleHit(CastleHitEvent evt)
         {
+            var jc = JuiceConfig.Get();
             int dmg = evt.Damage;
-            float intensity = Mathf.Min(0.6f, 0.15f + dmg * 0.002f);
-            Shake(intensity, 250);
+            float intensity = Mathf.Min(jc.CastleHitShakeAmp, 0.15f + dmg * 0.002f);
+            Shake(intensity, jc.CastleHitFlashMs);
+
+            float hpRatio = Castle.Instance != null && Castle.Instance.HPMax > 0
+                ? (float)Castle.Instance.HP / Castle.Instance.HPMax
+                : 1f;
+            bool warn = hpRatio < 0.5f;
+            float flashAlpha = warn ? jc.CastleHitFlashWarnAlpha : jc.CastleHitFlashAlpha;
+            int   flashMs    = warn ? jc.CastleHitFlashWarnMs    : jc.CastleHitFlashMs;
+            Flash(new Color(1f, 0f, 0f, flashAlpha), flashMs);
         }
 
         private void OnCastleDestroyed(CastleDestroyedEvent _)
@@ -95,8 +106,10 @@ namespace CrowdDefense.Visual
 
         private void OnLevelEnded(LevelEndedEvent evt)
         {
-            if (evt.Victory)
-                Flash(Color.white, 400);
+            if (!evt.Victory) return;
+            var jc = JuiceConfig.Get();
+            Flash(new Color(1f, 0.84f, 0f, jc.VictoryFlashAlpha), jc.VictoryFlashMs);
+            Shake(jc.VictoryShakeAmp, jc.VictoryFlashMs);
         }
 
         // ── Public API ────────────────────────────────────────────────────────

@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d84e9b4c0db594abbbe513756949b911, type: 3}
+  m_Name: JuiceConfig
+  m_EditorClassIdentifier:
+  TowerFireShakeAmp: 0.55
+  TowerFireShakeMs: 100
+  TowerFireFlashAlpha: 0.05
+  TowerUpgradeFlashAlpha: 0.3
+  TowerUpgradeFlashMs: 200
+  CastleHitShakeAmp: 0.65
+  CastleHitFlashAlpha: 0.1
+  CastleHitFlashMs: 200
+  CastleHitFlashWarnAlpha: 0.4
+  CastleHitFlashWarnMs: 150
+  BossHitShakeAmp: 0.3
+  BossHitShakeMs: 400
+  BossHitFlashAlpha: 0.8
+  BossHitFlashMs: 250
+  BossSpawnShakeAmp: 0.8
+  BossSpawnShakeDur: 0.6
+  BossSpawnSlowMoScale: 0.7
+  BossSpawnSlowMoDurMs: 1500
+  BossDeathFlashScale: 2.5
+  VictoryFlashAlpha: 0.4
+  VictoryFlashMs: 500
+  VictoryShakeAmp: 1.2
