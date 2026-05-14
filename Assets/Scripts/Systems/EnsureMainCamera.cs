@@ -29,7 +29,7 @@ namespace CrowdDefense.Systems
         private static void CheckActive()
         {
             if (Camera.main != null) return;
-            var existing = Object.FindFirstObjectByType<Camera>();
+            var existing = Object.FindAnyObjectByType<Camera>();
             if (existing != null) return;
 
             var go = new GameObject("MainCamera-Auto");
@@ -43,7 +43,7 @@ namespace CrowdDefense.Systems
             cam.depth = 0;
             go.transform.position = new Vector3(0f, 1f, -10f);
 
-            var listenerExisting = Object.FindFirstObjectByType<AudioListener>();
+            var listenerExisting = Object.FindAnyObjectByType<AudioListener>();
             if (listenerExisting == null)
                 go.AddComponent<AudioListener>();
         }

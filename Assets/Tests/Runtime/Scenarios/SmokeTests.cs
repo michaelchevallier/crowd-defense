@@ -13,7 +13,7 @@ using CrowdDefense.Visual;
 namespace CrowdDefense.Tests.Runtime.Scenarios
 {
     // End-to-end smoke: loads Main.unity programmatically and asserts that
-    // 15 critical scene singletons resolve via FindFirstObjectByType (bypassing
+    // 15 critical scene singletons resolve via FindAnyObjectByType (bypassing
     // MonoSingleton lazy auto-create) and that 13 ScriptableObject registries
     // load from Resources/. Would have caught the P0-1 scene-drift incident where
     // singletons silently vanished from Main.unity yet the build still shipped.
@@ -59,12 +59,12 @@ namespace CrowdDefense.Tests.Runtime.Scenarios
             AssertRegistryLoaded("AssetRegistry",       () => Resources.Load<AssetRegistry>("AssetRegistry"));
         }
 
-        // FindFirstObjectByType bypasses MonoSingleton.Instance lazy creation —
+        // FindAnyObjectByType bypasses MonoSingleton.Instance lazy creation —
         // a missing scene GameObject must produce a real assertion failure here.
         private static void AssertSingleton<T>() where T : MonoBehaviour
         {
-            var found = UnityEngine.Object.FindFirstObjectByType<T>();
-            Assert.IsNotNull(found, $"{typeof(T).Name} missing from Main.unity (FindFirstObjectByType returned null)");
+            var found = UnityEngine.Object.FindAnyObjectByType<T>();
+            Assert.IsNotNull(found, $"{typeof(T).Name} missing from Main.unity (FindAnyObjectByType returned null)");
         }
 
         private static void AssertRegistryLoaded(string label, Func<UnityEngine.Object?> loader)

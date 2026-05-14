@@ -230,7 +230,7 @@ namespace CrowdDefense.Visual
             var cam = MainCameraCache.Main;
             if (cam == null || _towers.Count == 0) return;
 
-            if (_hero == null) _hero = FindFirstObjectByType<Hero>();
+            if (_hero == null) _hero = FindAnyObjectByType<Hero>();
             if (_hero == null) return;
 
             Vector3 camPos  = cam.transform.position;

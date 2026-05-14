@@ -152,7 +152,7 @@ namespace CrowdDefense.Editor
         // Idempotent: if GO already in hierarchy it is reused.
         private static T EnsureSingleton<T>(GameObject parent, string goName, ref int created, ref int existing) where T : Component
         {
-            var existing_ = Object.FindFirstObjectByType<T>();
+            var existing_ = Object.FindAnyObjectByType<T>();
             if (existing_ != null) { existing++; return existing_; }
             var go = new GameObject(goName);
             go.transform.SetParent(parent.transform, false);
@@ -217,7 +217,7 @@ namespace CrowdDefense.Editor
 
         private static void EnsureCamera(ref int created, ref int existing)
         {
-            var cam = Object.FindFirstObjectByType<Camera>();
+            var cam = Object.FindAnyObjectByType<Camera>();
             if (cam != null)
             {
                 // Ensure CameraController is present even on pre-existing camera
@@ -243,7 +243,7 @@ namespace CrowdDefense.Editor
 
         private static void EnsureDirectionalLight(ref int created, ref int existing)
         {
-            var allLights = Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
+            var allLights = Object.FindObjectsByType<Light>(FindObjectsInactive.Exclude);
             foreach (var l in allLights)
             {
                 if (l.type == LightType.Directional) { existing++; return; }

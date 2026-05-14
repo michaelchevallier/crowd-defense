@@ -40,7 +40,7 @@ namespace CrowdDefense.UI
         {
             if (!ResolveUI())
             {
-                var doc = FindFirstObjectByType<UIDocument>();
+                var doc = FindAnyObjectByType<UIDocument>();
                 if (doc == null) return;
                 var r = doc.rootVisualElement;
                 _root        = r.Q<VisualElement>("enemy-tooltip");

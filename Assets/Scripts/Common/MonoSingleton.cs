@@ -26,7 +26,7 @@ namespace CrowdDefense.Common
 #endif
                 if (!Application.isPlaying) return null;
 
-                _instance = Object.FindFirstObjectByType<T>();
+                _instance = Object.FindAnyObjectByType<T>();
                 if (_instance != null) return _instance;
 
                 // Guard against cascading auto-creation — prevents infinite recursion

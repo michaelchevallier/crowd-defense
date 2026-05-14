@@ -24,7 +24,7 @@ namespace CrowdDefense.UI
         // ── Self-bootstrap: called from LevelRunner.SpawnHero when no scene object exists ──
         public static PerkChoiceOverlay EnsureInstance()
         {
-            var existing = FindFirstObjectByType<PerkChoiceOverlay>();
+            var existing = FindAnyObjectByType<PerkChoiceOverlay>();
             if (existing != null) return existing;
             var go = new GameObject("PerkChoiceOverlay");
             DontDestroyOnLoad(go);

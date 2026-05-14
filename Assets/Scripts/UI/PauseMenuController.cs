@@ -160,7 +160,7 @@ namespace CrowdDefense.UI
         private void OnResumeClicked()  => LevelRunner.Instance?.Resume();
         private void OnRestartClicked() => LevelRunner.Instance?.RestartLevel();
         private void OnSettingsClicked() => SettingsPanelController.Instance?.Show();
-        private void OnHelpClicked()     => FindFirstObjectByType<HelpOverlayController>()?.Show();
+        private void OnHelpClicked()     => FindAnyObjectByType<HelpOverlayController>()?.Show();
         private void OnMenuClicked()
         {
             // Restore timeScale before scene switch so it doesn't carry over.

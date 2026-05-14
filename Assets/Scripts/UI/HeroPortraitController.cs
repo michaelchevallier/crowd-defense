@@ -63,7 +63,7 @@ namespace CrowdDefense.UI
             var doc = GetComponent<UIDocument>() ?? gameObject.AddComponent<UIDocument>();
 
             // Borrow PanelSettings from the HUD UIDocument (avoids duplicating the asset reference).
-            foreach (var other in Object.FindObjectsByType<UIDocument>(FindObjectsSortMode.None))
+            foreach (var other in Object.FindObjectsByType<UIDocument>(FindObjectsInactive.Exclude))
             {
                 if (other == doc || other.panelSettings == null) continue;
                 doc.panelSettings = other.panelSettings;

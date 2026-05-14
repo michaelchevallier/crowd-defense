@@ -701,7 +701,7 @@ namespace CrowdDefense.UI
 
         private void OnChangeName()
         {
-            var popup = FindFirstObjectByType<NameInputPopup>();
+            var popup = FindAnyObjectByType<NameInputPopup>();
             if (popup != null)
                 popup.Show(() => { });
         }

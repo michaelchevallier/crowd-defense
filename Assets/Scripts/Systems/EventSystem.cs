@@ -59,7 +59,7 @@ namespace CrowdDefense.Systems
                     ctx.RecentEventIds.RemoveAt(0);
             }
 
-            var overlay = UnityEngine.Object.FindFirstObjectByType<UI.EventChoiceOverlay>();
+            var overlay = UnityEngine.Object.FindAnyObjectByType<UI.EventChoiceOverlay>();
             overlay?.Show(evt, OnChoicePicked);
         }
 

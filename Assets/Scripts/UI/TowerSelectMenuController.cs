@@ -30,7 +30,7 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
+            var doc = GetComponent<UIDocument>() ?? FindAnyObjectByType<UIDocument>();
             if (doc == null) { enabled = false; return; }
 
             var root = doc.rootVisualElement;

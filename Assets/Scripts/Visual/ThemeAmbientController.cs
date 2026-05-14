@@ -29,7 +29,7 @@ namespace CrowdDefense.Visual
 
             if (_sun == null)
             {
-                var all = Object.FindObjectsByType<Light>(FindObjectsSortMode.None);
+                var all = Object.FindObjectsByType<Light>(FindObjectsInactive.Exclude);
                 foreach (var l in all)
                 {
                     if (l.type == LightType.Directional) { _sun = l; break; }

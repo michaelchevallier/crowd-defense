@@ -412,3 +412,17 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-14 10h25 — scrute /loop #158. **0 new commit** depuis #157 (HEAD `052ed174`). Idle 7h30. 39 worktrees stables. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-14 10h55 — scrute /loop #159. **0 new commit** depuis #158 (HEAD `052ed174`). Idle 8h. 39 worktrees stables. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-14 11h25 — scrute /loop #160. **🚨 D10 BUILD BROKEN signalé par Mike via Editor console paste**. 3 erreurs : PerkSystem.cs:81 (manque System.Linq retiré par a8966e64), LevelRunner.cs:427 (Object ambigu UnityEngine vs System), 3 Schools .asset (Fire/Frost/Stonework GUID m_Script = 0). **Fix déjà appliqué sur HEAD `3e4f7ded`** : Linq re-added, UnityEngine.Object qualifié, GUID = `a18028ea6a15c47a690dc2d287998645` (MagicSchool.cs.meta). Worktree agent autonome a livré les fixes pendant la lecture supervisor. Mike action : Reimport All ou re-open Editor pour reload. **Drift D10 résolu** ✅. Cron `49484f6f` toujours actif (CronList confirm). **T2 batch via log** (D10 confirmed mais auto-resolved par swarm autonome, Mike informé chat live).
+
+2026-05-14 11h55 — scrute /loop #161. **1 new commit** depuis #160 (HEAD `2e95213e` fix(mapRenderer) — repair pathtiles union merge water/lava bridges). 39 worktrees stables. Tous refs ok. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-14 12h25 — scrute /loop hors-tick (manuel via Mike Editor console paste). **🚨 D10 BUILD BROKEN régression** post-commit `2e95213e` : MapRenderer.cs:217-218 utilise `name.AsSpan()` mais le fichier n'avait pas `using System;`. 3 erreurs précédentes (PerkSystem/LevelRunner/Schools.asset) résolues ✅. **Fix `eb6acc5d`** : add `using System;` au top de MapRenderer.cs. Push origin main OK. **Drift D10 résolu** en 1 commit ✅. Action Mike : Reimport All / Recompile Editor.
+
+2026-05-14 12h55 — scrute /loop #162. **0 new commit** depuis fix `eb6acc5d`. HEAD stable. 39 worktrees. Mike Editor reload pending. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-14 13h25 — scrute /loop #163. **0 new commit** depuis #162 (HEAD `eb6acc5d`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-14 13h55 — scrute /loop #164. **2 new commits** depuis #163 (HEAD `0effb0b8`). Mike confirme hard #3 console clean **PASS** post-fix `eb6acc5d` (MapRenderer.AsSpan). Commit `82feb743` fix warning CS0114 (RunModeController.OnDestroy → override MonoSingleton base). **1/3 deferred hard assertions validées Mike**. Reste #1 Editor Play E2E + #6 V6 screenshots. 39 worktrees. **Drift 0/12** ✅. **T3 silent** (Mike chat live, autre 2 deferred encore à valider).
+
+2026-05-14 14h25 — scrute /loop #165. **0 new commit** depuis #164 (HEAD `0effb0b8`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.

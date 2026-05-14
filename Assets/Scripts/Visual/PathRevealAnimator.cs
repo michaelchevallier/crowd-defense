@@ -133,7 +133,7 @@ namespace CrowdDefense.Visual
 
             // Match to GameObjects — MapRenderer names them Cell_{c}_{r}
             var result = new List<(GameObject, int)>(sortedCells.Count);
-            var mapRenderer = Object.FindFirstObjectByType<MapRenderer>();
+            var mapRenderer = Object.FindAnyObjectByType<MapRenderer>();
             if (mapRenderer == null) return result;
 
             var lookup = BuildCellLookup(mapRenderer.transform);

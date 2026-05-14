@@ -55,7 +55,7 @@ namespace CrowdDefense.UI
             if (_visible && _label != null)
             {
                 int enemies = WaveManager.Instance?.ActiveEnemies.Count ?? 0;
-                int towers = FindObjectsByType<Tower>(FindObjectsSortMode.None).Length;
+                int towers = FindObjectsByType<Tower>(FindObjectsInactive.Exclude).Length;
                 long memBytes = GC.GetTotalMemory(false);
                 int memMb = (int)(memBytes / 1024 / 1024);
                 _label.text = $"FPS {_avgFps:F0} | E:{enemies} T:{towers} | Mem {memMb}MB";

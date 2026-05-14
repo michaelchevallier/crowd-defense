@@ -47,7 +47,7 @@ namespace CrowdDefense.Editor
 
         private static void EnsureCamera(ref int created, ref int existing)
         {
-            var cam = Object.FindFirstObjectByType<Camera>();
+            var cam = Object.FindAnyObjectByType<Camera>();
             if (cam != null) { existing++; return; }
 
             var go = new GameObject("Main Camera");
@@ -61,7 +61,7 @@ namespace CrowdDefense.Editor
 
         private static void EnsureEventManager(ref int created, ref int existing)
         {
-            if (Object.FindFirstObjectByType<EventManager>() != null) { existing++; return; }
+            if (Object.FindAnyObjectByType<EventManager>() != null) { existing++; return; }
             var go = new GameObject("EventManager");
             go.AddComponent<EventManager>();
             created++;
@@ -69,7 +69,7 @@ namespace CrowdDefense.Editor
 
         private static void EnsureMusicManager(ref int created, ref int existing)
         {
-            if (Object.FindFirstObjectByType<MusicManager>() != null) { existing++; return; }
+            if (Object.FindAnyObjectByType<MusicManager>() != null) { existing++; return; }
             var go = new GameObject("MusicManager");
             go.AddComponent<MusicManager>();
             created++;
@@ -77,7 +77,7 @@ namespace CrowdDefense.Editor
 
         private static void EnsureSettingsRegistry(ref int created, ref int existing)
         {
-            if (Object.FindFirstObjectByType<SettingsRegistry>() != null) { existing++; return; }
+            if (Object.FindAnyObjectByType<SettingsRegistry>() != null) { existing++; return; }
             var go = new GameObject("SettingsRegistry");
             go.AddComponent<SettingsRegistry>();
             created++;

@@ -54,7 +54,7 @@ namespace CrowdDefense.UI
             if (doc == null)
             {
                 Debug.LogError("[FloatingPopupController] UIDocument not found on this GameObject — trying HUD parent");
-                var hudObj = FindFirstObjectByType<HudController>();
+                var hudObj = FindAnyObjectByType<HudController>();
                 if (hudObj != null)
                     doc = hudObj.GetComponent<UIDocument>();
                 if (doc == null)
@@ -261,7 +261,7 @@ namespace CrowdDefense.UI
                 try { tmp.outlineColor = new Color32(0, 0, 0, 255); } catch { }
             }
 
-            return new WorldPopup { Go = go, Tmp = tmp, Alive = false };
+            return new WorldPopup { Go = go, Tmp = tmp!, Alive = false };
         }
 
         private void ReturnWorldPopup(WorldPopup wp)

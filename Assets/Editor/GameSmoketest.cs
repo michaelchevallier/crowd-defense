@@ -54,7 +54,7 @@ namespace CrowdDefense.Editor
             Debug.Log("[GameSmoketest] === PHASE 1: Verify singletons exist in scene ===");
 
             // Find or instantiate LevelRunner
-            var levelRunner = UnityEngine.Object.FindFirstObjectByType<LevelRunner>();
+            var levelRunner = UnityEngine.Object.FindAnyObjectByType<LevelRunner>();
             if (levelRunner == null)
             {
                 Debug.LogWarning("[GameSmoketest] WARN: No LevelRunner in scene, instantiating fallback GO for test...");
@@ -64,7 +64,7 @@ namespace CrowdDefense.Editor
             Debug.Log("[GameSmoketest] PASS: LevelRunner exists");
 
             // Find or instantiate WaveManager
-            var waveManager = UnityEngine.Object.FindFirstObjectByType<WaveManager>();
+            var waveManager = UnityEngine.Object.FindAnyObjectByType<WaveManager>();
             if (waveManager == null)
             {
                 Debug.LogWarning("[GameSmoketest] WARN: No WaveManager in scene");
@@ -75,7 +75,7 @@ namespace CrowdDefense.Editor
             }
 
             // Find or instantiate PathManager
-            var pathManager = UnityEngine.Object.FindFirstObjectByType<PathManager>();
+            var pathManager = UnityEngine.Object.FindAnyObjectByType<PathManager>();
             if (pathManager == null)
             {
                 Debug.LogWarning("[GameSmoketest] WARN: No PathManager in scene");
@@ -86,7 +86,7 @@ namespace CrowdDefense.Editor
             }
 
             // Find or instantiate EnemyPool
-            var enemyPool = UnityEngine.Object.FindFirstObjectByType<EnemyPool>();
+            var enemyPool = UnityEngine.Object.FindAnyObjectByType<EnemyPool>();
             if (enemyPool == null)
             {
                 Debug.LogWarning("[GameSmoketest] WARN: No EnemyPool in scene");

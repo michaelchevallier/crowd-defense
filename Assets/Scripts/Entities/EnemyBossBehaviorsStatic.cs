@@ -205,7 +205,8 @@ namespace CrowdDefense.Entities
             const float TelegraphDuration = 1f;
             while (elapsed < TelegraphDuration)
             {
-                if (e == null || e.IsDead) { e._krakenSlamTelegraphActive = false; yield break; }
+                if (e == null) yield break;
+                if (e.IsDead) { e._krakenSlamTelegraphActive = false; yield break; }
                 float pulse = Mathf.Abs(Mathf.Sin(elapsed * Mathf.PI * 5f));
                 var yellow = new Color(1f, pulse, 0f, 1f);
                 mpb.SetColor(Shader.PropertyToID("_BaseColor"), yellow);

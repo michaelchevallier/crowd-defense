@@ -61,7 +61,7 @@ namespace CrowdDefense.Visual
         // Traverse every Renderer in scene, remap red/green via MPB.
         private static void ApplyToScene()
         {
-            var renderers = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
+            var renderers = FindObjectsByType<Renderer>(FindObjectsInactive.Exclude);
             var mpb = new MaterialPropertyBlock();
             foreach (var r in renderers)
             {
@@ -77,7 +77,7 @@ namespace CrowdDefense.Visual
         // Clear MPB overrides set by this system to restore original colors.
         private static void RevertScene()
         {
-            var renderers = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
+            var renderers = FindObjectsByType<Renderer>(FindObjectsInactive.Exclude);
             var mpb = new MaterialPropertyBlock();
             foreach (var r in renderers)
             {

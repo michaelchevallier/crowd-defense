@@ -342,7 +342,7 @@ namespace CrowdDefense.UI
             float scale = FontScales[Mathf.Clamp(_fontSize, 0, 2)];
 
             foreach (var canvas in UnityEngine.Object.FindObjectsByType<UnityEngine.Canvas>(
-                         UnityEngine.FindObjectsSortMode.None))
+                         FindObjectsInactive.Exclude))
             {
                 if (canvas.isRootCanvas) canvas.scaleFactor = scale;
             }

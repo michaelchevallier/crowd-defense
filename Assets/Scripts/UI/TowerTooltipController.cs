@@ -42,7 +42,7 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
+            var doc = GetComponent<UIDocument>() ?? FindAnyObjectByType<UIDocument>();
             if (doc == null) return;
             var root = doc.rootVisualElement;
             _tooltipRoot     = root.Q<VisualElement>("tower-tooltip");

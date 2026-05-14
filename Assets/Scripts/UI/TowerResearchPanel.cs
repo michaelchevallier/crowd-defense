@@ -33,7 +33,7 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            var doc = GetComponent<UIDocument>() ?? FindFirstObjectByType<UIDocument>();
+            var doc = GetComponent<UIDocument>() ?? FindAnyObjectByType<UIDocument>();
             if (doc == null) { enabled = false; return; }
             var root = doc.rootVisualElement;
             if (root == null) { Debug.LogError("[TowerResearchPanel] rootVisualElement is null"); enabled = false; return; }

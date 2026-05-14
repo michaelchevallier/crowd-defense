@@ -184,7 +184,7 @@ namespace CrowdDefense.Visual
 
         private void ScanMapRendererChildren()
         {
-            var mapRenderer = FindFirstObjectByType<MapRenderer>();
+            var mapRenderer = FindAnyObjectByType<MapRenderer>();
             if (mapRenderer == null) return;
 
             var grid = PathManager.Instance?.Grid;

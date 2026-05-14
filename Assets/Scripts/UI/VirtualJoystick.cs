@@ -78,7 +78,7 @@ namespace CrowdDefense.UI
             _stickRect.anchoredPosition = Vector2.zero;
 
             // EventSystem if absent
-            if (FindFirstObjectByType<EventSystem>() == null)
+            if (FindAnyObjectByType<EventSystem>() == null)
             {
                 var esGo = new GameObject("EventSystem");
                 esGo.AddComponent<EventSystem>();

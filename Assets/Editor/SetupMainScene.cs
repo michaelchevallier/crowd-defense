@@ -363,7 +363,7 @@ namespace CrowdDefense.Editor
 
         private static void WireLevelRunner()
         {
-            var lr = Object.FindFirstObjectByType<LevelRunner>();
+            var lr = Object.FindAnyObjectByType<LevelRunner>();
             if (lr == null) { Debug.LogError("[SetupMainScene] LevelRunner not found in scene"); return; }
 
             var so   = new SerializedObject(lr);
@@ -398,7 +398,7 @@ namespace CrowdDefense.Editor
 
         private static void WireTowerToolbar()
         {
-            var tt = Object.FindFirstObjectByType<TowerToolbarController>();
+            var tt = Object.FindAnyObjectByType<TowerToolbarController>();
             if (tt == null) return;
 
             var registry = AssetDatabase.LoadAssetAtPath<TowerRegistry>("Assets/Resources/TowerRegistry.asset");
@@ -422,7 +422,7 @@ namespace CrowdDefense.Editor
 
         private static void WireBossSystem()
         {
-            var bs = Object.FindFirstObjectByType<BossSystem>();
+            var bs = Object.FindAnyObjectByType<BossSystem>();
             if (bs == null) return;
 
             var guids = AssetDatabase.FindAssets("t:BossDef", new[] { "Assets/ScriptableObjects/Bosses" });
@@ -433,7 +433,7 @@ namespace CrowdDefense.Editor
 
         private static void WireEnemyPool()
         {
-            var ep = Object.FindFirstObjectByType<EnemyPool>();
+            var ep = Object.FindAnyObjectByType<EnemyPool>();
             if (ep == null) { Debug.LogError("[SetupMainScene] EnemyPool not found in scene"); return; }
 
             var enemyPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Enemies/Enemy.prefab");

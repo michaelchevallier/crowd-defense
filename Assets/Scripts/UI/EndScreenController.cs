@@ -57,8 +57,8 @@ namespace CrowdDefense.UI
         {
             // Defer to UIToolkit summary panels if either is present in the scene —
             // EndScreenController is the UGUI fallback only.
-            if (Object.FindFirstObjectByType<LevelSummaryController>() != null) return;
-            if (Object.FindFirstObjectByType<RunSummaryController>()  != null) return;
+            if (Object.FindAnyObjectByType<LevelSummaryController>() != null) return;
+            if (Object.FindAnyObjectByType<RunSummaryController>()  != null) return;
 
             if (result.IsVictory) ShowVictory(result);
             else ShowDefeat(result);

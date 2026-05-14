@@ -37,11 +37,11 @@ namespace CrowdDefense.Tests.Runtime.Scenarios
             AssertPresent<SettingsRegistry>("SettingsRegistry");
         }
 
-        // Uses FindFirstObjectByType directly — bypasses MonoSingleton.Instance lazy
+        // Uses FindAnyObjectByType directly — bypasses MonoSingleton.Instance lazy
         // auto-creation so a missing scene GameObject causes a real assertion failure.
         private static void AssertPresent<T>(string label) where T : MonoBehaviour
         {
-            var found = Object.FindFirstObjectByType<T>();
+            var found = Object.FindAnyObjectByType<T>();
             Assert.IsNotNull(found, $"{label}.Instance is null after Main.unity load — add {label} GameObject to the scene");
         }
     }

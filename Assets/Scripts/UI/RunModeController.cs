@@ -175,7 +175,7 @@ namespace CrowdDefense.UI
         private void EnterShopNode(RunMapNode node)
         {
             RunMap.Instance?.MoveTo(node.id);
-            var shop = FindFirstObjectByType<ShopController>();
+            var shop = FindAnyObjectByType<ShopController>();
             if (shop != null)
             {
                 shop.Show();
@@ -209,7 +209,7 @@ namespace CrowdDefense.UI
                 return;
             }
 
-            var overlay = FindFirstObjectByType<EventChoiceOverlay>();
+            var overlay = FindAnyObjectByType<EventChoiceOverlay>();
             if (overlay != null)
             {
                 overlay.Show(evt, (pickedEvt, choiceIdx) => ApplyMysteryChoice(pickedEvt, choiceIdx));

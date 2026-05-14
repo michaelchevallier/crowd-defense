@@ -109,7 +109,7 @@ namespace CrowdDefense.Editor
         private static void CheckSingleton<T>(string label, StringBuilder sb, ref int pass, ref int fail)
             where T : UnityEngine.MonoBehaviour
         {
-            var obj = UnityEngine.Object.FindFirstObjectByType<T>();
+            var obj = UnityEngine.Object.FindAnyObjectByType<T>();
             if (obj != null)
             {
                 sb.AppendLine($"✓ {label} singleton present");

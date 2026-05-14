@@ -424,7 +424,7 @@ namespace CrowdDefense.Systems
             // visible in the Main scene until the player clicks Continue/Rejouer (which then
             // navigates explicitly). Skip the auto-fade-to-Loader fallback so the modal isn't
             // destroyed before the player can read it.
-            bool hasRunSummary = UnityEngine.Object.FindFirstObjectByType<UI.RunSummaryController>() != null;
+            bool hasRunSummary = UnityEngine.Object.FindAnyObjectByType<UI.RunSummaryController>() != null;
 
             if (hasRunSummary) return;
 
@@ -592,7 +592,7 @@ namespace CrowdDefense.Systems
                 return;
             }
 
-            var ctrl = UnityEngine.Object.FindFirstObjectByType<UI.CutsceneController>();
+            var ctrl = UnityEngine.Object.FindAnyObjectByType<UI.CutsceneController>();
             if (ctrl == null)
             {
                 onDone();
@@ -873,7 +873,7 @@ namespace CrowdDefense.Systems
             string id = currentLevel.CutsceneIdAtStart;
             if (string.IsNullOrEmpty(id)) return;
 
-            var ctrl = UnityEngine.Object.FindFirstObjectByType<CutsceneController>();
+            var ctrl = UnityEngine.Object.FindAnyObjectByType<CutsceneController>();
             if (ctrl == null) return;
 
             Time.timeScale = 0f;

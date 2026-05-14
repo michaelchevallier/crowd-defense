@@ -135,7 +135,7 @@ namespace CrowdDefense.Systems
             if (weather != null)
                 _sandStormVfx = weather.SpawnPreset(WeatherType.Dust);
 
-            var towers = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
+            var towers = Object.FindObjectsByType<Tower>(FindObjectsInactive.Exclude);
             _prevRangeMul.Clear();
             foreach (var t in towers)
             {
@@ -162,7 +162,7 @@ namespace CrowdDefense.Systems
                 Destroy(_sandStormVfx.gameObject);
                 _sandStormVfx = null;
             }
-            var towers = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
+            var towers = Object.FindObjectsByType<Tower>(FindObjectsInactive.Exclude);
             foreach (var t in towers)
                 if (_prevRangeMul.TryGetValue(t, out float prev)) t.EventRangeMul = prev;
             _prevRangeMul.Clear();
@@ -185,7 +185,7 @@ namespace CrowdDefense.Systems
         {
             _remaining = duration;
             _disabledTowers.Clear();
-            var all = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
+            var all = Object.FindObjectsByType<Tower>(FindObjectsInactive.Exclude);
             int count = Mathf.Clamp(Random.Range(1, 4), 1, all.Length);
             for (int i = 0; i < count && i < all.Length; i++)
             {
@@ -249,7 +249,7 @@ namespace CrowdDefense.Systems
         private void StartZeroG(float duration)
         {
             _remaining = duration;
-            var towers = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
+            var towers = Object.FindObjectsByType<Tower>(FindObjectsInactive.Exclude);
             _prevRangeMul.Clear();
             foreach (var t in towers)
             {
@@ -271,7 +271,7 @@ namespace CrowdDefense.Systems
 
         private void StopZeroG()
         {
-            var towers = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
+            var towers = Object.FindObjectsByType<Tower>(FindObjectsInactive.Exclude);
             foreach (var t in towers)
                 if (_prevRangeMul.TryGetValue(t, out float prev)) t.EventRangeMul = prev;
             _prevRangeMul.Clear();
@@ -365,7 +365,7 @@ namespace CrowdDefense.Systems
         private void StartHack(float duration)
         {
             _remaining = duration;
-            var all = Object.FindObjectsByType<Tower>(FindObjectsSortMode.None);
+            var all = Object.FindObjectsByType<Tower>(FindObjectsInactive.Exclude);
             if (all.Length == 0) return;
             _hackedTower = all[Random.Range(0, all.Length)];
             _hackedTower.IsDisabled = true;

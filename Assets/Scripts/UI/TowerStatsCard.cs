@@ -25,7 +25,7 @@ namespace CrowdDefense.UI
         private void Start()
         {
             if (ResolveUI()) return;
-            var doc = FindFirstObjectByType<UIDocument>();
+            var doc = FindAnyObjectByType<UIDocument>();
             if (doc == null) return;
             var root = doc.rootVisualElement;
             _card   = root.Q<VisualElement>("tower-stats-card");

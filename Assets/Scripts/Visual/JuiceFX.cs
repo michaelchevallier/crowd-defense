@@ -229,7 +229,7 @@ namespace CrowdDefense.Visual
             if (!_hudRootSearched)
             {
                 _hudRootSearched = true;
-                _hudRoot = Object.FindFirstObjectByType<UIDocument>()?.rootVisualElement;
+                _hudRoot = Object.FindAnyObjectByType<UIDocument>()?.rootVisualElement;
                 if (_hudRoot == null)
                 {
 #if UNITY_EDITOR

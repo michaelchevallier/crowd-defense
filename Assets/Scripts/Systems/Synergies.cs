@@ -252,7 +252,7 @@ namespace CrowdDefense.Systems
             }
 
             // Track first-activation per (source instance, syn.from) pair
-            string pairKey = $"{source.GetInstanceID()}:{syn.from}";
+            string pairKey = $"{source.GetEntityId()}:{syn.from}";
             bool wasActive = owner != null && owner._crossActiveKeys.TryGetValue(pairKey, out bool prev) && prev;
 
             if (nearFrom == null)

@@ -88,7 +88,7 @@ namespace CrowdDefense.Visual
             DynamicGI.UpdateEnvironment();
 
             // If a reflection probe with Realtime mode is present, request a refresh.
-            var probe = Object.FindFirstObjectByType<ReflectionProbe>();
+            var probe = Object.FindAnyObjectByType<ReflectionProbe>();
             if (probe != null && probe.mode == ReflectionProbeMode.Realtime)
                 probe.RenderProbe();
         }
