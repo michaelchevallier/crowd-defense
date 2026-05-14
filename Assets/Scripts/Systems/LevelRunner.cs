@@ -420,6 +420,14 @@ namespace CrowdDefense.Systems
             ApplyTimeScale();
             OnSummaryReady?.Invoke(result);
 
+            // If RunSummaryController is wired in scene, it consumes OnSummaryReady and stays
+            // visible in the Main scene until the player clicks Continue/Rejouer (which then
+            // navigates explicitly). Skip the auto-fade-to-Loader fallback so the modal isn't
+            // destroyed before the player can read it.
+            bool hasRunSummary = Object.FindFirstObjectByType<UI.RunSummaryController>() != null;
+
+            if (hasRunSummary) return;
+
             if (isVictory)
             {
                 UI.EndScreenController.Instance?.ShowVictory(result);
