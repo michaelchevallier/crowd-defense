@@ -3,6 +3,7 @@
 using System;
 using System.IO;
 using UnityEditor;
+using UnityEditor.TestTools.TestRunner.Api;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -116,6 +117,41 @@ namespace CrowdDefense.Build
             }
 
             so.ApplyModifiedProperties();
+        }
+
+        // CI hook: launches the UnityTestFramework PlayMode tests (filter: Smoke fixture)
+        // via the TestRunnerApi and exits 0 / 1 based on result. Invoke from CLI:
+        //   Unity -batchmode -projectPath . -executeMethod CrowdDefense.Build.BuildScript.RunSmokeTests -quit
+        public static void RunSmokeTests()
+        {
+            var api = ScriptableObject.CreateInstance<TestRunnerApi>();
+            var filter = new Filter
+            {
+                testMode = TestMode.PlayMode,
+                groupNames = new[] { "CrowdDefense\\.Tests\\.Runtime\\.Scenarios\\.SmokeTests" },
+            };
+            api.RegisterCallbacks(new SmokeTestCallbacks());
+            api.Execute(new ExecutionSettings(filter));
+        }
+
+        private sealed class SmokeTestCallbacks : ICallbacks
+        {
+            public void RunStarted(ITestAdaptor testsToRun)
+                => Debug.Log($"[BuildScript] Smoke tests started: {testsToRun.TestCaseCount} case(s)");
+
+            public void TestStarted(ITestAdaptor test) { }
+
+            public void TestFinished(ITestResultAdaptor result)
+            {
+                if (!result.HasChildren)
+                    Debug.Log($"[BuildScript] {result.Test.FullName} → {result.TestStatus}");
+            }
+
+            public void RunFinished(ITestResultAdaptor result)
+            {
+                Debug.Log($"[BuildScript] Smoke RESULT: pass={result.PassCount} fail={result.FailCount} skip={result.SkipCount}");
+                EditorApplication.Exit(result.FailCount == 0 ? 0 : 1);
+            }
         }
 
         private static void EnsureAssetRegistryInclusion()
