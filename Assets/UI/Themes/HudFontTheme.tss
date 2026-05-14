@@ -1,0 +1,5 @@
+@import url("unity-theme://default");
+
+* {
+    -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular SDF.asset");
+}

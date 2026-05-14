@@ -52,6 +52,12 @@ namespace CrowdDefense.UI
                     ["hud.skip_toast_body"] = "Bonus for launching early",
                     ["hud.streak_toast_title"] = "Streak x{0}!",
                     ["hud.streak_toast_body"] = "Kill reward +{0}%",
+                    ["hud.skip_bonus_popup"] = "+{0}g Skip Bonus!",
+                    ["hud.bank_tooltip_title"] = "Bank: {0}¢",
+                    ["hud.enemy_count_placeholder"] = "Enemies: ... / ...",
+                    ["hud.enemy_count"] = "Enemies: {0} / {1}",
+                    ["hud.wave_endless_sub"] = "Inf. Wave {0}",
+                    ["hud.wave_preview_next"] = "Next wave",
 
                     // ── Keyboard hints bar ─────────────────────────────────────────
                     ["hud.keyboard_hints"] = "N=wave  ESC=pause  Space=ult  F3=debug  M=minimap",
@@ -414,6 +420,12 @@ namespace CrowdDefense.UI
                     ["hud.skip_toast_body"] = "Bonus pour lancer tot",
                     ["hud.streak_toast_title"] = "Série x{0} !",
                     ["hud.streak_toast_body"] = "Récompense kills +{0}%",
+                    ["hud.skip_bonus_popup"] = "+{0}g Bonus Skip !",
+                    ["hud.bank_tooltip_title"] = "Banque : {0}¢",
+                    ["hud.enemy_count_placeholder"] = "Ennemis : ... / ...",
+                    ["hud.enemy_count"] = "Ennemis : {0} / {1}",
+                    ["hud.wave_endless_sub"] = "Inf. Vague {0}",
+                    ["hud.wave_preview_next"] = "Prochaine vague",
 
                     // ── Barre raccourcis clavier ───────────────────────────────────
                     ["hud.keyboard_hints"] = "N=vague  ESC=pause  Espace=ult  F3=debug  M=minimap",
@@ -748,6 +760,12 @@ namespace CrowdDefense.UI
                     ["hud.skip_toast_body"] = "Bonus por lanzar pronto",
                     ["hud.streak_toast_title"] = "Racha x{0}!",
                     ["hud.streak_toast_body"] = "Recompensa de kills +{0}%",
+                    ["hud.skip_bonus_popup"] = "+{0}m Bonus Adelanto!",
+                    ["hud.bank_tooltip_title"] = "Banco: {0}¢",
+                    ["hud.enemy_count_placeholder"] = "Enemigos: ... / ...",
+                    ["hud.enemy_count"] = "Enemigos: {0} / {1}",
+                    ["hud.wave_endless_sub"] = "Inf. Oleada {0}",
+                    ["hud.wave_preview_next"] = "Próxima oleada",
 
                     // ── Keyboard hints bar ─────────────────────────────────────────
                     ["hud.keyboard_hints"] = "N=oleada  ESC=pausa  Espacio=ult  F3=debug  M=minimapa",
