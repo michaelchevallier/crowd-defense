@@ -367,16 +367,32 @@ namespace CrowdDefense.UI
             yield return new WaitForSeconds(0.5f);
             Save();
             _saveQueued = false;
+            _saveCoroutine = null;
+        }
+
+        // Without this flush, pending values queued in memory (slider drag pre-debounce)
+        // would be lost on scene unload / app background.
+        private void FlushSave()
+        {
+            if (_saveCoroutine != null) StopCoroutine(_saveCoroutine);
+            _saveCoroutine = null;
+            _saveQueued = false;
+            Save();
         }
 
         private void OnDisable()
         {
-            if (_saveQueued) PlayerPrefs.Save();
+            if (_saveQueued) FlushSave();
         }
 
         private void OnApplicationPause(bool paused)
         {
-            if (paused && _saveQueued) PlayerPrefs.Save();
+            if (paused && _saveQueued) FlushSave();
+        }
+
+        private void OnApplicationQuit()
+        {
+            if (_saveQueued) FlushSave();
         }
     }
 }
