@@ -7,9 +7,9 @@ using UnityEngine.UIElements;
 
 namespace CrowdDefense.UI
 {
-    [RequireComponent(typeof(UIDocument))]
     public class SchoolSelectController : MonoSingleton<SchoolSelectController>
     {
+        [SerializeField] private VisualTreeAsset? overlayAsset;
         [SerializeField] private MagicSchoolDef? fireDef;
         [SerializeField] private MagicSchoolDef? frostDef;
         [SerializeField] private MagicSchoolDef? stoneworkDef;
@@ -19,10 +19,37 @@ namespace CrowdDefense.UI
 
         protected override void OnAwakeSingleton()
         {
-            var uiDoc = GetComponent<UIDocument>();
-            if (uiDoc == null) return;
+            TryBindOverlay();
+        }
 
-            var root = uiDoc.rootVisualElement;
+        // Self-bootstraps a UIDocument from Inspector overlayAsset OR Resources/UI/SchoolSelectScreen
+        // so MenuController.OnNewRun can drive an overlay even when no scene-wired UIDocument exists.
+        private void TryBindOverlay()
+        {
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc == null) uiDoc = gameObject.AddComponent<UIDocument>();
+
+            if (uiDoc.visualTreeAsset == null)
+            {
+                uiDoc.visualTreeAsset = overlayAsset
+                    ?? Resources.Load<VisualTreeAsset>("UI/SchoolSelectScreen")
+                    ?? Resources.Load<VisualTreeAsset>("SchoolSelectScreen");
+            }
+
+            if (uiDoc.panelSettings == null)
+            {
+                var others = FindObjectsByType<UIDocument>(FindObjectsInactive.Exclude);
+                foreach (var doc in others)
+                {
+                    if (doc != uiDoc && doc.panelSettings != null)
+                    {
+                        uiDoc.panelSettings = doc.panelSettings;
+                        break;
+                    }
+                }
+            }
+
+            var root = uiDoc.visualTreeAsset != null ? uiDoc.rootVisualElement : null;
             if (root == null) return;
 
             _overlay = root.Q<VisualElement>("school-select-overlay");
@@ -38,7 +65,17 @@ namespace CrowdDefense.UI
         {
             _onSelected = onSelected;
 
-            if (_overlay == null) return;
+            // Late bootstrap retry if Awake-time bind failed (e.g. PanelSettings not yet ready).
+            if (_overlay == null) TryBindOverlay();
+
+            if (_overlay == null)
+            {
+                // No overlay wired in scene → unblock NEW GAME flow with Fire default.
+                Debug.LogWarning("[SchoolSelectController] overlay not bound — defaulting to Fire.");
+                _onSelected = null;
+                onSelected?.Invoke(MagicSchool.Fire);
+                return;
+            }
             _overlay.RemoveFromClassList("hidden");
         }
 

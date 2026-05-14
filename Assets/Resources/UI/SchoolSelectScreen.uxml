@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements"
+         editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd">
+    <Style src="SchoolSelectScreen.uss" />
+    <ui:VisualElement name="school-select-overlay" class="overlay-fullscreen hidden">
+        <ui:Label text="Choisis ton école" class="school-select-title" />
+        <ui:VisualElement name="school-cards" class="cards-row">
+            <ui:Button name="school-card-fire" class="school-card school-card--fire">
+                <ui:Label text="&#x1F525;" class="school-emoji" />
+                <ui:Label name="school-name-fire" text="Feu" class="school-name" />
+                <ui:Label name="school-desc-fire" text="" class="school-desc" />
+            </ui:Button>
+            <ui:Button name="school-card-frost" class="school-card school-card--frost">
+                <ui:Label text="&#x1F9CA;" class="school-emoji" />
+                <ui:Label name="school-name-frost" text="Givre" class="school-name" />
+                <ui:Label name="school-desc-frost" text="" class="school-desc" />
+            </ui:Button>
+            <ui:Button name="school-card-stonework" class="school-card school-card--stonework">
+                <ui:Label text="&#x1FAA8;" class="school-emoji" />
+                <ui:Label name="school-name-stonework" text="Maçonnerie" class="school-name" />
+                <ui:Label name="school-desc-stonework" text="" class="school-desc" />
+            </ui:Button>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>
