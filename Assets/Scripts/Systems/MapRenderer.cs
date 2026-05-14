@@ -105,14 +105,13 @@ namespace CrowdDefense.Systems
                     mr.sharedMaterial = GetMat(surfaceCh, _theme);
                     _slabRenderers.Add(mr);
 
-                    // Register animated tiles with WaterLavaAnimController. Bridges register too
-                    // so the stream beneath them animates in sync (their plank quad covers ~70%).
-                    if (ch == GridCoords.WATER || ch == GridCoords.BRIDGE_WATER)
+                    // Track path visuals for reveal animation (md-pathtiles-reveal-anim).
                     if (IsPathLike(ch))
                         TrackPathVisual(new Vector2Int(c, r), slab);
 
-                    // Register animated tiles with WaterLavaAnimController
-                    if (ch == GridCoords.WATER)
+                    // Register animated tiles with WaterLavaAnimController. Bridges register too
+                    // so the stream beneath them animates in sync (their plank quad covers ~70%).
+                    if (ch == GridCoords.WATER || ch == GridCoords.BRIDGE_WATER)
                         WaterLavaAnimController.Instance?.RegisterWater(mr);
                     else if (ch == GridCoords.LAVA || ch == GridCoords.BRIDGE_LAVA)
                         WaterLavaAnimController.Instance?.RegisterLava(mr);
