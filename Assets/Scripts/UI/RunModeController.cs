@@ -43,9 +43,10 @@ namespace CrowdDefense.UI
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        private void OnDestroy()
+        protected override void OnDestroy()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
+            base.OnDestroy();
         }
 
         // ── Scene lifecycle hook ─────────────────────────────────────────────
