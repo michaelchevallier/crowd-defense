@@ -424,7 +424,7 @@ namespace CrowdDefense.Systems
             // visible in the Main scene until the player clicks Continue/Rejouer (which then
             // navigates explicitly). Skip the auto-fade-to-Loader fallback so the modal isn't
             // destroyed before the player can read it.
-            bool hasRunSummary = Object.FindFirstObjectByType<UI.RunSummaryController>() != null;
+            bool hasRunSummary = UnityEngine.Object.FindFirstObjectByType<UI.RunSummaryController>() != null;
 
             if (hasRunSummary) return;
 

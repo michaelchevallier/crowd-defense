@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections;
 using System.Collections.Generic;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
@@ -10,6 +11,8 @@ namespace CrowdDefense.Systems
     [DefaultExecutionOrder(50)]
     public class MapRenderer : MonoBehaviour
     {
+        public static MapRenderer? Instance { get; private set; }
+
         // Per-char cache keyed by (char, theme) so animated mats are theme-specific.
         private static readonly Dictionary<(char, LevelTheme), Material> _matCache = new();
 
@@ -23,6 +26,21 @@ namespace CrowdDefense.Systems
 
         // Spawned slab renderers kept for ApplyWorldTheme.
         private readonly List<MeshRenderer> _slabRenderers = new();
+
+        // Path-like cell visuals (slabs + PathTilesController PT_c_r children) grouped by cell,
+        // used by RevealFromSpawn to stagger tile activation outward from the portal.
+        private readonly Dictionary<Vector2Int, List<GameObject>> _pathCellVisuals = new();
+        private Coroutine? _revealRoutine;
+
+        private void Awake()
+        {
+            Instance = this;
+        }
+
+        private void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
+        }
 
         private void Start()
         {
@@ -90,6 +108,11 @@ namespace CrowdDefense.Systems
                     // Register animated tiles with WaterLavaAnimController. Bridges register too
                     // so the stream beneath them animates in sync (their plank quad covers ~70%).
                     if (ch == GridCoords.WATER || ch == GridCoords.BRIDGE_WATER)
+                    if (IsPathLike(ch))
+                        TrackPathVisual(new Vector2Int(c, r), slab);
+
+                    // Register animated tiles with WaterLavaAnimController
+                    if (ch == GridCoords.WATER)
                         WaterLavaAnimController.Instance?.RegisterWater(mr);
                     else if (ch == GridCoords.LAVA || ch == GridCoords.BRIDGE_LAVA)
                         WaterLavaAnimController.Instance?.RegisterLava(mr);
@@ -107,6 +130,8 @@ namespace CrowdDefense.Systems
                 ptc = ptGo.AddComponent<PathTilesController>();
             }
             ptc.SpawnPathTiles(grid, _theme);
+
+            CollectPathTilesControllerChildren(ptc);
 
 #if UNITY_EDITOR
             Debug.Log($"[MapRenderer] Spawned slabs for {grid.Width}x{grid.Height} grid, theme={_theme}, world={world}");
@@ -126,6 +151,82 @@ namespace CrowdDefense.Systems
                 mr.SetPropertyBlock(mpb);
             }
         }
+
+        // Hides every path-like cell visual (slab + PathTilesController tile) then
+        // re-activates them grouped by Manhattan distance from spawn, 60ms per step,
+        // producing a radial reveal pulse emanating from the portal.
+        public void RevealFromSpawn(Vector2Int spawn)
+        {
+            if (!isActiveAndEnabled) return;
+            if (_revealRoutine != null) StopCoroutine(_revealRoutine);
+
+            foreach (var kv in _pathCellVisuals)
+                foreach (var go in kv.Value)
+                    if (go != null) go.SetActive(false);
+
+            _revealRoutine = StartCoroutine(RevealRoutine(spawn));
+        }
+
+        private IEnumerator RevealRoutine(Vector2Int spawn)
+        {
+            const float StepDelay = 0.06f;
+
+            var cells = new List<Vector2Int>(_pathCellVisuals.Keys);
+            cells.Sort((a, b) => Manhattan(a, spawn).CompareTo(Manhattan(b, spawn)));
+
+            int prevDist = -1;
+            int i = 0;
+            while (i < cells.Count)
+            {
+                int d = Manhattan(cells[i], spawn);
+                int wait = prevDist < 0 ? d : d - prevDist;
+                if (wait > 0) yield return new WaitForSeconds(StepDelay * wait);
+
+                while (i < cells.Count && Manhattan(cells[i], spawn) == d)
+                {
+                    if (_pathCellVisuals.TryGetValue(cells[i], out var list))
+                        foreach (var go in list)
+                            if (go != null) go.SetActive(true);
+                    i++;
+                }
+                prevDist = d;
+            }
+
+            _revealRoutine = null;
+        }
+
+        private void TrackPathVisual(Vector2Int cell, GameObject go)
+        {
+            if (!_pathCellVisuals.TryGetValue(cell, out var list))
+            {
+                list = new List<GameObject>();
+                _pathCellVisuals[cell] = list;
+            }
+            list.Add(go);
+        }
+
+        // PathTilesController spawns children named "PT_{c}_{r}" — pair them with their cell so
+        // they reveal in lockstep with the underlying slab.
+        private void CollectPathTilesControllerChildren(PathTilesController ptc)
+        {
+            foreach (Transform child in ptc.transform)
+            {
+                var name = child.name;
+                if (name.Length < 4 || name[0] != 'P' || name[1] != 'T' || name[2] != '_') continue;
+                int underscore = name.IndexOf('_', 3);
+                if (underscore <= 3) continue;
+                if (!int.TryParse(name.AsSpan(3, underscore - 3), out int c)) continue;
+                if (!int.TryParse(name.AsSpan(underscore + 1), out int r)) continue;
+                TrackPathVisual(new Vector2Int(c, r), child.gameObject);
+            }
+        }
+
+        private static bool IsPathLike(char ch) =>
+            ch == GridCoords.PATH || ch == GridCoords.PORTAL || ch == GridCoords.CASTLE ||
+            ch == GridCoords.BRIDGE_WATER || ch == GridCoords.BRIDGE_LAVA;
+
+        private static int Manhattan(Vector2Int a, Vector2Int b) =>
+            Mathf.Abs(a.x - b.x) + Mathf.Abs(a.y - b.y);
 
         private static Color WorldThemeTint(int worldId) => worldId switch
         {
