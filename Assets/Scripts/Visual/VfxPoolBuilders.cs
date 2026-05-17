@@ -241,6 +241,9 @@ namespace CrowdDefense.Visual
             var vol = ps.velocityOverLifetime;
             vol.enabled        = true;
             vol.space          = ParticleSystemSimulationSpace.Local;
+            vol.x              = new ParticleSystem.MinMaxCurve(0f);
+            vol.y              = new ParticleSystem.MinMaxCurve(0f);
+            vol.z              = new ParticleSystem.MinMaxCurve(0f);
             vol.orbitalY       = new ParticleSystem.MinMaxCurve(Mathf.PI);
             vol.orbitalOffsetY = new ParticleSystem.MinMaxCurve(0f);
             SharedCurves.SetSizeOverLifetimeFade(ps);
