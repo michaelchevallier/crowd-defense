@@ -82,6 +82,16 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
+            var sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (sceneName != "WorldMap")
+            {
+#if UNITY_EDITOR
+                Debug.LogWarning($"[WorldMapController] Misplaced controller in scene '{sceneName}' — disabling.");
+#endif
+                gameObject.SetActive(false);
+                return;
+            }
+
             Debug.Log("[WorldMapController] Start() called");
             var uiDoc = GetComponent<UIDocument>();
             if (uiDoc == null)
