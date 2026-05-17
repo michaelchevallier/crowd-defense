@@ -146,7 +146,10 @@ namespace CrowdDefense.Editor
 
             // TODO: MapPathfinder (needs nav mesh config), SceneTransition (needs animator refs)
 
-            EnsureCastle(ref created, ref existing);
+            // Castle is runtime-spawned by LevelRunner.SpawnCastle — do NOT pre-create it here,
+            // otherwise the edit-time placeholder at (0,0,0) collides with the runtime instance
+            // and Castle.Instance returns the wrong (un-init'd) one.
+            // EnsureCastle(ref created, ref existing);
             EnsureCamera(ref created, ref existing);
             EnsureDirectionalLight(ref created, ref existing);
             EnsureChild<ThemeAmbientController>(systems, "ThemeAmbientController", ref created, ref existing);

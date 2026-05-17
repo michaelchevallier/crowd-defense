@@ -734,25 +734,28 @@ namespace CrowdDefense.Systems
 
             int hp = ResolveCastleHP();
             Castle castle;
+            GameObject castleGo;
             if (castlePrefab != null)
             {
-                var go = Instantiate(castlePrefab);
-                castle = go.GetComponent<Castle>() ?? go.AddComponent<Castle>();
+                castleGo = Instantiate(castlePrefab);
+                castle = castleGo.GetComponent<Castle>() ?? castleGo.AddComponent<Castle>();
             }
             else
             {
-                var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                go.name = "Castle";
-                go.transform.localScale = Vector3.one * 2f;
-                Destroy(go.GetComponent<BoxCollider>());
-                var rend = go.GetComponent<MeshRenderer>();
+                castleGo = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                castleGo.name = "Castle";
+                castleGo.transform.localScale = Vector3.one * 2f;
+                Destroy(castleGo.GetComponent<BoxCollider>());
+                var rend = castleGo.GetComponent<MeshRenderer>();
                 if (rend != null)
                 {
                     rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
                     rend.material.color = new Color(0.4f, 0.25f, 0.1f, 1f);
                 }
-                castle = go.AddComponent<Castle>();
+                castle = castleGo.AddComponent<Castle>();
             }
+
+            castleGo.transform.position = _castleWorldPos;
 
             int world = currentLevel?.World ?? 1;
             castle.Init(hp, world);
