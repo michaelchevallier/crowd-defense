@@ -13,7 +13,6 @@ namespace CrowdDefense.Visual
         [SerializeField] private float panSpeed        = 20f;
         [SerializeField] private float zoomSpeed       = 5f;
         [SerializeField] private float orbitSpeed      = 120f;
-        [SerializeField] private float followLerpSpeed = 8f;
 
         [SerializeField] private float minY = 10f;
         [SerializeField] private float maxY = 30f;

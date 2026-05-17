@@ -183,11 +183,35 @@ namespace CrowdDefense.UI
         // Settings panel controller — sibling component on same GameObject
         private SettingsPanelController? _settingsCtrl;
 
+        private void Awake()
+        {
+            EnsureThemeStyleSheet();
+        }
+
         private void Start()
         {
             if (!ResolveUI())
             {
                 Debug.LogError("[HudController] Failed to resolve UI — UIDocument or rootVisualElement is null");
+            }
+        }
+
+        private void EnsureThemeStyleSheet()
+        {
+            var uiDoc = GetComponent<UIDocument>();
+            if (uiDoc?.panelSettings == null) return;
+
+            // If theme is missing or unset, load the default runtime theme
+            if (uiDoc.panelSettings.themeStyleSheet == null)
+            {
+                var theme = Resources.Load<ThemeStyleSheet>("UI/UnityDefaultRuntimeTheme");
+                if (theme != null)
+                {
+                    uiDoc.panelSettings.themeStyleSheet = theme;
+#if UNITY_EDITOR
+                    Debug.Log("[HudController] Runtime theme loaded from Resources/UI/UnityDefaultRuntimeTheme");
+#endif
+                }
             }
         }
 

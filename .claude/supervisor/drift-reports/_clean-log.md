@@ -572,3 +572,27 @@ Si encore des problèmes en Play mode (rose ailleurs, animation, etc.), me colle
 2026-05-18 00h11 — [T1 notified] Wave R2 Recovery DONE — V3 gameplay jouable Editor Play mode — 6 bugs Mike traités (5 par agents parallèles R1-1..R1-4, 1 par moi sur WorldMapController). Slabs=91/0 magenta, Skybox=plaine, Castle 200HP, Hero+mobs+tours OK. Final report .claude/qa/reports/phase5-recovery-wave2-final-2026-05-18.md. Screenshots V6-recovery-wave2-after-20260518-000752.png. Commit c6bb4283 + f5336729 pushed main. Mike peut tester loop gameplay : Cmd+Tab Editor → N pour vague → toolbar 1-4 → click cell.
 
 2026-05-18 14h25 — scrute /loop hors-tick (agent Wave R2 completed). **🎉 WAVE R2 RECOVERY DONE** — autonomie totale livrée par agent `a9b4717e78c16842e` en ~21 min, 185 tool calls. **6 bugs visuels résolus** : mobs floating (R1-4 `fedf57a7`), towers floating (cascade R1-3), map mesh missing (R1-3 `8cd40190` ToonCelShading→URP/Lit + magenta guard), skybox absente (`97d91042`+`8cd40190` Always Included Skybox/Panoramic + Camera.clearFlags=Skybox), castle cube accepté (V3 = simple geom), **TowerToolbar HUD manquant root-caused & fixed** `c6bb4283` (WorldMapController.Start() `gameObject.SetActive(false)` tuait HUD entier → `this.enabled = false`). Editor menu `Tools/CrowdDefense/Recovery/Wave2/RunAll` `4ace3233`. **Validation Editor Play mode UnityMCP** : 91 slabs no magenta, PathManager 1 path, castle 200/200, hero spawned, mobs walking, towers placed, skybox=skybox_plaine, TowerToolbar+TowerRegistry wired. T1 Mike sent par agent. **Drift 0/12** ✅. **T2 batch** (sprint complete = condition T2 charter §2, mais Mike est chat live donc T2 degraded à info ici).
+
+2026-05-18 00h15 — [T1 notified] Wave R2 DONE 4/4 — Mike re-test Play mode — Wave R2 (Phase 5 Recovery #2) : 4/4 tickets mergés sur origin/main.
+
+Commits :
+- R2-1 2773e212 HUD theme → HudFontTheme.tss assigned to HUDPanelSettings (fix carrés magenta)
+- R2-2 3a80e329 MapRenderer HasProperty('_BaseColor') check (fix 14× spam Toon_Water/Lava)
+- R2-3 41d1bcfa SupportProposalDialog + EndScreenController detach before DDOL
+- R2-4 62722e03 MusicManager skip Play when AudioClip null (fix Music_calm spam)
+
+Action Mike :
+1. Unity Editor → Ctrl+R (reload assets)
+2. Re-Play mode → vérifier :
+   - HUD propre, plus de carrés magenta
+   - Console silent : plus de spam Toon_Water/Lava, plus de DDOL warning, plus de Music_calm warning
+   - Plus de warning Castle/Hero MISSING (R1-1)
+   - Skybox normale (R1-2)
+   - Ennemis au sol (R1-4)
+   - HUD visible (R1-5)
+
+Reste warning non-bloquant :
+- SceneDecor "Background prefab not found at Resources/Prefabs/Decor/Plaine" → asset manquant, à créer plus tard (P2)
+- WaveManager "No LevelData or no waves" → besoin assign LevelData ScriptableObject
+
+Si tout est clean, on peut passer à R3 (gameplay : posage tours, mob spawn, wave start).
