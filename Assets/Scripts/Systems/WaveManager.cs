@@ -90,7 +90,9 @@ namespace CrowdDefense.Systems
             if (levelData == null || levelData.Waves.Count == 0)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogError("[WaveManager] No LevelData or no waves");
+                // Silent in non-play scenes (WorldMap/Menu) — Castle absence is the marker.
+                if (Castle.Instance != null)
+                    Debug.LogWarning("[WaveManager] No LevelData or no waves — wave events disabled this scene.");
 #endif
                 return;
             }
