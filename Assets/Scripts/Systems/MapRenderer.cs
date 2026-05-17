@@ -343,6 +343,7 @@ namespace CrowdDefense.Systems
             }
             else
             {
+                // No procedural texture fallback — use cell color directly (ensures visibility)
                 mat.SetColor("_BaseColor", CellColor(ch));
             }
 

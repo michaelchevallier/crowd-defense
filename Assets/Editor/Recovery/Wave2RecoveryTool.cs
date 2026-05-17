@@ -203,7 +203,7 @@ namespace CrowdDefense.EditorTools.Recovery
 
         public static void EnsureTowerToolbarWiring()
         {
-            var tt = UnityEngine.Object.FindFirstObjectByType<TowerToolbarController>();
+            var tt = UnityEngine.Object.FindAnyObjectByType<TowerToolbarController>();
             if (tt == null)
             {
                 Debug.LogWarning("[Wave2Recovery] No TowerToolbarController in scene");
@@ -228,7 +228,7 @@ namespace CrowdDefense.EditorTools.Recovery
 
         public static void EnsurePlacementControllerWiring()
         {
-            var pc = UnityEngine.Object.FindFirstObjectByType<PlacementController>();
+            var pc = UnityEngine.Object.FindAnyObjectByType<PlacementController>();
             if (pc == null)
             {
                 Debug.LogWarning("[Wave2Recovery] No PlacementController in scene");

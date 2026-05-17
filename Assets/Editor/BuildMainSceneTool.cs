@@ -329,15 +329,12 @@ namespace CrowdDefense.Editor
             hudGO = new GameObject("HUD");
             var doc = hudGO.AddComponent<UIDocument>();
 
-            if (panelSettings != null || visualTree != null)
-            {
-                var so = new SerializedObject(doc);
-                if (panelSettings != null)
-                    so.FindProperty("m_PanelSettings").objectReferenceValue = panelSettings;
-                if (visualTree != null)
-                    so.FindProperty("sourceAsset").objectReferenceValue = visualTree;
-                so.ApplyModifiedProperties();
-            }
+            var so = new SerializedObject(doc);
+            if (panelSettings != null)
+                so.FindProperty("m_PanelSettings").objectReferenceValue = panelSettings;
+            if (visualTree != null)
+                so.FindProperty("sourceAsset").objectReferenceValue = visualTree;
+            so.ApplyModifiedProperties();
 
             if (hudGO.GetComponent<HudController>() == null)
                 hudGO.AddComponent<HudController>();

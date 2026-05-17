@@ -22,7 +22,7 @@ namespace CrowdDefense.Editor
                 var scenePath = AssetDatabase.GUIDToAssetPath(guid);
                 var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
 
-                var renderers = Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None);
+                var renderers = Object.FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
                 
                 foreach (var renderer in renderers)
                 {
