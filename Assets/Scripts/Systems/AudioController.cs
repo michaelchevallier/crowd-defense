@@ -319,7 +319,7 @@ namespace CrowdDefense.Systems
 
         public void SetMixerMasterVolume(float zeroToOne)
         {
-            if (mixer != null) mixer.SetFloat("Master_Volume", LinearToDb(zeroToOne));
+            if (mixer != null) mixer.SetFloat("MasterVol", LinearToDb(zeroToOne));
         }
 
         public void SetGlobalListenerVolume(float zeroToOne)
@@ -329,20 +329,20 @@ namespace CrowdDefense.Systems
 
         public void SetSFXVolume(float zeroToOne)
         {
-            if (mixer != null && mixer.SetFloat("SFX_Volume", LinearToDb(zeroToOne))) return;
+            if (mixer != null && mixer.SetFloat("SFXVol", LinearToDb(zeroToOne))) return;
             foreach (var src in _sfxPool) src.volume = Mathf.Clamp01(zeroToOne);
         }
 
         public void SetMusicVolume(float zeroToOne)
         {
-            if (mixer != null && mixer.SetFloat("Music_Volume", LinearToDb(zeroToOne))) return;
+            if (mixer != null && mixer.SetFloat("MusicVol", LinearToDb(zeroToOne))) return;
             if (_musicSource != null) _musicSource.volume = Mathf.Clamp01(zeroToOne);
             MusicManager.Instance?.SetMusicVolume(zeroToOne);
         }
 
         public void SetUIVolume(float zeroToOne)
         {
-            if (mixer != null && mixer.SetFloat("UI_Volume", LinearToDb(zeroToOne))) return;
+            if (mixer != null && mixer.SetFloat("UIVol", LinearToDb(zeroToOne))) return;
         }
 
         public void PlayLoop(AudioClip clip, string channel, float volume = 1f)
