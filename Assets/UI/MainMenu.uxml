@@ -2,7 +2,19 @@
     <Style src="MainMenu.uss" />
     <ui:VisualElement name="main-menu-root" class="main-menu-root">
         <ui:VisualElement name="menu-container" class="menu-container">
-            <ui:Label text="CROWD DEFENSE" name="menu-title" class="menu-title" />
+            <ui:Label text="CROWD DEFENSE" name="menu-title-label" class="menu-title" />
+            <ui:Label text="Bonjour, Joueur" name="menu-greeting-label" class="menu-greeting" />
+            <ui:ScrollView name="level-scroll" class="level-scroll" vertical-scroller-visibility="AlwaysVisible">
+                <ui:VisualElement name="level-grid" class="level-grid" />
+            </ui:ScrollView>
+            <ui:VisualElement name="menu-bottom-btns" class="menu-bottom-btns">
+                <ui:Button text="Sauvegardes" name="btn-open-slots" class="menu-credits-btn" />
+                <ui:Button text="Bestiaire" name="btn-open-bestiary" class="menu-credits-btn" />
+                <ui:Button text="Achievements" name="btn-open-achievements" class="menu-credits-btn" />
+                <ui:Button text="Credits" name="btn-open-credits" class="menu-credits-btn" />
+                <ui:Button text="Stats" name="btn-open-stats" class="menu-credits-btn" />
+            </ui:VisualElement>
+            <ui:Label name="menu-version-footer" class="menu-version-footer" />
             <ui:VisualElement name="button-group" class="button-group">
                 <ui:Button text="CONTINUE" name="btn-continue" class="menu-btn menu-btn-continue" />
                 <ui:Button text="NEW GAME" name="btn-newrun" class="menu-btn menu-btn-newrun" />
