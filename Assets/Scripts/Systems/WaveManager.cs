@@ -87,12 +87,23 @@ namespace CrowdDefense.Systems
             if (levelData == null && LevelRunner.Instance?.CurrentLevel != null)
                 levelData = LevelRunner.Instance.CurrentLevel;
 
-            // Final fallback: load first level from registry if still null
+            // Final fallback: load first level WITH waves from registry if still null
+            // (W1-1 is a tutorial with 0 waves — skip to next)
             if (levelData == null)
             {
                 var reg = LevelRegistry.Get();
-                if (reg != null && reg.Levels.Count > 0)
-                    levelData = reg.Levels[0];
+                if (reg != null)
+                {
+                    for (int i = 0; i < reg.Levels.Count; i++)
+                    {
+                        var lvl = reg.Levels[i];
+                        if (lvl != null && lvl.Waves.Count > 0)
+                        {
+                            levelData = lvl;
+                            break;
+                        }
+                    }
+                }
             }
 
             if (levelData == null || levelData.Waves.Count == 0)
