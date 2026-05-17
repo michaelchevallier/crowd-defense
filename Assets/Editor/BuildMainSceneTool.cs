@@ -6,6 +6,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine.Audio;
 using UnityEngine.Rendering;
 using UnityEngine.UIElements;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Entities;
 using CrowdDefense.Systems;
@@ -103,6 +104,46 @@ namespace CrowdDefense.Editor
             EnsureSingleton<WeatherController>  (systems, "WeatherController",   ref created, ref existing);
             EnsureSingleton<SkyboxController>   (systems, "SkyboxController",    ref created, ref existing);
             EnsureSingleton<PostProcessController>(systems, "PostProcessController", ref created, ref existing);
+            EnsureSingleton<ColorblindPalette>  (systems, "ColorblindPalette",   ref created, ref existing);
+            EnsureSingleton<MusicPulseVisualizer>(systems, "MusicPulseVisualizer", ref created, ref existing);
+            EnsureSingleton<PathfinderVisualization>(systems, "PathfinderVisualization", ref created, ref existing);
+            EnsureSingleton<PathTiles>          (systems, "PathTiles",           ref created, ref existing);
+            EnsureSingleton<SceneDecor>         (systems, "SceneDecor",          ref created, ref existing);
+
+            // Phase 5 UI singletons — placement / preview / school / mode
+            EnsureSingleton<HeroPortraitController>(systems, "HeroPortraitController", ref created, ref existing);
+            EnsureSingleton<TowerHoverController>(systems, "TowerHoverController", ref created, ref existing);
+            EnsureSingleton<GhostPreviewController>(systems, "GhostPreviewController", ref created, ref existing);
+            EnsureSingleton<PlacementHighlight> (systems, "PlacementHighlight",  ref created, ref existing);
+            EnsureSingleton<SchoolSelectController>(systems, "SchoolSelectController", ref created, ref existing);
+            EnsureSingleton<RunModeController>  (systems, "RunModeController",   ref created, ref existing);
+
+            // UI panels / overlays
+            EnsureSingleton<AutoSaveIndicator>  (systems, "AutoSaveIndicator",   ref created, ref existing);
+            EnsureSingleton<AvatarPickPanel>    (systems, "AvatarPickPanel",     ref created, ref existing);
+            EnsureSingleton<BestiaryPanel>      (systems, "BestiaryPanel",       ref created, ref existing);
+            EnsureSingleton<BossHpBarController>(systems, "BossHpBarController", ref created, ref existing);
+            EnsureSingleton<BossIntroBannerController>(systems, "BossIntroBannerController", ref created, ref existing);
+            EnsureSingleton<ConfirmDialog>      (systems, "ConfirmDialog",       ref created, ref existing);
+            EnsureSingleton<DailyChallengeModal>(systems, "DailyChallengeModal", ref created, ref existing);
+            EnsureSingleton<EndScreenController>(systems, "EndScreenController", ref created, ref existing);
+            EnsureSingleton<HeroPickScreen>     (systems, "HeroPickScreen",      ref created, ref existing);
+            EnsureSingleton<PauseIndicator>     (systems, "PauseIndicator",      ref created, ref existing);
+            EnsureSingleton<SupportProposalDialog>(systems, "SupportProposalDialog", ref created, ref existing);
+            EnsureSingleton<ToastController>    (systems, "ToastController",     ref created, ref existing);
+            EnsureSingleton<TowerComparePanel>  (systems, "TowerComparePanel",   ref created, ref existing);
+            EnsureSingleton<VirtualJoystick>    (systems, "VirtualJoystick",     ref created, ref existing);
+            EnsureSingleton<WaveBannerController>(systems, "WaveBannerController", ref created, ref existing);
+            EnsureSingleton<WaveClearedController>(systems, "WaveClearedController", ref created, ref existing);
+            EnsureSingleton<WaveTipsController> (systems, "WaveTipsController",  ref created, ref existing);
+
+            // Gameplay subsystems (additional)
+            EnsureSingleton<EnemyAmbientChatter>(systems, "EnemyAmbientChatter", ref created, ref existing);
+            EnsureSingleton<EnemyHoverController>(systems, "EnemyHoverController", ref created, ref existing);
+
+            // Debug / dev tools
+            EnsureSingleton<DebugConsole>       (systems, "DebugConsole",        ref created, ref existing);
+
             // TODO: MapPathfinder (needs nav mesh config), SceneTransition (needs animator refs)
 
             EnsureCastle(ref created, ref existing);
