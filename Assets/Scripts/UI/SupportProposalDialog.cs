@@ -24,6 +24,7 @@ namespace CrowdDefense.UI
 
         protected override void OnAwakeSingleton()
         {
+            if (transform.parent != null) transform.SetParent(null, true);
             DontDestroyOnLoad(gameObject);
             BuildUI();
         }
