@@ -33,8 +33,8 @@ namespace CrowdDefense.Editor
                 new("CrowdDefense.Systems.AudioController, CrowdDefense"),
                 new("CrowdDefense.Systems.MusicManager, CrowdDefense"),
                 new("CrowdDefense.UI.HudController, CrowdDefense"),
-                new("CrowdDefense.Entities.Castle, CrowdDefense"),
-                new("CrowdDefense.Entities.Hero, CrowdDefense"),
+                new("CrowdDefense.Entities.Castle, CrowdDefense", optional: true),
+                new("CrowdDefense.Entities.Hero, CrowdDefense", optional: true),
             },
             ["Menu"] = new Entry[]
             {
