@@ -516,3 +516,23 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-17 12h25 — scrute /loop #209 (hors-tick via Mike Play paste). **🚨 D11 SÉVÈRE confirmé** : ~25 warnings MonoSingleton auto-created + 4 errors AudioMixer Exposed Name mismatch (Master_Volume vs MasterVol) + 2× WaveManager No LevelData + matériaux URP rose + WorldMapController pollue HUD Main scene + caméra vitesse ×N + level-grid UXML manquant + script reference Unknown. Audit Explore : Main.unity contient 39 GO d'état pré-Phase 5, `Assets/Editor/BuildMainSceneTool.cs` (70+ EnsureSingleton) JAMAIS run post-Phase 5 + ne couvre PAS 6 UI controllers Phase 5 (HeroPortraitController, TowerHoverController, GhostPreviewController, PlacementHighlight, SchoolSelectController, RunModeController). **Plan Recovery posé** : `.claude/plans/phase5-recovery-2026-05-17.md` (6 tickets P0 parallèles Wave R + étape Mike post-merge). **Drift report formel** : `.claude/supervisor/drift-reports/2026-05-17-12h25-D11-runtime-broken.md`. **T1 Mike chat live** envoyée. **Next** : Mike colle /goal Recovery dans nouvelle session crowd-defense.
 
 2026-05-17 12h55 — scrute /loop #210. **2 new commits** depuis #209 (HEAD `427be5cc`) : Wave R DÉMARRÉE par session exec crowd-defense. R0-2 (AudioMixer fix `8da3e2e8`) + R0-3 (WorldMapController guard `427be5cc`) déjà mergés. 42 worktrees (39 → 42, +3 nouveaux R0-* en cours). **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 13h10 — scrute /loop hors-tick (Mike paste Unity SAFE MODE). **D10 immédiat post-R0-5** : CameraController.cs:243 référence `Hero.Current` sans `using CrowdDefense.Entities;`. CS0103 errors 2× bloquent Editor launch. Fix `2b947764` : add using directive. Push origin main OK. **Drift D10 résolu** ✅ — la session exec autonome n'avait PAS encore détecté/fixé (Sonnet bug-fixer ne re-check pas main post-merge). Superviseur a couvert le gap.
+
+2026-05-17 23h08 — [T1 notified] Phase 5 Recovery DONE 6/6 mergés — Mike action requise — Phase 5 Recovery code work : 6/6 tickets R0-* mergés sur origin/main.
+
+Commits :
+- R0-1 e0368732 BuildMainSceneTool +31 singletons (6 Phase 5 UI + 25 manquants)
+- R0-2 8da3e2e8 AudioController SetFloat → MasterVol/SFXVol/MusicVol/UIVol
+- R0-3 427be5cc WorldMapController guard scene (disable hors WorldMap)
+- R0-4 ab922de4 + 5fc8c5d0 + df25ebc2 Toon diagnostic tools (PAS de shader cassé détecté — rose vient probablement de URP runtime, pas matériaux)
+- R0-5 c960e28e + 2b947764 CameraController Lerp ×8 → SmoothDamp 0.2s
+- R0-6 73eca6a1 MainMenu.uxml level-grid + autres elements UI manquants
+
+Action Mike requise :
+1. Unity Editor : Tools > Build Main Scene (re-applique 31 nouveaux singletons)
+2. Save Main.unity (Ctrl+S)
+3. Tools > CrowdDefense > Audit Materials (R0-4 diagnostic) — confirme zéro shader cassé
+4. Play mode — vérifier camera follow naturel, plus de spam log MonoSingleton, plus erreur level-grid
+
+Reste à investiguer si rose persiste : R0-4 a livré tooling diag mais pas la cause runtime (probablement URP Always Included Shaders ou material instance runtime).
