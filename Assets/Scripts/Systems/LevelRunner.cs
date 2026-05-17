@@ -825,6 +825,24 @@ namespace CrowdDefense.Systems
                     heroRangeMul: metaBonuses.heroRangeMul,
                     heroFireRateMul: metaBonuses.heroFireRateMul);
 
+            // Wire camera to follow the freshly spawned hero (and orbit around castle if present).
+            var camCtrl = CrowdDefense.Visual.CameraController.Instance;
+            if (camCtrl != null)
+            {
+                camCtrl.SetHero(Hero.transform);
+                if (PrimaryCastle != null) camCtrl.SetCastle(PrimaryCastle.transform);
+
+                var grid2 = PathManager.Instance?.Grid;
+                if (grid2 != null)
+                {
+                    float halfX = grid2.Width  * grid2.CellSize * 0.5f;
+                    float halfZ = grid2.Height * grid2.CellSize * 0.5f;
+                    camCtrl.SetMapBounds(halfX, halfZ);
+                }
+
+                camCtrl.FollowHero = true;
+            }
+
 #if UNITY_EDITOR
             Debug.Log($"[LevelRunner] spawned hero '{heroType.Id}' at {spawnPos}");
 #endif
