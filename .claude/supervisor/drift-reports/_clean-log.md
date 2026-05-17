@@ -428,3 +428,89 @@ NOTE: timing cron `8a918f1a` = `7,37 * * * *` → fire auto à :07 et :37 de cha
 2026-05-14 14h25 — scrute /loop #165. **0 new commit** depuis #164 (HEAD `0effb0b8`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-14 14h55 — scrute /loop #166. **2 new commits** depuis #165 (HEAD `e186bcac`) : `d8e3a33c` fix(unity-6.4) batch deprecation fixes (FindFirstObjectByType→FindAnyObjectByType, FindObjectsSortMode, GetInstanceID, 2 nullable warnings) — résout ~40 warnings CS0618. `e186bcac` fix(ui)(P0-UI-2) SchoolSelectController self-bootstrap UIDocument + Fire fallback. LevelRunner.cs modifié intentionnellement par Mike/linter. 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-14 15h25 — scrute /loop #167. **2 new commits** depuis #166 (HEAD `f9dfc61f`) : `bface57c` + `f9dfc61f` fix(worldmap)(P0-UI-1) — RunMap layout (load RunMap.uss + hide WorldMap header/tiles in run mode + inject .runmap-* CSS). 39 worktrees. Refs OK. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-15 15h55 — scrute /loop #168. **0 new commit** depuis #167 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-15 16h25 — scrute /loop #169. **0 new commit** depuis #168 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-15 16h55 — scrute /loop #170. **0 new commit** depuis #169 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-15 17h25 — scrute /loop #171. **0 new commit** depuis #170 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-15 17h55 — scrute /loop #172. **0 new commit** depuis #171 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-15 18h25 — scrute /loop #173. **0 new commit** depuis #172 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 18h55 — scrute /loop #174. **0 new commit** depuis #173 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 19h25 — scrute /loop #175. **0 new commit** depuis #174 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 19h55 — scrute /loop #176. **0 new commit** depuis #175 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 20h25 — scrute /loop #177. **0 new commit** depuis #176 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 20h55 — scrute /loop #178. **0 new commit** depuis #177 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 21h25 — scrute /loop #179. **0 new commit** depuis #178 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 21h55 — scrute /loop #180. **0 new commit** depuis #179 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 22h25 — scrute /loop #181. **0 new commit** depuis #180 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 22h55 — scrute /loop #182. **0 new commit** depuis #181 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-16 23h25 — scrute /loop #183. **0 new commit** depuis #182 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 23h55 — scrute /loop #184. **0 new commit** depuis #183 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 00h25 — scrute /loop #185. **0 new commit** depuis #184 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 00h55 — scrute /loop #186. **0 new commit** depuis #185 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 01h25 — scrute /loop #187. **0 new commit** depuis #186 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 01h55 — scrute /loop #188. **0 new commit** depuis #187 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 02h25 — scrute /loop #189. **0 new commit** depuis #188 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 02h55 — scrute /loop #190. **0 new commit** depuis #189 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 03h25 — scrute /loop #191. **0 new commit** depuis #190 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 03h55 — scrute /loop #192. **0 new commit** depuis #191 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 04h25 — scrute /loop #193. **0 new commit** depuis #192 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 04h55 — scrute /loop #194. **0 new commit** depuis #193 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 05h25 — scrute /loop #195. **0 new commit** depuis #194 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 05h55 — scrute /loop #196. **0 new commit** depuis #195 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 06h25 — scrute /loop #197. **0 new commit** depuis #196 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 06h55 — scrute /loop #198. **0 new commit** depuis #197 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 07h25 — scrute /loop #199. **0 new commit** depuis #198 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 07h55 — scrute /loop #200 🎉. **0 new commit** depuis #199 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**. (Milestone : 200 scrutes superviseur consécutifs sans drift confirmé.)
+
+2026-05-17 08h25 — scrute /loop #201. **0 new commit** depuis #200 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 08h55 — scrute /loop #202. **0 new commit** depuis #201 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 09h25 — scrute /loop #203. **0 new commit** depuis #202 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 09h55 — scrute /loop #204. **0 new commit** depuis #203 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 10h25 — scrute /loop #205. **0 new commit** depuis #204 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 10h55 — scrute /loop #206. **0 new commit** depuis #205 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 11h25 — scrute /loop #207. **0 new commit** depuis #206 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 11h55 — scrute /loop #208. **0 new commit** depuis #207 (HEAD `f9dfc61f`). 39 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-17 12h25 — scrute /loop #209 (hors-tick via Mike Play paste). **🚨 D11 SÉVÈRE confirmé** : ~25 warnings MonoSingleton auto-created + 4 errors AudioMixer Exposed Name mismatch (Master_Volume vs MasterVol) + 2× WaveManager No LevelData + matériaux URP rose + WorldMapController pollue HUD Main scene + caméra vitesse ×N + level-grid UXML manquant + script reference Unknown. Audit Explore : Main.unity contient 39 GO d'état pré-Phase 5, `Assets/Editor/BuildMainSceneTool.cs` (70+ EnsureSingleton) JAMAIS run post-Phase 5 + ne couvre PAS 6 UI controllers Phase 5 (HeroPortraitController, TowerHoverController, GhostPreviewController, PlacementHighlight, SchoolSelectController, RunModeController). **Plan Recovery posé** : `.claude/plans/phase5-recovery-2026-05-17.md` (6 tickets P0 parallèles Wave R + étape Mike post-merge). **Drift report formel** : `.claude/supervisor/drift-reports/2026-05-17-12h25-D11-runtime-broken.md`. **T1 Mike chat live** envoyée. **Next** : Mike colle /goal Recovery dans nouvelle session crowd-defense.
