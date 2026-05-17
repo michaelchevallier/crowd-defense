@@ -26,13 +26,16 @@ namespace CrowdDefense.Systems
             _followEnabled = PlayerPrefs.GetInt(PrefKey, 0) == 1;
         }
 
+        private Vector3 _followVelocity;
+
         private void LateUpdate()
         {
             if (!_followEnabled || Hero.Current == null)
                 return;
 
             Vector3 target = Hero.Current.transform.position + followOffset;
-            transform.position = Vector3.Lerp(transform.position, target, Time.deltaTime * 5f);
+            transform.position = Vector3.SmoothDamp(transform.position, target,
+                ref _followVelocity, 0.2f);
         }
 
         // ── Public API ────────────────────────────────────────────────────────

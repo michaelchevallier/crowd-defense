@@ -43,6 +43,7 @@ namespace CrowdDefense.Visual
         private Vector3     _defaultPosition;
         private Quaternion  _defaultRotation;
         private float       _defaultY;
+        private Vector3     _followVelocity;  // smoothdamp velocity for hero follow
 
         private const string KFollowHero = "camera_follow_hero_v1";
         private const float  FollowResumeDelay = 5f;
@@ -326,8 +327,8 @@ namespace CrowdDefense.Visual
             if (_hero == null) return;
             var target = _hero.position;
             var desired = new Vector3(target.x, transform.position.y, target.z - 12f);
-            transform.position = Vector3.Lerp(transform.position, desired,
-                followLerpSpeed * Time.deltaTime);
+            transform.position = Vector3.SmoothDamp(transform.position, desired,
+                ref _followVelocity, 0.2f);
         }
 
         // ── Screen shake ─────────────────────────────────────────────────────
