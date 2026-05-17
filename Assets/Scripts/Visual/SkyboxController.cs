@@ -71,15 +71,44 @@ namespace CrowdDefense.Visual
 
             var mat = _skyboxMap.TryGetValue(theme, out var m) ? m : null;
 
+            // R2-recovery : if Inspector slot is null AND no scene-default skybox is set,
+            // try to load the theme material from Resources/Skybox so the camera doesn't
+            // render flat clear-colour. Editor menu RunAll copies .mat assets into that path.
+            if (mat == null)
+            {
+                string key = theme switch
+                {
+                    LevelTheme.Plaine     => "skybox_plaine",
+                    LevelTheme.Foret      => "skybox_foret",
+                    LevelTheme.Desert     => "skybox_desert",
+                    LevelTheme.Volcan     => "skybox_volcan",
+                    LevelTheme.Apocalypse => "skybox_apocalypse",
+                    LevelTheme.Espace     => "skybox_espace",
+                    LevelTheme.Submarin   => "skybox_submarin",
+                    LevelTheme.Medieval   => "skybox_medieval",
+                    LevelTheme.Cyberpunk  => "skybox_cyberpunk",
+                    LevelTheme.Foire      => "skybox_foire",
+                    _                     => "skybox_plaine",
+                };
+                mat = Resources.Load<Material>("Skybox/" + key);
+                if (mat == null) mat = Resources.Load<Material>(key);
+            }
+
             if (mat != null)
             {
                 RenderSettings.skybox = mat;
             }
-            else
+            else if (RenderSettings.skybox == null)
             {
-                // Placeholder: keep current skybox if assigned, else leave as-is.
+                // R2-recovery : last resort — built-in procedural skybox so screen isn't flat blue.
+                var procedural = Shader.Find("Skybox/Procedural");
+                if (procedural != null)
+                {
+                    var fallback = new Material(procedural) { name = "SkyboxFallback_Procedural" };
+                    RenderSettings.skybox = fallback;
+                }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[SkyboxController] No material assigned for theme {theme} — using existing skybox.");
+                Debug.LogWarning($"[SkyboxController] No material assigned for theme {theme} — built procedural fallback.");
 #endif
             }
 

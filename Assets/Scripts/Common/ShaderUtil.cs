@@ -18,13 +18,14 @@ namespace CrowdDefense.Common
         }
 
         // Port de ToonMaterial.js : cel-shading 3 steps shadow/mid/bright
-        // Résout d'abord le nouveau Toon/Lit, fallback vers l'ancien CrowdDefense/ToonCelShading
+        // Résout d'abord le nouveau Toon/Lit, fallback vers l'ancien CrowdDefense/ToonCelShading.
+        // R2-recovery : Standard shader renders MAGENTA on URP — fallback URP/Lit instead.
         public static Shader GetToonShader()
         {
             if (_toonShader == null)
                 _toonShader = Shader.Find("CrowdDefense/Toon/Lit")
                            ?? Shader.Find("CrowdDefense/ToonCelShading")
-                           ?? Shader.Find("Standard");
+                           ?? GetLitShader();
             return _toonShader!;
         }
 

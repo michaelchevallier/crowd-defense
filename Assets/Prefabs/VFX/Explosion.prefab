@@ -3892,6 +3892,56 @@ ParticleSystem:
       type: 2
       properties: 0
       emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
+    - serializedVersion: 3
+      emitter: {fileID: 0}
+      type: 2
+      properties: 0
+      emitProbability: 1
   LightsModule:
     enabled: 0
     ratio: 0

@@ -417,7 +417,7 @@ namespace CrowdDefense.Systems
             }
 
             int resolvedPathIdx = ResolvePathIdx(wavePortalIdx);
-            Vector3 spawnPos = pm.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
+            Vector3 spawnPos = pm.GetWaypointOnPath(resolvedPathIdx, 0);
 
             _spawnCounter++;
             _waveTotalSpawned++;
@@ -482,7 +482,7 @@ namespace CrowdDefense.Systems
 
             int resolvedPathIdx = ResolvePathIdx(wave.portalIdx);
             if (PathManager.Instance == null || EnemyPool.Instance == null) yield break;
-            Vector3 spawnPos = PathManager.Instance.GetWaypointOnPath(resolvedPathIdx, 0) + Vector3.up * 0.5f;
+            Vector3 spawnPos = PathManager.Instance.GetWaypointOnPath(resolvedPathIdx, 0);
             var enemy = EnemyPool.Instance.SpawnFromType(pick, spawnPos, resolvedPathIdx, _currentWaveScaleMul);
             enemy.ApplySpeedMultiplier(speedMul);
             _activeEnemies.Add(enemy);

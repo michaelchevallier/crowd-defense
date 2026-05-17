@@ -51,6 +51,10 @@ namespace CrowdDefense.Systems
             _ = TowerHoverController.Instance;    // ensure hover controller exists
             _ = GhostPreviewController.Instance;  // ensure ghost preview exists
             _ = PlacementHighlight.Instance;      // ensure placement highlight exists
+
+            // R2-recovery : auto-load TowerRegistry from Resources if Inspector slot empty.
+            if (towerRegistry == null)
+                towerRegistry = Resources.Load<TowerRegistry>("TowerRegistry");
         }
 
         private void Update()

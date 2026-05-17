@@ -243,6 +243,14 @@ namespace CrowdDefense.Systems
             if (!_matCache.TryGetValue(key, out var m))
             {
                 m = BuildMaterial(ch, theme);
+                // R2-recovery : guard against Hidden/InternalErrorShader (magenta on URP) —
+                // swap to URP Lit and recolour from CellColor so the tile is at least visible.
+                if (m.shader == null || m.shader.name.StartsWith("Hidden/InternalErrorShader"))
+                {
+                    var lit = ShaderUtil.GetLitShader();
+                    if (lit != null) m.shader = lit;
+                    m.SetColor("_BaseColor", CellColor(ch));
+                }
                 _matCache[key] = m;
             }
             return m;

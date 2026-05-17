@@ -49,6 +49,11 @@ namespace CrowdDefense.UI
             if (Root == null) return;
             toolbarRoot = Root.Q<VisualElement>("tower-toolbar");
 
+            // R2-recovery : Inspector slot may be empty after BuildMainSceneTool wiring —
+            // load the canonical TowerRegistry asset from Resources so the toolbar still builds.
+            if (towerRegistry == null)
+                towerRegistry = Resources.Load<TowerRegistry>("TowerRegistry");
+
             if (towerRegistry == null || toolbarRoot == null)
             {
 #if UNITY_EDITOR

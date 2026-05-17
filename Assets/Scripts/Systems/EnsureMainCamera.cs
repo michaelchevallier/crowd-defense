@@ -35,7 +35,9 @@ namespace CrowdDefense.Systems
             var go = new GameObject("MainCamera-Auto");
             go.tag = "MainCamera";
             var cam = go.AddComponent<Camera>();
-            cam.clearFlags = CameraClearFlags.SolidColor;
+            // R2-recovery : Skybox clear flag so RenderSettings.skybox actually renders
+            // (V3 parity). Background color kept as safety net if no skybox is assigned.
+            cam.clearFlags = CameraClearFlags.Skybox;
             cam.backgroundColor = new Color(0.06f, 0.07f, 0.09f, 1f);
             cam.cullingMask = ~0;
             cam.nearClipPlane = 0.1f;
