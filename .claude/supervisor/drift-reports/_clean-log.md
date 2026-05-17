@@ -536,3 +536,5 @@ Action Mike requise :
 4. Play mode — vérifier camera follow naturel, plus de spam log MonoSingleton, plus erreur level-grid
 
 Reste à investiguer si rose persiste : R0-4 a livré tooling diag mais pas la cause runtime (probablement URP Always Included Shaders ou material instance runtime).
+
+2026-05-17 13h25 — scrute /loop hors-tick. **Wave R 6/6 R0 tickets mergés** ✅ (R0-1 `e0368732`, R0-2 `8da3e2e8`, R0-3 `427be5cc`, R0-4.1/2/3 `ab922de4`+`5fc8c5d0`+`df25ebc2`, R0-5 `c960e28e`+`2b947764` superviseur followup, R0-6 `73eca6a1`). HEAD `e06b12fb`. **Pas de final report** dans `.claude/qa/reports/` — session exec a probablement terminé silencieusement. **Nouvelle erreur runtime Mike paste** : GLTFast `Chest_Wood.gltf` `SortAndNormalizeBoneWeightsJob` race condition — bug du package `com.unity.cloud.gltfast@0847aee0f6da` (Unity Job Safety violation côté package, pas code Phase 5). MCP-FOR-UNITY HTTP server UP sur 8080. **Drift Wave R 0/12** ✅. GLTFast issue = D11 secondaire non couvert par Wave R, propose R0-7 si Mike valide.
