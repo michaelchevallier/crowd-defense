@@ -148,17 +148,20 @@ namespace CrowdDefense.Systems
             foreach (var mr in _slabRenderers)
             {
                 mr.GetPropertyBlock(mpb);
-                // Blend tint with the material's base color to preserve visibility.
-                // If material has no texture, this ensures the slab remains visible.
-                Color baseColor = mr.sharedMaterial?.GetColor("_BaseColor") ?? Color.white;
-                Color blended = new Color(
-                    baseColor.r * tint.r,
-                    baseColor.g * tint.g,
-                    baseColor.b * tint.b,
-                    baseColor.a
-                );
-                mpb.SetColor("_BaseColor", blended);
-                mr.SetPropertyBlock(mpb);
+                // Only blend if material supports _BaseColor (animated tiles like Toon_Water/Toon_Lava use _Tint instead).
+                var mat = mr.sharedMaterial;
+                if (mat != null && mat.HasProperty("_BaseColor"))
+                {
+                    Color baseColor = mat.GetColor("_BaseColor");
+                    Color blended = new Color(
+                        baseColor.r * tint.r,
+                        baseColor.g * tint.g,
+                        baseColor.b * tint.b,
+                        baseColor.a
+                    );
+                    mpb.SetColor("_BaseColor", blended);
+                    mr.SetPropertyBlock(mpb);
+                }
             }
         }
 

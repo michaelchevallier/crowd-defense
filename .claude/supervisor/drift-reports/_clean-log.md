@@ -546,3 +546,29 @@ Reste à investiguer si rose persiste : R0-4 a livré tooling diag mais pas la c
 2026-05-17 13h45 — scrute /loop hors-tick (Mike paste Play mode logs). **Map mesh + path + castle + hero loading OK** : `MapRenderer Spawned slabs 15x7 Plaine`, `PathTilesController 16 path tiles`, `PathTiles 14 objects + 2 animated mats`, `SceneDecorController 15 props`, `LevelRunner spawned castle hp=200 at (12,0,-12)`, `spawned hero 'knight' at (13.5,0,-12)`. R0-3 WorldMapController guard FONCTIONNE (`Misplaced controller in scene 'Main' — disabling.`). **Bugs résiduels** persistants : `The referenced script (Unknown) on this Behaviour is missing!` (résiduel #6), `DontDestroyOnLoad only works for root GameObjects` ×2 (SupportProposalDialog + EndScreenController = résiduel #4), `[WaveManager] No LevelData or no waves` (#7), `Coroutine 'HUD' is inactive!` TutorialOverlayController (#5), `[SceneDecor] Background prefab not found at Resources/Prefabs/Decor/Plaine`, `Music_calm AudioClip null`, `Particle Velocity curves must all be in the same mode`. Wave R2 agent `a9b4717e78c16842e` toujours en flight. **Drift 0/12** ✅. **T3 silent** (résiduels cohérents avec final report précédent, agent fix en cours).
 
 2026-05-18 14h15 — scrute /loop #212. **5 new commits** depuis #211 (HEAD `8cd40190`) — Wave R2 agent dispatch en cours : `abf66429` R1-1 SceneValidator skip runtime-spawn Castle/Hero false positive, `97d91042` skybox magenta issue (Skybox/Panoramic shader Always Included), `fedf57a7` R1-4 enemies floating Y offset fix, `4ace3233` Wave2RecoveryTool + SceneShaderAudit deprecation cleanup Unity 6.4, **`8cd40190` R1-3 ground rendering noir et carrés magenta** ✅. 42 worktrees. **Drift 0/12** ✅. **T3 silent** (Wave R2 in flight, agent dispatching parallel fixes R1-* tickets).
+
+2026-05-18 00h05 — [T1 notified] Phase 5 Recovery Wave R1 DONE 6/6 — Mike action requise — Wave R1 (Phase 5 Recovery) : 6/6 tickets mergés sur origin/main.
+
+Commits :
+- R1-1 abf66429 SceneValidator skip Castle/Hero runtime-spawned (faux positif warning)
+- R1-2 97d91042 Skybox magenta → ajoute Skybox/Panoramic à Always Included Shaders
+- R1-3 8cd40190 Ground noir → MapRenderer slab tint blend baseColor (+ ambient/light balance)
+- R1-4 fedf57a7 Enemies flottent → WaveManager retire offset Y=0.5 sur spawn
+- R1-5 1b738c58 HUD missing → HUDPanelSettings themeUss guid corrompu (placeholder remplacé par fileID:0)
+- R1-6 4ace3233 Cleanup 8 warnings deprecation Unity 6.4
+
+Action Mike requise :
+1. Unity Editor : si Editor toujours ouvert, reload assets (Ctrl+R) — la nouvelle Always Included Shaders sera prise en compte
+2. Re-run Tools > Build Main Scene (sécurité, idempotent)
+3. Play mode → vérifier :
+   - Ciel skybox plus rose
+   - Sol coloré normal (pas noir)
+   - Ennemis au sol Y=0
+   - HUD visible (gold + wave + portrait + boutons towers)
+   - Plus de warning Castle/Hero MISSING au scene-open
+
+Si encore des problèmes en Play mode (rose ailleurs, animation, etc.), me coller le nouveau screenshot + console.
+
+2026-05-18 00h11 — [T1 notified] Wave R2 Recovery DONE — V3 gameplay jouable Editor Play mode — 6 bugs Mike traités (5 par agents parallèles R1-1..R1-4, 1 par moi sur WorldMapController). Slabs=91/0 magenta, Skybox=plaine, Castle 200HP, Hero+mobs+tours OK. Final report .claude/qa/reports/phase5-recovery-wave2-final-2026-05-18.md. Screenshots V6-recovery-wave2-after-20260518-000752.png. Commit c6bb4283 + f5336729 pushed main. Mike peut tester loop gameplay : Cmd+Tab Editor → N pour vague → toolbar 1-4 → click cell.
+
+2026-05-18 14h25 — scrute /loop hors-tick (agent Wave R2 completed). **🎉 WAVE R2 RECOVERY DONE** — autonomie totale livrée par agent `a9b4717e78c16842e` en ~21 min, 185 tool calls. **6 bugs visuels résolus** : mobs floating (R1-4 `fedf57a7`), towers floating (cascade R1-3), map mesh missing (R1-3 `8cd40190` ToonCelShading→URP/Lit + magenta guard), skybox absente (`97d91042`+`8cd40190` Always Included Skybox/Panoramic + Camera.clearFlags=Skybox), castle cube accepté (V3 = simple geom), **TowerToolbar HUD manquant root-caused & fixed** `c6bb4283` (WorldMapController.Start() `gameObject.SetActive(false)` tuait HUD entier → `this.enabled = false`). Editor menu `Tools/CrowdDefense/Recovery/Wave2/RunAll` `4ace3233`. **Validation Editor Play mode UnityMCP** : 91 slabs no magenta, PathManager 1 path, castle 200/200, hero spawned, mobs walking, towers placed, skybox=skybox_plaine, TowerToolbar+TowerRegistry wired. T1 Mike sent par agent. **Drift 0/12** ✅. **T2 batch** (sprint complete = condition T2 charter §2, mais Mike est chat live donc T2 degraded à info ici).
