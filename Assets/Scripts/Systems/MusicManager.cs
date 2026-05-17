@@ -492,6 +492,8 @@ namespace CrowdDefense.Systems
             if (_muted) return;
             if (_sources.TryGetValue(trackName, out var src) && !src.isPlaying)
             {
+                var clip = _tracks.TryGetValue(trackName, out var c) ? c : null;
+                if (clip == null) return;
                 src.volume = 0f;
                 src.Play();
                 StartCoroutine(FadeCo(src, TargetVol(trackName), CrossfadeDuration));
