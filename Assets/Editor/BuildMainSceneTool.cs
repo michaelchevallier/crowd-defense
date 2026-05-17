@@ -355,7 +355,8 @@ namespace CrowdDefense.Editor
                 RenderSettings.skybox = skyboxMat;
 
             RenderSettings.ambientMode      = AmbientMode.Skybox;
-            RenderSettings.ambientIntensity = 1.2f;
+            // Ambient intensity reduced to 1.0 to prevent overexposure when Directional Light is 1.5f
+            RenderSettings.ambientIntensity = 1.0f;
 
             // Default (Plaine) — neutral daylight tint
             RenderSettings.ambientLight = ThemeAmbientColor(LevelTheme.Plaine);

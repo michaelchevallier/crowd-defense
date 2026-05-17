@@ -140,6 +140,7 @@ namespace CrowdDefense.Systems
 
         // Applies a world-based colour tint to all floor slabs via MaterialPropertyBlock (zero-alloc per-instance override).
         // W1-2: grass green, W3-4: sand desert, W5-6: snow ice, W7-8: volcanic rock, W9+: void dark.
+        // Blends tint with existing material color to preserve visibility if base material is already colored.
         public void ApplyWorldTheme(int worldId)
         {
             var tint = WorldThemeTint(worldId);
@@ -147,7 +148,16 @@ namespace CrowdDefense.Systems
             foreach (var mr in _slabRenderers)
             {
                 mr.GetPropertyBlock(mpb);
-                mpb.SetColor("_BaseColor", tint);
+                // Blend tint with the material's base color to preserve visibility.
+                // If material has no texture, this ensures the slab remains visible.
+                Color baseColor = mr.sharedMaterial?.GetColor("_BaseColor") ?? Color.white;
+                Color blended = new Color(
+                    baseColor.r * tint.r,
+                    baseColor.g * tint.g,
+                    baseColor.b * tint.b,
+                    baseColor.a
+                );
+                mpb.SetColor("_BaseColor", blended);
                 mr.SetPropertyBlock(mpb);
             }
         }

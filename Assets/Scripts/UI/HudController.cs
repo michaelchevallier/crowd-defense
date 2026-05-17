@@ -185,7 +185,10 @@ namespace CrowdDefense.UI
 
         private void Start()
         {
-            ResolveUI();
+            if (!ResolveUI())
+            {
+                Debug.LogError("[HudController] Failed to resolve UI — UIDocument or rootVisualElement is null");
+            }
         }
 
         protected override void OnUIReady()
