@@ -130,7 +130,9 @@ namespace CrowdDefense.Visual
         private readonly List<Tower> _towers = new();
 
         // Per-renderer MaterialPropertyBlock pool (zero alloc per frame).
-        private readonly MaterialPropertyBlock _mpb = new();
+        // NOTE: must NOT use field-initializer — MaterialPropertyBlock's ctor calls CreateImpl
+        // which Unity 6 forbids during MonoBehaviour construction. Initialised in Awake.
+        private MaterialPropertyBlock _mpb = null!;
 
         // Cached hero reference (lazy, re-checked if null).
         private Hero? _hero;
@@ -143,6 +145,11 @@ namespace CrowdDefense.Visual
 
         private static readonly int AlphaId = Shader.PropertyToID("_Alpha");
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+
+        protected override void OnAwakeSingleton()
+        {
+            _mpb = new MaterialPropertyBlock();
+        }
 
         // Called by Tower.Init after spawning so SceneDecor can track it for xray.
         public void RegisterTower(Tower t)
