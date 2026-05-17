@@ -23,35 +23,35 @@ namespace CrowdDefense.Editor
         {
             ["Main"] = new Entry[]
             {
-                new("CrowdDefense.Systems.LevelRunner, Assembly-CSharp"),
-                new("CrowdDefense.Systems.Economy, Assembly-CSharp"),
-                new("CrowdDefense.Systems.WaveManager, Assembly-CSharp"),
-                new("CrowdDefense.Systems.PlacementController, Assembly-CSharp"),
-                new("CrowdDefense.Systems.MapRenderer, Assembly-CSharp"),
-                new("CrowdDefense.Systems.EnemyPathingSystem, Assembly-CSharp"),
-                new("CrowdDefense.Systems.Synergies, Assembly-CSharp"),
-                new("CrowdDefense.Systems.AudioController, Assembly-CSharp"),
-                new("CrowdDefense.Systems.MusicManager, Assembly-CSharp"),
-                new("CrowdDefense.UI.HudController, Assembly-CSharp"),
-                new("CrowdDefense.Entities.Castle, Assembly-CSharp"),
-                new("CrowdDefense.Entities.Hero, Assembly-CSharp"),
+                new("CrowdDefense.Systems.LevelRunner, CrowdDefense"),
+                new("CrowdDefense.Systems.Economy, CrowdDefense"),
+                new("CrowdDefense.Systems.WaveManager, CrowdDefense"),
+                new("CrowdDefense.Systems.PlacementController, CrowdDefense"),
+                new("CrowdDefense.Systems.MapRenderer, CrowdDefense"),
+                new("CrowdDefense.Systems.EnemyPathingSystem, CrowdDefense"),
+                new("CrowdDefense.Systems.Synergies, CrowdDefense"),
+                new("CrowdDefense.Systems.AudioController, CrowdDefense"),
+                new("CrowdDefense.Systems.MusicManager, CrowdDefense"),
+                new("CrowdDefense.UI.HudController, CrowdDefense"),
+                new("CrowdDefense.Entities.Castle, CrowdDefense"),
+                new("CrowdDefense.Entities.Hero, CrowdDefense"),
             },
             ["Menu"] = new Entry[]
             {
-                new("CrowdDefense.Systems.AudioController, Assembly-CSharp"),
-                new("CrowdDefense.Systems.MusicManager, Assembly-CSharp"),
-                new("CrowdDefense.UI.MenuController, Assembly-CSharp"),
-                new("CrowdDefense.UI.HudController, Assembly-CSharp", optional: true),
+                new("CrowdDefense.Systems.AudioController, CrowdDefense"),
+                new("CrowdDefense.Systems.MusicManager, CrowdDefense"),
+                new("CrowdDefense.UI.MenuController, CrowdDefense"),
+                new("CrowdDefense.UI.HudController, CrowdDefense", optional: true),
             },
             ["Loader"] = new Entry[]
             {
-                new("CrowdDefense.Systems.LoaderToMenu, Assembly-CSharp"),
+                new("CrowdDefense.Systems.LoaderToMenu, CrowdDefense"),
             },
             ["WorldMap"] = new Entry[]
             {
-                new("CrowdDefense.UI.WorldMapController, Assembly-CSharp"),
-                new("CrowdDefense.Systems.AudioController, Assembly-CSharp"),
-                new("CrowdDefense.Systems.MusicManager, Assembly-CSharp"),
+                new("CrowdDefense.UI.WorldMapController, CrowdDefense"),
+                new("CrowdDefense.Systems.AudioController, CrowdDefense"),
+                new("CrowdDefense.Systems.MusicManager, CrowdDefense"),
             },
         };
 
