@@ -238,8 +238,12 @@ namespace CrowdDefense.Visual
         // ── WASD / Arrow keys pan + VirtualJoystick external pan ──────────────
         private void HandlePan()
         {
-            float h = Input.GetAxisRaw("Horizontal");   // A/D + Left/Right
-            float v = Input.GetAxisRaw("Vertical");     // W/S + Up/Down
+            // Skip keyboard pan when a controllable Hero is present — those axes drive the hero.
+            // Arrow keys still pan via the EdgeScroll / external pan paths; WASD goes to Hero only.
+            bool heroOwnsKeyboard = Hero.Current != null && Hero.Current.isActiveAndEnabled;
+
+            float h = heroOwnsKeyboard ? 0f : Input.GetAxisRaw("Horizontal");
+            float v = heroOwnsKeyboard ? 0f : Input.GetAxisRaw("Vertical");
 
             // Merge keyboard axes with virtual joystick (clamped to -1..1)
             h = Mathf.Clamp(h + _externalPan.x, -1f, 1f);

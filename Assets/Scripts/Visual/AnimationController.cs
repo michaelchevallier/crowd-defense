@@ -70,9 +70,18 @@ namespace CrowdDefense.Visual
             }
             else
             {
-                Debug.LogError(
-                    $"[AnimationController] Pas de controller pour '{rawName}' " +
-                    $"à Resources/{k_ControllerBasePath} — run 'Tools/CrowdDefense/Build Animator Controllers'.");
+                // Fallback to BaseCharacter generic controller so SkinnedMeshRenderer doesn't
+                // render magenta (URP default when shader skinning has no animator binding).
+                var fallback = Resources.Load<RuntimeAnimatorController>(k_ControllerBasePath + "BaseCharacter");
+                if (fallback != null)
+                {
+                    animator.runtimeAnimatorController = fallback;
+                }
+#if UNITY_EDITOR
+                Debug.LogWarning(
+                    $"[AnimationController] Controller '{rawName}' missing — fallback BaseCharacter applied. " +
+                    $"Run 'Tools/CrowdDefense/Build Animator Controllers' to generate per-type controllers.");
+#endif
             }
 
             return animator;
@@ -125,7 +134,7 @@ namespace CrowdDefense.Visual
             var controller = anim.runtimeAnimatorController;
             if (controller == null)
             {
-                Debug.LogError($"[AnimationController] {entityName ?? "Entity"}: runtimeAnimatorController is null — controller not assigned.");
+                Debug.LogWarning($"[AnimationController] {entityName ?? "Entity"}: runtimeAnimatorController is null — entity may render T-pose. Build Animator Controllers if missing.");
                 return false;
             }
 
