@@ -56,7 +56,7 @@ namespace CrowdDefense.EditorTools.Recovery
             var hud = UnityEngine.Object.FindAnyObjectByType<UnityEngine.UIElements.UIDocument>();
             var lr = UnityEngine.Object.FindAnyObjectByType<LevelRunner>();
             int missing = 0;
-            foreach (var go in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            foreach (var go in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Exclude))
             {
                 foreach (var c in go.GetComponents<Component>()) if (c == null) missing++;
             }
@@ -187,7 +187,7 @@ namespace CrowdDefense.EditorTools.Recovery
         public static void ScrubMissingScripts()
         {
             int total = 0;
-            foreach (var go in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+            foreach (var go in UnityEngine.Object.FindObjectsByType<GameObject>(FindObjectsInactive.Exclude))
             {
                 int removed = GameObjectUtility.RemoveMonoBehavioursWithMissingScript(go);
                 if (removed > 0)

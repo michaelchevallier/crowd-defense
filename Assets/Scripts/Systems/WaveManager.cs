@@ -87,12 +87,12 @@ namespace CrowdDefense.Systems
             if (levelData == null && LevelRunner.Instance?.CurrentLevel != null)
                 levelData = LevelRunner.Instance.CurrentLevel;
 
-            // Final fallback: load default level W1-1 from registry if still null
+            // Final fallback: load first level from registry if still null
             if (levelData == null)
             {
                 var reg = LevelRegistry.Get();
-                if (reg != null)
-                    levelData = reg.FindById("W1-1");
+                if (reg != null && reg.Levels.Count > 0)
+                    levelData = reg.Levels[0];
             }
 
             if (levelData == null || levelData.Waves.Count == 0)
