@@ -456,7 +456,8 @@ namespace CrowdDefense.Systems
 
         private void HandleWaveCleared(int waveIdx)
         {
-            Hero?.OnWaveEnd();
+            // N41: explicit Unity != null check (?. doesn't use Unity's overloaded ==)
+            if (Hero != null) Hero.OnWaveEnd();
             TransitionTo(GameState.WaveBreak);
             OnWaveEnded?.Invoke(waveIdx + 1);
             TalentSystem.EarnTalentPoint(1);
