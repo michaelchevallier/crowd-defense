@@ -526,7 +526,7 @@ namespace CrowdDefense.EditorTools
             {
                 Append($"phase11 iter={iter} idx={Wm.CurrentWaveIdx}/{Wm.TotalWaves} state={Lr.State} castleHP={CastleI.HP} active={Wm.ActiveEnemies?.Count} pending={Wm.PendingSpawnCount} kills={Wm.WaveKillCount}");
             }
-            if (iter > 200)
+            if (iter > 500)
             {
                 int active = Wm.ActiveEnemies?.Count ?? -1;
                 int pending = Wm.PendingSpawnCount;
