@@ -48,9 +48,9 @@ the validator should now reach `phase11 FINAL VICTORY PASS state=Summary` cleanl
 3. Either : run `Tools/CrowdDefense/QA/V3Loop/Auto/Run-Now`
    OR : relaunch a focused Opus session for steps 8-11 with UnityMCP UP
 
-## Phase 3 + 4 — Code polish (T+0 → T+2h25, DONE)
+## Phase 3 + 4 — Code polish (T+0 → T+2h45, DONE)
 
-15 commits delivered. Detail in next section.
+24 commits delivered. Detail in next section.
 
 ## Commits delivered (N26-N44 + N36b)
 
