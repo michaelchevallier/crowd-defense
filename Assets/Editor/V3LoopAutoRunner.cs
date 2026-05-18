@@ -287,8 +287,10 @@ namespace CrowdDefense.EditorTools
         {
             // Cheat: enough gold for 30+ towers
             Econ!.AddGold(50000);
-            var bps = UnityEngine.Object.FindObjectsByType<CrowdDefense.Entities.BuildPoint>(FindObjectsSortMode.None);
-            // Place as many archers as we have build points (cap 30) — ensures wave 1 clears reliably
+            var bpsAll = UnityEngine.Object.FindObjectsByType<CrowdDefense.Entities.BuildPoint>(FindObjectsSortMode.None);
+            // Sort build points by distance to nearest path waypoint so we cover the path first
+            var pm = CrowdDefense.Systems.PathManager.Instance;
+            var bps = SortByPathProximity(bpsAll, pm);
             int placed = 0;
             int target = Mathf.Min(30, bps.Length);
             for (int i = 0; i < bps.Length && placed < target; i++)
@@ -298,6 +300,30 @@ namespace CrowdDefense.EditorTools
             }
             Append($"phase5 step5 placed={placed} total={Pc!.PlacedTowers.Count} gold={Econ.Gold}");
             NextPhase(6);
+        }
+
+        private static CrowdDefense.Entities.BuildPoint[] SortByPathProximity(
+            CrowdDefense.Entities.BuildPoint[] bps, CrowdDefense.Systems.PathManager? pm)
+        {
+            if (pm == null || pm.Paths.Count == 0) return bps;
+            var wps = pm.Paths[0];
+            float DistToPath(Vector3 pos)
+            {
+                float best = float.MaxValue;
+                for (int i = 0; i < wps.Count; i++)
+                {
+                    float d = (pos - wps[i]).sqrMagnitude;
+                    if (d < best) best = d;
+                }
+                return best;
+            }
+            var arr = new (CrowdDefense.Entities.BuildPoint bp, float d)[bps.Length];
+            for (int i = 0; i < bps.Length; i++)
+                arr[i] = (bps[i], DistToPath(bps[i].transform.position));
+            System.Array.Sort(arr, (a, b) => a.d.CompareTo(b.d));
+            var sorted = new CrowdDefense.Entities.BuildPoint[bps.Length];
+            for (int i = 0; i < arr.Length; i++) sorted[i] = arr[i].bp;
+            return sorted;
         }
 
         private static void StartWave1()
@@ -379,10 +405,12 @@ namespace CrowdDefense.EditorTools
 
             // Place as many towers as possible (different types for AoE diversity)
             Econ!.AddGold(50000);
-            var bps = UnityEngine.Object.FindObjectsByType<CrowdDefense.Entities.BuildPoint>(FindObjectsSortMode.None);
+            var bpsAll = UnityEngine.Object.FindObjectsByType<CrowdDefense.Entities.BuildPoint>(FindObjectsSortMode.None);
+            var bps = SortByPathProximity(bpsAll, CrowdDefense.Systems.PathManager.Instance);
             var reg = Resources.Load<CrowdDefense.Data.TowerRegistry>("TowerRegistry");
             CrowdDefense.Data.TowerType? cannon = null;
             CrowdDefense.Data.TowerType? mage = null;
+            CrowdDefense.Data.TowerType? ballista = null;
             if (reg != null)
             {
                 foreach (var t in reg.Towers)
@@ -390,16 +418,21 @@ namespace CrowdDefense.EditorTools
                     if (t == null) continue;
                     if (t.Id == "cannon") cannon = t;
                     if (t.Id == "mage") mage = t;
+                    if (t.Id == "ballista") ballista = t;
                 }
             }
 
             int extra = 0;
             for (int i = 0; i < bps.Length; i++)
             {
-                if (Pc!.PlacedTowers.Count >= 50) break;
+                if (Pc!.PlacedTowers.Count >= 60) break;
                 Pc.OpenBuildPointPicker(bps[i].Cell);
-                // Mix tower types - cannon for AoE, mage for fast clear
-                var pick = (i % 3 == 0 && cannon != null) ? cannon : (i % 3 == 1 && mage != null) ? mage : Archer!;
+                // Closest to path: cannon (AoE for swarms). Mid: mage (fast/burst). Outer: archer.
+                CrowdDefense.Data.TowerType pick;
+                if (i < 6 && cannon != null) pick = cannon;
+                else if (i < 12 && mage != null) pick = mage;
+                else if (i < 18 && ballista != null) pick = ballista;
+                else pick = Archer!;
                 if (Pc.TryPlaceAtActiveBuildCell(pick)) extra++;
             }
             Append($"phase9 step10-pre extra={extra} total={Pc!.PlacedTowers.Count} (cannon={cannon!=null} mage={mage!=null})");
