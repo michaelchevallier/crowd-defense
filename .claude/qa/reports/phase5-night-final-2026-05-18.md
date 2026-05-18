@@ -9,7 +9,7 @@ You said the goal was parity V3 jouable Editor Play mode by 10:00. I got the gam
 
 The piece I could **not** validate is the last 3 of the 11 loop steps (`mob → castle damage → wave clears → next wave → victory`). That requires real Unity-Editor frames to tick coroutines (Enemy.Combat uses `WaitForSeconds` for the castle-attack telegraph), and the Editor refuses to tick while it's not the foreground app. **Five minutes in front of the Editor should confirm it works.** If it doesn't, the leads are listed below in "If wave never clears".
 
-## What changed tonight (5 commits)
+## What changed tonight (8 commits)
 
 1. **`d59fca87` — fix(visual)(N1): camera looks at map (-Z) + BuildPointMat URP/Unlit**
    - `CameraController.Start` had position `(0, 30, +21)` with 47° pitch → camera looking *away* from the castle (Z=-12). Inverted to `(0, 30, -21)` so the 47° tilt covers the playable area.
@@ -30,6 +30,15 @@ The piece I could **not** validate is the last 3 of the 11 loop steps (`mob → 
 
 5. **`4ffe7f29` — docs(wavemanager)(N5): update fallback comment**
    - The R3-6/R3-7 comment claimed "W1-1 is a tutorial with 0 waves". With N3 fixed, that's wrong. Comment now correctly attributes the original 0-waves observation to the YAML bug and keeps the fallback as a safety net.
+
+6. **`da24549c` — fix(settings)(N6): EditorBuildSettings Loader scene GUID was all-zero**
+   - Loader.unity (build index 0) had its registered GUID listed as `0000…` in EditorBuildSettings.asset. Unity resolves scenes by path so Play mode worked, but builds or any GUID-based scene lookup would skip it. Fix the GUID to match `Loader.unity.meta`.
+
+7. **`1884c640` — chore(qa)(N7): night swarm session report + screenshots + meta**
+   - The report you're reading, the diagnostic screenshots, and the `PlayLoopForceTick.cs.meta` companion file that Unity expected. Also includes one Explosion.prefab reimport (benign serialization upgrade).
+
+8. **`ac9794f1` — fix(visual)(N8): SceneDecor.ClearAll defensive null guards**
+   - Editor.log captures a `NullReferenceException` at `SceneDecor.ClearAll` on every level-start (it's called twice via the level-load coroutine). Couldn't 100% reproduce the path; added `?.Clear()` / `if (_spawnedDecor != null)` guards. Costs nothing and silences the recurring exception. **Worth confirming the log is now clean after a Play/Stop cycle.**
 
 ## 11-step gameplay loop status
 
