@@ -124,7 +124,12 @@ namespace CrowdDefense.Visual
         private static Material MakePathRevealMat()
         {
             var mat = new Material(ShaderUtil.GetToonShader()) { name = "PathReveal" };
-            mat.SetColor(Shader.PropertyToID("_BaseColor"), new Color(1f, 0.95f, 0.70f, 0.35f));
+            // N48: HasProperty guard for fallback shader chain edge cases
+            var col = new Color(1f, 0.95f, 0.70f, 0.35f);
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor(Shader.PropertyToID("_BaseColor"), col);
+            else if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", col);
             mat.enableInstancing = true;
             return mat;
         }
@@ -387,7 +392,12 @@ namespace CrowdDefense.Visual
         private static Material MakeBridgeWaterMat()
         {
             var mat = new Material(ShaderUtil.GetToonShader()) { name = "BridgeWood" };
-            mat.SetColor(Shader.PropertyToID("_BaseColor"), new Color(0.62f, 0.40f, 0.22f));
+            // N48: HasProperty guard
+            var col = new Color(0.62f, 0.40f, 0.22f);
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor(Shader.PropertyToID("_BaseColor"), col);
+            else if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", col);
             mat.enableInstancing = true;
             return mat;
         }
