@@ -71,7 +71,16 @@ namespace CrowdDefense.Visual
                 {
                     var src = srcMats[i];
                     if (src == null) { newMats[i] = null!; continue; }
-                    Texture? srcTex = src.mainTexture;
+                    // N35: Skip outline / silhouette shaders that don't have _MainTex.
+                    // Material.mainTexture getter logs a warning when accessed on materials
+                    // without _MainTex (e.g. OutlineInvertedHull).
+                    if (src.shader != null && src.shader.name.Contains("OutlineInvertedHull"))
+                    {
+                        newMats[i] = src;
+                        continue;
+                    }
+                    // Only read mainTexture if the material exposes _MainTex (avoids log spam).
+                    Texture? srcTex = src.HasProperty("_MainTex") ? src.mainTexture : null;
                     var cached = GetCachedToon(tint, false, srcTex);
                     if (!ReferenceEquals(cached, src)) changed = true;
                     newMats[i] = cached;
