@@ -26,12 +26,12 @@ namespace CrowdDefense.Systems
         public static readonly HashSet<char> Walkable = new() { PATH, PORTAL, CASTLE, BRIDGE_WATER, BRIDGE_LAVA };
         public static readonly HashSet<char> Buildable = new() { GRASS };
 
-        // Cell (col, row) → world Vector3 on XZ plane (Y=0), origin centered, Z inverted for row=0 visually on top.
+        // Cell (col, row) → world Vector3 on XZ plane (Y=0.05f to place entities on slab top), origin centered, Z inverted for row=0 visually on top.
         public static Vector3 CellToWorld(int col, int row, int gridW, int gridH, float cellSize)
         {
             float x = (col - (gridW - 1) / 2f) * cellSize;
             float z = -((row - (gridH - 1) / 2f) * cellSize);
-            return new Vector3(x, 0f, z);
+            return new Vector3(x, 0.05f, z);
         }
 
         public static Vector2Int WorldToCell(Vector3 world, int gridW, int gridH, float cellSize)

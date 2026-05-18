@@ -190,10 +190,10 @@ namespace CrowdDefense.Systems
             _quadMesh = new Mesh { name = "PathTile_Quad" };
             _quadMesh.vertices = new[]
             {
-                new Vector3(-h, 0.02f, -h),
-                new Vector3( h, 0.02f, -h),
-                new Vector3( h, 0.02f,  h),
-                new Vector3(-h, 0.02f,  h),
+                new Vector3(-h, 0.051f, -h),
+                new Vector3( h, 0.051f, -h),
+                new Vector3( h, 0.051f,  h),
+                new Vector3(-h, 0.051f,  h),
             };
             _quadMesh.uv = new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
             _quadMesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
@@ -213,10 +213,10 @@ namespace CrowdDefense.Systems
             _bridgePlankMesh = new Mesh { name = "PathTile_Bridge" };
             _bridgePlankMesh.vertices = new[]
             {
-                new Vector3(-hx, 0.06f, -hz),
-                new Vector3( hx, 0.06f, -hz),
-                new Vector3( hx, 0.06f,  hz),
-                new Vector3(-hx, 0.06f,  hz),
+                new Vector3(-hx, 0.061f, -hz),
+                new Vector3( hx, 0.061f, -hz),
+                new Vector3( hx, 0.061f,  hz),
+                new Vector3(-hx, 0.061f,  hz),
             };
             _bridgePlankMesh.uv = new[] { new Vector2(0, 0), new Vector2(1, 0), new Vector2(1, 1), new Vector2(0, 1) };
             _bridgePlankMesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
@@ -234,10 +234,10 @@ namespace CrowdDefense.Systems
             _streamMesh = new Mesh { name = "PathTile_Stream" };
             _streamMesh.vertices = new[]
             {
-                new Vector3(-h, 0.04f, -h),
-                new Vector3( h, 0.04f, -h),
-                new Vector3( h, 0.04f,  h),
-                new Vector3(-h, 0.04f,  h),
+                new Vector3(-h, 0.05f, -h),
+                new Vector3( h, 0.05f, -h),
+                new Vector3( h, 0.05f,  h),
+                new Vector3(-h, 0.05f,  h),
             };
             _streamMesh.uv = new[] { new Vector2(0, 0), new Vector2(2, 0), new Vector2(2, 2), new Vector2(0, 2) };
             _streamMesh.triangles = new[] { 0, 2, 1, 0, 3, 2 };
