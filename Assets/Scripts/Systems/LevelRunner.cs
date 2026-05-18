@@ -398,7 +398,9 @@ namespace CrowdDefense.Systems
             AudioController.Instance?.Play("castle_lost", 1f);
             JuiceFX.Instance?.Flash(new Color(1f, 0.1f, 0.1f, 0.5f), 600);
             JuiceFX.Instance?.SlowMo(0.3f, 1500);
-            Hero.Current?.TriggerDeathCinematic();
+            // N43b: explicit Unity != null check (Hero is a UnityEngine.Object)
+            var heroCurr = Hero.Current;
+            if (heroCurr != null) heroCurr.TriggerDeathCinematic();
             OnLevelLost?.Invoke();
             SaveLostResult();
             StartCoroutine(DelayedEnterSummary(3f));
