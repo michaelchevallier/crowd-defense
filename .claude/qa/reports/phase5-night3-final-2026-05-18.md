@@ -2,8 +2,8 @@
 
 **Date** : 2026-05-18 (work window 06:55 → 09:30 CEST)
 **Agent** : Opus (Continuation #3, no Task tool available — solo execution)
-**Branch HEAD** : `8ebf25d7`
-**Commits delivered** : **24** (N26-N44 + N35b/c + N36b + N43b/c sub-iters)
+**Branch HEAD** : `1135854f`
+**Commits delivered** : **31** (N26-N51 + N35b/c + N36b + N43b/c sub-iters)
 
 ## TL;DR for Mike (read this first)
 
@@ -80,8 +80,15 @@ the validator should now reach `phase11 FINAL VICTORY PASS state=Summary` cleanl
 | N43b | `a6fc148e` | fix(towers) | LevelRunner.HandleLostEntry — != null vs ?. for Hero.Current. |
 | N43c | `cc3a064c` | fix(towers) | LevelRunner.HandleAllWavesCleared — != null vs ?. for PrimaryCastle. |
 | N44 | `8ebf25d7` | feat(qa) | V3LoopAutoRunner boss safety net — chip 50% maxHP every 30 iters after iter 300 (Boss only, IsBoss check). |
+| N45 | `b6e3da30` | docs | Update night3 report to reflect N40-N44 additions. |
+| N46 | `91f67bea` | chore | clean-log Night swarm #3 milestone — 25 commits delivered. |
+| N47 | `0f7c1549` | docs | Update night-bindings-to-do — expand MissingRef 5-layer defense doc. |
+| N48 | `890a550e` | fix(visual) | PathTiles MakePathRevealMat + MakeBridgeWaterMat — HasProperty(_BaseColor) guards. |
+| N49 | `0fcf6be2` | docs | Update night3 report — fix stale '15 commits' to 24. |
+| N50 | `696f240f` | chore | clean-log Night swarm #3 final state — 29 commits N26-N49. |
+| N51 | `1135854f` | fix(towers) | EventSystem.ApplyAction — != null vs ?. for Castle.Instance + Hero (4 sites). |
 
-All 24 commits on `origin/main` at HEAD `8ebf25d7`.
+All 31 commits on `origin/main` at HEAD `1135854f`.
 
 ## Editor.log issues addressed
 
