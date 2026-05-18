@@ -19,6 +19,7 @@
 .pill {
     flex-direction: column;
     background-color: rgba(0, 0, 0, 0.65);
+    -unity-background-image: none;
     border-radius: 14px;
     padding: 8px 16px;
     min-width: 100px;
@@ -519,6 +520,7 @@
 .hud-mute-btn,
 .hud-encyclopedia-btn {
     background-color: transparent;
+    -unity-background-image: none;
     border-color: rgba(255, 255, 255, 0.2);
     border-width: 1px;
     border-radius: 8px;
@@ -550,6 +552,7 @@
 
 .speed-btn {
     background-color: transparent;
+    -unity-background-image: none;
     border-color: rgba(255, 255, 255, 0.2);
     border-width: 1px;
     border-radius: 8px;
