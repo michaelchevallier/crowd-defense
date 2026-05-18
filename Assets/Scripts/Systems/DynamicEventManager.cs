@@ -394,7 +394,9 @@ namespace CrowdDefense.Systems
             while (_active == forEvent)
             {
                 yield return new WaitForSeconds(interval);
-                Castle.Instance?.TakeDamage(dmgPerTick);
+                // N43: explicit Unity != null check; ?. doesn't use Unity's overloaded ==
+                var castle = Castle.Instance;
+                if (castle != null) castle.TakeDamage(dmgPerTick);
             }
         }
 
