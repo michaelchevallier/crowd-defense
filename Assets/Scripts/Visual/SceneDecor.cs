@@ -195,14 +195,21 @@ namespace CrowdDefense.Visual
 
         public void ClearAll()
         {
-            foreach (var go in _spawnedDecor)
+            // Defensive: any of these could be null if ClearAll fires before Awake/field
+            // initializers (e.g., during MonoSingleton auto-creation in an inactive parent).
+            // Live editor.log captured a NullReferenceException here on level-start; the
+            // fallback path was hard to reproduce but a null check costs nothing.
+            if (_spawnedDecor != null)
             {
-                if (go != null) Destroy(go);
+                foreach (var go in _spawnedDecor)
+                {
+                    if (go != null) Destroy(go);
+                }
+                _spawnedDecor.Clear();
             }
-            _spawnedDecor.Clear();
-            _decorFadeState.Clear();
-            _towers.Clear();
-            _towerXRayState.Clear();
+            _decorFadeState?.Clear();
+            _towers?.Clear();
+            _towerXRayState?.Clear();
             _hero = null;
         }
 
