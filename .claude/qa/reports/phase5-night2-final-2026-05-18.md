@@ -1,13 +1,20 @@
 # Phase 5 Night Swarm #2 — Final Report
-**Run window**: 2026-05-18 03:32–05:40 CEST (~2h08 elapsed)
-**Status**: **10/11 V3 gameplay loop steps validated headless end-to-end** (steps 3,5,6,7,8,9,10 + step 11 partial: 4 of 5 waves clear cleanly)
-**Branch**: `main` @ `16618709` (3 new commits N11, N12, N13 ahead of `5d70fecd`)
+**Run window**: 2026-05-18 03:32–06:04 CEST (~2h32 elapsed)
+**Status**: **10/11 V3 gameplay loop steps validated headless end-to-end + BossSystem.registry wired**
+**Branch**: `main` @ `52da04be` (7 new commits N11-N17 ahead of `5d70fecd`)
 
 ## TL;DR for Mike (read this first)
 
-10 of 11 V3 loop steps now pass automatically in headless Unity Editor. Best run cleared waves 1-3 cleanly with 50 towers (10 archers wave 1 → 50 mixed wave 2+) and made it to wave 4. Step 11 (full 5-wave victory) is fragile because:
-1. Wave 5 boss has no BossDef binding in BossSystem registry (warned once now)
-2. Some runs leave 2-3 mob stragglers that don't die nor reach castle (likely path/range issue or coroutine timing)
+10 of 11 V3 loop steps now pass automatically in headless Unity Editor. Best run cleared waves 1-3 cleanly with 50 towers (10 archers wave 1 → 50 mixed wave 2+) and made it to wave 4. **N17 wired BossSystem.registry directly in Main.unity** so wave 5 boss now publishes `BossEncounteredEvent` correctly (confirmed in last run — `MusicManager.OnBossEncountered` fires).
+
+Step 11 (full 5-wave victory) is still fragile for two reasons unrelated to BossSystem:
+1. Wave 4 (136 mobs with Brutes) overwhelms 46 archers/mage/cannon mix when 1-2 Brutes slip into path zones with thin coverage — towers can't kill them fast enough (per-iter `active=36 kills=2` after wave starts)
+2. The validator places towers using `FindObjectsByType<BuildPoint>` order which doesn't optimize for path coverage; a strategic loadout (cluster archers near castle, ballistas at choke) is needed to reliably finish W1-1
+
+The infrastructure to run headless is solid:
+- **`V3LoopAutoRunner.cs`** survives Unity domain reloads via SessionState
+- Auto-runs on Editor startup via EditorPrefs key `cd_v3loop_auto_on_load`
+- Self-quits via `EditorApplication.Exit(0)`
 
 The infrastructure to run headless is now solid: 
 - **`V3LoopAutoRunner.cs`** survives Unity domain reloads via SessionState
@@ -129,28 +136,24 @@ The same script + same Unity version + same 10-archer config sometimes clears wa
 - Phase 3 polish features (next-level button, gold popup, wave countdown UI, defeat screen UI, WorldMap navigation) — deferred until 11/11 PASS
 - Phase 4 residual cleanup (Roboto SDF noise, particle warning spam, MissingReferenceException) — listed in bindings-to-do.md P1/P2
 
-## Commits delivered (N11–N15)
+## Commits delivered (N11–N17)
 
 | Commit | Type | Effect |
 |--------|------|--------|
 | 09fc92cb | feat(qa) | N11: V3LoopAutoRunner — main validation harness (10/11 steps) |
-| d48e5bfe | fix(bosses) | N12: BossDef m_Script GUID fix + warned-once log spam patch + Boss_W1_Generic asset |
+| d48e5bfe | fix(bosses) | N12: BossDef m_Script GUID fix + warned-once log spam + Boss_W1_Generic asset |
 | 16618709 | fix(qa) | N13: 30-archer phase 5 + per-50-loop diagnostic + AutoLoad revert |
 | 44bad775 | docs(qa) | N14: updated final report (this file) |
 | 4ffb29e5 | feat(qa) | N15: BossSystemRegistryAutoWire utility — `Tools/CrowdDefense/QA/Wire BossSystem Registry` |
+| 96d68460 | docs(qa) | N16: final report add N15 + 2-step path to 11/11 |
+| 52da04be | fix(scene) | **N17: Inspector-wire BossSystem.registry in Main.unity** (all 11 BossDefs bound) |
 
-All pushed to `origin/main` at HEAD = `4ffb29e5`.
+All pushed to `origin/main` at HEAD = `52da04be`.
 
-## How to get 11/11 PASS in 2 steps
+## How to reproduce the validation
 
 ```bash
-# 1. Open Unity manually once and invoke the wire helper:
-#    Tools menu → CrowdDefense → QA → Wire BossSystem Registry
-#    (This scans Assets/ScriptableObjects/Bosses/, loads all BossDef,
-#     wires them into the BossSystem.registry Inspector field,
-#     saves Main.unity)
-
-# 2. Then trigger headless validation:
+# 1. Trigger headless validation:
 defaults write com.unity3d.UnityEditor5.x "cd_v3loop_auto_on_load" -bool true
 defaults write com.unity3d.UnityEditor5.x "cd_v3loop_quit_on_done" -bool true
 open -a "/Applications/Unity/Hub/Editor/6000.4.6f1-arm64/Unity.app" --args -projectPath /Users/mike/Work/crowd-defense
@@ -158,7 +161,18 @@ open -a "/Applications/Unity/Hub/Editor/6000.4.6f1-arm64/Unity.app" --args -proj
 cat /Users/mike/Work/crowd-defense/Library/V3LoopBatchReports/latest-auto.txt
 ```
 
-Expected after the wire step:
+## To get 11/11 PASS (next step for Mike)
+
+The remaining gap is the V3LoopAutoRunner's tower placement strategy. The validator currently uses:
+- Phase 5 (wave 1): `Mathf.Min(30, bps.Length)` archers placed in BuildPoint discovery order
+- Phase 9 (wave 2+): up to 50 mixed towers (archer/cannon/mage every 3rd build point)
+
+This doesn't optimize for path coverage; some build points are far from the path. To beat W1-1:
+1. Sort `bps` by distance to nearest path waypoint (closest first) so wave-1 archers cover the path
+2. Add 2-3 ballista at chokepoints (cells adjacent to the castle in the path)
+3. Upgrade existing towers between waves (use `PlacementController.UpgradeTower` if exposed)
+
+Estimated work: 30-60 min. Once V3LoopAutoRunner reliably beats W1-1, expected line is:
 ```
 phase11 FINAL VICTORY PASS state=Summary idx=5/5 castleHP=>0
 ```
