@@ -406,13 +406,9 @@ namespace CrowdDefense.Visual
             if (fromInspector != null) return fromInspector;
 
             var path   = PrefabRoot + theme.ToString();
-            var loaded = Resources.Load<GameObject>(path);
-#if UNITY_EDITOR
-            if (loaded == null)
-                Debug.LogWarning($"[SceneDecor] Background prefab not found at Resources/{path}. " +
-                                 "Create it via Assets/Prefabs/Decor/ or assign in Inspector.");
-#endif
-            return loaded;
+            return Resources.Load<GameObject>(path);
+            // Note: silently returns null if prefab missing. SceneDecor caller checks null
+            // and falls back to flat ground. No console spam — themes are optional polish.
         }
 
         // FNV-1a 32-bit — same algorithm as V5 hashLevelId.
