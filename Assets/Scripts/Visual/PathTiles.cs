@@ -371,7 +371,12 @@ namespace CrowdDefense.Visual
         private Material MakeFallbackWaterMat()
         {
             var mat = new Material(ShaderUtil.GetToonWaterShader()) { name = "FallbackWater" };
-            mat.SetColor(_shaderBaseColor, new Color(0.18f, 0.42f, 0.80f, 0.88f));
+            // N56: Toon/Water uses _Tint not _BaseColor — HasProperty guard
+            var col = new Color(0.18f, 0.42f, 0.80f, 0.88f);
+            if (mat.HasProperty(_shaderBaseColor))
+                mat.SetColor(_shaderBaseColor, col);
+            else if (mat.HasProperty("_Tint"))
+                mat.SetColor("_Tint", col);
             mat.enableInstancing = true;
             _animatedMats.Add(mat);
             return mat;
@@ -380,7 +385,12 @@ namespace CrowdDefense.Visual
         private Material MakeFallbackLavaMat()
         {
             var mat = new Material(ShaderUtil.GetToonLavaShader()) { name = "FallbackLava" };
-            mat.SetColor(_shaderBaseColor, new Color(0.95f, 0.30f, 0.05f, 1f));
+            // N56: Toon/Lava uses _Tint not _BaseColor — HasProperty guard
+            var col = new Color(0.95f, 0.30f, 0.05f, 1f);
+            if (mat.HasProperty(_shaderBaseColor))
+                mat.SetColor(_shaderBaseColor, col);
+            else if (mat.HasProperty("_Tint"))
+                mat.SetColor("_Tint", col);
             if (mat.HasProperty(_shaderEmission))
                 mat.SetColor(_shaderEmission, new Color(1.0f, 0.25f, 0.0f) * 1.4f);
             mat.enableInstancing = true;
