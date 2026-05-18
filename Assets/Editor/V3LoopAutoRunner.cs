@@ -402,10 +402,11 @@ namespace CrowdDefense.EditorTools
                 Append($"phase8 step9 idx={Wm.CurrentWaveIdx} state={Lr!.State} waiting={Wm.IsWaitingForPlayerStart} castleHP={CastleI.HP}");
                 NextPhase(9);
             }
-            // N36: After loop 300, if we have <=3 stragglers but no progress, force-kill them
-            // via Enemy.TakeDamage(99999) so the wave can clear and validation proceeds.
+            // N36: After loop 300, if we have <=3 stragglers (and spawning is done) but no
+            // progress, force-kill them so the wave can clear and validation proceeds.
             // The headless harness needs to test the LOOP, not perfect tower play.
-            else if (loop > 300 && loop % 10 == 0 && Wm.ActiveEnemies != null && Wm.ActiveEnemies.Count > 0 && Wm.ActiveEnemies.Count <= 3)
+            else if (loop > 300 && loop % 10 == 0 && Wm.PendingSpawnCount == 0
+                     && Wm.ActiveEnemies != null && Wm.ActiveEnemies.Count > 0 && Wm.ActiveEnemies.Count <= 3)
             {
                 int killed = 0;
                 for (int i = Wm.ActiveEnemies.Count - 1; i >= 0; i--)
@@ -522,8 +523,9 @@ namespace CrowdDefense.EditorTools
                 SessionState.SetInt(SsIter11, 0);
                 NextPhase(11);
             }
-            // N36: force-kill stragglers if validation otherwise stuck (≤5 active, loop > 300)
-            else if (loop > 300 && loop % 10 == 0 && Wm.ActiveEnemies != null && Wm.ActiveEnemies.Count > 0 && Wm.ActiveEnemies.Count <= 5)
+            // N36: force-kill stragglers if validation otherwise stuck (≤5 active + spawning done, loop > 300)
+            else if (loop > 300 && loop % 10 == 0 && Wm.PendingSpawnCount == 0
+                     && Wm.ActiveEnemies != null && Wm.ActiveEnemies.Count > 0 && Wm.ActiveEnemies.Count <= 5)
             {
                 int killed = 0;
                 for (int i = Wm.ActiveEnemies.Count - 1; i >= 0; i--)
