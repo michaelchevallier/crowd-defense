@@ -286,3 +286,60 @@ b62d7100 fix(entities)(R-TOWER-B3): tower idle bob frequency clamp 5Hz → 1Hz
 5. Si OK → Phase 6 (decor assets, cursor textures, B6 Bootstrap).
 
 **Watchdog Unity-MCP** : poll every 5min depuis 08:22 CEST jusqu'à 09:55 CEST. Si UP avant 09:30, capture real frames steps 8-11 et écrit `phase5-night5-real-frames-2026-05-18.md`. Sinon silent exit. PAS de T1 (Monitor #3 fait à 09:30).
+
+---
+
+## Post-scriptum SOIR (2026-05-18 19:25 CEST) — Wave B-soir autonomie 48h
+
+Mike paste console + screen RunMap (moitié dorée) à 18:50 CEST → demande autonomie 48h non-stop.
+
+### 6 fixes pushés (commits b62d7100→6c2400c3)
+
+| ID | Commit | Bug | Fix |
+|----|--------|-----|-----|
+| **B8** | 53ed51b0 | Hero idle bob Y cumulative (vole après 5s idle) | Track `_idleBaseY` + `basePos.y = _idleBaseY + bobY` (non-additif) + retire rot idle dance + amp 0.1→0.05 |
+| **B9** | 53ed51b0 | WorldMap RunMap moitié dorée (worldmap-root height:100% bg sombre conflictait avec runmap-* enfants ajoutés à _root) | Cache worldmap-root display:None + _root flexGrow=1 + bg sombre fallback |
+| **B10** | 046ab309 | Warning "Particle Velocity curves must all be same mode" | AmbientParticles + WeatherController : set explicitement vol.y + vol.z en TwoConstants mode (alignés sur vol.x) |
+| **R1C** | 51a8da37 | ~25 warnings `[MonoSingleton] X auto-created` | LoaderToMenu instancie 9 core singletons DontDestroyOnLoad : AudioController, MusicManager, KeyBindings, EventManager, PerkSystem, MetaUpgradeSystem, LifetimeStats, Achievements, SettingsRegistry. Restant ~16 warnings (UI controllers scene-scoped Main.unity, OK). |
+| **R2A+R2B** | 13407e5d | AudioController.LoadAudioRegistry warning "not found in Resources" + Heroes screen vide | Mv `Assets/ScriptableObjects/{Audio/AudioClipRegistry.asset, Heroes/*.asset}` → `Assets/Resources/{AudioClipRegistry.asset, Heroes/}` (GUIDs préservés) |
+| **B11** | 732475f2 | 60+ warnings "Runtime cursors other than default need texture" | Suppression 47 `cursor: link;` USS lines (21 fichiers) |
+| **B12** | 6c2400c3 | Warning `[SceneDecor] Background prefab not found at Resources/Prefabs/Decor/Foret` | Silence le LogWarning (fallback flat ground silencieux, prefabs decor optionnels) |
+
+### Audit Wave Explore (4 agents parallèles)
+
+- Audit Hero/Enemy/Tower/Castle code-only : 15 bugs P0/P1/P2 identifiés MAIS 80% s'avèrent faux positifs après vérif (transform.position cumulative déjà reset à chaque frame partout).
+- Audit UI controllers + UXML : RunMap.uxml/RunMapController coexiste avec WorldMapController.BuildRunMapView mais sans conflit actuel — skip cleanup.
+- Audit Resources missing : 3 P0 (AudioClipRegistry, Heroes) déjà fixés via R2A+R2B. Décor prefabs optionnels.
+- Audit Bootstrap pattern : R1C implémenté. Restant Castle/LevelRunner/HudController/etc. = scene-scoped Main.unity, normal qu'ils auto-create dans amont scenes.
+
+### Limitations autonomie
+
+- **Unity-MCP HTTP 8080 DOWN** : pas de cycle fix+test autonome possible. Mike doit re-tester en Cmd+P après git pull.
+- **Unity batch mode -executeMethod V3LoopAutoRunner** : tenté mais Unity Editor de Mike détient le lock projet → quit prematurely. Pas de validation headless possible tant que Editor ouvert.
+
+### Action Mike retour
+
+1. `cd /Users/mike/Work/crowd-defense && git pull --rebase` (chope 6c2400c3).
+2. Unity Editor recompile auto.
+3. Cmd+P fresh Play test : Menu → New Game → Fire School → click level node.
+4. Vérifier visuellement :
+   - ✅ Hero ne vole plus après mouvement / idle dance subtle
+   - ✅ RunMap pas de moitié dorée, layout cohérent
+   - ✅ 0 warning "Particle Velocity curves"
+   - ✅ ~25 warnings singleton → ~16 (gain ~9 core)
+   - ✅ 0 warning "Runtime cursors"
+   - ✅ 0 warning AudioClipRegistry not found
+   - ✅ 0 warning SceneDecor background prefab not found
+
+### HEAD soir 2026-05-18 19:25 CEST
+
+```
+6c2400c3 fix(visual)(B12): silence SceneDecor decor-not-found warning
+732475f2 fix(ui)(B11): remove cursor:link from all USS — silence 60+ runtime warnings
+51a8da37 feat(systems)(R1C-Bootstrap): pre-instantiate 9 core singletons in Loader scene
+046ab309 fix(visual)(B10): particle velocity curves must all be same mode
+13407e5d fix(assets)(R2A+R2B): relocate AudioClipRegistry + Heroes scriptable objects to Resources/
+53ed51b0 fix(visual)(B8+B9): hero idle bob non-cumulative + WorldMap RunMap layout overlap
+```
+
+Autonomie Wave B-soir continue. Next: audit MaterialController shaders, audit AssetRegistry coverage, audit save migration.
