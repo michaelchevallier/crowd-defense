@@ -23,7 +23,7 @@ namespace CrowdDefense.Entities
 
             if (!isSelected && !recentFire)
             {
-                float bobY = _basePos.y + Mathf.Sin(Time.time * 5f + _idlePhase) * 0.05f;
+                float bobY = _basePos.y + Mathf.Sin(Time.time * 1f + _idlePhase) * 0.03f;
                 transform.position = new Vector3(_basePos.x, bobY, _basePos.z);
             }
 
@@ -35,7 +35,7 @@ namespace CrowdDefense.Entities
             float phase = _idlePhase;
             _meshChild.transform.localPosition = new Vector3(
                 0f,
-                Mathf.Sin(t * 5f + phase) * 0.05f,
+                Mathf.Sin(t * 1f + phase) * 0.03f,
                 0f);
             _meshChild.transform.localRotation = Quaternion.Euler(
                 0f,
