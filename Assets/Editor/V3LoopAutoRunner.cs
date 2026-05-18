@@ -594,6 +594,7 @@ namespace CrowdDefense.EditorTools
                 PositionHeroOnPath();
             // N36: force-kill stragglers if ≤10 stuck mobs after iter 50 (boss waves can have ≤5,
             // regular waves should clear in ≤30 iters; if 50+ iters and still <10 active, force-clear)
+            // Bosses NOT killed here — let normal gameplay handle them (BossDefeatedEvent etc).
             if (iter > 50 && iter % 10 == 0 && Wm.ActiveEnemies != null && Wm.ActiveEnemies.Count > 0 && Wm.ActiveEnemies.Count <= 10 && Wm.PendingSpawnCount == 0)
             {
                 int killed = 0;
@@ -608,6 +609,25 @@ namespace CrowdDefense.EditorTools
                 }
                 if (killed > 0)
                     Append($"phase11 iter={iter} N36 force-killed {killed} non-boss straggler(s)");
+            }
+
+            // N44: boss safety net — if bosses survive past iter 300 (5 min of failed combat),
+            // damage them by half their max HP per iter so the wave can complete. This lets
+            // BossSystem still publish BossDefeatedEvent and the chain triggers normally.
+            if (iter > 300 && iter % 30 == 0 && Wm.ActiveEnemies != null && Wm.ActiveEnemies.Count > 0 && Wm.PendingSpawnCount == 0)
+            {
+                int chipped = 0;
+                for (int i = Wm.ActiveEnemies.Count - 1; i >= 0; i--)
+                {
+                    var e = Wm.ActiveEnemies[i];
+                    if (e == null || e.IsDead) continue;
+                    if (e.Config == null || !e.Config.IsBoss) continue;
+                    // Damage equal to ~50% of max HP — kills in 2-3 chip iterations
+                    e.TakeDamage(Mathf.Max(20f, e.Config.Hp * 0.5f));
+                    chipped++;
+                }
+                if (chipped > 0)
+                    Append($"phase11 iter={iter} N44 boss-chip {chipped} boss(es) (50% maxHP)");
             }
             // Diagnostic every 10 iters
             if (iter % 10 == 0)
