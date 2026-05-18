@@ -14,19 +14,16 @@ namespace CrowdDefense.Visual
             if (parent == null || smokeGo == null) return;
             var parentPs = parent.GetComponent<ParticleSystem>();
             if (parentPs == null) return;
-            // Instantiate smoke prefab to avoid SetParent error on prefab assets
-            smokeGo = Object.Instantiate(smokeGo);
-            // Only re-parent when the parent is a live scene instance (scene.IsValid()).
-            // Prefab assets have scene == default(Scene) and trigger
-            // "Setting the parent of a transform which resides in a Prefab Asset is disabled".
-            if (parent.scene.IsValid())
-            {
-                smokeGo.transform.SetParent(parent.transform, false);
-                smokeGo.transform.localPosition = Vector3.zero;
-            }
+            // Guard: parent must be a live scene instance, not a prefab asset or prefab stage.
+            // Otherwise Unity warns "Setting the parent of a transform which resides in a Prefab Asset is disabled".
+            if (!parent.scene.IsValid() || string.IsNullOrEmpty(parent.scene.name)) return;
+            // Instantiate smoke directly under parent in one go — avoids separate SetParent that can trigger
+            // the prefab warning when parent is part of an instantiating prefab stage.
+            var smokeInstance = Object.Instantiate(smokeGo, parent.transform, worldPositionStays: false);
+            smokeInstance.transform.localPosition = Vector3.zero;
             var sub = parentPs.subEmitters;
             sub.enabled = true;
-            sub.AddSubEmitter(smokeGo.GetComponent<ParticleSystem>(),
+            sub.AddSubEmitter(smokeInstance.GetComponent<ParticleSystem>(),
                 ParticleSystemSubEmitterType.Death,
                 ParticleSystemSubEmitterProperties.InheritNothing);
         }
