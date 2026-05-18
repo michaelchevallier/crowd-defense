@@ -46,7 +46,6 @@
     color: white;
     font-size: 16px;
     -unity-text-align: middle-center;
-    cursor: link;
 }
 
 .encyclopedia-close-btn:hover {
@@ -72,7 +71,6 @@
     color: rgba(220, 220, 220, 0.6);
     font-size: 14px;
     border-radius: 0;
-    cursor: link;
 }
 
 .enc-tab:hover {
@@ -113,7 +111,6 @@
     color: rgba(220, 220, 220, 0.85);
     font-size: 13px;
     -unity-text-align: middle-left;
-    cursor: link;
     margin-bottom: 2px;
 }
 

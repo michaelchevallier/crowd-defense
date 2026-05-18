@@ -116,7 +116,6 @@
     font-size: 14px;
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     border-width: 0;
-    cursor: link;
 }
 
 .lb-btn:hover {

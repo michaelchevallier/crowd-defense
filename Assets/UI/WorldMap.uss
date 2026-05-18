@@ -72,7 +72,6 @@
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     -unity-text-align: middle-center;
-    cursor: link;
     padding: 0;
 }
 
@@ -129,7 +128,6 @@
     background-color: rgba(255, 255, 255, 0.08);
     align-items: center;
     justify-content: center;
-    cursor: link;
     flex-direction: column;
 }
 
@@ -234,7 +232,6 @@
     border-color: rgb(255, 196, 60);
     border-radius: 10px;
     background-color: rgba(255, 196, 60, 0.08);
-    cursor: link;
 }
 
 .worldmap-tile--special:hover {

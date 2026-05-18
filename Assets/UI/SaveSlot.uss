@@ -126,7 +126,6 @@
     -unity-font-style: bold;
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     -unity-text-align: middle-center;
-    cursor: link;
 }
 
 .slot-btn-continue {

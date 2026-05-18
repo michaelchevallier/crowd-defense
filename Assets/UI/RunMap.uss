@@ -131,7 +131,6 @@
 }
 
 .runmap-node.available {
-    cursor: link;
     opacity: 1;
 }
 

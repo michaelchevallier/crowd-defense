@@ -63,7 +63,6 @@
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     -unity-text-align: middle-center;
-    cursor: link;
 }
 
 .level-btn:hover {
@@ -111,7 +110,6 @@
     color: rgba(180, 180, 180, 0.85);
     font-size: 13px;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    cursor: link;
 }
 
 .menu-credits-btn:hover {

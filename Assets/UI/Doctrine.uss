@@ -114,7 +114,6 @@
     font-size: 13px;
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     border-width: 0;
-    cursor: link;
 }
 
 .doctrine-btn-select:hover {
@@ -163,7 +162,6 @@
     font-size: 14px;
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     border-width: 0;
-    cursor: link;
 }
 
 .doctrine-btn:hover {
@@ -188,7 +186,6 @@
     border-color: rgba(180, 150, 255, 0.4);
     font-size: 14px;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    cursor: link;
     align-self: center;
 }
 

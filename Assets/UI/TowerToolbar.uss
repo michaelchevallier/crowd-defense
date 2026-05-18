@@ -27,7 +27,6 @@
     margin-left: 3px;
     margin-right: 3px;
     min-width: 58px;
-    cursor: link;
     transition-duration: 0.1s;
     transition-property: background-color, border-color, scale;
 }

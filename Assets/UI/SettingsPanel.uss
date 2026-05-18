@@ -50,7 +50,6 @@
     border-bottom-width: 2px;
     border-bottom-color: rgba(0, 0, 0, 0);
     -unity-text-align: middle-center;
-    cursor: link;
 }
 
 .tab:hover {
@@ -147,7 +146,6 @@
     font-size: 14px;
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     border-width: 0;
-    cursor: link;
 }
 
 .settings-btn:hover {
@@ -225,7 +223,6 @@
     border-width: 1px;
     border-color: rgba(150, 180, 255, 0.4);
     font-size: 16px;
-    cursor: link;
     align-self: center;
 }
 
@@ -241,7 +238,6 @@
     border-width: 1px;
     border-color: rgba(150, 180, 255, 0.4);
     font-size: 16px;
-    cursor: link;
     align-self: center;
 }
 

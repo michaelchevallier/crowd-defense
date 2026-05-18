@@ -137,7 +137,6 @@
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     margin: 0 4px;
-    cursor: link;
 }
 
 .ach-filter-btn:hover {
@@ -172,7 +171,6 @@
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     margin: 0 3px;
-    cursor: link;
 }
 
 .ach-tab:hover {
@@ -224,7 +222,6 @@
     font-size: 15px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    cursor: link;
 }
 
 .ach-back-btn:hover {

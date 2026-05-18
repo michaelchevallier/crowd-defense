@@ -435,7 +435,6 @@
     border-color: rgb(200, 138, 0);
     border-width: 3px;
     border-radius: 14px;
-    cursor: link;
 }
 
 .wave-launch-btn:hover {
@@ -528,7 +527,6 @@
     font-size: 20px;
     padding: 6px 10px;
     margin-left: 8px;
-    cursor: link;
 }
 
 .hud-doctrine-btn:hover,
@@ -562,7 +560,6 @@
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     padding: 4px 10px;
     margin: 2px;
-    cursor: link;
 }
 
 .speed-btn:hover {
@@ -643,7 +640,6 @@
     align-items: center;
     justify-content: center;
     border-radius: 32px;
-    cursor: link;
 }
 
 .ult-btn:hover .hero-ult-label {
@@ -907,7 +903,6 @@
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     -unity-text-align: middle-center;
-    cursor: link;
     padding: 0;
 }
 
@@ -1486,7 +1481,6 @@
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     padding: 8px 0;
-    cursor: link;
 }
 
 .info-sell-btn:hover {
@@ -1660,7 +1654,6 @@
     overflow: hidden;
     align-items: center;
     justify-content: center;
-    cursor: link;
 }
 
 .skill-slot-ready {

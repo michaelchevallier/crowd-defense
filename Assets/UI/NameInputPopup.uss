@@ -68,7 +68,6 @@
     color: rgb(15, 20, 35);
     border-radius: 8px;
     border-width: 0;
-    cursor: link;
 }
 
 .name-confirm-btn:hover {

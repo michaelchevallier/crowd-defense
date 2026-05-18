@@ -131,7 +131,6 @@
     font-size: 15px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    cursor: link;
 }
 
 .bst-back-btn:hover {

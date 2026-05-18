@@ -45,7 +45,6 @@
     padding: 20px 16px;
     margin: 0 12px;
     width: 200px;
-    cursor: link;
     transition-property: translate, scale, border-color;
     transition-duration: 0.15s, 0.15s, 0.15s;
     transition-timing-function: ease-out, ease-out, ease-out;
@@ -166,7 +165,6 @@
     font-size: 15px;
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
-    cursor: link;
     transition-property: scale, background-color;
     transition-duration: 0.12s, 0.12s;
     transition-timing-function: ease-out, ease-out;

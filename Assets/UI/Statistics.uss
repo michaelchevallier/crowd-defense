@@ -52,7 +52,6 @@
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
     -unity-text-align: middle-center;
     margin: 0 4px;
-    cursor: link;
 }
 
 .tab-btn:hover {
@@ -119,7 +118,6 @@
     font-size: 13px;
     -unity-font-style: bold;
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
-    cursor: link;
 }
 
 .stats-reset-btn:hover {
@@ -165,7 +163,6 @@
     background-color: rgba(40, 160, 40, 0.75);
     border-color: rgb(60, 200, 60);
     color: rgb(220, 255, 220);
-    cursor: link;
 }
 
 .tab-action-btn:hover {
@@ -198,7 +195,6 @@
     font-size: 13px;
     -unity-font-style: bold;
     -unity-font-definition: url("project://database/Assets/Fonts/Roboto-Regular%20SDF.asset");
-    cursor: link;
 }
 
 .stats-close-btn:hover {
