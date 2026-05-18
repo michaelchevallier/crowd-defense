@@ -12,13 +12,23 @@ This file consolidates all Inspector / Scene edits required across Night #1, #2,
 - BossSystem.OnEnemySpawned now finds BossDef for boss/midboss/etc.
 - MusicManager.OnBossEncountered receives BossEncounteredEvent.
 
-### P1 — Resolved by N27 + N33 + N38 (code-only, no Inspector edit needed)
+### P1 — Resolved by N27 + N33 + N38 + N40 + N41 + N42 + N43 + N43b + N43c (code-only, no Inspector edit needed)
 
 **MissingReferenceException 'Tower has been destroyed'** ✅
-- N27 : PlacementController.PrunePlacedTowers in LateUpdate
-- N33 : `?.` → `if (x != null) x.method()` for Tower refs
-- N38 : Tower.RegisterKill bail on `this == null` or `_destroyStarted`
-- 3-layer defense against the race between PlayDestroyAnim coroutine + projectile-in-flight.
+5-layer defense across Tower/Enemy/Castle/Hero lifecycle :
+- N27 : PlacementController.PrunePlacedTowers in LateUpdate (Tower list)
+- N42 : WaveManager.LateUpdate prunes destroyed Enemy entries (parallel to N27)
+- N33 + N41 + N43 + N43b + N43c : `?.` → `if (x != null) x.method()` across :
+  - Projectile.sourceTower.FlashHitConfirmation
+  - Enemy._lastDamageTower.RegisterKill
+  - LevelRunner Hero.OnWaveEnd
+  - DynamicEventManager Castle.Instance.TakeDamage in tick coroutine
+  - LevelRunner Hero.Current.TriggerDeathCinematic
+  - LevelRunner PrimaryCastle.SpawnVictoryBanner
+- N38 : Tower.RegisterKill bail on `this == null` or `_destroyStarted` (belt-and-braces)
+- N40 : Projectile.ReleaseToPool clears sourceTower + target + alreadyHit refs
+
+Total: 9 fix commits eliminate the entire MissingRef class.
 
 ### P2 — Mike runs Tools menu utilities
 
