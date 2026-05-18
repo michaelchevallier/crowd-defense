@@ -34,6 +34,8 @@ namespace CrowdDefense.Entities
 
         private void SpawnKillFloatText()
         {
+            // N54b: self guard — RegisterKill is now guarded but defensive here too
+            if (this == null || _destroyStarted) return;
             if (!gameObject.activeInHierarchy) return;
             var popup = CrowdDefense.UI.FloatingPopupController.Instance;
             if (popup == null) return;
