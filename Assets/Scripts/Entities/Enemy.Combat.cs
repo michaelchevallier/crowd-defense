@@ -212,9 +212,9 @@ namespace CrowdDefense.Entities
                 EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
                 CoinPullManager.Instance?.SpawnCoinFlyTo(transform.position, reward);
                 Economy.Instance?.AddGoldFromKill(reward, transform.position + Vector3.up * 1.2f);
-                // P1-EN-1.1: green +reward popup on regular enemy kill
-                CrowdDefense.UI.FloatingPopupController.Instance?.SpawnReward(
-                    $"+{reward}", transform.position + Vector3.up * 1f, Color.green);
+                // N31: Use tiered SpawnGoldReward (< 10 white, 10-30 yellow, > 30 gold + sparkle)
+                // matching the V4 popup style. Economy.AddGoldFromKill already calls this internally
+                // via SpawnGoldReward in Economy.cs:114 — duplicate popup removed.
             }
             else
             {
