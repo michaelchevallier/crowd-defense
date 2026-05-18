@@ -45,7 +45,9 @@ namespace CrowdDefense.Visual
                 var newMats = new Material[srcMats.Length];
                 for (int i = 0; i < srcMats.Length; i++)
                 {
-                    Texture? srcTex = srcMats[i]?.mainTexture;
+                    var src = srcMats[i];
+                    // N35b: Same _MainTex guard as UpdateTint — silence shader-without-_MainTex warning.
+                    Texture? srcTex = (src != null && src.HasProperty("_MainTex")) ? src.mainTexture : null;
                     newMats[i] = GetCachedToon(tint, transparent, srcTex);
                 }
                 r.sharedMaterials = newMats;
