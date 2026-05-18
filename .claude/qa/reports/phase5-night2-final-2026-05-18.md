@@ -165,20 +165,25 @@ cat /Users/mike/Work/crowd-defense/Library/V3LoopBatchReports/latest-auto.txt
 
 ## To get 11/11 PASS (next step for Mike)
 
-The remaining gap is V3 balance — wave 4 of W1-1 has 136 mobs including heavy Brutes that absorb damage. Even with N19's optimized tower placement (cannons closest to path → mages → ballistas → archers) and 60 placed towers, the kill rate (4/119 per iter) doesn't keep up.
+After N21 (L3 tower upgrades between every wave) + N19 (path-proximity sort) + N17 (BossSystem wire), the V3LoopAutoRunner can clear waves 1-3 reliably but stalls in wave 4 with ~29 mob stragglers (out of 136 spawned, 107 killed). The stragglers walk in path zones where the 60-tower loadout has no coverage, even though the Brutes only have HP=12.
 
-Possible fixes to reach 11/11:
-1. **Add upgrades to V3LoopAutoRunner**: between waves, level up the 12 closest-to-path towers via `PlacementController.UpgradeTower(tower, level)` — L1 → L3 is 3x DPS. Estimated +1h work.
-2. **Hero auto-attack**: the V3 Hero participates in combat but the validator doesn't drive Hero abilities. Add a phase-9b that uses `Hero.UseUltimate()` or similar between waves.
-3. **Reduce Brute count for QA**: edit `W1-1.asset` wave 4 to cap Brute count (e.g., from 7 to 2). Acceptable for headless QA only; revert before player release.
-4. **Run W1-2 instead of W1-1**: W1-2 may have a more forgiving wave 4 — call `LevelLoader.LoadLevel("W1-2")` in phase 0.
+Root cause: V3LoopAutoRunner uses a static tower loadout. Real V3 play uses:
+- Hero attacks (auto-target with `Hero.PrimaryAttack` + ultimate)
+- Tower selling+rebuilding between waves to respond to enemy mix
+- Perk picker selections after each wave
+- Special tower types (Frost slow, Magnet, Acid synergy)
 
-Once V3LoopAutoRunner reliably beats one level, expected line is:
+To clinch 11/11 in V3LoopAutoRunner, you need ONE of:
+1. **Hero auto-play in phase 11** — call `Hero.Instance.PerformAttack()` per iter, target the closest enemy. ~30 min work.
+2. **Reduce wave 4 Brute count for QA only** — edit `W1-1.asset` wave 4 entries to cap Brute (`b9f34994a48ae4139b54151e8489ee0b`) count from 7 to 2. Acceptable for headless QA only.
+3. **Pivot to W2-1** — simpler level; `LevelLoader.NextLevelId = "world2-1"` in V3LoopAutoRunner phase 0.
+
+The full validator + wiring infrastructure is delivered (11 commits). Only V3LoopAutoRunner's "smart play" needs more iteration to clinch the last 1/11.
+
+Expected post-fix:
 ```
 phase11 FINAL VICTORY PASS state=Summary idx=5/5 castleHP=>0
 ```
-
-The infrastructure (V3LoopAutoRunner + BossSystem.registry wired) is solid; only V3LoopAutoRunner's "smart play" strategy needs the iteration to clinch 11/11.
 
 ## Reports + Library artifacts
 
