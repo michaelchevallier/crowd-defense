@@ -228,3 +228,11 @@ b86ed16c fix(towers)(N54b): Tower.SpawnKillFloatText — self guard against dest
 **Player UX V3 features** : 6/6 wired code-side, awaiting Mike's Play mode validation.
 
 **GO Mike — tu as tout pour reprendre. ☕**
+
+---
+
+## Post-scriptum Night #5 (2026-05-18 08:23 CEST)
+
+**Cleanup worktrees** : 37/37 branches `md-*` mergées sur `origin/main` removed (worktrees + branches). 0 stale. Final state : 2 worktrees (main + 1 locked agent worktree). Détails : `.claude/supervisor/drift-reports/_cleanup-worktrees-residuals.md`.
+
+**Watchdog Unity-MCP** : poll every 5min depuis 08:22 CEST jusqu'à 09:55 CEST. Si UP avant 09:30, capture real frames steps 8-11 et écrit `phase5-night5-real-frames-2026-05-18.md`. Sinon silent exit. PAS de T1 (Monitor #3 fait à 09:30).
