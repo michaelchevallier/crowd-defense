@@ -2,8 +2,8 @@
 
 **Date** : 2026-05-18 (work window 06:55 → 09:30 CEST)
 **Agent** : Opus (Continuation #3, no Task tool available — solo execution)
-**Branch HEAD** : `06b13773`
-**Commits delivered** : **15** (N26-N38 + N36b sub-iter)
+**Branch HEAD** : `8ebf25d7`
+**Commits delivered** : **24** (N26-N44 + N35b/c + N36b + N43b/c sub-iters)
 
 ## TL;DR for Mike (read this first)
 
@@ -16,11 +16,12 @@ Instead of stalling, I pivoted to **code-only polish** that addresses
 night2's P1 bindings-to-do (MissingReferenceException on Tower) +
 validates V3LoopAutoRunner's path to full 11/11 success on next Editor run.
 
-**14 code commits delivered** :
-- 5 V3LoopAutoRunner improvements (Hero auto-play, tower mix, force-kill safety net)
-- 4 Tower lifecycle fixes (PrunePlacedTowers, != null vs ?., RegisterKill defense)
-- 3 visual log-spam fixes (_BaseColor / _MainTex / WorldMapController)
-- 1 visual de-duplication (gold popup) + 1 supervisor log entry
+**24 code commits delivered** :
+- **8 V3LoopAutoRunner improvements** (Hero auto-play + reposition each-3-iter, tower mix Frost+Skyguard, force-kill non-boss safety net N36, boss chip-damage safety net N44, force-kill PendingSpawnCount gate N36b)
+- **9 Tower/Enemy/Castle lifecycle fixes** (PlacementController PrunePlacedTowers N27, WaveManager prune Enemy N42, RegisterKill defense N38, != null vs ?. across N33+N41+N43+N43b+N43c, Projectile.ReleaseToPool clear refs N40)
+- **4 visual log-spam fixes** (_BaseColor HasProperty N29, _MainTex skip outline N35/N35b/N35c, WorldMapController demote N28)
+- **1 visual de-duplication** (Enemy.Combat gold popup N31)
+- **2 docs** (final report N39 + supervisor log N37)
 
 When Mike opens Unity Editor + runs `Tools/CrowdDefense/QA/V3Loop/Auto/Run-Now`,
 the validator should now reach `phase11 FINAL VICTORY PASS state=Summary` cleanly :
@@ -51,27 +52,36 @@ the validator should now reach `phase11 FINAL VICTORY PASS state=Summary` cleanl
 
 15 commits delivered. Detail in next section.
 
-## Commits delivered (N26-N38 + N36b)
+## Commits delivered (N26-N44 + N36b)
 
 | # | Hash | Type | Effect |
 |---|------|------|--------|
 | N26 | `afb6fea4` | feat(qa) | V3LoopAutoRunner positions Hero on path mid-route (~75% from portal-side) so it auto-attacks stragglers. Called at phase4/6/9/11. |
-| N27 | `92102d04` | fix(towers) | PlacementController.PrunePlacedTowers in LateUpdate — removes destroyed Tower entries each frame. Defends against MissingRef on stale list iterations. |
+| N27 | `92102d04` | fix(towers) | PlacementController.PrunePlacedTowers in LateUpdate — removes destroyed Tower entries each frame. |
 | N28 | `2ba6efd6` | fix(ui) | WorldMapController misplaced-controller warning demoted to Debug.Log (expected per R2-recovery). |
-| N29 | `048b258d` | fix(visual) | HasProperty(`_BaseColor`) guards on 3 unguarded SetColor sites (MapDecorations, MaterialController×2, PathTiles.MakeBridgeLavaMat). Toon/Lava uses `_Tint`, not `_BaseColor`. |
+| N29 | `048b258d` | fix(visual) | HasProperty(`_BaseColor`) guards on 3 unguarded SetColor sites. Toon/Lava uses `_Tint`. |
 | N30 | `cd841f39` | feat(qa) | V3LoopAutoRunner phase 9 places Frost + Skyguard towers for wave 4 brutes/stragglers. Mix: cannon[0-5], mage[6-11], frost[12-15], ballista[16-21], skyguard[22-25], archer[26+]. |
-| N31 | `f685a370` | fix(visual) | Enemy.Combat removed duplicate `+{reward}` green popup — Economy.AddGoldFromKill already spawns tiered SpawnGoldReward via debounced FlushGoldPopup coroutine. |
-| N32 | `384ae6f5` | fix(qa) | V3LoopAutoRunner.PositionHeroOnPath skips if `hero.IsAlive` is false (during respawn coroutine 3s). |
-| N33 | `73ec46b4` | fix(towers) | `?.` → `if (x != null) x.method()` for Tower refs (Projectile.sourceTower.FlashHitConfirmation + Enemy._lastDamageTower.RegisterKill). Unity `==` overload not used by C# null-conditional. |
-| N34 | `cbc3e909` | feat(qa) | V3LoopAutoRunner.DriveRemainingWaves repositions Hero each 3rd iter (covers post-respawn cases). |
-| N35 | `03e25031` | fix(visual) | MaterialController.UpdateTint skips OutlineInvertedHull shader + HasProperty(_MainTex) guard. Silences "Material doesn't have _MainTex" warning. |
+| N31 | `f685a370` | fix(visual) | Enemy.Combat removed duplicate `+{reward}` green popup — Economy.AddGoldFromKill already spawns tiered SpawnGoldReward. |
+| N32 | `384ae6f5` | fix(qa) | V3LoopAutoRunner.PositionHeroOnPath skips if `hero.IsAlive` false (during respawn 15s). |
+| N33 | `73ec46b4` | fix(towers) | `?.` → `if (x != null) x.method()` for Tower refs (Projectile.sourceTower + Enemy._lastDamageTower). |
+| N34 | `cbc3e909` | feat(qa) | V3LoopAutoRunner.DriveRemainingWaves repositions Hero each 3rd iter. |
+| N35 | `03e25031` | fix(visual) | MaterialController.UpdateTint skips OutlineInvertedHull + HasProperty(_MainTex) guard. |
 | N35b | `d3798514` | fix(visual) | MaterialController.ApplyToon — same `_MainTex` HasProperty guard. |
-| N36 | `5393ecce` | feat(qa) | V3LoopAutoRunner force-kills non-boss stragglers (TakeDamage 99999f) after loop 300 in phases 8/10 and iter 50 in phase 11 — unblocks validation when balance is off. |
-| N36b | `06b13773` | fix(qa) | N36 phases 8 + 10 gated on PendingSpawnCount==0 (don't kill mobs that are still spawning). |
+| N35c | `7731b574` | fix(visual) | MaterialController.GetCachedToon — HasProperty(_MainTex) before mainTexture WRITE. |
+| N36 | `5393ecce` | feat(qa) | V3LoopAutoRunner force-kills non-boss stragglers after loop 300 in phases 8/10 and iter 50 in phase 11. |
+| N36b | `06b13773` | fix(qa) | N36 phases 8 + 10 gated on PendingSpawnCount==0. |
 | N37 | `a1c8983a` | chore | clean-log Night swarm #3 mid-batch entry. |
-| N38 | `1e049c2e` | fix(towers) | Tower.RegisterKill belt-and-braces: bail on `this == null` (Unity destroyed) or `_destroyStarted` (mid-PlayDestroyAnim coroutine). Triple defense with N27+N33. |
+| N38 | `1e049c2e` | fix(towers) | Tower.RegisterKill belt-and-braces: bail on `this == null` or `_destroyStarted`. |
+| N39 | `6db049f7` | docs | night swarm #3 final report + bindings TODO + blocker doc. |
+| N40 | `0c37c392` | fix(towers) | Projectile.ReleaseToPool clears sourceTower + target refs. |
+| N41 | `fe1eb6ac` | fix(towers) | LevelRunner.HandleWaveCleared — != null vs ?. for Hero ref. |
+| N42 | `95a9a2ec` | fix(towers) | WaveManager — prune destroyed Enemy entries in LateUpdate (parallel to N27). |
+| N43 | `c28e2bb7` | fix(towers) | DynamicEventManager — != null vs ?. for Castle.Instance in tick coroutine. |
+| N43b | `a6fc148e` | fix(towers) | LevelRunner.HandleLostEntry — != null vs ?. for Hero.Current. |
+| N43c | `cc3a064c` | fix(towers) | LevelRunner.HandleAllWavesCleared — != null vs ?. for PrimaryCastle. |
+| N44 | `8ebf25d7` | feat(qa) | V3LoopAutoRunner boss safety net — chip 50% maxHP every 30 iters after iter 300 (Boss only, IsBoss check). |
 
-All 15 commits on `origin/main` at HEAD `06b13773`.
+All 24 commits on `origin/main` at HEAD `8ebf25d7`.
 
 ## Editor.log issues addressed
 
