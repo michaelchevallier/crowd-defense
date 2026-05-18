@@ -784,3 +784,7 @@ Added more towers (50 placed, mixed types) + bumped loop limit to 600. Iterating
 2026-05-18 17h04 — scrute /loop #246. **0 new commit** depuis #245 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-18 17h34 — scrute /loop #247. **0 new commit** depuis #246 (HEAD `5beaf703`). 2 worktrees. Mike chat live (auto-QA stuck reported 17h04). **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 18h04 — scrute /loop #248. **2 new commits** depuis #247 (HEAD `9188ff08`) : R-MENU-B2 `300957c9` LevelSelectController scene guard (Awake disable si pas WorldMap, pattern R0-3) ✅, R-HUD-B1 `9188ff08` CSS `-unity-background-image: none;` sur .pill/.hud-*-btn/.speed-btn (supprime URP InternalErrorShader fallback magenta) ✅. 2 worktrees. Mike Play mode reload requis pour valider visuel. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 18h34 — scrute /loop #249. **0 new commit** depuis #248 (HEAD `9188ff08`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
