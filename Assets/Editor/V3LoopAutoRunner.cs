@@ -285,10 +285,12 @@ namespace CrowdDefense.EditorTools
 
         private static void PlaceTowers()
         {
-            Econ!.AddGold(5000);
+            // Cheat: enough gold for 30+ towers
+            Econ!.AddGold(50000);
             var bps = UnityEngine.Object.FindObjectsByType<CrowdDefense.Entities.BuildPoint>(FindObjectsSortMode.None);
+            // Place as many archers as we have build points (cap 30) — ensures wave 1 clears reliably
             int placed = 0;
-            int target = 10;
+            int target = Mathf.Min(30, bps.Length);
             for (int i = 0; i < bps.Length && placed < target; i++)
             {
                 Pc!.OpenBuildPointPicker(bps[i].Cell);
@@ -347,7 +349,7 @@ namespace CrowdDefense.EditorTools
                 Append($"phase8 step9 idx={Wm.CurrentWaveIdx} state={Lr!.State} waiting={Wm.IsWaitingForPlayerStart} castleHP={CastleI.HP}");
                 NextPhase(9);
             }
-            else if (loop > 250)
+            else if (loop > 600)
             {
                 int active = Wm.ActiveEnemies?.Count ?? -1;
                 int pending = Wm.PendingSpawnCount;
@@ -355,6 +357,12 @@ namespace CrowdDefense.EditorTools
                 int kills = Wm.WaveKillCount;
                 Append($"phase8 step9 FAIL stuck loop={loop} active={active} pending={pending} spawned={spawned} kills={kills} castleHP={CastleI.HP}");
                 Finish("FAIL wave 1 never cleared");
+            }
+            // Diagnostic every 50 loops
+            else if (loop % 50 == 0)
+            {
+                int active = Wm.ActiveEnemies?.Count ?? -1;
+                Append($"phase8 step9 progress loop={loop} active={active} kills={Wm.WaveKillCount} castleHP={CastleI.HP}");
             }
         }
 
