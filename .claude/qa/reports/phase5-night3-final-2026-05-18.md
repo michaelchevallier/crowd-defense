@@ -230,9 +230,26 @@ If FAILED (force-kill didn't fire / Hero stuck / BossSystem missing) — look fo
 
 Library/V3LoopBatchReports/auto-*.txt logs will populate at next Mike Editor session.
 
-## Final HEAD state
+## Final HEAD state (31 commits Night #3)
 
 ```
+cb26d358 docs(qa)(N52): update night3 report — 31 commits total
+1135854f fix(towers)(N51): EventSystem — != null vs ?. for Castle.Instance + Hero
+696f240f chore(supervisor)(N50): clean-log Night swarm #3 final state
+0fcf6be2 docs(qa)(N49): update night3 report — fix stale '15 commits' to 24
+890a550e fix(visual)(N48): PathTiles — HasProperty guards on MakePathRevealMat + MakeBridgeWaterMat
+0f7c1549 docs(qa)(N47): update night-bindings-to-do — expand MissingRef 5-layer defense
+91f67bea chore(supervisor)(N46): clean-log Night swarm #3 milestone
+b6e3da30 docs(qa)(N45): update night3 final report — 24 commits N26-N44 + sub-iters
+8ebf25d7 feat(qa)(N44): V3LoopAutoRunner boss safety net — chip 50% maxHP
+cc3a064c fix(towers)(N43c): LevelRunner.HandleAllWavesCleared — != null vs ?. for PrimaryCastle
+a6fc148e fix(towers)(N43b): LevelRunner.HandleLostEntry — != null vs ?. for Hero.Current
+c28e2bb7 fix(towers)(N43): DynamicEventManager — != null vs ?. for Castle.Instance
+95a9a2ec fix(towers)(N42): WaveManager — prune destroyed Enemy entries in LateUpdate
+fe1eb6ac fix(towers)(N41): LevelRunner.HandleWaveCleared — != null vs ?. for Hero ref
+0c37c392 fix(towers)(N40): Projectile.ReleaseToPool — clear sourceTower + target refs
+7731b574 fix(visual)(N35c): MaterialController.GetCachedToon — HasProperty(_MainTex) before mainTexture write
+6db049f7 docs(qa)(N39): night swarm #3 final report + bindings TODO + blocker doc
 06b13773 fix(qa)(N36b): V3LoopAutoRunner.N36 — gate force-kill on PendingSpawnCount==0
 1e049c2e fix(towers)(N38): Tower.RegisterKill — belt-and-braces guard against destroyed self
 a1c8983a chore(supervisor)(N37): clean-log Night swarm #3 mid-batch entry
@@ -250,4 +267,4 @@ cd841f39 feat(qa)(N30): V3LoopAutoRunner — Frost + Skyguard tower mix
 afb6fea4 feat(qa)(N26): V3LoopAutoRunner — position Hero on path mid-route
 ```
 
-All pushed to `origin/main`.
+All 31 commits pushed to `origin/main`. HEAD = `cb26d358`.
