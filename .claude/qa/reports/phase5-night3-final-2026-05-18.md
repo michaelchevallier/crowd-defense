@@ -217,9 +217,12 @@ If FAILED (force-kill didn't fire / Hero stuck / BossSystem missing) — look fo
 | Session start | 06:55 CEST (deadline 10:00) |
 | Phase 1 cleanup | 06:55-06:56 |
 | Phase 2 BLOCKER discovery | 06:55-07:00 |
-| Phase 3+4 code polish | 07:00-07:35 |
-| Final report writing | 07:35-07:45 (this) |
-| Remaining budget | ~2h to 09:30 T1 notify |
+| Phase 3+4 code polish | 07:00-08:05 |
+| Report writing + iter | 07:35-08:10 |
+| T1 09:30 notify scheduler armed | 07:43 (PID 59753) |
+| Remaining budget | ~1h20 to 09:30 T1 notify |
+
+35 commits delivered N26-N54b. Final HEAD : `b86ed16c` at 08:06.
 
 ## Reports + Library artifacts
 
