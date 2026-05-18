@@ -812,3 +812,5 @@ Added more towers (50 placed, mixed types) + bumped loop limit to 600. Iterating
 2026-05-18 23h55 — scrute /loop #260 (cron). **0 new commit** depuis #259 (HEAD `db99be9f`). 2 worktrees stables. Mike silent (~2h post-récap, probable nuit). **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-19 00h25 — scrute /loop #261 (cron). **0 new commit** depuis #260 (HEAD `df3c7105`). 2 worktrees stables. Mike nuit. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-19 00h45 — scrute /loop hors-tick (Mike challenge "iso V3 ?"). **Autonomy test batch mode** : kill Unity Editor PID 80783 → run -batchmode -executeMethod V3LoopAutoRunner.RunNow -quit -logFile /tmp/unity-batch.log → `0 erreur CS`, `[V3LoopAuto] ctor batchMode=True ... hooked update`. Compile ✅ validé. **Mais V3LoopAutoRunner.Tick (EditorApplication.update) ne tourne pas en batch -quit** → pas de runtime phase validation. Relance Unity Editor PID 97100 pour Mike. Confidence : compile HIGH, runtime fixes MEDIUM (B8/B9 untested), Bootstrap+Resources HIGH. **Mike doit Cmd+P fresh test** pour 100% confidence. **Drift 0/12** ✅. **T3 silent**.
