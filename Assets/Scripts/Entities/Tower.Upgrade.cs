@@ -91,6 +91,11 @@ namespace CrowdDefense.Entities
 
         private void UpdateHpAlpha()
         {
+            // N54: belt-and-braces self guard — RegisterKill's TakeDamage path can fire on a
+            // Tower that started PlayDestroyAnim. Even though N38 guards RegisterKill earlier,
+            // any other code path that triggers UpdateHpAlpha (HP-bar shake, repair tooltip)
+            // should also be safe.
+            if (this == null || _destroyStarted) return;
             float ratio = _maxHp > 0 ? (float)_hp / _maxHp : 1f;
             float alpha = 0.5f + ratio * 0.5f;
             var root = _meshChild != null ? _meshChild : gameObject;
