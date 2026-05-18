@@ -383,7 +383,9 @@ namespace CrowdDefense.Systems
             Achievements.Instance?.Unlock(worldAchId);
 
             // Victory banner floats up from castle position (scale+fade 2 s).
-            PrimaryCastle?.SpawnVictoryBanner();
+            // N43c: explicit Unity != null check
+            var pc = PrimaryCastle;
+            if (pc != null) pc.SpawnVictoryBanner();
 
             // PerkPickerController subscribes to OnLevelComplete and calls ConfirmLevelComplete() when done.
             OnLevelComplete?.Invoke();
