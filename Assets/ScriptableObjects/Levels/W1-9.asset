@@ -35,7 +35,6 @@ MonoBehaviour:
     eventType: sand_storm
     duration: 15.0
     param: 0.0
-
   waves:
   - entries:
     - type: {fileID: 11400000, guid: b88d0873b2dd244bc94ed0a02cbaa08a, type: 2}

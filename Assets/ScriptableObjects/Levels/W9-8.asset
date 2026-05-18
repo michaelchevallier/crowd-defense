@@ -43,7 +43,6 @@ MonoBehaviour:
     eventType: battle_cry
     duration: 12.0
     param: 1.0
-
   waves:
   - entries:
     - type: {fileID: 11400000, guid: 7473487740904c92a3c3b0355ee3f8c3, type: 2}

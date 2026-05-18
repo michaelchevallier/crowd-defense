@@ -33,7 +33,13 @@ namespace CrowdDefense.Visual
             if (_rend != null) _rend.sharedMaterial = _mat;
             BuildMesh();
             _label = BuildLabel();
-            gameObject.SetActive(false);
+            // NOTE: do NOT SetActive(false) here. CoinPullManager creates the
+            // GameObject inactive *before* AddComponent (so Awake runs only
+            // when the pool first activates it). Then ObjectPool.actionOnGet
+            // SetActive(true) → Awake fires; if Awake immediately deactivates,
+            // the very first Get() returns an inactive object and Fly()'s
+            // StartCoroutine throws "game object is inactive". The pool's
+            // actionOnRelease handles deactivation; Awake should not.
         }
 
         internal void SetPool(IObjectPool<CoinToken> pool) => _pool = pool;

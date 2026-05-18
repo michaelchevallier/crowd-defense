@@ -39,7 +39,6 @@ MonoBehaviour:
     eventType: zero_g
     duration: 8.0
     param: 0.0
-
   waves:
   - entries:
     - type: {fileID: 11400000, guid: 46c18104b7524370aded20016ebcef4f, type: 2}
