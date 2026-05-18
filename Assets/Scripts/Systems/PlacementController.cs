@@ -470,6 +470,25 @@ namespace CrowdDefense.Systems
 
         public void UnregisterTower(Tower t) => placedTowers.Remove(t);
 
+        // N27: Defensive prune — remove any null/destroyed Tower entries from placedTowers.
+        // Called once per frame from LateUpdate to ensure consumers iterating PlacedTowers
+        // never encounter a Unity-destroyed Tower (which throws MissingReferenceException
+        // when accessing tower.transform after Destroy()).
+        private void PrunePlacedTowers()
+        {
+            for (int i = placedTowers.Count - 1; i >= 0; i--)
+            {
+                var t = placedTowers[i];
+                // Unity overrides == to return true for destroyed objects
+                if (t == null) placedTowers.RemoveAt(i);
+            }
+        }
+
+        private void LateUpdate()
+        {
+            PrunePlacedTowers();
+        }
+
         // Restore towers from mid-level save. Bypasses cost/gold check for upgrades.
         public void RestoreTowers(System.Collections.Generic.List<PlacedTowerEntry> entries)
         {
