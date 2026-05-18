@@ -450,6 +450,8 @@ namespace CrowdDefense.EditorTools
             CrowdDefense.Data.TowerType? cannon = null;
             CrowdDefense.Data.TowerType? mage = null;
             CrowdDefense.Data.TowerType? ballista = null;
+            CrowdDefense.Data.TowerType? frost = null;     // N30: slow stragglers
+            CrowdDefense.Data.TowerType? skyguard = null;  // N30: anti-flyer / dot
             if (reg != null)
             {
                 foreach (var t in reg.Towers)
@@ -458,6 +460,8 @@ namespace CrowdDefense.EditorTools
                     if (t.Id == "cannon") cannon = t;
                     if (t.Id == "mage") mage = t;
                     if (t.Id == "ballista") ballista = t;
+                    if (t.Id == "frost") frost = t;
+                    if (t.Id == "skyguard") skyguard = t;
                 }
             }
 
@@ -466,15 +470,17 @@ namespace CrowdDefense.EditorTools
             {
                 if (Pc!.PlacedTowers.Count >= 60) break;
                 Pc.OpenBuildPointPicker(bps[i].Cell);
-                // Closest to path: cannon (AoE for swarms). Mid: mage (fast/burst). Outer: archer.
+                // Closest to path: cannon (AoE for swarms). Mid: mage (fast/burst). Then frost (slow), ballista (pierce). Outer: archer.
                 CrowdDefense.Data.TowerType pick;
                 if (i < 6 && cannon != null) pick = cannon;
                 else if (i < 12 && mage != null) pick = mage;
-                else if (i < 18 && ballista != null) pick = ballista;
+                else if (i < 16 && frost != null) pick = frost;   // N30: slow stragglers in mid-zone
+                else if (i < 22 && ballista != null) pick = ballista;
+                else if (i < 26 && skyguard != null) pick = skyguard;
                 else pick = Archer!;
                 if (Pc.TryPlaceAtActiveBuildCell(pick)) extra++;
             }
-            Append($"phase9 step10-pre extra={extra} total={Pc!.PlacedTowers.Count} (cannon={cannon!=null} mage={mage!=null})");
+            Append($"phase9 step10-pre extra={extra} total={Pc!.PlacedTowers.Count} (cannon={cannon!=null} mage={mage!=null} frost={frost!=null} skyguard={skyguard!=null})");
 
             // N26: Reposition hero on path mid-route before each wave start
             PositionHeroOnPath();
