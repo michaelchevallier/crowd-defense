@@ -235,4 +235,54 @@ b86ed16c fix(towers)(N54b): Tower.SpawnKillFloatText — self guard against dest
 
 **Cleanup worktrees** : 37/37 branches `md-*` mergées sur `origin/main` removed (worktrees + branches). 0 stale. Final state : 2 worktrees (main + 1 locked agent worktree). Détails : `.claude/supervisor/drift-reports/_cleanup-worktrees-residuals.md`.
 
+---
+
+## Post-scriptum PM (2026-05-18 18:50 CEST) — Visual Bug Fixes Wave B
+
+Mike a fait un Play mode manuel après le brief matin et constaté **7 bugs visuels résiduels** non détectés par le harness headless. **7 fixes pushés en parallèle** (worktrees + 1 direct Edit).
+
+### Bugs trouvés (paste console + 3 screenshots Mike)
+
+| ID | Bug | Cause | Fix commit | Type |
+|----|-----|-------|------------|------|
+| B1 | HUD pills/buttons fond magenta | URP fallback `InternalErrorShader` sur Button default sprite | `9188ff08` | CSS `-unity-background-image: none;` |
+| B2 | Menu scene affiche LevelSelect overlay | `LevelSelectController` instancié hors WorldMap | `300957c9` | Scene guard Awake (R0-3 pattern) |
+| B2-bis | Menu affiche encore overlay (Sauvegardes/Bestiaire/...) | MainMenu.uxml contenait debug elements WorldMap-only | `462f081f` | Remove lines 6-16 MainMenu.uxml |
+| B3 | Hero/towers volent + tournent + oscillation Y aberrante | Tower idle bob 5Hz + amplitude 0.05 sur Y | `b62d7100` | Clamp 1Hz + amp 0.03 |
+| B4 | Map = plein vert (path invisible) | Path tiles Y 0.02-0.06 z-fight avec slab Y=0 | `3415edf3` | Raise Y 0.051-0.061 |
+| B5 | Tours flottent en l'air | `GridCoords.CellToWorld()` retournait Y=0 (dans slab) | `3415edf3` | Y=0.05 ground top |
+| B7 | AudioMixer "Exposed name does not exist" resurgence | R0-2 alignait sur MixerGroups.mixer (duplicate, non chargé). Resources.Load charge MainAudioMixer.mixer qui expose `Master_Volume/...` | `d7f5e88b` | Code revert R0-2 sur les 4 SetFloat |
+
+### Bugs documentés non bloquants (à fix plus tard)
+
+- **B6** (~25 `MonoSingleton X auto-created — missing in scene` warnings) : émis quand singletons accédés en Loader/Menu/WorldMap avant Main.unity loaded. Auto-create marche, **non bloquant**. Fix propre = créer Bootstrap GameObject DontDestroyOnLoad dans Loader.unity. À traiter en Phase 6 polish.
+- `[SceneDecor] Background prefab not found at Resources/Prefabs/Decor/Foret` : asset manquant, fallback grass marche.
+- `Runtime cursors other than the default cursor need to be defined using a texture` x60 : cursor textures pas configurées, cosmétique.
+- `Particle Velocity curves must all be in the same mode` : warning particles VFX, cosmétique.
+
+### HEAD final PM 2026-05-18
+
+```
+d7f5e88b fix(audio)(R-AUDIO-B7): align SetFloat params with actual MainAudioMixer expose names
+3415edf3 fix(visual)(R-MAP-B4+B5): raise path tiles + tower placement Y for visibility on ground slab
+462f081f fix(ui)(R-MENU-B2-bis): remove debug overlay from MainMenu.uxml
+b62d7100 fix(entities)(R-TOWER-B3): tower idle bob frequency clamp 5Hz → 1Hz
+9188ff08 fix(ui)(R-HUD-B1): remove magenta backgrounds from HUD top-row buttons and pills
+300957c9 fix(ui)(R-MENU-B2): LevelSelectController scene guard Awake
+```
+
+**Action Mike à son retour** :
+
+1. `git pull --rebase` (chope les 6 commits PM).
+2. Laisse Unity Editor recompiler (auto).
+3. Cmd+P fresh Play test : Menu → New Game → Fire School → click level node → Main scene.
+4. Vérifie visuellement :
+   - HUD pas magenta ✅
+   - Menu pas d'overlay debug ✅
+   - Hero pas volant ni spinning ✅
+   - Path tiles visibles sur fond vert ✅
+   - Tours posées au sol et non flottantes ✅
+   - 0 erreur AudioMixer "Exposed name does not exist" ✅
+5. Si OK → Phase 6 (decor assets, cursor textures, B6 Bootstrap).
+
 **Watchdog Unity-MCP** : poll every 5min depuis 08:22 CEST jusqu'à 09:55 CEST. Si UP avant 09:30, capture real frames steps 8-11 et écrit `phase5-night5-real-frames-2026-05-18.md`. Sinon silent exit. PAS de T1 (Monitor #3 fait à 09:30).
