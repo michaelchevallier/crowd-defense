@@ -148,21 +148,27 @@ namespace CrowdDefense.Systems
                 int.TryParse(action.Substring(6), out int coinsSub))
             { Economy.Instance?.TrySpend(coinsSub); return; }
 
+            // N51: explicit Unity != null checks (?. doesn't use overloaded ==)
             if (action.StartsWith("castleHP+", StringComparison.Ordinal) &&
                 int.TryParse(action.Substring(9), out int hpAdd))
-            { castle?.Regen(hpAdd); return; }
+            { if (castle != null) castle.Regen(hpAdd); return; }
 
             if (action.StartsWith("castleHP-", StringComparison.Ordinal) &&
                 int.TryParse(action.Substring(9), out int hpSub))
-            { castle?.TakeDamage(hpSub); return; }
+            { if (castle != null) castle.TakeDamage(hpSub); return; }
 
             if (action.StartsWith("castleHPMax+", StringComparison.Ordinal) &&
                 int.TryParse(action.Substring(12), out int hpMaxAdd))
-            { castle?.GrantBonusHP(hpMaxAdd); return; }
+            { if (castle != null) castle.GrantBonusHP(hpMaxAdd); return; }
 
             if (action.StartsWith("heroXP+", StringComparison.Ordinal) &&
                 int.TryParse(action.Substring(7), out int xpAdd))
-            { LevelRunner.Instance?.Hero?.GainXp(xpAdd); return; }
+            {
+                // N51: explicit Unity != null check (Hero is UnityEngine.Object; ?. doesn't use overloaded ==)
+                var hero = LevelRunner.Instance?.Hero;
+                if (hero != null) hero.GainXp(xpAdd);
+                return;
+            }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.LogWarning($"[EventSystem] ApplyAction: action non reconnue '{action}'");
