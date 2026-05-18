@@ -800,3 +800,5 @@ Added more towers (50 placed, mixed types) + bumped loop limit to 600. Iterating
 2026-05-18 20h55 — scrute /loop #254 (cron). **0 new commit** depuis #253 (HEAD `6c2325ba`). 2 worktrees stables. Monitor `bnvopvsse` Unity-MCP HTTP 8080 timed out (30min) — package coplaydev port dynamique, pas auto-bridge 8080. Pas de relaunch Monitor (futile sans Mike open MCP setup). Mike doit tester manuellement après git pull. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-18 21h25 — scrute /loop #255 (cron). **0 new commit** depuis #254 (HEAD `8199c949`). 2 worktrees stables. Pas d'activité depuis 20h25 (Mike chat live silent). **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 21h55 — scrute /loop #256 (cron). **0 new commit** depuis #255 (HEAD `9ace1faa`). 2 worktrees stables. 1h sans activité (Mike chat live silent). **Drift 0/12** ✅. **T3 silent**.
