@@ -236,7 +236,8 @@ namespace CrowdDefense.Entities
             StopEnrageVFX();
             CancelInvoke(nameof(EmitAoePulse));
             WaveManager.Instance?.NotifyEnemyDied(this);
-            _lastDamageTower?.RegisterKill();
+            // N33: explicit Unity null check (== null is overloaded for destroyed objects; ?. is not)
+            if (_lastDamageTower != null) _lastDamageTower.RegisterKill();
 
             OnDeathStatic?.Invoke(this, isBoss);
 

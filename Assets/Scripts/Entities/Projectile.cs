@@ -201,7 +201,10 @@ namespace CrowdDefense.Entities
                 target.TakeDamage(damage, sourceTower);
 
             Visual.VfxPool.Instance?.SpawnSpark(transform.position, _projectileColor);
-            sourceTower?.FlashHitConfirmation();
+            // N33: Unity ?. doesn't use UnityEngine.Object's overloaded == — use explicit
+            // != null check so destroyed Tower doesn't throw MissingReferenceException
+            // when its FlashHitConfirmation accesses transform.
+            if (sourceTower != null) sourceTower.FlashHitConfirmation();
 
             ApplyOnHitEffects(target);
 
