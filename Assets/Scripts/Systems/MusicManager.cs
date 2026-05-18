@@ -618,13 +618,16 @@ namespace CrowdDefense.Systems
             {
                 // Fallback: pitch up +0.2 + reverb on current source for orchestral swell impact
                 string fallback = _currentTrack ?? "intense";
-                if (_sources.TryGetValue(fallback, out var fallbackSrc))
+                if (_sources.TryGetValue(fallback, out var fallbackSrc) && fallbackSrc != null && fallbackSrc.gameObject.activeInHierarchy)
                 {
                     fallbackSrc.pitch += BossFallbackPitchShift;
                     foreach (var f in fallbackSrc.GetComponents<AudioReverbFilter>()) UnityEngine.Object.Destroy(f);
                     var rev = fallbackSrc.gameObject.AddComponent<AudioReverbFilter>();
-                    rev.reverbPreset = AudioReverbPreset.Auditorium;
-                    StartCoroutine(RemoveFallbackFxCo(fallbackSrc, rev, BossCrossfadeDuration + 4f));
+                    if (rev != null)
+                    {
+                        rev.reverbPreset = AudioReverbPreset.Auditorium;
+                        StartCoroutine(RemoveFallbackFxCo(fallbackSrc, rev, BossCrossfadeDuration + 4f));
+                    }
                 }
                 float prev = _trackVolMul.TryGetValue("intense", out var m) ? m : 1f;
                 _trackVolMul["intense"] = prev * BossFallbackVolBoost;
