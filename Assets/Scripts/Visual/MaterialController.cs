@@ -103,7 +103,8 @@ namespace CrowdDefense.Visual
                 m.SetColor("_BaseColor", tint);
 
             // Conserve texture originale du mesh (port de opts.map dans ToonMaterial.js)
-            if (srcTex != null)
+            // N35c: HasProperty guard — toon variants without _MainTex would log warning
+            if (srcTex != null && m.HasProperty("_MainTex"))
                 m.mainTexture = srcTex;
 
             if (transparent)
