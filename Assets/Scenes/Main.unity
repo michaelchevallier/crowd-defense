@@ -992,7 +992,6 @@ MonoBehaviour:
   panSpeed: 20
   zoomSpeed: 5
   orbitSpeed: 120
-  followLerpSpeed: 8
   minY: 10
   maxY: 30
   mapHalfX: 59.5

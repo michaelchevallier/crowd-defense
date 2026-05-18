@@ -72,8 +72,9 @@ namespace CrowdDefense.Visual
         // ── Lifecycle ─────────────────────────────────────────────────────────
         private void Start()
         {
-            // V4-parity: position (0, 30, 21), rotation ~47° elevation to match Phaser setup
-            transform.position = new Vector3(0f, 30f, 21f);
+            // V4-parity: top-down 47° elevation looking toward +Z; map extends Z[-14..14],
+            // castle at Z=-12, portal at Z=+12. Camera at Z=-21 looks forward across the map.
+            transform.position = new Vector3(0f, 30f, -21f);
             transform.rotation = Quaternion.Euler(47f, 0f, 0f);
 
             _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
