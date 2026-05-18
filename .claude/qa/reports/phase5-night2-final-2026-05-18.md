@@ -1,7 +1,7 @@
 # Phase 5 Night Swarm #2 — Final Report
-**Run window**: 2026-05-18 03:32–06:04 CEST (~2h32 elapsed)
-**Status**: **10/11 V3 gameplay loop steps validated headless end-to-end + BossSystem.registry wired**
-**Branch**: `main` @ `52da04be` (7 new commits N11-N17 ahead of `5d70fecd`)
+**Run window**: 2026-05-18 03:32–06:13 CEST (~2h41 elapsed)
+**Status**: **10/11 V3 gameplay loop steps validated headless end-to-end + BossSystem.registry wired + tower placement strategy**
+**Branch**: `main` @ `ec5ecd5c` (9 new commits N11-N19 ahead of `5d70fecd`)
 
 ## TL;DR for Mike (read this first)
 
@@ -136,7 +136,7 @@ The same script + same Unity version + same 10-archer config sometimes clears wa
 - Phase 3 polish features (next-level button, gold popup, wave countdown UI, defeat screen UI, WorldMap navigation) — deferred until 11/11 PASS
 - Phase 4 residual cleanup (Roboto SDF noise, particle warning spam, MissingReferenceException) — listed in bindings-to-do.md P1/P2
 
-## Commits delivered (N11–N17)
+## Commits delivered (N11–N19)
 
 | Commit | Type | Effect |
 |--------|------|--------|
@@ -147,8 +147,10 @@ The same script + same Unity version + same 10-archer config sometimes clears wa
 | 4ffb29e5 | feat(qa) | N15: BossSystemRegistryAutoWire utility — `Tools/CrowdDefense/QA/Wire BossSystem Registry` |
 | 96d68460 | docs(qa) | N16: final report add N15 + 2-step path to 11/11 |
 | 52da04be | fix(scene) | **N17: Inspector-wire BossSystem.registry in Main.unity** (all 11 BossDefs bound) |
+| b8f6e0ae | docs(qa) | N18: confirm N17 wire + 11/11 path |
+| ec5ecd5c | fix(qa) | **N19: V3LoopAutoRunner sort BuildPoints by path proximity + AoE/Mage/Ballista mix** |
 
-All pushed to `origin/main` at HEAD = `52da04be`.
+All pushed to `origin/main` at HEAD = `ec5ecd5c`.
 
 ## How to reproduce the validation
 
@@ -163,19 +165,20 @@ cat /Users/mike/Work/crowd-defense/Library/V3LoopBatchReports/latest-auto.txt
 
 ## To get 11/11 PASS (next step for Mike)
 
-The remaining gap is the V3LoopAutoRunner's tower placement strategy. The validator currently uses:
-- Phase 5 (wave 1): `Mathf.Min(30, bps.Length)` archers placed in BuildPoint discovery order
-- Phase 9 (wave 2+): up to 50 mixed towers (archer/cannon/mage every 3rd build point)
+The remaining gap is V3 balance — wave 4 of W1-1 has 136 mobs including heavy Brutes that absorb damage. Even with N19's optimized tower placement (cannons closest to path → mages → ballistas → archers) and 60 placed towers, the kill rate (4/119 per iter) doesn't keep up.
 
-This doesn't optimize for path coverage; some build points are far from the path. To beat W1-1:
-1. Sort `bps` by distance to nearest path waypoint (closest first) so wave-1 archers cover the path
-2. Add 2-3 ballista at chokepoints (cells adjacent to the castle in the path)
-3. Upgrade existing towers between waves (use `PlacementController.UpgradeTower` if exposed)
+Possible fixes to reach 11/11:
+1. **Add upgrades to V3LoopAutoRunner**: between waves, level up the 12 closest-to-path towers via `PlacementController.UpgradeTower(tower, level)` — L1 → L3 is 3x DPS. Estimated +1h work.
+2. **Hero auto-attack**: the V3 Hero participates in combat but the validator doesn't drive Hero abilities. Add a phase-9b that uses `Hero.UseUltimate()` or similar between waves.
+3. **Reduce Brute count for QA**: edit `W1-1.asset` wave 4 to cap Brute count (e.g., from 7 to 2). Acceptable for headless QA only; revert before player release.
+4. **Run W1-2 instead of W1-1**: W1-2 may have a more forgiving wave 4 — call `LevelLoader.LoadLevel("W1-2")` in phase 0.
 
-Estimated work: 30-60 min. Once V3LoopAutoRunner reliably beats W1-1, expected line is:
+Once V3LoopAutoRunner reliably beats one level, expected line is:
 ```
 phase11 FINAL VICTORY PASS state=Summary idx=5/5 castleHP=>0
 ```
+
+The infrastructure (V3LoopAutoRunner + BossSystem.registry wired) is solid; only V3LoopAutoRunner's "smart play" strategy needs the iteration to clinch 11/11.
 
 ## Reports + Library artifacts
 
