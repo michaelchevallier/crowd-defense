@@ -184,6 +184,10 @@ namespace CrowdDefense.UI
 
             // Hide the linear grid + world tabs + header + special tiles when entering run mode.
             // RunMap occupies the full screen — leave only its own header/graph/footer visible.
+            // V6 fix: also hide worldmap-root entirely — it has height:100% and bg sombre,
+            // which stacked above runmap elements (added directly to _root) and broke layout.
+            var worldmapRoot = _root.Q<VisualElement>("worldmap-root");
+            if (worldmapRoot != null) worldmapRoot.style.display = DisplayStyle.None;
             var levelGrid = _root.Q<VisualElement>("worldmap-level-grid");
             if (levelGrid != null) levelGrid.style.display = DisplayStyle.None;
             var tabBar = _root.Q<VisualElement>("worldmap-tabs");
@@ -192,6 +196,11 @@ namespace CrowdDefense.UI
             if (header != null) header.style.display = DisplayStyle.None;
             var specialTiles = _root.Q<VisualElement>("special-tiles-row");
             if (specialTiles != null) specialTiles.style.display = DisplayStyle.None;
+
+            // Root must fill the screen so runmap-* children can layout correctly.
+            _root.style.flexGrow = 1;
+            _root.style.flexDirection = FlexDirection.Column;
+            _root.style.backgroundColor = new StyleColor(new Color(0.03f, 0.04f, 0.09f, 1f));
 
             // Act label.
             var actLabel = _root.Q<Label>("runmap-act-label");

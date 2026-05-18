@@ -16,10 +16,12 @@ namespace CrowdDefense.Entities
 
         // ── Idle dance ────────────────────────────────────────────────────────
         private float _idleSeconds;
+        private float _idleBaseY;
+        private bool _idleBaseYCaptured;
         private const float IdleDanceDelay  = 5f;
         private const float DanceRotAmp     = 10f;
         private const float DanceRotHz      = 0.8f;
-        private const float DanceBobAmp     = 0.1f;
+        private const float DanceBobAmp     = 0.05f;
         private const float DanceBobHz      = 0.6f;
 
         public void SetMove(float dx, float dz)
@@ -40,6 +42,7 @@ namespace CrowdDefense.Entities
             if (moving)
             {
                 _idleSeconds = 0f;
+                _idleBaseYCaptured = false;
 
                 float speed = cfg.MoveSpeed * MoveSpeedMul * (_running ? 1.8f : 1f);
                 var oldPos = transform.position;
@@ -66,16 +69,20 @@ namespace CrowdDefense.Entities
 
                 if (_idleSeconds >= IdleDanceDelay)
                 {
+                    if (!_idleBaseYCaptured)
+                    {
+                        _idleBaseY = transform.position.y;
+                        _idleBaseYCaptured = true;
+                    }
                     float t = Time.time;
-                    float rotY  = DanceRotAmp * Mathf.Sin(t * DanceRotHz * 2f * Mathf.PI);
-                    float bobY  = DanceBobAmp * Mathf.Sin(t * DanceBobHz * 2f * Mathf.PI);
+                    float bobY = DanceBobAmp * Mathf.Sin(t * DanceBobHz * 2f * Mathf.PI);
                     var basePos = transform.position;
-                    basePos.y   = Mathf.Round(basePos.y * 100f) / 100f;
-                    basePos.y  += bobY;
+                    basePos.y = _idleBaseY + bobY;
                     transform.position = basePos;
-                    var euler = transform.eulerAngles;
-                    euler.y   += rotY;
-                    transform.eulerAngles = euler;
+                }
+                else
+                {
+                    _idleBaseYCaptured = false;
                 }
             }
 
