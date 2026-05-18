@@ -569,5 +569,19 @@ namespace CrowdDefense.Systems
 #endif
             OnBreakStateChanged?.Invoke();
         }
+
+        // N42: Defensive prune — remove any null/destroyed Enemy entries from _activeEnemies.
+        // Called once per frame from LateUpdate to ensure ActiveEnemies is iteration-safe.
+        // Normally NotifyEnemyDied removes enemies cleanly, but if an Enemy is destroyed
+        // externally (e.g. via Destroy() without HandleDeath chain), the list would hold
+        // a dead reference that throws MissingRef on subsequent transform reads.
+        private void LateUpdate()
+        {
+            for (int i = _activeEnemies.Count - 1; i >= 0; i--)
+            {
+                var e = _activeEnemies[i];
+                if (e == null) _activeEnemies.RemoveAt(i);
+            }
+        }
     }
 }
