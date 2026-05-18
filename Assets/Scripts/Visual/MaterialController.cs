@@ -87,7 +87,9 @@ namespace CrowdDefense.Visual
             if (_toonCache.TryGetValue(key, out var m)) return m;
 
             m = new Material(_toonBase!);
-            m.SetColor("_BaseColor", tint);
+            // N29: HasProperty guard for toon variants that don't expose _BaseColor
+            if (m.HasProperty("_BaseColor"))
+                m.SetColor("_BaseColor", tint);
 
             // Conserve texture originale du mesh (port de opts.map dans ToonMaterial.js)
             if (srcTex != null)
@@ -103,7 +105,8 @@ namespace CrowdDefense.Visual
                 m.renderQueue = 3000;
                 Color c = tint;
                 c.a = 0.45f; // stealth initial opacity
-                m.SetColor("_BaseColor", c);
+                if (m.HasProperty("_BaseColor"))
+                    m.SetColor("_BaseColor", c);
             }
 
             _toonCache[key] = m;

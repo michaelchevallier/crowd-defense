@@ -399,7 +399,11 @@ namespace CrowdDefense.Visual
             var baseCol = theme == LevelTheme.Volcan
                 ? new Color(0.20f, 0.18f, 0.17f)
                 : new Color(0.25f, 0.22f, 0.20f);
-            mat.SetColor(Shader.PropertyToID("_BaseColor"), baseCol);
+            // N29: Toon/Lava shader uses _Tint, not _BaseColor. URP/Lit fallback uses _BaseColor.
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor(Shader.PropertyToID("_BaseColor"), baseCol);
+            else if (mat.HasProperty("_Tint"))
+                mat.SetColor("_Tint", baseCol);
             if (mat.HasProperty(_shaderEmission))
                 mat.SetColor(_shaderEmission, new Color(0.80f, 0.12f, 0.01f) * 0.5f);
             mat.enableInstancing = true;

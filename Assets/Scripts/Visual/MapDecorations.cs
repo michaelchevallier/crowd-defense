@@ -118,7 +118,12 @@ namespace CrowdDefense.Visual
             var mr = go.GetComponent<MeshRenderer>();
             if (mr == null) return;
             var mat = new Material(ShaderUtil.GetToonShader());
-            mat.SetColor("_BaseColor", color);
+            // N29: HasProperty guard — if shader fallback chain ends at a custom toon
+            // shader without `_BaseColor` (Toon/Water, Toon/Lava), avoid the log warning.
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", color);
+            else if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", color);
             mat.enableInstancing = true;
             mr.sharedMaterial = mat;
         }
