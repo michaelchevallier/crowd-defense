@@ -558,6 +558,10 @@ namespace CrowdDefense.EditorTools
             for (int i = 0; i < 240; i++) EditorApplication.Step();
             int iter = SessionState.GetInt(SsIter11, 0) + 1;
             SessionState.SetInt(SsIter11, iter);
+            // N34: Reposition hero every 3 iters during phase 11 — covers respawn cases
+            // where hero died mid-wave from boss AoE or pressure mob suicide.
+            if (iter % 3 == 0)
+                PositionHeroOnPath();
             // Diagnostic every 10 iters
             if (iter % 10 == 0)
             {
