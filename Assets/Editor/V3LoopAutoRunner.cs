@@ -276,6 +276,9 @@ namespace CrowdDefense.EditorTools
         {
             var hero = CrowdDefense.Entities.Hero.Current;
             if (hero == null) return;
+            // N32: skip if hero is dead (during respawn coroutine); avoids forcing teleport
+            // while internal state is mid-transition.
+            if (!hero.IsAlive) return;
             var pm = CrowdDefense.Systems.PathManager.Instance;
             if (pm == null || pm.Paths.Count == 0) return;
             var wps = pm.Paths[0];
