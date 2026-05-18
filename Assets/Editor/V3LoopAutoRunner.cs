@@ -403,8 +403,23 @@ namespace CrowdDefense.EditorTools
                 return;
             }
 
+            // Upgrade all existing towers to L3 before placing new ones (massive DPS boost)
+            Econ!.AddGold(200000);
+            int upgraded = 0;
+            foreach (var t in Pc!.PlacedTowers)
+            {
+                if (t == null || t.UpgradeLevel >= 3) continue;
+                try
+                {
+                    if (t.UpgradeTo(2)) upgraded++;
+                    if (t.UpgradeLevel < 3 && t.UpgradeTo(3)) upgraded++;
+                }
+                catch { /* ignore upgrade exceptions for dead towers */ }
+            }
+            Append($"phase9 upgraded={upgraded} towers to L3");
+
             // Place as many towers as possible (different types for AoE diversity)
-            Econ!.AddGold(50000);
+            Econ.AddGold(50000);
             var bpsAll = UnityEngine.Object.FindObjectsByType<CrowdDefense.Entities.BuildPoint>(FindObjectsSortMode.None);
             var bps = SortByPathProximity(bpsAll, CrowdDefense.Systems.PathManager.Instance);
             var reg = Resources.Load<CrowdDefense.Data.TowerRegistry>("TowerRegistry");
@@ -485,7 +500,21 @@ namespace CrowdDefense.EditorTools
 
             if (Wm!.IsWaitingForPlayerStart)
             {
-                Append($"phase11 startWave#{Wm.CurrentWaveIdx + 1} (towers={Pc?.PlacedTowers.Count} castle={CastleI.HP})");
+                // Upgrade towers and add a few more between waves
+                Econ!.AddGold(200000);
+                int upgraded = 0;
+                foreach (var t in Pc!.PlacedTowers)
+                {
+                    if (t == null || t.UpgradeLevel >= 3) continue;
+                    try
+                    {
+                        if (t.UpgradeTo(2)) upgraded++;
+                        if (t.UpgradeLevel < 3 && t.UpgradeTo(3)) upgraded++;
+                    }
+                    catch { }
+                }
+                Append($"phase11 between-waves upgraded={upgraded} towers");
+                Append($"phase11 startWave#{Wm.CurrentWaveIdx + 1} (towers={Pc.PlacedTowers.Count} castle={CastleI.HP})");
                 Wm.StartNextWave();
             }
 
