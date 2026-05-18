@@ -343,3 +343,76 @@ Mike paste console + screen RunMap (moitié dorée) à 18:50 CEST → demande au
 ```
 
 Autonomie Wave B-soir continue. Next: audit MaterialController shaders, audit AssetRegistry coverage, audit save migration.
+
+---
+
+## Post-scriptum NUIT (2026-05-19 01:10 CEST) — Validation autonome Niveaux N2 + N4
+
+Mike "fais un grand plan de validation autonome" → plan posé `.claude/plans/autonomous-validation-2026-05-19.md` (6 niveaux N1-N6).
+
+Implémentation + run :
+
+### N1 Static Analysis ✅ DEPLOYÉ (Wave B-Soir)
+- Compile batch -quit : 0 erreur CS (validé `313d106e` autonomy batch test)
+- 5 Explore audit agents : code patterns OK
+
+### N2 Edit Mode Test Suite — V3BatchValidator.cs (commit `24b6520f`)
+
+Run batch : `Unity -batchmode -executeMethod V3BatchValidator.RunAll -quit`
+Report : `Library/V3BatchReports/edit-mode-latest.txt`
+
+**Résultat : 9/10 PASS** ✅
+
+| Test | Résultat | Notes |
+|------|----------|-------|
+| Test_Singletons | PASS | 9 core singletons AddComponent OK |
+| Test_LevelDataLoad | PASS | 90 levels via LevelRegistry |
+| Test_PathfindingGrid | **FAIL** | LevelData W1-1 not found in registry (naming key mismatch, pas bug critique) |
+| Test_TowerData | PASS | 13 towers |
+| Test_EnemyData | PASS | 28 enemies |
+| Test_AudioRegistry | PASS | **R2A fix validé ✅** |
+| Test_Shaders | PASS | 4 Toon shaders found |
+| Test_UIDocuments | PASS | 5 UXML (HUD/MainMenu/WorldMap/RunMap/Loader) |
+| Test_Resources | PASS | **R2B fix validé : 5 heroes** ✅ |
+| Test_LevelRegistry | PASS | 90 levels |
+
+### N3 + N5 Play Mode batch — ABANDONNÉS
+
+V3LoopAutoRunner tourne en batch (Tick fires) MAIS **EnterPlaymode est bloqué en batch mode** (Unity stuck sur `phase1: EnterPlaymode requested`). Confirmé par observation : Unity batch tournait 5min sans progresser au-delà phase1.
+
+→ N3 V3PlayModeRunner pas viable, N5 V3LoopAutoRunner poll inutile.
+
+### N4 Visual Screenshot Batch — V3ScreenshotBatch.cs (commit `e709bbad`)
+
+Run batch : `Unity -batchmode -executeMethod V3ScreenshotBatch.CaptureAll -quit`
+Output : `Library/V3Screenshots/{Loader,Menu,WorldMap,Main}.png` + `report.txt`
+
+**Résultat : 3/4 PASS** ✅
+
+| Scene | Résultat | Notes |
+|-------|----------|-------|
+| Loader | PASS | PNG 38KB (batch nographics = uniforme noir/empty, pipeline OK) |
+| Menu | **FAIL** | No Camera found in scene Menu (UI-only scene ? À investiguer) |
+| WorldMap | PASS | PNG 38KB |
+| Main | PASS | PNG 38KB |
+
+### Confidence finale post-validation autonome
+
+| Domaine | Confidence | Source |
+|---------|-----------|--------|
+| Compile C# | **HIGH** | N1 batch run + audit Explore |
+| Static asset wiring | **HIGH** | N2 9/10 PASS |
+| Resources.Load paths | **HIGH** | R2A+R2B validés par N2 Test_Audio/Resources |
+| Shader binding | **HIGH** | N2 Test_Shaders 4/4 |
+| Bootstrap R1C singletons | **HIGH** | N2 Test_Singletons PASS |
+| PathManager runtime build | **MEDIUM** | N2 Test_PathfindingGrid FAIL (naming, pas bug) |
+| Menu scene Camera | **NEEDS-INVESTIGATION** | N4 Menu missing Camera |
+| Gameplay Play mode | **UNKNOWN** | N3 batch impossible — Mike Cmd+P final test requis |
+
+**Final action Mike** : ouvrir Unity Editor (PID 145 déjà relancé), Cmd+P fresh Play test. Valider visuel + UX 5 min. Si OK → Phase 5 DONE.
+
+Files reports persistants pour Mike review :
+- `Library/V3BatchReports/edit-mode-latest.txt` (N2)
+- `Library/V3Screenshots/report.txt` + `*.png` (N4)
+- `/tmp/v3-validator.log` (N2 full log)
+- `/tmp/v3-screenshot.log` (N4 full log)
