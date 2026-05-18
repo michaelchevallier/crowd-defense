@@ -86,6 +86,7 @@ namespace CrowdDefense.Visual
             vol.enabled = true;
             vol.x       = new ParticleSystem.MinMaxCurve(-0.3f, 0.3f);
             vol.y       = new ParticleSystem.MinMaxCurve(-0.05f, 0.05f);
+            vol.z       = new ParticleSystem.MinMaxCurve(0f, 0f);
             vol.space   = ParticleSystemSimulationSpace.World;
 
             // ---- Colour over lifetime — fade out last 30 % of life ----

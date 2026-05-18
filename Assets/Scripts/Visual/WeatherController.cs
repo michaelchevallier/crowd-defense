@@ -338,6 +338,8 @@ namespace CrowdDefense.Visual
                 var vel = ps.velocityOverLifetime;
                 vel.enabled = true;
                 vel.x       = new ParticleSystem.MinMaxCurve(-0.5f, 0.5f);
+                vel.y       = new ParticleSystem.MinMaxCurve(0f, 0f);
+                vel.z       = new ParticleSystem.MinMaxCurve(0f, 0f);
             }
 
             // Noise module — wobble for organic effects
