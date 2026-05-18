@@ -14,6 +14,10 @@ namespace CrowdDefense.Entities
     {
         public void RegisterKill()
         {
+            // N38: belt-and-braces guard — if this is called via a stale reference after
+            // PlayDestroyAnim, skip silently. N33 in callers prevents this, but multiple
+            // event subscribers + projectile-in-flight chains can race past those guards.
+            if (this == null || _destroyStarted) return;
             TotalKills++;
             TakeDamage(1);
             if (Time.time - _lastKillTime < StreakWindow)
