@@ -86,7 +86,9 @@ namespace CrowdDefense.UI
             if (sceneName != "WorldMap")
             {
 #if UNITY_EDITOR
-                Debug.LogWarning($"[WorldMapController] Misplaced controller in scene '{sceneName}' — disabling component (R2-recovery : NOT the GameObject — siblings like HudController must keep running).");
+                // N28: expected behavior in Main scene per R2-recovery comment; demote
+                // LogWarning to Log to reduce console noise. Still kept in EDITOR for traceability.
+                Debug.Log($"[WorldMapController] Misplaced controller in scene '{sceneName}' — disabling component (R2-recovery : NOT the GameObject — siblings like HudController must keep running).");
 #endif
                 // R2-recovery : was gameObject.SetActive(false), which deactivated the entire
                 // HUD GameObject and dragged every sibling controller down (HudController,
