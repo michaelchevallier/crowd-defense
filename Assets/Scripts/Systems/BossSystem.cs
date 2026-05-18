@@ -14,6 +14,7 @@ namespace CrowdDefense.Systems
         [SerializeField] private List<BossDef> registry = new();
 
         private readonly Dictionary<string, BossDef> _byEnemyId = new();
+        private readonly HashSet<string> _warnedMissingIds = new();
         private Enemy? _currentBoss;
         private BossDef? _currentDef;
         private float _lastRatio = 1f;
@@ -22,17 +23,41 @@ namespace CrowdDefense.Systems
 
         protected override void OnAwakeSingleton()
         {
+            AutoLoadFromResources();
             RebuildDict();
         }
 
         private void Start()
         {
             // Rebuild in Start too — guards against domain reload emptying the dict (R4)
+            AutoLoadFromResources();
             RebuildDict();
             var em = EventManager.Instance;
             if (em == null) return;
             em.Subscribe<EnemySpawnedEvent>(OnEnemySpawned);
             em.Subscribe<LevelEndedEvent>(OnLevelEnded);
+        }
+
+        // Auto-load BossDef SOs not yet in the Inspector-wired registry.
+        // Looks in Resources/Bosses/ and Assets/ScriptableObjects/Bosses/ (Editor only).
+        private void AutoLoadFromResources()
+        {
+            var fromResources = Resources.LoadAll<BossDef>("Bosses");
+            foreach (var def in fromResources)
+            {
+                if (def == null) continue;
+                if (!registry.Contains(def)) registry.Add(def);
+            }
+#if UNITY_EDITOR
+            // Editor-only: load every BossDef under Assets/ScriptableObjects/Bosses/
+            var guids = UnityEditor.AssetDatabase.FindAssets("t:BossDef", new[] { "Assets/ScriptableObjects/Bosses" });
+            foreach (var g in guids)
+            {
+                var path = UnityEditor.AssetDatabase.GUIDToAssetPath(g);
+                var def = UnityEditor.AssetDatabase.LoadAssetAtPath<BossDef>(path);
+                if (def != null && !registry.Contains(def)) registry.Add(def);
+            }
+#endif
         }
 
         protected override void OnDestroySingleton()
@@ -66,7 +91,8 @@ namespace CrowdDefense.Systems
             if (!_byEnemyId.TryGetValue(cfg.Id, out var def))
             {
 #if UNITY_EDITOR
-                Debug.LogWarning($"[BossSystem] No BossDef for enemy id='{cfg.Id}' — add to registry");
+                if (_warnedMissingIds.Add(cfg.Id))
+                    Debug.LogWarning($"[BossSystem] No BossDef for enemy id='{cfg.Id}' — add to registry (warned once)");
 #endif
                 return;
             }

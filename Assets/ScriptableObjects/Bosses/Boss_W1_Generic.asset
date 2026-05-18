@@ -10,13 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 71efad2b90934443085826ad6fe1ff9b, type: 3}
-  m_Name: Boss_W4_Dragon
+  m_Name: Boss_W1_Generic
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Data.BossDef
-  enemyType: {fileID: 11400000, guid: dd55132548814fbab8eac9b19eb89d6b, type: 2}
-  displayNameFr: Dragon de Lave
-  world: 4
-  auraColor: {r: 1.0, g: 0.45, b: 0.05, a: 1}
-  cutsceneSubtitle: Le dragon de lave s'eveille !
+  enemyType: {fileID: 11400000, guid: bf5f19f1e87a4f8fa2e35f878f01cb90, type: 2}
+  displayNameFr: Boss
+  world: 1
+  auraColor: {r: 0.8, g: 0.2, b: 0.1, a: 1}
+  cutsceneSubtitle: Le boss arrive !
+  cutsceneLines: []
   enragedAt: 0.5
   desperateAt: 0.2
   enragedSpeedMul: 1.4
