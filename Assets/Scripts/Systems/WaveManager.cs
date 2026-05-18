@@ -87,8 +87,9 @@ namespace CrowdDefense.Systems
             if (levelData == null && LevelRunner.Instance?.CurrentLevel != null)
                 levelData = LevelRunner.Instance.CurrentLevel;
 
-            // Final fallback: load first level WITH waves from registry if still null OR empty
-            // (W1-1 is a tutorial with 0 waves — LevelRunner.CurrentLevel defaults to it)
+            // Final fallback: load first level WITH waves from registry if still null OR empty.
+            // Historically W1-1 had 0 waves due to a YAML blank-line stripping the waves list
+            // (fixed in N3); the fallback stays as a safety net for any future tutorial level.
             if (levelData == null || levelData.Waves.Count == 0)
             {
                 var reg = LevelRegistry.Get();
