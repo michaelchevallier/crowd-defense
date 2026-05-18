@@ -738,3 +738,49 @@ Added more towers (50 placed, mixed types) + bumped loop limit to 600. Iterating
 2026-05-18 08h14 — scrute /loop hors-tick (agent #3 completed). **Night Swarm #3 DONE** 37 commits N26-N56, Phase 2 BLOCKED (Unity-MCP DOWN, pivot code-only). Cumul N1-N56 = 62 commits. **Continuation #4 dispatchée** `a94fb125c60131183` budget +1h46 : Phase 1 check UnityMCP, Phase 2 real Editor validation si UP, Phase 3 V3 polish features pure code (gold popup, defeat screen, next level, wave countdown, VAGUE button, WorldMap unlock), Phase 4 consolidated final report Mike 09:30, Phase 5 cleanup worktrees, Phase 6 stop 09:55. **Pas de double T1** (Monitor #3 PID 59753 armed 09:30).
 
 2026-05-18 08h21 — scrute /loop hors-tick (agent #4 completed). **Night Swarm #4 DONE** 1 commit N57 CONSOLIDATED report. Cumul N1-N57 = 63 commits. **Continuation #5 watchdog** `adc031a39756d0bb7` budget +1h34 minimal scope : Tâche A Unity-MCP polling + Phase 2 Real Editor si UP, Tâche B cleanup worktrees stales md-* mergées, Tâche C stop 09:55 silent. Monitor #3 PID 59753 fait T1 09:30 (pas double).
+
+2026-05-18 08h26 — scrute /loop hors-tick (agent #5 watchdog completed). Night Swarm #5 1 commit N58 cleanup 37 worktrees mergées + post-scriptum consolidated report. Cumul N1-N58 = 64 commits sur origin/main. **Monitor `b8l05w0b8` armed cette session** : poll Unity-MCP HTTP 8080 toutes 3 min jusqu'à UP OU 09:55 CEST. Si UP avant deadline, je lance moi-même la Phase 2 Real Editor validation (steps 8-11). Si DOWN toute la durée, silent exit. Monitor #3 PID 59753 reste autoritaire pour T1 09:30.
+
+2026-05-18 08h34 — scrute /loop #229. **1 new commit** depuis #228 (HEAD `5beaf703`) : N58 cleanup 37 worktrees md-* mergées + post-scriptum Night #5. **Worktrees 40→2** (main + gh-pages). Cumul N1-N58 = 64 commits. Monitor `b8l05w0b8` Unity-MCP poll cette session toujours actif. Heure 08:34 CEST (deadline 10:00 = +1h26). **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 09h04 — scrute /loop #230. **0 new commit** depuis #229 (HEAD `5beaf703`). 2 worktrees. Heure 09:04 CEST (deadline 10:00 = +56 min). Monitor `b8l05w0b8` Unity-MCP poll silent (MCP toujours DOWN). Monitor #3 PID 59753 fire T1 dans 26 min. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 09h07 — [T1 notified] Night swarm #3 DONE — 37 commits N26-N56 delivered. Rapport .claude/qa/reports/phase5-night3-final-2026-05-18.md + phase5-night-bindings-to-do.md + phase5-night3-blocker-mcp-down.md. Phase 2 BLOCKED MCP DOWN (Unity Editor pas lancé). Run Tools/CrowdDefense/QA/V3Loop/Auto/Run-Now pour valider 11/11 PASS.
+
+2026-05-18 09h07 — scrute /loop hors-tick (agent #3 ré-réveillé). **T1 fired manuellement 09:07** par agent #3 (Monitor PID 59753 killed externally, fallback manual notification). Mike notif iPhone livrée. État final : 64 commits N1-N58, 2 worktrees, headless 11/11 PASS, reports consolidated. Monitor cette session `b8l05w0b8` continue poll Unity-MCP jusqu'à 09:55.
+
+2026-05-18 09h34 — scrute /loop #231. **0 new commit** depuis #230 (HEAD `5beaf703`). 2 worktrees. Heure 09:34 CEST (deadline 10:00 = +26 min). Monitor `b1rhaxohz` re-armed Unity-MCP poll jusqu'à 09:55 (toujours DOWN HTTP 000). T1 fired 09:07. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 09h56 — scrute /loop hors-tick (Monitor b1rhaxohz exit propre). **FIN NIGHT SWARM** : Unity-MCP DOWN toute la nuit (toutes les fenêtres polling 5min/30s/2min/1min ont confirmé 000). Phase 2 Real Editor validation NON-faisable cette nuit. Cumul livré : 64 commits N1-N58, headless 11/11 PASS, 2 worktrees, Mike T1 fired 09:07. Mike rentre 10:00 (= dans 4 min). Reports prêts dans `.claude/qa/reports/`. Bindings TODO + instructions reprise UnityMCP dans `.claude/qa/reports/phase5-night-bindings-to-do.md` + `phase5-night3-blocker-mcp-down.md`.
+
+2026-05-18 10h04 — scrute /loop #232. **0 new commit** depuis #231 (HEAD `5beaf703`). 2 worktrees. Heure 10:04 CEST (deadline passée, Mike doit être de retour). **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 10h34 — scrute /loop #233. **0 new commit** depuis #232 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 11h04 — scrute /loop #234. **0 new commit** depuis #233 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 11h34 — scrute /loop #235. **0 new commit** depuis #234 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 12h04 — scrute /loop #236. **0 new commit** depuis #235 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 12h34 — scrute /loop #237. **0 new commit** depuis #236 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 13h04 — scrute /loop #238. **0 new commit** depuis #237 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 13h34 — scrute /loop #239. **0 new commit** depuis #238 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 14h04 — scrute /loop #240. **0 new commit** depuis #239 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 14h34 — scrute /loop #241. **0 new commit** depuis #240 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 15h04 — scrute /loop #242. **0 new commit** depuis #241 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 15h34 — scrute /loop #243. **0 new commit** depuis #242 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 16h04 — scrute /loop #244. **0 new commit** depuis #243 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 16h34 — scrute /loop #245. **0 new commit** depuis #244 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 17h04 — scrute /loop #246. **0 new commit** depuis #245 (HEAD `5beaf703`). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-18 17h34 — scrute /loop #247. **0 new commit** depuis #246 (HEAD `5beaf703`). 2 worktrees. Mike chat live (auto-QA stuck reported 17h04). **Drift 0/12** ✅. **T3 silent**.

@@ -1,5 +1,6 @@
 #nullable enable
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
@@ -15,6 +16,20 @@ namespace CrowdDefense.UI
 
         private void Awake()
         {
+            // R-MENU-B2: Menu scene guard — LevelSelectController is legacy debug menu
+            // (shows "Bonjour Joueur / Continuer / Sans Fin / Achievements" etc.).
+            // In Menu.unity, MenuController is the active modern UI (CROWD DEFENSE branded).
+            // Only enable LevelSelectController in WorldMap scene, not Menu scene.
+            var sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+            if (sceneName != "WorldMap")
+            {
+#if UNITY_EDITOR
+                Debug.Log($"[LevelSelectController] Misplaced in scene '{sceneName}' — disabling (legacy menu controller, use MenuController in Menu scene).");
+#endif
+                enabled = false;
+                return;
+            }
+
             ResolveUI();
         }
 
