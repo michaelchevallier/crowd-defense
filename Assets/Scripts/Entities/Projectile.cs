@@ -364,6 +364,13 @@ namespace CrowdDefense.Entities
         private void ReleaseToPool()
         {
             DisableTrail();
+            // N40: clear sourceTower + target refs so reused projectile doesn't hold a stale
+            // (possibly destroyed) Tower reference. Init() rebinds them on next Get() but
+            // belt-and-braces clears here to prevent MissingRef in any code path that reads
+            // sourceTower between Release and Init.
+            sourceTower = null;
+            target = null;
+            alreadyHit.Clear();
             if (pool != null)
                 pool.Release(this);
             else
