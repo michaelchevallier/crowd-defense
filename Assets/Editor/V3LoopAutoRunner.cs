@@ -270,6 +270,25 @@ namespace CrowdDefense.EditorTools
             }
         }
 
+        // N26: Position Hero on the path mid-point so it intercepts stragglers
+        // that slip through tower coverage. Hero auto-attacks any enemy in range.
+        private static void PositionHeroOnPath()
+        {
+            var hero = CrowdDefense.Entities.Hero.Current;
+            if (hero == null) return;
+            var pm = CrowdDefense.Systems.PathManager.Instance;
+            if (pm == null || pm.Paths.Count == 0) return;
+            var wps = pm.Paths[0];
+            if (wps.Count < 4) return;
+            // Position hero ~25% from castle end (path is portal→castle so castle is last waypoint)
+            // We pick the waypoint at 75% of the path length — close enough to castle that hero
+            // covers stragglers but far enough to engage mobs before they hit castle.
+            int idx = Mathf.Clamp(Mathf.RoundToInt(wps.Count * 0.75f), 0, wps.Count - 1);
+            var target = wps[idx];
+            target.y = 0.5f; // ensure not underground
+            hero.transform.position = target;
+        }
+
         private static void ResolveSingletons()
         {
             if (Lr == null || Wm == null || Pc == null || CastleI == null || Econ == null)
@@ -280,6 +299,10 @@ namespace CrowdDefense.EditorTools
             }
             if (Archer == null) { Append("phase4 FAIL no archer"); Finish("FAIL no archer"); return; }
             Append($"phase4 step3 PASS level={Lr.CurrentLevel?.Id} waves={Wm.TotalWaves} castle={CastleI.HP}/{CastleI.HPMax}");
+            // N26: Reposition hero on path mid-route so it intercepts stragglers
+            PositionHeroOnPath();
+            var heroDbg = CrowdDefense.Entities.Hero.Current;
+            Append($"phase4 hero pos={(heroDbg!=null ? heroDbg.transform.position.ToString("F2") : "null")}");
             NextPhase(5);
         }
 
@@ -330,6 +353,7 @@ namespace CrowdDefense.EditorTools
         {
             if (Wm!.IsWaitingForPlayerStart)
             {
+                PositionHeroOnPath();
                 Wm.StartNextWave();
                 for (int i = 0; i < 60; i++) EditorApplication.Step();
                 Append($"phase6 step6 PASS waveActive={Wm.IsWaveActive} pending={Wm.PendingSpawnCount} time={Time.time:F2} frame={Time.frameCount}");
@@ -452,6 +476,8 @@ namespace CrowdDefense.EditorTools
             }
             Append($"phase9 step10-pre extra={extra} total={Pc!.PlacedTowers.Count} (cannon={cannon!=null} mage={mage!=null})");
 
+            // N26: Reposition hero on path mid-route before each wave start
+            PositionHeroOnPath();
             if (Wm!.IsWaitingForPlayerStart) Wm.StartNextWave();
             for (int i = 0; i < 60; i++) EditorApplication.Step();
             SessionState.SetInt(SsLoop10, 0);
@@ -514,7 +540,9 @@ namespace CrowdDefense.EditorTools
                     catch { }
                 }
                 Append($"phase11 between-waves upgraded={upgraded} towers");
-                Append($"phase11 startWave#{Wm.CurrentWaveIdx + 1} (towers={Pc.PlacedTowers.Count} castle={CastleI.HP})");
+                // N26: Reposition hero on path mid-route before each new wave
+                PositionHeroOnPath();
+                Append($"phase11 startWave#{Wm.CurrentWaveIdx + 1} (towers={Pc.PlacedTowers.Count} castle={CastleI.HP} hero={(CrowdDefense.Entities.Hero.Current!=null ? CrowdDefense.Entities.Hero.Current.transform.position.ToString("F1") : "null")})");
                 Wm.StartNextWave();
             }
 
