@@ -78,11 +78,29 @@ namespace CrowdDefense.Visual
             {
                 case 1: case 2:
                 {
-                    // Tree: tall green cylinder
-                    var go = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                    go.transform.localScale = new Vector3(scale * 0.4f, scale, scale * 0.4f);
-                    ApplyColor(go, new Color(0.18f, 0.55f, 0.12f));
-                    return go;
+                    // Tree: trunk (brown cylinder) + foliage (green sphere)
+                    var root = new GameObject();
+                    float randomScale = (float)(rng.NextDouble() * 0.4 + 0.8); // 0.8..1.2
+                    float rotY = (float)(rng.NextDouble() * 360.0);
+                    root.transform.rotation = Quaternion.Euler(0f, rotY, 0f);
+
+                    var trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                    trunk.transform.SetParent(root.transform, false);
+                    trunk.transform.localScale = new Vector3(0.15f * randomScale, 0.5f * randomScale, 0.15f * randomScale);
+                    trunk.transform.localPosition = Vector3.zero;
+                    ApplyColor(trunk, new Color(0.45f, 0.30f, 0.15f));
+                    var trunkCol = trunk.GetComponent<Collider>();
+                    if (trunkCol != null) Object.Destroy(trunkCol);
+
+                    var foliage = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                    foliage.transform.SetParent(root.transform, false);
+                    foliage.transform.localScale = new Vector3(0.55f * randomScale, 0.55f * randomScale, 0.55f * randomScale);
+                    foliage.transform.localPosition = new Vector3(0f, 0.7f * randomScale, 0f);
+                    ApplyColor(foliage, new Color(0.20f, 0.50f, 0.20f));
+                    var foliageCol = foliage.GetComponent<Collider>();
+                    if (foliageCol != null) Object.Destroy(foliageCol);
+
+                    return root;
                 }
                 case 3: case 4:
                 {
