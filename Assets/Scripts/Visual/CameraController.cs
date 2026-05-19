@@ -109,7 +109,7 @@ namespace CrowdDefense.Visual
             _zooming = true;
             var origin = transform.position;
             var target = new Vector3(bossPos.x - 5f, 0f, bossPos.z - 8f);
-            target.y = Mathf.Clamp(minY, minY, maxY);
+            target.y = Mathf.Clamp(origin.y, minY, maxY);
 
             // Lerp in (0.6 s) — unscaledDeltaTime: survives timeScale=0 boss cutscene
             for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.6f)
@@ -136,7 +136,7 @@ namespace CrowdDefense.Visual
             _zooming = true;
             var origin = transform.position;
             var target = new Vector3(pos.x - 3f, 0f, pos.z - 6f);
-            target.y = Mathf.Clamp(minY, minY, maxY);
+            target.y = Mathf.Clamp(origin.y, minY, maxY);
 
             for (float t = 0f; t < 1f; t += Time.unscaledDeltaTime / 0.35f)
             {
