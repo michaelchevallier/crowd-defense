@@ -410,7 +410,26 @@ namespace CrowdDefense.Visual
                         if (mat.HasProperty("_BaseColor"))
                             replacement.SetColor("_BaseColor", mat.GetColor("_BaseColor"));
                         else
-                            replacement.SetColor("_BaseColor", Color.white);
+                        {
+                            // V6 T25-E: palette-aware fallback instead of white
+                            var goName = rend.gameObject.name;
+                            Color fallback = goName switch
+                            {
+                                var n when n.IndexOf("rock", System.StringComparison.OrdinalIgnoreCase) >= 0
+                                    => new Color(0.55f, 0.50f, 0.45f),
+                                var n when n.IndexOf("tree", System.StringComparison.OrdinalIgnoreCase) >= 0
+                                    => new Color(0.30f, 0.55f, 0.25f),
+                                var n when n.IndexOf("bush", System.StringComparison.OrdinalIgnoreCase) >= 0
+                                    => new Color(0.25f, 0.50f, 0.20f),
+                                var n when n.IndexOf("flower", System.StringComparison.OrdinalIgnoreCase) >= 0
+                                    => new Color(0.95f, 0.55f, 0.75f),
+                                _ => new Color(0.55f, 0.55f, 0.50f), // neutral stone-grey
+                            };
+                            if (replacement.HasProperty("_BaseColor"))
+                                replacement.SetColor("_BaseColor", fallback);
+                            else if (replacement.HasProperty("_Color"))
+                                replacement.SetColor("_Color", fallback);
+                        }
                         mats[i] = replacement;
                         changed = true;
                     }
