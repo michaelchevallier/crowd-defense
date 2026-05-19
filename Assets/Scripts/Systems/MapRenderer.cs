@@ -256,13 +256,23 @@ namespace CrowdDefense.Systems
             if (!_matCache.TryGetValue(key, out var m))
             {
                 m = BuildMaterial(ch, theme);
-                // R2-recovery : guard against Hidden/InternalErrorShader (magenta on URP) —
-                // swap to URP Lit and recolour from CellColor so the tile is at least visible.
-                if (m.shader == null || m.shader.name.StartsWith("Hidden/InternalErrorShader"))
+                // Force URP/Unlit on ALL slab materials so tiles are visible regardless of
+                // lighting setup. ToonCelShading needs directional light which may be absent
+                // or point the wrong way for flat floor tiles (nDotL ≈ 0 → pure shadow band).
+                // Skip water/lava animated materials — they have their own shader pipeline.
+                bool isAnimated = (ch == GridCoords.WATER || ch == GridCoords.LAVA);
+                if (!isAnimated)
                 {
-                    var lit = ShaderUtil.GetLitShader();
-                    if (lit != null) m.shader = lit;
-                    m.SetColor("_BaseColor", CellColor(ch));
+                    var unlit = ShaderUtil.GetUnlitShader();
+                    // Migrate _MainTex (ToonCelShading slot) → _BaseMap (URP Unlit slot).
+                    Texture? tex = null;
+                    if (m.HasProperty("_MainTex"))
+                        tex = m.GetTexture("_MainTex");
+                    m.shader = unlit;
+                    if (tex != null && m.HasProperty("_BaseMap"))
+                        m.SetTexture("_BaseMap", tex);
+                    if (!m.HasProperty("_BaseColor") || m.GetColor("_BaseColor") == Color.clear)
+                        m.SetColor("_BaseColor", CellColor(ch));
                 }
                 _matCache[key] = m;
             }
