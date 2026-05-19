@@ -40,7 +40,7 @@ namespace CrowdDefense.UI
             if (Input.GetKeyDown(KeyCode.F3))
                 SetVisible(!_visible);
 
-            if (Input.GetKeyDown(KeyCode.F4))
+            if (Input.GetKeyDown(KeyCode.F8))
                 SetSpawnVisible(!_spawnVisible);
 
             _fpsAccum += Time.unscaledDeltaTime;

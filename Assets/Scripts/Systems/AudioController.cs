@@ -387,7 +387,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F4)) StopAllSfx();
+            if (Input.GetKeyDown(KeyCode.F4) && (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))) StopAllSfx();
         }
 #endif
 
