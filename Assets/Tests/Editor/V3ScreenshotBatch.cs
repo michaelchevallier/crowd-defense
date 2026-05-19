@@ -44,8 +44,9 @@ namespace CrowdDefense.EditorTools
             File.WriteAllText("Library/V3Screenshots/report.txt", sb.ToString());
             Debug.Log(sb.ToString());
 
-            if (Application.isBatchMode)
-                EditorApplication.Exit(0);
+            // Note: don't EditorApplication.Exit here even in batch mode — caller
+            // (V3AutoLoop or shell script) decides exit code. Exiting here
+            // interrupts V3AutoLoop before its JSON output is written.
         }
 
         private static void CaptureScene(string sceneName)
