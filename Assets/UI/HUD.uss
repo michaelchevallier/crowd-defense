@@ -423,11 +423,10 @@
 /* === Wave launch button (D1-02) === */
 .wave-launch-btn {
     position: absolute;
-    left: 50%;
-    bottom: 110px;
-    translate: -50% 0;
-    width: 240px;
-    height: 60px;
+    top: 96px;
+    right: 16px;
+    width: 200px;
+    height: 52px;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -443,7 +442,7 @@
 
 .wave-launch-btn:active {
     background-color: rgb(200, 120, 10);
-    translate: -50% 2px;
+    translate: 0 2px;
 }
 
 .wave-launch-btn.skip-window {
@@ -489,12 +488,11 @@
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
 }
 
-/* Pill timer shown above the launch button during skip window */
+/* Pill timer shown near the launch button during skip window */
 .wave-launch-pill {
     position: absolute;
-    left: 50%;
-    bottom: 180px;
-    translate: -50% 0;
+    top: 156px;
+    right: 16px;
     background-color: rgba(20, 28, 36, 0.92);
     border-color: rgb(255, 210, 63);
     border-width: 2px;
@@ -967,12 +965,11 @@
 .combo-display.combo-level-3 .combo-label { color: rgb(255, 160, 30); }
 .combo-display.combo-level-4 .combo-label { color: rgb(255, 80, 30); }
 
-/* === Wave preview (above launch button, between waves) === */
+/* === Wave preview (below launch button, between waves, top-right) === */
 .wave-preview {
     position: absolute;
-    left: 50%;
-    bottom: 240px;
-    translate: -50% 0;
+    top: 188px;
+    right: 16px;
     background-color: rgba(14, 20, 30, 0.88);
     border-color: rgba(160, 180, 220, 0.35);
     border-width: 1px;
@@ -980,6 +977,7 @@
     padding: 8px 16px;
     flex-direction: column;
     align-items: center;
+    max-width: 220px;
 }
 
 .wave-preview-title {
@@ -1055,11 +1053,11 @@
     font-size: 11px;
 }
 
-/* === Synergy badges (above tower toolbar, bottom-center) === */
+/* === Synergy badges (above skill bar, bottom-center) === */
 .synergy-badges {
     position: absolute;
     left: 50%;
-    bottom: 80px;
+    bottom: 168px;
     translate: -50% 0;
     flex-direction: row;
     flex-wrap: wrap;
@@ -1092,6 +1090,31 @@
     -unity-font-style: bold;
     -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
     white-space: nowrap;
+}
+
+/* === Perk badges row (bottom-center, above synergy badges) === */
+.perk-badges-row {
+    position: absolute;
+    left: 50%;
+    bottom: 204px;
+    translate: -50% 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+    max-width: 600px;
+}
+
+.perk-set-progress-row {
+    position: absolute;
+    left: 50%;
+    bottom: 232px;
+    translate: -50% 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-end;
+    max-width: 600px;
 }
 
 /* === Boss banner (top-center, visible during boss fight) === */
@@ -1546,16 +1569,18 @@
     font-size: 14px;
 }
 
-/* Wave launch : pleine largeur en portrait, décalé au-dessus de la toolbar */
+/* Wave launch : top-right portrait, slim height */
 .hud-root.portrait .wave-launch-btn {
-    width: 88%;
-    height: 64px;
-    bottom: 76px;
+    width: 180px;
+    height: 48px;
+    top: 76px;
+    right: 8px;
 }
 
 /* Wave launch pill : repositionné portrait */
 .hud-root.portrait .wave-launch-pill {
-    bottom: 150px;
+    top: 132px;
+    right: 8px;
 }
 
 /* Hero panel : repositionné portrait (au-dessus toolbar) */
@@ -1596,7 +1621,7 @@
 
 /* Perk/synergy badges : déplacés portrait */
 .hud-root.portrait .synergy-badges {
-    bottom: 76px;
+    bottom: 170px;
 }
 
 /* === Virtual Joystick (portrait, moitié gauche au-dessus toolbar) === */
@@ -1632,10 +1657,10 @@
     background-color: rgba(255, 255, 255, 0.45);
 }
 
-/* === Hero Skill Bar (Q / W / E, bottom-center) === */
+/* === Hero Skill Bar (Q / W / E, bottom-center above toolbar) === */
 .hero-skill-bar {
     position: absolute;
-    bottom: 80px;
+    bottom: 96px;
     left: 50%;
     translate: -50% 0;
     flex-direction: row;
@@ -1709,12 +1734,14 @@
 
 /* Responsive: portrait mobile push skill bar up above joystick zone */
 .hud-root.portrait .hero-skill-bar {
-    bottom: 160px;
+    bottom: 260px;
 }
 
-/* Responsive: portrait mobile push wave-preview above skill bar to avoid overlap */
+/* Responsive: portrait mobile wave-preview — still top-right, just below launch-btn */
 .hud-root.portrait .wave-preview {
-    bottom: 280px;
+    top: 116px;
+    right: 8px;
+    max-width: 160px;
 }
 
 /* Skill tooltip (shown on hover over a skill slot) */
