@@ -68,6 +68,9 @@ namespace CrowdDefense.Visual
 
         public void ApplyTheme(LevelTheme theme)
         {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[SkyboxController] ApplyTheme({theme}) called");
+#endif
             if (_skyboxMap.Count == 0) BuildMap();
 
             var mat = _skyboxMap.TryGetValue(theme, out var m) ? m : null;
@@ -142,6 +145,12 @@ namespace CrowdDefense.Visual
             var probe = Object.FindAnyObjectByType<ReflectionProbe>();
             if (probe != null && probe.mode == ReflectionProbeMode.Realtime)
                 probe.RenderProbe();
+
+            // V6 W1-U: re-apply weather tint AFTER skybox swap so weather color persists.
+            // Race condition: WeatherController.ApplySkyGradient set _Tint on the OLD material
+            // instance, then SkyboxController assigned a NEW material (fresh _Tint = default).
+            // Re-applying here ensures the tint sticks on whichever material is now active.
+            WeatherController.ApplySkyGradient(theme);
         }
 
         private IEnumerator ForceSkyboxFlagNextFrame()

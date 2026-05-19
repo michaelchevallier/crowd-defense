@@ -248,6 +248,9 @@ namespace CrowdDefense.Visual
         public static void ApplySkyGradient(WeatherType type)
         {
             if (!SkyTints.TryGetValue(type, out var tint)) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            Debug.Log($"[WeatherController] ApplySkyGradient({type}) tint={tint}");
+#endif
             RenderSettings.ambientLight = tint;
             if (RenderSettings.skybox != null && RenderSettings.skybox.HasProperty("_Tint"))
                 RenderSettings.skybox.SetColor("_Tint", tint);
