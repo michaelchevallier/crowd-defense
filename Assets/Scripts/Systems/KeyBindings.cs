@@ -21,7 +21,7 @@ namespace CrowdDefense.Systems
             { "pathPreview",      KeyCode.P },
             { "save",             KeyCode.F5 },
             { "load",             KeyCode.F9 },
-            { "reset",            KeyCode.R },
+            { "reset",            KeyCode.Backspace }, // V6 T22-H: was R, conflicts with skill_r (Hero Ult)
             { "restart_fast",     KeyCode.None }, // Shift+R handled in CameraController
             { "tower_select_1",   KeyCode.Alpha1 },
             { "tower_select_2",   KeyCode.Alpha2 },
