@@ -149,8 +149,9 @@ namespace CrowdDefense.Entities
                 var mr = markerGO.GetComponent<MeshRenderer>();
                 if (mr != null)
                 {
-                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
-                    mat.color = new Color(0.1f, 0.6f, 1f, 0.85f);
+                    var mat = new Material(ShaderUtil.GetUnlitShader());
+                    if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", new Color(0.1f, 0.6f, 1f, 0.85f));
+                    else if (mat.HasProperty("_Color")) mat.SetColor("_Color", new Color(0.1f, 0.6f, 1f, 0.85f));
                     mr.material = mat;
                     mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                     mr.receiveShadows = false;
