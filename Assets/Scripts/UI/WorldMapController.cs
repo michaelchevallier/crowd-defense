@@ -116,6 +116,11 @@ namespace CrowdDefense.UI
         {
             if (_root == null) return;
 
+            // Wire back-to-menu button
+            var btnMenu = _root.Q<Button>("btn-menu");
+            if (btnMenu != null)
+                btnMenu.clicked += OnMenuClicked;
+
             var titleLabel = _root.Q<Label>("worldmap-title");
             if (titleLabel != null) titleLabel.text = L.Get("worldmap.title");
 
@@ -138,6 +143,12 @@ namespace CrowdDefense.UI
             ShowWorld(_activeWorld);
             WireSpecialTiles();
 
+        }
+
+        private void OnMenuClicked()
+        {
+            AudioController.Instance?.Play("menu_button_hover", 0.5f);
+            LevelLoader.GoToMenu();
         }
 
         // ── RunMap node-graph view ────────────────────────────────────────

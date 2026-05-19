@@ -17,6 +17,26 @@
     border-color: rgba(255, 210, 63, 0.2);
 }
 
+.worldmap-back-btn {
+    flex-shrink: 0;
+    margin-right: 16px;
+    padding: 8px 14px;
+    background-color: rgba(20, 30, 50, 0.8);
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: rgba(255, 210, 63, 0.4);
+    color: rgb(255, 210, 63);
+    font-size: 12px;
+    -unity-font-style: bold;
+    -unity-font: url("project://database/Assets/Fonts/Roboto-Regular.ttf");
+    -unity-text-align: middle-center;
+}
+
+.worldmap-back-btn:hover {
+    background-color: rgba(40, 50, 80, 0.95);
+    border-color: rgb(255, 210, 63);
+}
+
 .worldmap-title {
     color: rgb(255, 210, 63);
     font-size: 28px;

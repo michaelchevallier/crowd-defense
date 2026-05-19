@@ -5,6 +5,7 @@
     <Style src="RunMap.uss" />
     <ui:VisualElement name="worldmap-root" class="worldmap-root">
         <ui:VisualElement name="worldmap-header" class="worldmap-header">
+            <ui:Button name="btn-menu" text="← Menu" class="worldmap-back-btn" />
             <ui:Label text="CROWD DEFENSE" name="worldmap-title" class="worldmap-title" />
             <ui:VisualElement name="worldmap-header-stats" class="worldmap-header-stats">
                 <ui:Label text="0 stars" name="worldmap-stars-label" class="worldmap-stars-label" />
