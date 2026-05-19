@@ -20,6 +20,7 @@ namespace CrowdDefense.Visual
         private void ScanRenderers()
         {
             int magentaCount = 0;
+            int whiteCount = 0;
             var renderers = Object.FindObjectsByType<Renderer>(FindObjectsSortMode.None);
             foreach (var r in renderers)
             {
@@ -48,10 +49,44 @@ namespace CrowdDefense.Visual
                             var path = GetGameObjectPath(r.transform);
                             Debug.LogWarning($"[MagentaScanner] URP/Unlit BaseColor=magenta: '{path}' mat='{mat.name}'");
                         }
+                        // AN: detect white (1,1,1,1) = default URP/Unlit — suspect top-of-screen cubes
+                        else if (c.r >= 0.95f && c.g >= 0.95f && c.b >= 0.95f && r.gameObject.activeInHierarchy)
+                        {
+                            whiteCount++;
+                            var path = GetGameObjectPath(r.transform);
+                            var pos  = r.transform.position;
+                            Debug.LogWarning($"[MagentaScanner] White renderer (suspect): '{path}' pos={pos} shader='{shaderName}' mat='{mat.name}'");
+                        }
+                    }
+                    // AN: also scan shaders that are not URP/Unlit — catch Standard white on fallback prims
+                    else if (r.gameObject.activeInHierarchy && r is MeshRenderer)
+                    {
+                        if (mat.HasProperty("_BaseColor"))
+                        {
+                            var c = mat.GetColor("_BaseColor");
+                            if (c.r >= 0.95f && c.g >= 0.95f && c.b >= 0.95f && c.a >= 0.90f)
+                            {
+                                whiteCount++;
+                                var path = GetGameObjectPath(r.transform);
+                                var pos  = r.transform.position;
+                                Debug.LogWarning($"[MagentaScanner] White MeshRenderer (non-Unlit): '{path}' pos={pos} shader='{shaderName}' mat='{mat.name}'");
+                            }
+                        }
+                        else if (mat.HasProperty("_Color"))
+                        {
+                            var c = mat.GetColor("_Color");
+                            if (c.r >= 0.95f && c.g >= 0.95f && c.b >= 0.95f && c.a >= 0.90f)
+                            {
+                                whiteCount++;
+                                var path = GetGameObjectPath(r.transform);
+                                var pos  = r.transform.position;
+                                Debug.LogWarning($"[MagentaScanner] White MeshRenderer (_Color): '{path}' pos={pos} shader='{shaderName}' mat='{mat.name}'");
+                            }
+                        }
                     }
                 }
             }
-            Debug.Log($"[MagentaScanner] Scan complete: {magentaCount} magenta-risk renderers found of {renderers.Length} total");
+            Debug.Log($"[MagentaScanner] Scan complete: {magentaCount} magenta-risk, {whiteCount} white-suspect renderers found of {renderers.Length} total");
         }
 
         private static string GetGameObjectPath(Transform t)
