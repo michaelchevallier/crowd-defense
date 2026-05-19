@@ -907,7 +907,7 @@ namespace CrowdDefense.Systems
             {
                 if (!grid.IsBuildable(x, y)) continue;
                 var pos = GridCoords.CellToWorld(x, y, grid.Width, grid.Height, grid.CellSize);
-                pos.y = 0.35f;
+                pos.y = 0.6f;
                 var bpGo = Instantiate(buildPointPrefab, pos, Quaternion.identity);
                 bpGo.GetComponent<Entities.BuildPoint>()?.Init(new Vector2Int(x, y));
                 count++;

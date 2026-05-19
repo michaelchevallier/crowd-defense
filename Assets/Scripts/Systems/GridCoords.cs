@@ -24,7 +24,9 @@ namespace CrowdDefense.Systems
         public const char TREASURE = '*';
 
         public static readonly HashSet<char> Walkable = new() { PATH, PORTAL, CASTLE, BRIDGE_WATER, BRIDGE_LAVA };
-        public static readonly HashSet<char> Buildable = new() { GRASS };
+        // V6 AO: extend buildable to GRASS_BLOCK, TREE, ROCK, BUSH, DECOR so all themes get
+        // enough BuildPoint discs (Foret/forest cells are mostly T/R/B, not bare GRASS).
+        public static readonly HashSet<char> Buildable = new() { GRASS, GRASS_BLOCK, TREE, ROCK, BUSH, DECOR };
 
         // Cell (col, row) → world Vector3 on XZ plane (Y=0.05f to place entities on slab top), origin centered, Z inverted for row=0 visually on top.
         public static Vector3 CellToWorld(int col, int row, int gridW, int gridH, float cellSize)
