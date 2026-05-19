@@ -80,7 +80,10 @@ namespace CrowdDefense.Visual
             mat.SetInt("_ZWrite", 0);
             mat.DisableKeyword("_ALPHATEST_ON");
             mat.EnableKeyword("_ALPHABLEND_ON");
-            mat.color = LineColor;
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", LineColor);
+            else
+                mat.color = LineColor;
             return mat;
         }
     }

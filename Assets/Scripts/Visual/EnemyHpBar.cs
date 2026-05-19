@@ -146,7 +146,10 @@ namespace CrowdDefense.Visual
         {
             var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
             var mat = new Material(shader ?? Shader.Find("Standard")!);
-            mat.color = color;
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", color);
+            else
+                mat.color = color;
             if (transparent)
             {
                 mat.SetFloat("_Surface", 1f);

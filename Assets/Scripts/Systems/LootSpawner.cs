@@ -104,7 +104,10 @@ namespace CrowdDefense.Systems
             var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")
                               ?? Shader.Find("Universal Render Pipeline/Unlit")
                               ?? Shader.Find("Standard")!);
-            mat.color = col;
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", col);
+            else
+                mat.color = col;
             // Emissive glow
             mat.EnableKeyword("_EMISSION");
             mat.SetColor("_EmissionColor", col * 1.6f);

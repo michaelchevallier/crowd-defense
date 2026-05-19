@@ -126,9 +126,10 @@ namespace CrowdDefense.Visual
             var mat = new Material(shader) { name = "CoinToken_Mat" };
             mat.SetFloat("_Surface", 1f);
             mat.SetFloat("_Blend", 0f);
-            mat.color = _coinColor;
             if (mat.HasProperty(_colorId))
                 mat.SetColor(_colorId, _coinColor);
+            else
+                mat.color = _coinColor;
             mat.renderQueue = 3500;
             return mat;
         }

@@ -60,7 +60,7 @@ namespace CrowdDefense.Visual
             quadMat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
             quadMat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             quadMat.SetInt("_ZWrite", 0);
-            quadMat.color = ColorValid;
+            SetQuadColor(ColorValid);
 
             if (quadRenderer != null) quadRenderer.sharedMaterial = quadMat;
 
@@ -100,17 +100,26 @@ namespace CrowdDefense.Visual
             {
                 var grid = PathManager.Instance!.Grid!;
                 pos = GridCoords.CellToWorld(cell.Value.x, cell.Value.y, grid.Width, grid.Height, grid.CellSize);
-                quadMat.color = ColorValid;
+                SetQuadColor(ColorValid);
             }
             else
             {
                 pos = lastMouseWorld;
-                quadMat.color = ColorInvalid;
+                SetQuadColor(ColorInvalid);
             }
 
             pos.y = GroundY;
             quad.transform.position = pos;
             quad.SetActive(true);
+        }
+
+        private void SetQuadColor(Color c)
+        {
+            if (quadMat == null) return;
+            if (quadMat.HasProperty("_BaseColor"))
+                quadMat.SetColor("_BaseColor", c);
+            else
+                quadMat.color = c;
         }
 
         public void Hide()
