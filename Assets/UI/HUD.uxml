@@ -290,7 +290,7 @@
             </ui:VisualElement>
         </ui:VisualElement>
 
-        <!-- Hero skill bar (bottom-center, 3 slots Q/W/E with cooldown overlay) -->
+        <!-- Hero skill bar (bottom-center, 4 slots Q/W/E/R with cooldown overlay) -->
         <ui:VisualElement name="hero-skill-bar" class="hero-skill-bar">
             <ui:VisualElement name="skill-slot-q" class="skill-slot">
                 <ui:VisualElement name="skill-cd-overlay" class="skill-cd-overlay" />
@@ -305,6 +305,11 @@
             <ui:VisualElement name="skill-slot-e" class="skill-slot">
                 <ui:VisualElement name="skill-cd-overlay" class="skill-cd-overlay" />
                 <ui:Label name="skill-key-label" text="E" class="skill-key-label" />
+                <ui:Label name="skill-cd-label" text="" class="skill-cd-label" />
+            </ui:VisualElement>
+            <ui:VisualElement name="skill-slot-r" class="skill-slot">
+                <ui:VisualElement name="skill-cd-overlay" class="skill-cd-overlay" />
+                <ui:Label name="skill-key-label" text="R" class="skill-key-label" />
                 <ui:Label name="skill-cd-label" text="" class="skill-cd-label" />
             </ui:VisualElement>
         </ui:VisualElement>
