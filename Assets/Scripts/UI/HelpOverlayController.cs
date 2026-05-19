@@ -9,6 +9,7 @@ namespace CrowdDefense.UI
     {
         static readonly (string key, string desc)[] Shortcuts =
         {
+            ("Construction",  "Selectionne tour [1-9] → marche jusqu au disque jaune"),
             ("Clic / Select", "Placer une tour / selectionner"),
             ("Space",         "Lancer la vague"),
             ("1 - 4",         "Selectionner type de tour"),

@@ -29,7 +29,7 @@ MonoBehaviour:
   startCoins: 120
   overrideCastleHP: 0
   castleHPOverride: 150
-  briefing: ""
+  briefing: "Bienvenue ! Tu joues le heros.\n\nPOSER UNE TOUR :\n1. Appuie sur [1-9] pour selectionner une tour\n2. Marche jusqu a un disque JAUNE\n3. La tour se pose automatiquement\n\nLes tours attaquent seules quand les ennemis arrivent.\n\n[N] pour lancer la premiere vague !"
   cutsceneIdAtStart: world1
   isEndless: 0
   allowMultiMagnet: 0

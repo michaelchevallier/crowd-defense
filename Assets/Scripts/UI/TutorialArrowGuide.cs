@@ -20,7 +20,7 @@ namespace CrowdDefense.UI
 
         private static readonly string[] Labels =
         {
-            "Clique ici pour placer une tour",
+            "Selectionne une tour [1-9] puis marche ici",
             "Lance la vague",
             "Ton heros defend le chateau"
         };
