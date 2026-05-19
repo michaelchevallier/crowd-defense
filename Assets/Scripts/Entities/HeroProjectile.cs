@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CrowdDefense.Systems;
 using CrowdDefense.Visual;
+using CrowdDefense.UI;
 
 namespace CrowdDefense.Entities
 {
@@ -116,6 +117,9 @@ namespace CrowdDefense.Entities
 
             if (isCrit && _critStaggerMs > 0)
                 SlowEffectManager.Instance?.ApplySlow(hitTarget, 0f, _critStaggerMs);
+
+            if (isCrit)
+                JuiceFX.Instance?.ShakeOnCritHit();
 
             bool consumed = false;
 
