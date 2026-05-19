@@ -1,0 +1,55 @@
+name: Deploy WebGL to GitHub Pages
+
+# Trigger: push to main when Builds/WebGL changes, or manual dispatch
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Builds/WebGL/**"
+  workflow_dispatch:
+
+# Allow writing to gh-pages branch
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Deploy to gh-pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Verify WebGL build exists
+        run: |
+          if [ ! -f "Builds/WebGL/index.html" ]; then
+            echo "ERROR: Builds/WebGL/index.html not found."
+            echo "Build WebGL in Unity first (File > Build Settings > WebGL > Build),"
+            echo "commit the Builds/WebGL/ folder, then push."
+            exit 1
+          fi
+          echo "WebGL build found:"
+          ls -lh Builds/WebGL/Build/
+
+      - name: Deploy to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./Builds/WebGL
+          publish_branch: gh-pages
+          # Needed so Unity WebGL loader can find Build/ relative to index.html
+          keep_files: false
+          user_name: "github-actions[bot]"
+          user_email: "github-actions[bot]@users.noreply.github.com"
+          commit_message: "deploy: WebGL build from ${{ github.sha }}"
+
+      # Unity WebGL with Brotli (.unityweb) needs Content-Encoding: br headers.
+      # GitHub Pages does NOT serve custom headers → browser decompression fails.
+      #
+      # FIX: disable Brotli in Unity before building for GitHub Pages:
+      #   Player Settings > Publishing Settings > Compression Format = Disabled
+      # Then rebuild + commit Builds/WebGL/ → deploy works with no config needed.
+      #
+      # Alternatively: host on Vercel/Netlify (supports custom headers via config files).
