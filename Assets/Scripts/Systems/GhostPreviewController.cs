@@ -57,6 +57,11 @@ namespace CrowdDefense.Systems
 
         protected override void OnAwakeSingleton()
         {
+            // V6 AP: walk-in mechanic only — player walks hero to BuildPoint disc to auto-place.
+            // Mouse-following ghost preview is legacy click-to-place from V3. Disable entirely.
+            enabled = false;
+            return;
+
             cam = Camera.main;
             ghostMatTransparent = BuildTransparentMaterial();
             dotMaterial         = BuildDotMaterial();
