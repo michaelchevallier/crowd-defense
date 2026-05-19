@@ -35,10 +35,13 @@ namespace CrowdDefense.Entities
             UpdateAoeBlast();
             UpdateCharge();
             UpdateFireBreath();
-            EnemyBossBehaviorsStatic.TickWizardKing(this);
-            EnemyBossBehaviorsStatic.TickWarlordCharge(this);
-            EnemyBossBehaviorsStatic.TickAiHubBurst(this);
-            EnemyBossBehaviorsStatic.TickKrakenTentacles(this);
+            if (cfg!.IsBoss || cfg.IsMidBoss)
+            {
+                EnemyBossBehaviorsStatic.TickWizardKing(this);
+                EnemyBossBehaviorsStatic.TickWarlordCharge(this);
+                EnemyBossBehaviorsStatic.TickAiHubBurst(this);
+                EnemyBossBehaviorsStatic.TickKrakenTentacles(this);
+            }
             UpdateFreeze();
             UpdateDebuffIcons();
             UpdateGroundDecals();
