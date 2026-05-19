@@ -192,7 +192,7 @@ namespace CrowdDefense.Entities
                     var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
                     mat.color = new Color(0f, 1f, 1f, 0.45f);
                     if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f); // transparent
-                    _decalSlowRend.material = mat;
+                    _decalSlowRend.sharedMaterial = mat;
                     _decalSlowRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                     _decalSlowRend.receiveShadows = false;
                 }
@@ -223,7 +223,7 @@ namespace CrowdDefense.Entities
                     var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color"));
                     mat.color = new Color(1f, 0.3f, 0f, 0.4f);
                     if (mat.HasProperty("_Surface")) mat.SetFloat("_Surface", 1f);
-                    _decalBurnRend.material = mat;
+                    _decalBurnRend.sharedMaterial = mat;
                     _decalBurnRend.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                     _decalBurnRend.receiveShadows = false;
                 }
