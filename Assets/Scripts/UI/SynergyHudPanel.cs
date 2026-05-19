@@ -49,16 +49,22 @@ namespace CrowdDefense.UI
             if (root == null) return;
             _panel = root.Q<VisualElement>("synergy-hud-panel");
             _list  = root.Q<VisualElement>("synergy-hud-list");
-            StartCoroutine(PollLoop());
 
             if (Synergies.Instance != null)
+            {
+                Synergies.Instance.OnSynergyChanged += Redraw;
                 Synergies.Instance.OnSynergyActivated += OnSynergyActivated;
+                Redraw();
+            }
         }
 
         private void OnDestroy()
         {
             if (Synergies.Instance != null)
+            {
+                Synergies.Instance.OnSynergyChanged -= Redraw;
                 Synergies.Instance.OnSynergyActivated -= OnSynergyActivated;
+            }
         }
 
         private void OnSynergyActivated(SynergyActivatedInfo info)
@@ -76,15 +82,6 @@ namespace CrowdDefense.UI
             Redraw();
         }
 
-        private IEnumerator PollLoop()
-        {
-            var wait = new WaitForSeconds(1f);
-            while (true)
-            {
-                Redraw();
-                yield return wait;
-            }
-        }
 
         private void Redraw()
         {
