@@ -1,4 +1,5 @@
 #nullable enable
+#if UNITY_EDITOR
 using UnityEngine;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
@@ -97,3 +98,4 @@ namespace CrowdDefense.Visual
         }
     }
 }
+#endif
