@@ -117,11 +117,32 @@ namespace CrowdDefense.UI
             wavePreviewRoster.Clear();
 
             var counts = new Dictionary<EnemyType, int>();
+            int totalCount = 0;
+            bool hasBoss = false;
             foreach (var entry in entries)
             {
                 if (entry.type == null) continue;
                 counts.TryGetValue(entry.type, out int existing);
                 counts[entry.type] = existing + entry.count;
+                totalCount += entry.count;
+                if (entry.type.IsBoss || entry.type.IsMidBoss)
+                    hasBoss = true;
+            }
+
+            // Add summary header
+            var summaryLabel = new Label($"Vague : {totalCount} ennemis");
+            summaryLabel.AddToClassList("wave-preview-title");
+            wavePreviewRoster.Add(summaryLabel);
+
+            // Boss incoming badge if present
+            if (hasBoss)
+            {
+                var bossLabel = new Label("⚠️ BOSS INCOMING");
+                bossLabel.style.color = new StyleColor(new Color(1f, 0.82f, 0.2f)); // Gold
+                bossLabel.style.fontSize = new StyleLength(14f);
+                bossLabel.style.marginBottom = new StyleLength(4f);
+                bossLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+                wavePreviewRoster.Add(bossLabel);
             }
 
             // Bosses first, then mid-bosses, then normals
@@ -148,10 +169,14 @@ namespace CrowdDefense.UI
                 var iconLabel = new Label(type.IconEmoji);
                 iconLabel.AddToClassList("wave-preview-chip-icon");
 
-                var countLabel = new Label($"x{count}");
+                var nameLabel = new Label(type.DisplayName);
+                nameLabel.AddToClassList("wave-preview-chip-name");
+
+                var countLabel = new Label($"×{count}");
                 countLabel.AddToClassList("wave-preview-chip-count");
 
                 chip.Add(iconLabel);
+                chip.Add(nameLabel);
                 chip.Add(countLabel);
                 wavePreviewRoster.Add(chip);
                 shown++;
