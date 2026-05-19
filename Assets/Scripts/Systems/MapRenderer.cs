@@ -279,6 +279,10 @@ namespace CrowdDefense.Systems
                     m.shader = unlit;
                     if (tex != null && m.HasProperty("_BaseMap"))
                         m.SetTexture("_BaseMap", tex);
+#if UNITY_EDITOR
+                    else if (tex == null)
+                        Debug.Log($"[MapRenderer] No texture for ch='{ch}' — solid BaseColor only");
+#endif
                     // V6 W1-W: ALWAYS set _BaseColor to CellColor(ch) — the .mat default may be dark navy,
                     // strict Color.clear check missed that case. Wave-1 grass texture should multiply with this.
                     if (m.HasProperty("_BaseColor"))
@@ -432,21 +436,21 @@ namespace CrowdDefense.Systems
 
         private static Color CellColor(char ch) => ch switch
         {
-            GridCoords.GRASS        => new Color(0.30f, 0.55f, 0.25f),
-            GridCoords.GRASS_BLOCK  => new Color(0.28f, 0.50f, 0.22f),
-            GridCoords.PATH         => new Color(0.75f, 0.65f, 0.45f),
+            GridCoords.GRASS        => new Color(0.55f, 0.85f, 0.45f),  // V6 AM: brighter grass V4
+            GridCoords.GRASS_BLOCK  => new Color(0.50f, 0.80f, 0.40f),  // V6 AM: brighter grass block
+            GridCoords.PATH         => new Color(0.85f, 0.75f, 0.55f),  // V6 AM: brighter path tan
             GridCoords.PORTAL       => new Color(0.90f, 0.30f, 0.30f),
-            GridCoords.CASTLE       => new Color(0.30f, 0.45f, 0.90f),
-            GridCoords.WATER        => new Color(0.20f, 0.40f, 0.75f),
+            GridCoords.CASTLE       => new Color(0.50f, 0.55f, 0.95f),  // V6 AM: brighter castle blue
+            GridCoords.WATER        => new Color(0.35f, 0.60f, 0.90f),  // V6 AM: brighter water blue
             GridCoords.LAVA         => new Color(0.95f, 0.35f, 0.10f),
-            GridCoords.BRIDGE_WATER => new Color(0.55f, 0.40f, 0.25f),
-            GridCoords.BRIDGE_LAVA  => new Color(0.45f, 0.30f, 0.20f),
-            GridCoords.DECOR        => new Color(0.40f, 0.40f, 0.40f),
-            GridCoords.TREE         => new Color(0.20f, 0.45f, 0.15f),
-            GridCoords.ROCK         => new Color(0.55f, 0.50f, 0.45f),
-            GridCoords.BUSH         => new Color(0.25f, 0.50f, 0.20f),
-            GridCoords.TREASURE     => new Color(1.00f, 0.80f, 0.10f),   // doré D1-01 §3.6
-            _                       => new Color(0.20f, 0.20f, 0.20f),
+            GridCoords.BRIDGE_WATER => new Color(0.65f, 0.50f, 0.30f),
+            GridCoords.BRIDGE_LAVA  => new Color(0.55f, 0.40f, 0.25f),
+            GridCoords.DECOR        => new Color(0.50f, 0.50f, 0.50f),
+            GridCoords.TREE         => new Color(0.35f, 0.65f, 0.30f),  // V6 AM: brighter tree
+            GridCoords.ROCK         => new Color(0.65f, 0.60f, 0.55f),
+            GridCoords.BUSH         => new Color(0.40f, 0.70f, 0.35f),
+            GridCoords.TREASURE     => new Color(1.00f, 0.85f, 0.20f),
+            _                       => new Color(0.30f, 0.30f, 0.30f),
         };
     }
 }
