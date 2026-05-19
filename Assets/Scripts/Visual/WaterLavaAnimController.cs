@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
 using UnityEngine;
@@ -64,8 +65,9 @@ namespace CrowdDefense.Visual
         private Texture2D?[] _lavaTextures  = new Texture2D?[8];
         private bool _texturesLoaded;
 
-        private static readonly int BaseMapId    = Shader.PropertyToID("_BaseMap");
-        private static readonly int BaseColorId  = Shader.PropertyToID("_BaseColor");
+        private static readonly int BaseMapId      = Shader.PropertyToID("_BaseMap");
+        private static readonly int BaseColorId   = Shader.PropertyToID("_BaseColor");
+        private static readonly int TintId        = Shader.PropertyToID("_Tint");
         private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
         // -------------------------------------------------------------------------
@@ -139,9 +141,18 @@ namespace CrowdDefense.Visual
             if (_waterRenderers.Count == 0 && _lavaRenderers.Count == 0)
                 ScanMapRendererChildren();
 
+            // Ensure water materials are visible regardless of shader compile state.
+            // Toon_Water.shader uses _Tint; if the shader fails on URP 17.3.0 (ShadowCaster
+            // pass references undeclared _BaseMap/_BaseColor), fall back to URP/Unlit + blue.
+            EnsureWaterMaterialsVisible();
+
             _frameTimer = 0f;
             _frameIndex = 0;
             _active = _waterRenderers.Count > 0 || _lavaRenderers.Count > 0;
+
+            // Apply frame 0 immediately so water is visible before the first 250 ms tick.
+            if (_active)
+                ApplyWaterFrame(0);
 
 #if UNITY_EDITOR
             Debug.Log($"[WaterLavaAnim] active={_active} water={_waterRenderers.Count} lava={_lavaRenderers.Count} textures={_texturesLoaded}");
@@ -176,6 +187,38 @@ namespace CrowdDefense.Visual
 #if UNITY_EDITOR
             Debug.Log($"[WaterLavaAnim] Loaded {loaded}/16 tile textures");
 #endif
+        }
+
+        // -------------------------------------------------------------------------
+        // Water material visibility guard
+        // -------------------------------------------------------------------------
+
+        // Toon_Water.shader uses _Tint (not _BaseColor). If the shader fails to compile
+        // on URP 17.3.0 (ShadowCaster pass references _BaseMap/_BaseColor which are not
+        // declared in the Toon_Water CBUFFER), Unity shows nothing or magenta.
+        // For each water renderer: if the material lacks _Tint (shader compile failure),
+        // replace with URP/Unlit + opaque blue so the tile is always visible.
+        private void EnsureWaterMaterialsVisible()
+        {
+            var unlitShader = ShaderUtil.GetUnlitShader();
+            var fallbackBlue = new Color(0.20f, 0.48f, 0.82f, 1f);
+
+            foreach (var mr in _waterRenderers)
+            {
+                if (mr == null) continue;
+                var mat = mr.sharedMaterial;
+                if (mat == null) continue;
+
+                // Toon_Water shader is valid when _Tint exists — leave it alone.
+                if (mat.HasProperty(TintId)) continue;
+
+                // Shader compile failure or wrong shader — force URP/Unlit + V4 blue.
+                var fixedMat = new Material(unlitShader) { name = mat.name + "_WaterFix" };
+                fixedMat.enableInstancing = true;
+                if (fixedMat.HasProperty(BaseColorId))
+                    fixedMat.SetColor(BaseColorId, fallbackBlue);
+                mr.sharedMaterial = fixedMat;
+            }
         }
 
         // -------------------------------------------------------------------------
@@ -233,7 +276,12 @@ namespace CrowdDefense.Visual
                 mr.GetPropertyBlock(_mpb);
                 if (tex != null)
                     _mpb.SetTexture(BaseMapId, tex);
-                _mpb.SetColor(BaseColorId, color);
+                // Toon_Water.shader uses _Tint for color; URP/Unlit fallback uses _BaseColor.
+                var mat = mr.sharedMaterial;
+                if (mat != null && mat.HasProperty(TintId))
+                    _mpb.SetColor(TintId, color);
+                else
+                    _mpb.SetColor(BaseColorId, color);
                 mr.SetPropertyBlock(_mpb);
             }
         }

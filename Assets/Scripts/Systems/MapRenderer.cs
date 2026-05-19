@@ -261,7 +261,20 @@ namespace CrowdDefense.Systems
                 // or point the wrong way for flat floor tiles (nDotL ≈ 0 → pure shadow band).
                 // Skip water/lava animated materials — they have their own shader pipeline.
                 bool isAnimated = (ch == GridCoords.WATER || ch == GridCoords.LAVA);
-                if (!isAnimated)
+                if (isAnimated)
+                {
+                    // Toon_Water/Toon_Lava shaders use _Tint (not _BaseColor). If the shader
+                    // failed to compile on URP 17.3.0 (ShadowCaster pass references undeclared
+                    // _BaseMap/_BaseColor), _Tint will be absent. Fall back to URP/Unlit + solid
+                    // color so the tile is always visible at level load time.
+                    bool shaderBroken = !m.HasProperty("_Tint");
+                    if (shaderBroken)
+                    {
+                        m.shader = ShaderUtil.GetUnlitShader();
+                        m.SetColor("_BaseColor", CellColor(ch));
+                    }
+                }
+                else
                 {
                     var unlit = ShaderUtil.GetUnlitShader();
                     // Migrate _MainTex (ToonCelShading slot) → _BaseMap (URP Unlit slot).
