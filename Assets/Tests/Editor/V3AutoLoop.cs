@@ -23,11 +23,18 @@ namespace CrowdDefense.EditorTools
             var screenshotResult = RunScreenshotCapture();
             var errors = FlushConsoleErrors();
 
+            // Batch -nographics produces unavoidable GPU-context errors that are not real failures.
+            // Count only "real" errors against the summary; keep all in JSON for visibility.
+            int batchArtifacts = 0;
+            foreach (var e in errors)
+                if (IsBatchModeArtifact(e)) batchArtifacts++;
+            int realErrors = errors.Count - batchArtifacts;
+
             int totalPassed = validatorResult.passed + screenshotResult.passed;
-            int totalFailed = validatorResult.failed + screenshotResult.failed + errors.Count;
+            int totalFailed = validatorResult.failed + screenshotResult.failed + realErrors;
             string summary = totalFailed == 0
-                ? $"ALL PASS ({totalPassed} checks)"
-                : $"FAIL — {totalFailed} issue(s) detected";
+                ? $"ALL PASS ({totalPassed} checks, {batchArtifacts} batch-mode artifacts ignored)"
+                : $"FAIL — {totalFailed} real issue(s) detected ({batchArtifacts} batch artifacts ignored)";
 
             var ts = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
             var json = BuildJson(ts, validatorResult, screenshotResult, errors, summary);
@@ -149,6 +156,22 @@ namespace CrowdDefense.EditorTools
         {
             if (type == LogType.Error || type == LogType.Exception || type == LogType.Assert)
                 _consoleErrors.Add($"[{type}] {condition}");
+        }
+
+        // Known batch -nographics artifacts that aren't real failures.
+        private static readonly string[] _batchArtifactPatterns =
+        {
+            "RenderTexture.Create failed",
+            "DrawOpaqueObjects/DrawTransparentObjects: Unable to find surface for attachment 0",
+            "DrawOpaqueObjects/DrawSkybox/DrawTransparentObjects: Unable to find surface for attachment 0",
+            "EndRenderPass: Not inside a Renderpass",
+        };
+
+        private static bool IsBatchModeArtifact(string error)
+        {
+            foreach (var pattern in _batchArtifactPatterns)
+                if (error.Contains(pattern)) return true;
+            return false;
         }
 
         private static List<string> FlushConsoleErrors()
