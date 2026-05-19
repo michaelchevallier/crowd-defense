@@ -2364,7 +2364,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Systems.LevelRunner
   currentLevel: {fileID: 11400000, guid: 7fb0ab0cdb28c435b84e820e174e969c, type: 2}
-  castlePrefab: {fileID: 0}
+  castlePrefab: {fileID: 1000000, guid: d4e5f6a7b8c9012345678901234567ab, type: 3}
   heroType: {fileID: 11400000, guid: 3c4641cee42e4d76a819268661ed0544, type: 2}
   heroPrefab: {fileID: 9143044602319728960, guid: 645f225a8bd5b452192022824d6d16f4, type: 3}
   spawnHero: 1

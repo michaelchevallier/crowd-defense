@@ -264,8 +264,11 @@
             <ui:VisualElement name="hero-portrait" class="hero-portrait"/>
             <ui:Label name="hero-emoji" text="&#x1F451;" class="hero-emoji"/>
             <ui:VisualElement class="hero-panel-row">
-                <ui:Label text="Hero" name="hero-hp-label" class="hero-pill-label" />
+                <ui:Label text="HP" name="hero-hp-label" class="hero-pill-label" />
                 <ui:Label text="Lv. 1" name="hero-level" class="hero-level" />
+            </ui:VisualElement>
+            <ui:VisualElement class="hero-bar-bg">
+                <ui:VisualElement name="hero-hp-bar-fill" class="hero-bar-fill hero-hp-fill" />
             </ui:VisualElement>
             <ui:Label text="" name="hero-xp-label" class="hero-xp-label" />
             <ui:VisualElement class="hero-bar-bg">
