@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using UnityEngine;
-using TMPro;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Systems;
@@ -150,17 +149,8 @@ namespace CrowdDefense.Entities
             fillRend.material = BuildUnlitMaterial(new Color(0.27f, 0.87f, 0.27f, 1f), transparent: false);
             fillRend.sortingOrder = 2;
 
-            var textGo = new GameObject("CastleHPText");
-            textGo.transform.SetParent(transform, false);
-            textGo.transform.localPosition = new Vector3(0f, barY + 0.4f, -0.06f);
-            textGo.transform.localScale    = Vector3.one * 0.18f;
-            _hpText = textGo.AddComponent<TextMesh>();
-            _hpText.anchor    = TextAnchor.MiddleCenter;
-            _hpText.alignment = TextAlignment.Center;
-            _hpText.fontSize  = 64;
-            _hpText.fontStyle = FontStyle.Bold;
-            _hpText.color     = Color.white;
-            _hpText.text      = $"{HP} / {HPMax}";
+            // HP value is displayed in the HUD top-bar pill — no world-space text needed.
+            _hpText = null;
 
             RefreshHpBar();
         }

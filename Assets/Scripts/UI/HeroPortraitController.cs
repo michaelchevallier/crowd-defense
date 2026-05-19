@@ -75,6 +75,8 @@ namespace CrowdDefense.UI
             _root = BuildTree(styleSheet);
             doc.rootVisualElement.Add(_root);
             doc.sortingOrder = 1;
+            // HudController already renders hero-panel in HUD.uxml — hide this duplicate overlay.
+            _root.style.display = DisplayStyle.None;
 
             Refresh();
         }
