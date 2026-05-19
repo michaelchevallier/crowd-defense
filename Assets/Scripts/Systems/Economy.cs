@@ -68,20 +68,22 @@ namespace CrowdDefense.Systems
         // has already updated its ActiveMultiplier for this kill).
         public void AddGoldFromKill(int baseReward)
         {
-            float comboMul      = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
-            float metaCoinMul   = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
-            float endlessGoldMul = WaveManager.Instance?.EndlessGoldMul ?? 1f;
-            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul * TalentSystem.GoldIncomeMul));
+            float comboMul       = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
+            float metaCoinMul    = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
+            float streakRewardMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
+            float endlessGoldMul  = WaveManager.Instance?.EndlessGoldMul ?? 1f;
+            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * streakRewardMul * endlessGoldMul * TalentSystem.GoldIncomeMul));
             AddGold(finalReward);
         }
 
         // Overload with world position — spawns tiered gold popup above kill site (debounced).
         public void AddGoldFromKill(int baseReward, Vector3 worldPos)
         {
-            float comboMul      = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
-            float metaCoinMul   = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
-            float endlessGoldMul = WaveManager.Instance?.EndlessGoldMul ?? 1f;
-            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * endlessGoldMul * TalentSystem.GoldIncomeMul));
+            float comboMul       = ComboSystem.Instance?.ActiveMultiplier ?? 1f;
+            float metaCoinMul    = MetaUpgradeSystem.Instance?.ActiveBonuses.coinGainMul ?? 1f;
+            float streakRewardMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
+            float endlessGoldMul  = WaveManager.Instance?.EndlessGoldMul ?? 1f;
+            int finalReward = Mathf.Max(1, Mathf.RoundToInt(baseReward * comboMul * metaCoinMul * streakRewardMul * endlessGoldMul * TalentSystem.GoldIncomeMul));
             AddGold(finalReward);
             AccumulateGoldPopup(finalReward, worldPos);
         }

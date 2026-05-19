@@ -203,11 +203,10 @@ namespace CrowdDefense.Entities
             {
                 int baseReward = cfg?.Reward ?? 0;
                 float coinMul  = CoinPullManager.Instance?.GetCoinMulAt(transform.position) ?? 1f;
-                float streakMul = WaveManager.Instance?.StreakRewardMul ?? 1f;
                 float eliteMul = _isElite ? 2f : 1f;
-                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * streakMul * eliteMul * _diffRewardMul));
+                int reward = Mathf.Max(1, Mathf.RoundToInt(baseReward * coinMul * eliteMul * _diffRewardMul));
 #if UNITY_EDITOR
-                Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} streakMul={streakMul:F2} reward={reward}");
+                Debug.Log($"[Enemy] killed type={cfg?.Id} baseReward={baseReward} coinMul={coinMul:F2} reward={reward}");
 #endif
                 EventManager.Instance?.Publish(new EnemyKilledEvent(this, reward));
                 CoinPullManager.Instance?.SpawnCoinFlyTo(transform.position, reward);
