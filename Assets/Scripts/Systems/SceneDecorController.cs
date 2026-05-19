@@ -18,7 +18,7 @@ namespace CrowdDefense.Systems
         // Theme palette — mirrors V4 THEME_PALETTE (placeholder prims, no GLTF)
         // -------------------------------------------------------------------------
 
-        private enum PropShape { Cylinder, Cube, Sphere, Capsule }
+        private enum PropShape { Cylinder, Cube, Sphere, Capsule, Tree }
 
         private readonly struct PropDef
         {
@@ -45,18 +45,18 @@ namespace CrowdDefense.Systems
         private static readonly Dictionary<LevelTheme, ThemePalette> _palettes = new()
         {
             [LevelTheme.Plaine] = new ThemePalette(
-                new[] { new PropDef(PropShape.Cylinder, C(0.15f,0.55f,0.10f), new Vector3(0.30f,1.00f,0.30f)),
-                        new PropDef(PropShape.Cylinder, C(0.20f,0.60f,0.15f), new Vector3(0.25f,0.85f,0.25f)),
-                        new PropDef(PropShape.Cylinder, C(0.12f,0.48f,0.08f), new Vector3(0.35f,1.10f,0.35f)) },
+                new[] { new PropDef(PropShape.Tree,     C(0.25f,0.55f,0.12f), new Vector3(1.00f,1.00f,1.00f)),
+                        new PropDef(PropShape.Tree,     C(0.20f,0.60f,0.15f), new Vector3(1.00f,1.00f,1.00f)),
+                        new PropDef(PropShape.Tree,     C(0.28f,0.50f,0.10f), new Vector3(1.00f,1.00f,1.00f)) },
                 new[] { new PropDef(PropShape.Sphere,   C(0.40f,0.72f,0.20f), new Vector3(0.45f,0.30f,0.45f)),
                         new PropDef(PropShape.Sphere,   C(0.55f,0.78f,0.25f), new Vector3(0.40f,0.25f,0.40f)) },
                 new[] { new PropDef(PropShape.Sphere,   C(0.80f,0.30f,0.55f), new Vector3(0.18f,0.18f,0.18f)),
                         new PropDef(PropShape.Sphere,   C(0.90f,0.70f,0.20f), new Vector3(0.15f,0.15f,0.15f)) }),
 
             [LevelTheme.Foret] = new ThemePalette(
-                new[] { new PropDef(PropShape.Cylinder, C(0.08f,0.35f,0.08f), new Vector3(0.28f,1.30f,0.28f)),
-                        new PropDef(PropShape.Cylinder, C(0.10f,0.38f,0.10f), new Vector3(0.22f,1.50f,0.22f)),
-                        new PropDef(PropShape.Cylinder, C(0.12f,0.40f,0.12f), new Vector3(0.32f,1.20f,0.32f)) },
+                new[] { new PropDef(PropShape.Tree,     C(0.20f,0.50f,0.20f), new Vector3(1.00f,1.00f,1.00f)),
+                        new PropDef(PropShape.Tree,     C(0.15f,0.45f,0.15f), new Vector3(1.00f,1.00f,1.00f)),
+                        new PropDef(PropShape.Tree,     C(0.22f,0.48f,0.18f), new Vector3(1.00f,1.00f,1.00f)) },
                 new[] { new PropDef(PropShape.Sphere,   C(0.18f,0.48f,0.10f), new Vector3(0.40f,0.35f,0.40f)),
                         new PropDef(PropShape.Capsule,  C(0.20f,0.45f,0.12f), new Vector3(0.20f,0.55f,0.20f)) },
                 new[] { new PropDef(PropShape.Sphere,   C(0.75f,0.25f,0.05f), new Vector3(0.14f,0.14f,0.14f)),
@@ -185,7 +185,7 @@ namespace CrowdDefense.Systems
             var grid = PathManager.Instance?.Grid;
             if (grid == null) return;
 
-            _instancedMat ??= BuildBaseMaterial();
+            if (_instancedMat == null) _instancedMat = BuildBaseMaterial();
             PlaceAllProps(grid, level);
 
 #if UNITY_EDITOR
@@ -284,8 +284,58 @@ namespace CrowdDefense.Systems
         // GameObject factory
         // -------------------------------------------------------------------------
 
+        // Spawns a two-primitive tree: brown cylinder trunk + colored sphere foliage.
+        private void SpawnTree(PropDef def, Vector3 pos, float rotY, string goName)
+        {
+            // Derive a per-tree scale variation from rotY to avoid extra rng parameter
+            float rs = 0.8f + Mathf.Abs(Mathf.Sin(rotY * 0.1f)) * 0.4f;
+
+            var root = new GameObject(goName);
+            root.transform.SetParent(transform, false);
+            root.transform.position = pos;
+            root.transform.rotation = Quaternion.Euler(0f, rotY, 0f);
+
+            var trunk = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            trunk.name = goName + "_trunk";
+            trunk.transform.SetParent(root.transform, false);
+            trunk.transform.localScale = new Vector3(0.15f * rs, 0.5f * rs, 0.15f * rs);
+            trunk.transform.localPosition = Vector3.zero;
+            ApplyTreePart(trunk, new Color(0.45f, 0.30f, 0.15f));
+            var tc = trunk.GetComponent<Collider>();
+            if (tc != null) Destroy(tc);
+
+            var foliage = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            foliage.name = goName + "_foliage";
+            foliage.transform.SetParent(root.transform, false);
+            foliage.transform.localScale = new Vector3(0.55f * rs, 0.55f * rs, 0.55f * rs);
+            foliage.transform.localPosition = new Vector3(0f, 0.7f * rs, 0f);
+            ApplyTreePart(foliage, def.BaseColor);
+            var fc = foliage.GetComponent<Collider>();
+            if (fc != null) Destroy(fc);
+
+            _props.Add(root);
+        }
+
+        private void ApplyTreePart(GameObject go, Color color)
+        {
+            var mr = go.GetComponent<MeshRenderer>();
+            if (mr == null || _instancedMat == null) return;
+            mr.sharedMaterial = _instancedMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            var mpb = new MaterialPropertyBlock();
+            mr.GetPropertyBlock(mpb);
+            mpb.SetColor("_BaseColor", color);
+            mr.SetPropertyBlock(mpb);
+        }
+
         private void SpawnProp(PropDef def, Vector3 pos, Vector3 scale, float rotY, string goName)
         {
+            if (def.Shape == PropShape.Tree)
+            {
+                SpawnTree(def, pos, rotY, goName);
+                return;
+            }
+
             var go = def.Shape switch
             {
                 PropShape.Cube    => GameObject.CreatePrimitive(PrimitiveType.Cube),
