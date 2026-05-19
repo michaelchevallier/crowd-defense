@@ -53,22 +53,14 @@ namespace CrowdDefense.UI
             var doc = GetComponent<UIDocument>();
             if (doc == null)
             {
-                Debug.LogError("[FloatingPopupController] UIDocument not found on this GameObject — trying HUD parent");
+                Debug.LogWarning("[FloatingPopupController] UIDocument not found on this GameObject — trying HUD parent");
                 var hudObj = FindAnyObjectByType<HudController>();
                 if (hudObj != null)
                     doc = hudObj.GetComponent<UIDocument>();
-                if (doc == null)
-                {
-                    Debug.LogError("[FloatingPopupController] Could not find HUD UIDocument — popups disabled");
-                    return;
-                }
+                if (doc == null) return;
             }
             var root = doc.rootVisualElement;
-            if (root == null)
-            {
-                Debug.LogError("[FloatingPopupController] rootVisualElement is null — UXML failed to load");
-                return;
-            }
+            if (root == null) return;
             _overlay = root.Q<VisualElement>("popup-overlay");
         }
 

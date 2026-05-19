@@ -181,11 +181,7 @@ namespace CrowdDefense.UI
 
         public void LoadSceneFade(string sceneName, Color fadeColor = default, float fadeDur = 0.5f)
         {
-            if (_overlay == null)
-            {
-                Debug.LogError("[SceneTransition.LoadSceneFade] _overlay is null — Awake/BuildOverlay may not have completed. Skipping load.");
-                return;
-            }
+            if (_overlay == null) return;
             if (fadeColor == default) fadeColor = Color.black;
             if (_isLoading) return;
             _isLoading = true;
@@ -201,7 +197,6 @@ namespace CrowdDefense.UI
 
             if (_overlay == null)
             {
-                Debug.LogError("[SceneTransition] _overlay is null in FadeAndLoad — BuildOverlay not called");
                 _busy = false;
                 _isLoading = false;
                 yield break;
@@ -310,10 +305,6 @@ namespace CrowdDefense.UI
                 Debug.Log($"[SceneTransition] Fade-out complete, transition finished (overlay alpha forced to 0, raycastTarget=false)");
 #endif
             }
-            else
-            {
-                Debug.LogError($"[SceneTransition] _overlay is null during fade-out");
-            }
 
             _busy = false;
             _isLoading = false;
@@ -363,29 +354,11 @@ namespace CrowdDefense.UI
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log("[SceneTransition.EnsureExists] Creating new SceneTransition GameObject");
 #endif
-            try
-            {
-                var go = new GameObject("SceneTransition");
-                if (go == null)
-                {
-                    Debug.LogError("[SceneTransition.EnsureExists] Failed to create GameObject");
-                    return;
-                }
-                var component = go.AddComponent<SceneTransition>();
-                if (component == null)
-                {
-                    Debug.LogError("[SceneTransition.EnsureExists] Failed to add SceneTransition component");
-                    Destroy(go);
-                    return;
-                }
+            var go = new GameObject("SceneTransition");
+            go.AddComponent<SceneTransition>();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.Log("[SceneTransition.EnsureExists] SceneTransition created successfully");
+            Debug.Log("[SceneTransition.EnsureExists] SceneTransition created successfully");
 #endif
-            }
-            catch (System.Exception ex)
-            {
-                Debug.LogError($"[SceneTransition.EnsureExists] Exception: {ex}");
-            }
         }
     }
 }

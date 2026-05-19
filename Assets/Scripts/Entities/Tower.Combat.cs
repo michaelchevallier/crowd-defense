@@ -98,7 +98,7 @@ namespace CrowdDefense.Entities
             if (ProjectilePool.Instance == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogError("[Tower] ProjectilePool.Instance is null — projectile not fired");
+                Debug.LogWarning("[Tower] ProjectilePool.Instance is null — projectile not fired");
 #endif
                 return;
             }
@@ -192,7 +192,7 @@ namespace CrowdDefense.Entities
             if (proj == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogError("[Tower] ProjectilePool.Get() returned null — skipping fire");
+                Debug.LogWarning("[Tower] ProjectilePool.Get() returned null — skipping fire");
 #endif
                 return;
             }
@@ -316,7 +316,7 @@ namespace CrowdDefense.Entities
             if (proj == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogError("[Tower] ProjectilePool.Get() returned null in FireAngled");
+                Debug.LogWarning("[Tower] ProjectilePool.Get() returned null in FireAngled");
 #endif
                 return;
             }
