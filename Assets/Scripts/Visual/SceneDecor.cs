@@ -371,12 +371,14 @@ namespace CrowdDefense.Visual
             if (prefab != null)
             {
                 go = Instantiate(prefab, transform);
+                FixBrokenShaders(go);
             }
             else
             {
                 go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 var col = go.GetComponent<CapsuleCollider>();
                 if (col != null) Destroy(col);
+                ApplyFallbackMaterial(go, new Color(0.55f, 0.75f, 0.35f));
             }
 
             go.name = goName;
@@ -385,6 +387,49 @@ namespace CrowdDefense.Visual
             go.transform.localScale = scale;
             if (!goName.Contains("_Rock")) go.AddComponent<WindSway>();
             return go;
+        }
+
+        // Replace any broken shader (Hidden/InternalErrorShader, Standard, or missing) with
+        // URP-compatible CrowdDefense/Toon/Lit so GLTF-imported props don't render magenta.
+        private static void FixBrokenShaders(GameObject root)
+        {
+            var urpShader = ShaderUtil.GetToonShader();
+            foreach (var rend in root.GetComponentsInChildren<Renderer>())
+            {
+                var mats = rend.sharedMaterials;
+                bool changed = false;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    var mat = mats[i];
+                    if (mat == null) continue;
+                    var sn = mat.shader?.name ?? "";
+                    if (sn.StartsWith("Hidden/") || sn.Contains("Standard")
+                        || sn.Contains("PBRGraph") || sn.Contains("unitygltf"))
+                    {
+                        var replacement = new Material(urpShader);
+                        if (mat.HasProperty("_BaseColor"))
+                            replacement.SetColor("_BaseColor", mat.GetColor("_BaseColor"));
+                        else
+                            replacement.SetColor("_BaseColor", Color.white);
+                        mats[i] = replacement;
+                        changed = true;
+                    }
+                }
+                if (changed) rend.sharedMaterials = mats;
+            }
+        }
+
+        // Apply a single URP-compatible material with a given color to a primitive GO.
+        private static void ApplyFallbackMaterial(GameObject go, Color color)
+        {
+            var mr = go.GetComponent<MeshRenderer>();
+            if (mr == null) return;
+            var mat = new Material(ShaderUtil.GetToonShader()) { enableInstancing = true };
+            if (mat.HasProperty("_BaseColor"))
+                mat.SetColor("_BaseColor", color);
+            else if (mat.HasProperty("_Color"))
+                mat.SetColor("_Color", color);
+            mr.sharedMaterial = mat;
         }
 
         private GameObject? ResolveBackgroundPrefab(LevelTheme theme)
