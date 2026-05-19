@@ -67,6 +67,7 @@ namespace CrowdDefense.Entities
             BuildCastleAura();
             SubscribeWaveEvents();
             OnHPChanged?.Invoke(HP, HPMax);
+            RefreshDamageMesh();  // V6 T26-A: ensure mesh matches HP stage on init (resume after save)
         }
 
         public void SpawnVictoryBanner()
