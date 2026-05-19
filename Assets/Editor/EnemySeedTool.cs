@@ -47,6 +47,16 @@ namespace CrowdDefense.Editor
             public float aoeBlastRadius;
             public int aoeBlastDamage;
             public string shaderOverlay;
+            public bool canTeleport;
+            public float teleportCooldown;
+            public int projectileRainCount;
+            public bool isBurstSummoner;
+            public int burstCount;
+            public float burstAngleStep;
+            public bool hasTentacleSlam;
+            public int tentacleCount;
+            public int tentacleDamage;
+            public float tentacleRadius;
         }
 
         private static Color Hex(uint rgb) =>
@@ -70,9 +80,9 @@ namespace CrowdDefense.Editor
             new EnemyData { id = "dragon_boss",     displayName = "Dragon Boss",     hp = 130,  speed = 0.5f,  damage = 50, reward = 200, scale = 1.5f,  bodyColor = Hex(0xff3a10), walkAnim = "Fast_Flying", assetKey = "boss_volcan_dragon_v2", isBoss = true, isFlyer = true, flyHeight = 2.0f, aoeBlastMs = 6000, aoeBlastRadius = 5.0f, aoeBlastDamage = 35, summonsMinions = true, summonCooldownMs = 4500, summonType = "imp", bossName = "Dragon de Lave", immuneToFlyerBonus = true, bossAuraColor = Hex(0xff5520) },
             new EnemyData { id = "apocalypse_boss", displayName = "Apocalypse Boss", hp = 600,  speed = 0.55f, damage = 60, reward = 500, scale = 2.0f,  bodyColor = Hex(0x6a0808), walkAnim = "Walking_A",   assetKey = "boss_apocalypse", isBoss = true, isApocalypseBoss = true, bossName = "L'Apocalypse", bossAuraColor = Hex(0xff2020) },
             new EnemyData { id = "cosmic_boss",     displayName = "Cosmic Boss",     hp = 700,  speed = 0.5f,  damage = 65, reward = 550, scale = 1.7f,  bodyColor = Hex(0x8855cc), walkAnim = "Fast_Flying", assetKey = "boss_espace_ghost", isBoss = true, isApocalypseBoss = true, summonsMinions = true, summonCooldownMs = 5000, summonType = "flyer", bossName = "Entité Galactique", bossAuraColor = Hex(0x8855ff) },
-            new EnemyData { id = "kraken_boss",     displayName = "Kraken Boss",     hp = 800,  speed = 0.45f, damage = 70, reward = 600, scale = 2.0f,  bodyColor = Hex(0x008888), walkAnim = "Idle",        assetKey = "boss_submarin_kraken", isBoss = true, isApocalypseBoss = true, summonsMinions = true, summonCooldownMs = 4000, summonType = "shielded", bossName = "Le Kraken", bossAuraColor = Hex(0x00cccc), shaderOverlay = "jellyfish" },
-            new EnemyData { id = "wizard_king",     displayName = "Wizard King",     hp = 900,  speed = 0.42f, damage = 75, reward = 650, scale = 1.7f,  bodyColor = Hex(0xffd040), walkAnim = "Walking_A",   assetKey = "boss_medieval_sorcier_roi", isBoss = true, isApocalypseBoss = true, summonsMinions = true, summonCooldownMs = 4500, summonType = "assassin", bossName = "Le Sorcier-Roi", bossAuraColor = Hex(0xffd040) },
-            new EnemyData { id = "ai_hub",          displayName = "AI Hub",          hp = 1000, speed = 0.38f, damage = 80, reward = 700, scale = 1.7f,  bodyColor = Hex(0xff40ff), walkAnim = "Walking_A",   assetKey = "boss_cyberpunk_hub_ia", isBoss = true, isApocalypseBoss = true, summonsMinions = true, summonCooldownMs = 3500, summonType = "flyer", bossName = "Hub IA", bossAuraColor = Hex(0xff40ff), shaderOverlay = "hologram" },
+            new EnemyData { id = "kraken_boss",     displayName = "Kraken Boss",     hp = 800,  speed = 0.45f, damage = 70, reward = 600, scale = 2.0f,  bodyColor = Hex(0x008888), walkAnim = "Idle",        assetKey = "boss_submarin_kraken", isBoss = true, isApocalypseBoss = true, summonsMinions = true, summonCooldownMs = 4000, summonType = "shielded", bossName = "Le Kraken", bossAuraColor = Hex(0x00cccc), shaderOverlay = "jellyfish", hasTentacleSlam = true, tentacleCount = 4, tentacleDamage = 15, tentacleRadius = 3.5f },
+            new EnemyData { id = "wizard_king",     displayName = "Wizard King",     hp = 900,  speed = 0.42f, damage = 75, reward = 650, scale = 1.7f,  bodyColor = Hex(0xffd040), walkAnim = "Walking_A",   assetKey = "boss_medieval_sorcier_roi", isBoss = true, isApocalypseBoss = true, summonsMinions = true, summonCooldownMs = 4500, summonType = "assassin", bossName = "Le Sorcier-Roi", bossAuraColor = Hex(0xffd040), canTeleport = true, teleportCooldown = 8f, projectileRainCount = 5 },
+            new EnemyData { id = "ai_hub",          displayName = "AI Hub",          hp = 1000, speed = 0.38f, damage = 80, reward = 700, scale = 1.7f,  bodyColor = Hex(0xff40ff), walkAnim = "Walking_A",   assetKey = "boss_cyberpunk_hub_ia", isBoss = true, isApocalypseBoss = true, summonsMinions = true, summonCooldownMs = 3500, summonType = "flyer", bossName = "Hub IA", bossAuraColor = Hex(0xff40ff), shaderOverlay = "hologram", isBurstSummoner = true, burstCount = 5, burstAngleStep = 72f },
             new EnemyData { id = "desert_runner",   displayName = "Desert Runner",   hp = 1,    speed = 2.4f,  damage = 4,  reward = 2,   scale = 0.55f, bodyColor = Hex(0xcca055), walkAnim = "Run",         assetKey = "mob_cactoro" },
             new EnemyData { id = "forest_brute",    displayName = "Forest Brute",    hp = 12,   speed = 0.8f,  damage = 18, reward = 12,  scale = 0.7f,  bodyColor = Hex(0x6a8a40), walkAnim = "Idle",        assetKey = "mob_orc" },
             new EnemyData { id = "submarin_runner", displayName = "Submarin Runner", hp = 1,    speed = 2.2f,  damage = 3,  reward = 2,   scale = 0.5f,  bodyColor = Hex(0x4a8a4a), walkAnim = "Jump",        assetKey = "mob_frog" },
@@ -155,6 +165,16 @@ namespace CrowdDefense.Editor
             SetFloat (so, "aoeBlastRadius", d.aoeBlastRadius);
             SetInt   (so, "aoeBlastDamage", d.aoeBlastDamage);
             SetString(so, "shaderOverlay",  d.shaderOverlay);
+            SetBool  (so, "canTeleport",    d.canTeleport);
+            SetFloat (so, "teleportCooldown", d.teleportCooldown);
+            SetInt   (so, "projectileRainCount", d.projectileRainCount);
+            SetBool  (so, "isBurstSummoner", d.isBurstSummoner);
+            SetInt   (so, "burstCount",     d.burstCount);
+            SetFloat (so, "burstAngleStep", d.burstAngleStep);
+            SetBool  (so, "hasTentacleSlam", d.hasTentacleSlam);
+            SetInt   (so, "tentacleCount",  d.tentacleCount);
+            SetInt   (so, "tentacleDamage", d.tentacleDamage);
+            SetFloat (so, "tentacleRadius", d.tentacleRadius);
             so.ApplyModifiedPropertiesWithoutUndo();
         }
 
