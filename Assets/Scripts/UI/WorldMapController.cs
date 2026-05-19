@@ -141,6 +141,7 @@ namespace CrowdDefense.UI
 
             RefreshHeader();
             ShowWorld(_activeWorld);
+            Visual.WeatherController.Instance?.ApplyAmbient(_activeWorld);
             WireSpecialTiles();
 
         }
@@ -347,6 +348,7 @@ namespace CrowdDefense.UI
             _activeWorld = worldIndex;
             RefreshTabs();
             ShowWorld(worldIndex);
+            Visual.WeatherController.Instance?.ApplyAmbient(worldIndex);
         }
 
         private void RefreshTabs()
