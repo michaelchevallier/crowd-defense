@@ -61,8 +61,9 @@ namespace CrowdDefense.EditorTools
             File.WriteAllText("Library/V3BatchReports/edit-mode-latest.txt", sb.ToString());
             Debug.Log(sb.ToString());
 
-            if (Application.isBatchMode && failed > 0)
-                EditorApplication.Exit(1);
+            // Note: don't EditorApplication.Exit(1) here even in batch mode — caller
+            // (V3AutoLoop or shell script) decides exit code based on parsed report.
+            // Exiting here interrupts V3AutoLoop before its JSON output is written.
         }
 
         private static void Test_Singletons(StringBuilder sb)

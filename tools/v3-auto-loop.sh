@@ -3,7 +3,7 @@
 # Usage: bash tools/v3-auto-loop.sh [--keep-unity-open]
 set -euo pipefail
 
-UNITY_PATH="/Applications/Unity/Hub/Editor/6000.0.47f1/Unity.app/Contents/MacOS/Unity"
+UNITY_PATH="/Applications/Unity/Hub/Editor/6000.4.6f1-arm64/Unity.app/Contents/MacOS/Unity"
 PROJECT="$(cd "$(dirname "$0")/.." && pwd)"
 AUTOLOOP_JSON="$PROJECT/Library/V3AutoLoop/latest.json"
 PIXELDIFF_JSON="$PROJECT/Library/V3PixelDiff/report.json"
