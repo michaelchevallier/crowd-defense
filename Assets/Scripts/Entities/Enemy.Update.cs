@@ -87,7 +87,12 @@ namespace CrowdDefense.Entities
                     if (_stepTimer <= 0f)
                     {
                         _stepTimer = StepInterval;
-                        AudioController.Instance?.Play3D("step_dirt", transform.position, 0.55f);
+                        if (Random.value < 0.35f)
+                        {
+                            var camPos = MainCameraCache.Main != null ? MainCameraCache.Main.transform.position : Vector3.zero;
+                            if (Vector3.SqrMagnitude(transform.position - camPos) < 625f) // 25m squared
+                                AudioController.Instance?.Play3D("step_dirt", transform.position, 0.55f);
+                        }
                     }
                 }
                 else { _stepTimer = 0f; }
@@ -145,7 +150,12 @@ namespace CrowdDefense.Entities
                 if (_stepTimer <= 0f)
                 {
                     _stepTimer = StepInterval;
-                    AudioController.Instance?.Play3D("step_dirt", transform.position, 0.55f);
+                    if (Random.value < 0.35f)
+                    {
+                        var camPos = MainCameraCache.Main != null ? MainCameraCache.Main.transform.position : Vector3.zero;
+                        if (Vector3.SqrMagnitude(transform.position - camPos) < 625f) // 25m squared
+                            AudioController.Instance?.Play3D("step_dirt", transform.position, 0.55f);
+                    }
                 }
             }
             else
