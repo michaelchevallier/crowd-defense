@@ -2182,9 +2182,10 @@
 }
 
 /* === Wave start / clear banners (P0-UI-6) === */
-.wave-banner {
+.wave-banner--start,
+.wave-banner--clear {
     position: absolute;
-    top: 30%;
+    top: 80px;
     left: 50%;
     translate: -50% 0;
     flex-direction: row;
