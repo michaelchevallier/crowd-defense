@@ -333,8 +333,10 @@ namespace CrowdDefense.Entities
             }
         }
 
-        private void OnProjKill(Vector3 killPos)
+        private void OnProjKill(Vector3 killPos, int xp)
         {
+            GainXp(xp);
+
             if (Lifesteal > 0f && Castle.Instance != null)
                 Castle.Instance.Regen(Mathf.Max(1, Mathf.RoundToInt(Lifesteal)));
 

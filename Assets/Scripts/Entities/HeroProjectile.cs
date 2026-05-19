@@ -40,7 +40,7 @@ namespace CrowdDefense.Entities
         private int     _critStaggerMs;
         private bool    _glaciation;
 
-        private Action<Vector3>? _onEnemyKilled;
+        private Action<Vector3, int>? _onEnemyKilled;
 
         private readonly HashSet<Enemy> _hitSet = new();
 
@@ -53,7 +53,7 @@ namespace CrowdDefense.Entities
             bool aoeOnHit, float fireballRadius, float fireballDmgMul,
             bool explodeOnConsume, float pierceExplodeRadius, float pierceExplodeDmgMul,
             float critChance, float critMul, int critStaggerMs,
-            bool glaciation, Action<Vector3>? onEnemyKilled)
+            bool glaciation, Action<Vector3, int>? onEnemyKilled)
         {
             _speed              = speed;
             _dir                = dir.normalized;
@@ -133,7 +133,13 @@ namespace CrowdDefense.Entities
                     SlowEffectManager.Instance?.ApplySlow(hitTarget, 0.5f, 2000);
 
                 if (hitTarget.IsDead)
-                    _onEnemyKilled?.Invoke(hitTarget.transform.position);
+                {
+                    var ecfg = hitTarget.Config;
+                    int xp = ecfg != null && (ecfg.IsBoss || ecfg.IsApocalypseBoss) ? 50
+                           : ecfg != null && ecfg.IsMidBoss ? 20
+                           : hitTarget._isElite ? 15 : 5;
+                    _onEnemyKilled?.Invoke(hitTarget.transform.position, xp);
+                }
 
                 if (_ricochetLeft > 0)
                 {
