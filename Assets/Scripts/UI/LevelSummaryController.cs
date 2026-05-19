@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
 using CrowdDefense.Systems;
+using CrowdDefense.Visual;
 
 namespace CrowdDefense.UI
 {
@@ -78,6 +79,16 @@ namespace CrowdDefense.UI
             if (Root == null) return;
             Root.RemoveFromClassList("hidden");
             _pendingResult = r;
+
+            if (r.IsVictory)
+            {
+                AudioController.Instance?.Play("wave_clear", 0.85f);
+            }
+            else
+            {
+                JuiceFX.Instance?.Flash(new Color(0.6f, 0.1f, 0.1f, 0.35f), 600);
+                AudioController.Instance?.Play("castle_lost", 0.85f);
+            }
 
             if (_titleLabel != null)
                 _titleLabel.text = r.IsVictory ? L.Get("summary.victory") : L.Get("summary.game_over");
