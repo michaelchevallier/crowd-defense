@@ -826,3 +826,5 @@ Added more towers (50 placed, mixed types) + bumped loop limit to 600. Iterating
 2026-05-19 02h25 — scrute /loop #266 (cron). **0 new commit** depuis #265 (HEAD `49a27226`). 2 worktrees stables. Mike silent (~3h post N-Validation push). **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-19 02h55 — scrute /loop #267 (cron). **0 new commit** depuis #266 (HEAD `310705fc`). 2 worktrees stables. Mike paste Play mode screen → rendu cassé visible (path tiles invisibles, magenta squares, fallback cylindres verts). **Drift 0/12** ✅ (code stable, mais runtime visuel cassé — bugs visuels à investiguer hors-cron). **T2 silencieux jusqu'à confirmation par Mike**.
+
+2026-05-19 03h07 — scrute /loop hors-tick (Mike "boucle auto-amélioration jusqu'à midi worth case fix web build, iso V3 target"). 3 bug-fixers dispatched parallèle : B-PATHTILES (path tiles Y + Foret materials), B-FALLBACK (AssetRegistry coverage + fallback mesh cleanup — re-dispatch après agent confondu repo Phaser), B-DEBUGOVERLAY (grille fluo rouge/bleue/orange suppression). Mode auto-amélioration ON jusqu'à 12h00 CEST. **Drift 0/12** ✅.
