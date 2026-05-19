@@ -180,6 +180,15 @@
     scale: 0.98;
 }
 
+/* V6 T22-B: emoji fallback when no Sprite icon */
+.perk-card-icon-emoji {
+    flex: 1;
+    -unity-text-align: middle-center;
+    font-size: 48px;
+    color: white;
+    -unity-font-style: bold;
+}
+
 .hidden {
     display: none;
 }

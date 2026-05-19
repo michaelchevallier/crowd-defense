@@ -233,7 +233,17 @@ namespace CrowdDefense.UI
             var icon = new VisualElement();
             icon.AddToClassList("perk-card-icon");
             if (def?.icon != null)
+            {
                 icon.style.backgroundImage = new StyleBackground(def.icon);
+            }
+            else if (!string.IsNullOrEmpty(def?.iconEmoji))
+            {
+                var emojiLabel = new Label(def.iconEmoji);
+                emojiLabel.AddToClassList("perk-card-icon-emoji");
+                emojiLabel.style.fontSize = 48;
+                emojiLabel.style.unityTextAlign = TextAnchor.MiddleCenter;
+                icon.Add(emojiLabel);
+            }
             card.Add(icon);
 
             // Rarity label
