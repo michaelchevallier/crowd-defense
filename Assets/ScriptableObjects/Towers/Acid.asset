@@ -68,7 +68,7 @@ MonoBehaviour:
       mul: 0
       durMs: 0
     filterPierceOrAoe: 0
-  assetKey: tower_acid
+  assetKey: tower_mage
   bodyColor: {r: 0.4, g: 0.8, b: 0.13333334, a: 1}
   projectileColor: {r: 0.53333336, g: 1, b: 0.26666668, a: 1}
   sizeMultiplier: 0.85

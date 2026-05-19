@@ -68,7 +68,7 @@ MonoBehaviour:
       mul: 0
       durMs: 0
     filterPierceOrAoe: 0
-  assetKey: tower_skyguard
+  assetKey: tower_archer
   bodyColor: {r: 0.2901961, g: 0.3529412, b: 0.41568628, a: 1}
   projectileColor: {r: 0.53333336, g: 0.8, b: 1, a: 1}
   sizeMultiplier: 1
