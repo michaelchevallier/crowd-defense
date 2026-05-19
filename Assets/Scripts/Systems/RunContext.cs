@@ -1,7 +1,10 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using CrowdDefense.Common;
+using CrowdDefense.Data;
+using UnityEngine;
 
 namespace CrowdDefense.Systems
 {
@@ -104,6 +107,17 @@ namespace CrowdDefense.Systems
         {
             var rs = SaveSystem.GetRunState();
             hero.ApplyRunContext(rs.heroPerks, rs.heroLevel, rs.heroXP);
+        }
+
+        // Returns the HeroType matching the PlayerPrefs selection, or null if no prefs key is set.
+        // Caller should fall back to the Inspector-assigned heroType field when this returns null.
+        public static HeroType? GetSelectedHero()
+        {
+            var assetKey = PlayerPrefs.GetString(UI.HeroPickScreen.PrefsKey, "");
+            if (string.IsNullOrEmpty(assetKey)) return null;
+
+            var heroes = Resources.LoadAll<HeroType>("Heroes");
+            return heroes.FirstOrDefault(h => h.AssetKey == assetKey);
         }
     }
 }

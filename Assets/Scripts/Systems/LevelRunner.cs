@@ -777,7 +777,8 @@ namespace CrowdDefense.Systems
 
         private void SpawnHero()
         {
-            if (!spawnHero || heroType == null) return;
+            var resolvedHeroType = RunContext.GetSelectedHero() ?? heroType;
+            if (!spawnHero || resolvedHeroType == null) return;
 
             var grid = PathManager.Instance?.Grid;
             float maxX = grid != null ? grid.Width  * grid.CellSize * 0.5f : 29.5f;
@@ -797,7 +798,7 @@ namespace CrowdDefense.Systems
             }
 
             Hero = heroGo.GetComponent<Hero>() ?? heroGo.AddComponent<Hero>();
-            Hero.Init(heroType, spawnPos, maxX, maxZ);
+            Hero.Init(resolvedHeroType, spawnPos, maxX, maxZ);
 
             Hero.OnLevelUp += (_, _, _) =>
                 VfxPool.Instance?.SpawnLevelUp(Hero.transform.position + Vector3.up * 1.2f);
@@ -849,7 +850,7 @@ namespace CrowdDefense.Systems
             }
 
 #if UNITY_EDITOR
-            Debug.Log($"[LevelRunner] spawned hero '{heroType.Id}' at {spawnPos}");
+            Debug.Log($"[LevelRunner] spawned hero '{resolvedHeroType.Id}' at {spawnPos}");
 #endif
         }
 
