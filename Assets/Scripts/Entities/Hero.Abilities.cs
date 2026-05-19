@@ -29,6 +29,11 @@ namespace CrowdDefense.Entities
             if (slotIndex == 0 && !_autoAttack) TryManualFire();
             if (slotIndex == 2) TryUlt();
             if (slotIndex == 3) TryUltimate();
+
+            // V6 T24-M: play cast sound for Q/W (slots 2/3 already play via TryUlt/TryUltimate)
+            if (slotIndex == 0) AudioController.Instance?.Play("skill_q_cast", 0.7f);
+            if (slotIndex == 1) AudioController.Instance?.Play("skill_w_cast", 0.7f);
+
             StartCoroutine(CastSweepRoutine(slotIndex));
         }
 
