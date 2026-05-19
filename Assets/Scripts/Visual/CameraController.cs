@@ -79,12 +79,15 @@ namespace CrowdDefense.Visual
             var cam = GetComponent<Camera>();
             if (cam != null) cam.fieldOfView = 55f;
 
+            // V6 Q-CAM-FRAMING: force follow OFF at start — V4 reference is static cam
+            _followHero = false;
+            PlayerPrefs.SetInt(KFollowHero, 0);
+
             _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
             _defaultPosition = transform.position;
             _defaultRotation = transform.rotation;
             _defaultY        = transform.position.y;
             _followVelocity = Vector3.zero;
-            _followHero = PlayerPrefs.GetInt(KFollowHero, 0) == 1;
             EventManager.Instance?.Subscribe<BossEncounteredEvent>(OnBossSpawn);
         }
         protected override void OnDestroySingleton() =>
