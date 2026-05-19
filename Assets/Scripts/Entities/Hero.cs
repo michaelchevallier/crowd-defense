@@ -87,7 +87,8 @@ namespace CrowdDefense.Entities
             var meshChild = SpawnMeshChild(type.AssetKey);
             var toonRoot  = meshChild != null ? meshChild : gameObject;
 
-            FixNullMaterials(toonRoot);
+            // V6 W1-AG: scan ENTIRE hero hierarchy (Body is direct child of Hero(Clone), not toonRoot)
+            FixNullMaterials(gameObject);
             MaterialController.ApplyToon(toonRoot, type.BodyColor);
             Outline.ApplyToHierarchy(toonRoot.transform);
 
