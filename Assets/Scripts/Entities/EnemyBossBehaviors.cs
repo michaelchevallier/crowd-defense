@@ -224,6 +224,7 @@ namespace CrowdDefense.Entities
                     chargeTimer         = 0f;
                     _chargeWindUpActive = true;
                     _chargeWindUpTimer  = 1.5f;
+                    AudioController.Instance?.Play3D("boss_charge", transform.position, 0.8f);
                     VfxPool.Instance?.SpawnImpact(
                         transform.position + Vector3.up * 0.8f,
                         new Color(1f, 0.7f, 0f));

@@ -194,6 +194,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
                 Debug.Log($"[Place] reject : not enough gold ({Economy.Instance?.Gold ?? 0} < {cost})");
 #endif
+                AudioController.Instance?.Play("no_gold", 0.6f);
                 Toast.Show("Or insuffisant", $"Cette tour coute {cost}¢, vous avez {Economy.Instance?.Gold ?? 0}¢.", 2500, null, ToastType.Warning);
                 return;
             }

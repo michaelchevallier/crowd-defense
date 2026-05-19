@@ -31,6 +31,7 @@ namespace CrowdDefense.Entities
             if (_isDead || _invulTimer > 0f || dmg <= 0f) return;
             _hp -= dmg;
             OnHeroDamaged?.Invoke(dmg);
+            AudioController.Instance?.Play3DPitched("enemy_hit", transform.position, 0.7f, 1.2f);
             if (_hp <= 0f)
             {
                 _hp = 0f;
