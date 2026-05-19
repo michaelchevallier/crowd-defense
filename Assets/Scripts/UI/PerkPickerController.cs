@@ -133,10 +133,14 @@ namespace CrowdDefense.UI
             // Dispose previously created fallback SOs before building a new batch.
             DisposeFallbackInstances();
 
-            var reg = PerkRegistry.Get();
-            if (reg != null)
+            var hero = LevelRunner.Instance?.Hero;
+            var perkSystem = PerkSystem.Instance;
+            if (hero != null && perkSystem != null)
             {
-                var defs = reg.GetRandom(3);
+                var rs = SaveSystem.GetRunState();
+                string schoolId = rs?.schoolId ?? "";
+                int levelUpsLeft = hero.MaxLevel - hero.Level;
+                var defs = perkSystem.RollChoices(hero, 3, levelUpsLeft, schoolId);
                 if (defs.Count > 0)
                 {
                     var result = new List<PerkDef?>();
@@ -272,16 +276,21 @@ namespace CrowdDefense.UI
         private void SelectPerk(string perkId)
         {
             if (Root != null) Root.AddToClassList("hidden");
-            Time.timeScale = 1f;
-
-            if (!string.IsNullOrEmpty(perkId))
+            try
             {
-                var ctx = RunContext.Instance;
-                ctx?.AddPerk(perkId);
-            }
+                if (!string.IsNullOrEmpty(perkId))
+                {
+                    var ctx = RunContext.Instance;
+                    ctx?.AddPerk(perkId);
+                }
 
-            onSelectionDone?.Invoke();
-            onSelectionDone = null;
+                onSelectionDone?.Invoke();
+                onSelectionDone = null;
+            }
+            finally
+            {
+                Time.timeScale = 1f;
+            }
         }
 
         private static string RarityClass(PerkRarity rarity) => rarity switch
