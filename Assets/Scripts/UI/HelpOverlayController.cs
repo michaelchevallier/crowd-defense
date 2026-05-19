@@ -11,7 +11,7 @@ namespace CrowdDefense.UI
         {
             ("Construction",  "Selectionne tour [1-9] → marche jusqu au disque jaune"),
             ("Clic / Select", "Placer une tour / selectionner"),
-            ("Space",         "Lancer la vague"),
+            ("N",             "Lancer la vague"),
             ("1 - 4",         "Selectionner type de tour"),
             ("Q / W / E / R",  "Capacites du heros (R = Ultime)"),
             ("Backspace",      "Reinitialiser camera"),

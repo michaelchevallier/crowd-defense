@@ -59,7 +59,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
 
-            <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines [D]" />
+            <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines" />
             <ui:Button text="&#x1F6D2;" name="btn-shop" class="hud-shop-btn" tooltip="Boutique" />
             <ui:Button text="&#x1F5FA;" name="btn-map" class="hud-map-btn" tooltip="Carte des mondes" />
             <ui:Button text="&#x2699;" name="btn-settings" class="hud-settings-btn" tooltip="Settings" />
@@ -251,7 +251,7 @@
         </ui:VisualElement>
 
         <!-- Minimap (top-right, 10 Hz update via MinimapController) -->
-        <ui:Button name="minimap-toggle-btn" class="minimap-toggle-btn" text="M" tooltip="Minimap [M]" />
+        <ui:Button name="minimap-toggle-btn" class="minimap-toggle-btn" text="M" tooltip="Minimap" />
         <ui:VisualElement name="minimap-container" class="minimap-container hidden">
             <ui:VisualElement name="minimap-content" />
         </ui:VisualElement>
