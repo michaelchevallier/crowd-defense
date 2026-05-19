@@ -191,6 +191,9 @@
         <!-- Danger vignette (edge flash on enraged / charge) -->
         <ui:VisualElement name="danger-vignette" class="danger-vignette hidden" />
 
+        <!-- Castle danger vignette (red pulsing border when castle HP < 30%) -->
+        <ui:VisualElement name="castle-danger-vignette" class="castle-danger-vignette hidden" />
+
         <!-- Combo display (center HUD, multi-kill streak) -->
         <ui:VisualElement name="combo-display" class="combo-display hidden">
             <ui:Label text="x2 COMBO!" name="combo-label" class="combo-label" />

@@ -115,10 +115,11 @@ namespace CrowdDefense.Visual
         // ── Public API ────────────────────────────────────────────────────────
 
         // Trigger camera shake. Re-calling overrides current shake.
-        // Gated by Settings.ShakeEnabled.
+        // Gated by Settings.ShakeEnabled and ReduceMotion.
         public void Shake(float intensity, int durationMs)
         {
             if (SettingsRegistry.Instance != null && !SettingsRegistry.Instance.ShakeEnabled) return;
+            if (SettingsRegistry.Instance != null && SettingsRegistry.Instance.ReduceMotion) return;
             float duration = Mathf.Max(0.016f, durationMs / 1000f);
             _shakeIntensity = intensity;
             _shakeEndTime = Time.unscaledTime + duration;
@@ -182,8 +183,10 @@ namespace CrowdDefense.Visual
         }
 
         // Trigger slow-motion. Re-calling overrides current slow-mo.
+        // Gated by ReduceMotion a11y setting.
         public void SlowMo(float timeScale, int durationMs)
         {
+            if (SettingsRegistry.Instance != null && SettingsRegistry.Instance.ReduceMotion) return;
             float duration = Mathf.Max(0.016f, durationMs / 1000f);
 
             if (_slowMoCoroutine != null)

@@ -80,6 +80,10 @@ namespace CrowdDefense.UI
         private int    _lastKnownCastleHP = -1;
         private Coroutine? _regenIconCoroutine;
 
+        // Castle danger vignette — pulsing red border when HP < 30%
+        private VisualElement? _castleDangerVignette;
+        private bool _castleDangerActive;
+
         // Bank pill (D1-01 §3.5)
         private Label? _bankLabel;
         private VisualElement? _bankTooltip;
@@ -240,6 +244,7 @@ namespace CrowdDefense.UI
             hpLabel = Root.Q<Label>("hp-label");
             hpValue = Root.Q<Label>("hp-value");
             hpBarFill = Root.Q<VisualElement>("hp-bar-fill");
+            _castleDangerVignette = Root.Q<VisualElement>("castle-danger-vignette");
             _castleRegenIcon = Root.Q<Label>("castle-regen-icon");
             if (_castleRegenIcon == null)
             {
@@ -1097,6 +1102,17 @@ namespace CrowdDefense.UI
                 _regenIconCoroutine = StartCoroutine(FlashRegenIcon());
             }
             _lastKnownCastleHP = hp;
+
+            bool critical = hpMax > 0 && (float)hp / hpMax < 0.30f;
+            if (critical != _castleDangerActive)
+            {
+                _castleDangerActive = critical;
+                if (_castleDangerVignette != null)
+                {
+                    if (critical) _castleDangerVignette.RemoveFromClassList("hidden");
+                    else          _castleDangerVignette.AddToClassList("hidden");
+                }
+            }
         }
 
         private System.Collections.IEnumerator FlashRegenIcon()
