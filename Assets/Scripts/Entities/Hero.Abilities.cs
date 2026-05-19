@@ -58,12 +58,12 @@ namespace CrowdDefense.Entities
             lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             lr.receiveShadows = false;
 
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")
-                               ?? Shader.Find("Sprites/Default")
-                               ?? Shader.Find("Standard")!)
-            {
-                color = sweepColor
-            };
+            var particleShader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                               ?? Shader.Find("Sprites/Default");
+            var mat = new Material(particleShader != null ? particleShader : CrowdDefense.Common.ShaderUtil.GetUnlitShader());
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", sweepColor);
+            else if (mat.HasProperty("_Color")) mat.SetColor("_Color", sweepColor);
+            mat.color = sweepColor;
             mat.SetFloat("_Surface", 1f);
             mat.SetInt("_ZWrite", 0);
             mat.renderQueue = 3000;

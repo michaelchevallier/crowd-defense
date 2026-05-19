@@ -241,8 +241,10 @@ namespace CrowdDefense.Entities
             var rend = fallback.GetComponent<MeshRenderer>();
             if (rend != null)
             {
-                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
-                    { color = color };
+                var mat = new Material(ShaderUtil.GetUnlitShader());
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+                else if (mat.HasProperty("_Color")) mat.SetColor("_Color", color);
+                rend.material = mat;
             }
             Object.Destroy(fallback.GetComponent<Collider>());
             return fallback;
@@ -389,10 +391,11 @@ namespace CrowdDefense.Entities
             _stealthRingMR = _stealthRingGO.GetComponent<MeshRenderer>();
             if (_stealthRingMR != null)
             {
-                var mat = new Material(ShaderUtil.GetLitShader());
+                var mat = new Material(ShaderUtil.GetUnlitShader());
                 mat.SetFloat("_Surface", 1f);
                 mat.renderQueue = 3000;
-                mat.color = new Color(1f, 0.53f, 0.13f, 0.7f);
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", new Color(1f, 0.53f, 0.13f, 0.7f));
+                else if (mat.HasProperty("_Color")) mat.SetColor("_Color", new Color(1f, 0.53f, 0.13f, 0.7f));
                 _stealthRingMR.material = mat;
                 _stealthRingMR.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                 _stealthRingMR.receiveShadows = false;

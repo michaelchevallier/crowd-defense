@@ -114,8 +114,14 @@ namespace CrowdDefense.Entities
             body.transform.localPosition = new Vector3(0f, 0.55f, 0f);
             body.transform.localScale    = new Vector3(0.55f, 0.85f, 0.5f);
             var bodyRend = body.GetComponent<MeshRenderer>();
-            if (bodyRend != null) bodyRend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
-                { color = new Color(0f, 1f, 0f) };
+            if (bodyRend != null)
+            {
+                var bodyMat = new Material(ShaderUtil.GetUnlitShader());
+                var bodyColor = new Color(0f, 1f, 0f);
+                if (bodyMat.HasProperty("_BaseColor")) bodyMat.SetColor("_BaseColor", bodyColor);
+                else if (bodyMat.HasProperty("_Color")) bodyMat.SetColor("_Color", bodyColor);
+                bodyRend.material = bodyMat;
+            }
             Object.Destroy(body.GetComponent<Collider>());
 
             var head = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -124,8 +130,14 @@ namespace CrowdDefense.Entities
             head.transform.localPosition = new Vector3(0f, 1.15f, 0f);
             head.transform.localScale    = new Vector3(0.38f, 0.35f, 0.38f);
             var headRend = head.GetComponent<MeshRenderer>();
-            if (headRend != null) headRend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
-                { color = new Color(0f, 0.8f, 0f) };
+            if (headRend != null)
+            {
+                var headMat = new Material(ShaderUtil.GetUnlitShader());
+                var headColor = new Color(0f, 0.8f, 0f);
+                if (headMat.HasProperty("_BaseColor")) headMat.SetColor("_BaseColor", headColor);
+                else if (headMat.HasProperty("_Color")) headMat.SetColor("_Color", headColor);
+                headRend.material = headMat;
+            }
             Object.Destroy(head.GetComponent<Collider>());
         }
 
@@ -189,8 +201,9 @@ namespace CrowdDefense.Entities
             auraGo.transform.localScale    = new Vector3(0.675f * 2f, 0.01f, 0.675f * 2f);
             Object.Destroy(auraGo.GetComponent<Collider>());
             var c = cfg.AuraColor;
-            var auraMat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-            auraMat.color = c;
+            var auraMat = new Material(ShaderUtil.GetUnlitShader());
+            if (auraMat.HasProperty("_BaseColor")) auraMat.SetColor("_BaseColor", c);
+            else if (auraMat.HasProperty("_Color")) auraMat.SetColor("_Color", c);
             SetMaterialTransparent(auraMat, c.a);
             _auraRenderer = auraGo.GetComponent<Renderer>();
             if (_auraRenderer != null) _auraRenderer.material = auraMat;
@@ -202,8 +215,9 @@ namespace CrowdDefense.Entities
             haloGo.transform.localScale    = new Vector3(1.2f * 2f, 0.01f, 1.2f * 2f);
             Object.Destroy(haloGo.GetComponent<Collider>());
             var h = cfg.HaloColor;
-            var haloMat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-            haloMat.color = h;
+            var haloMat = new Material(ShaderUtil.GetUnlitShader());
+            if (haloMat.HasProperty("_BaseColor")) haloMat.SetColor("_BaseColor", h);
+            else if (haloMat.HasProperty("_Color")) haloMat.SetColor("_Color", h);
             SetMaterialTransparent(haloMat, h.a);
             _haloRenderer = haloGo.GetComponent<Renderer>();
             if (_haloRenderer != null) _haloRenderer.material = haloMat;
