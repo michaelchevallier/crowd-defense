@@ -135,9 +135,10 @@ namespace CrowdDefense.EditorTools
             if (registry == null)
                 throw new Exception("LevelRegistry.Get() returned null");
 
-            LevelData? w11 = registry.FindById("W1-1");
+            // Note: LevelData.id is the long form "world1-1", asset name is "W1-1".
+            LevelData? w11 = registry.FindById("world1-1");
             if (w11 == null)
-                throw new Exception("LevelData W1-1 not found in registry");
+                throw new Exception("LevelData world1-1 not found in registry");
 
             GameObject? go = null;
             try
