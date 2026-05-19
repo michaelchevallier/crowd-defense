@@ -381,19 +381,15 @@ namespace CrowdDefense.Entities
             var registry = Resources.Load<AssetRegistry>("AssetRegistry");
             if (registry == null)
             {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[Tower] AssetRegistry not found — fallback primitive");
-#endif
+                Debug.LogError($"[Tower] AssetRegistry not found — check Resources/AssetRegistry.asset exists");
                 return null;
             }
 
             var prefab = registry.Get(assetKey);
             if (prefab == null)
             {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[Tower] GLTF prefab missing for assetKey='{assetKey}' — using red cube fallback");
-#endif
-                return CreateColoredFallback(new Color(1f, 0f, 0f));
+                Debug.LogError($"[Tower] GLTF prefab MISSING for assetKey='{assetKey}' — assign prefab in AssetRegistry");
+                return CreateColoredFallback(cfg?.BodyColor ?? new Color(0.5f, 0.5f, 0.5f));
             }
 
             for (int i = 0; i < transform.childCount; i++)
@@ -418,7 +414,7 @@ namespace CrowdDefense.Entities
             fallback.transform.SetParent(transform);
             fallback.transform.localPosition = Vector3.zero;
             fallback.transform.localRotation = Quaternion.identity;
-            fallback.transform.localScale = Vector3.one;
+            fallback.transform.localScale = new Vector3(0.8f, 1.0f, 0.8f);
             var rend = fallback.GetComponent<MeshRenderer>();
             if (rend != null)
             {

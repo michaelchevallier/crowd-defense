@@ -197,9 +197,7 @@ namespace CrowdDefense.Entities
             var registry = Resources.Load<AssetRegistry>("AssetRegistry");
             if (registry == null)
             {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[Enemy] AssetRegistry not found — fallback capsule");
-#endif
+                Debug.LogError($"[Enemy] AssetRegistry not found — check Resources/AssetRegistry.asset exists");
                 return null;
             }
 
@@ -207,9 +205,9 @@ namespace CrowdDefense.Entities
             if (prefab == null)
             {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[Enemy] GLTF prefab missing for assetKey='{assetKey}' — using blue capsule fallback");
+                Debug.LogWarning($"[Enemy] GLTF prefab missing for assetKey='{assetKey}' — using colored capsule fallback");
 #endif
-                return CreateColoredFallback(new Color(0f, 0f, 1f)); // Blue capsule
+                return CreateColoredFallback(cfg?.BodyColor ?? Color.red);
             }
 
             // Re-use existing GLTF child if same prefab (pool reuse: same cfg → keep mesh)
@@ -239,7 +237,7 @@ namespace CrowdDefense.Entities
             fallback.transform.SetParent(transform);
             fallback.transform.localPosition = Vector3.zero;
             fallback.transform.localRotation = Quaternion.identity;
-            fallback.transform.localScale = Vector3.one;
+            fallback.transform.localScale = new Vector3(0.5f, 1.0f, 0.5f);
             var rend = fallback.GetComponent<MeshRenderer>();
             if (rend != null)
             {

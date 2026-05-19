@@ -56,18 +56,14 @@ namespace CrowdDefense.Entities
             var registry = Resources.Load<AssetRegistry>("AssetRegistry");
             if (registry == null)
             {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning("[Hero] AssetRegistry not found — using fallback primitives");
-#endif
+                Debug.LogError("[Hero] AssetRegistry not found — check Resources/AssetRegistry.asset exists");
                 BuildFallbackMesh();
                 return null;
             }
             var prefab = registry.Get(assetKey);
             if (prefab == null)
             {
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-                Debug.LogWarning($"[Hero] GLTF prefab missing for assetKey='{assetKey}' — using colored fallback primitives");
-#endif
+                Debug.LogError($"[Hero] GLTF prefab MISSING for assetKey='{assetKey}' — assign prefab in AssetRegistry");
                 BuildFallbackMesh();
                 return null;
             }
