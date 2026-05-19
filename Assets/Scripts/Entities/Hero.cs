@@ -87,6 +87,7 @@ namespace CrowdDefense.Entities
             var meshChild = SpawnMeshChild(type.AssetKey);
             var toonRoot  = meshChild != null ? meshChild : gameObject;
 
+            FixNullMaterials(toonRoot);
             MaterialController.ApplyToon(toonRoot, type.BodyColor);
             Outline.ApplyToHierarchy(toonRoot.transform);
 

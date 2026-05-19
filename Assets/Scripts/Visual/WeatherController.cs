@@ -316,6 +316,17 @@ namespace CrowdDefense.Visual
 
             var ps = go.AddComponent<ParticleSystem>();
 
+            var weatherPsRenderer = go.GetComponent<ParticleSystemRenderer>();
+            if (weatherPsRenderer != null && weatherPsRenderer.sharedMaterial == null)
+            {
+                var weatherMat = new Material(
+                    Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                    ?? ShaderUtil.GetUnlitShader());
+                if (weatherMat.HasProperty("_BaseColor"))
+                    weatherMat.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0.6f));
+                weatherPsRenderer.material = weatherMat;
+            }
+
             var main = ps.main;
             main.loop            = true;
             main.startLifetime   = cfg.lifetime;

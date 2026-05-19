@@ -145,6 +145,19 @@ namespace CrowdDefense.Entities
 
                 var ps = go.AddComponent<ParticleSystem>();
 
+                var psRenderer = go.GetComponent<ParticleSystemRenderer>();
+                if (psRenderer != null)
+                {
+                    var candleMat = new Material(
+                        Shader.Find("Universal Render Pipeline/Particles/Unlit")
+                        ?? ShaderUtil.GetUnlitShader());
+                    if (candleMat.HasProperty("_BaseColor"))
+                        candleMat.SetColor("_BaseColor", new Color(1f, 0.6f, 0.1f, 1f));
+                    else if (candleMat.HasProperty("_TintColor"))
+                        candleMat.SetColor("_TintColor", new Color(1f, 0.6f, 0.1f, 1f));
+                    psRenderer.material = candleMat;
+                }
+
                 var main = ps.main;
                 main.loop            = true;
                 main.startLifetime   = new ParticleSystem.MinMaxCurve(0.7f, 1.1f);

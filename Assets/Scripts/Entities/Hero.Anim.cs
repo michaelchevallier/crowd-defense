@@ -189,6 +189,27 @@ namespace CrowdDefense.Entities
             _ => new Color(0.9f, 0.3f, 1f),
         };
 
+        // ── Null-material guard (GLTF prefab children may have null slot) ───────
+        private static void FixNullMaterials(GameObject root)
+        {
+            foreach (var r in root.GetComponentsInChildren<Renderer>(true))
+            {
+                var mats = r.sharedMaterials;
+                bool dirty = false;
+                for (int i = 0; i < mats.Length; i++)
+                {
+                    if (mats[i] == null)
+                    {
+                        var mat = new Material(ShaderUtil.GetUnlitShader());
+                        if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", new Color(0.4f, 0.7f, 1f));
+                        mats[i] = mat;
+                        dirty = true;
+                    }
+                }
+                if (dirty) r.sharedMaterials = mats;
+            }
+        }
+
         // ── Ground aura + halo decals ─────────────────────────────────────────
         private void BuildAuraDecals()
         {
