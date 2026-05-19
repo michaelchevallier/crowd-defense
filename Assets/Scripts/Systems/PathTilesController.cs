@@ -145,7 +145,9 @@ namespace CrowdDefense.Systems
             if (_bridgeWoodMat != null) return _bridgeWoodMat;
             var baseMat = Resources.Load<Material>("Materials/Toon_Default");
             _bridgeWoodMat = baseMat != null ? new Material(baseMat) : new Material(ShaderUtil.GetToonShader());
-            SetBaseColor(_bridgeWoodMat, new Color(0.55f, 0.38f, 0.22f));
+            // V6 W1-S: force URP/Unlit so bridge renders even if Toon_Lit custom shader fails to compile
+            _bridgeWoodMat.shader = ShaderUtil.GetUnlitShader();
+            SetBaseColor(_bridgeWoodMat, new Color(0.55f, 0.35f, 0.18f));
             _bridgeWoodMat.enableInstancing = true;
             return _bridgeWoodMat;
         }
@@ -155,11 +157,12 @@ namespace CrowdDefense.Systems
             if (_bridgeLavaMat != null) return _bridgeLavaMat;
             var baseMat = Resources.Load<Material>("Materials/Toon_Lava");
             _bridgeLavaMat = baseMat != null ? new Material(baseMat) : new Material(ShaderUtil.GetToonShader());
-            SetBaseColor(_bridgeLavaMat, new Color(0.60f, 0.20f, 0.08f));
-            // URP emissive glow for lava bridges
+            // V6 W1-S: force URP/Unlit + orange color (V4 parity) so bridge renders regardless of custom shader state
+            _bridgeLavaMat.shader = ShaderUtil.GetUnlitShader();
+            SetBaseColor(_bridgeLavaMat, new Color(0.95f, 0.45f, 0.10f));
             if (_bridgeLavaMat.HasProperty("_EmissionColor"))
             {
-                _bridgeLavaMat.SetColor("_EmissionColor", new Color(1.0f, 0.25f, 0.05f) * 0.8f);
+                _bridgeLavaMat.SetColor("_EmissionColor", new Color(1.0f, 0.4f, 0.0f) * 1.5f);
                 _bridgeLavaMat.EnableKeyword("_EMISSION");
             }
             _bridgeLavaMat.enableInstancing = true;
@@ -441,6 +444,8 @@ namespace CrowdDefense.Systems
             var baseMat = Resources.Load<Material>("Materials/Toon_Stream")
                        ?? Resources.Load<Material>("Materials/Toon_Default");
             var mat = baseMat != null ? new Material(baseMat) : new Material(ShaderUtil.GetToonShader());
+            // V6 W1-S: force URP/Unlit so stream overlays render regardless of custom shader state
+            mat.shader = ShaderUtil.GetUnlitShader();
             mat.name = $"Stream_{kind}";
             mat.enableInstancing = true;
 
