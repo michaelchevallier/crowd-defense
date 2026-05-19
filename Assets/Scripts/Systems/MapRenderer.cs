@@ -143,23 +143,18 @@ namespace CrowdDefense.Systems
         // Blends tint with existing material color to preserve visibility if base material is already colored.
         public void ApplyWorldTheme(int worldId)
         {
-            var tint = WorldThemeTint(worldId);
             var mpb = new MaterialPropertyBlock();
             foreach (var mr in _slabRenderers)
             {
                 mr.GetPropertyBlock(mpb);
-                // Only blend if material supports _BaseColor (animated tiles like Toon_Water/Toon_Lava use _Tint instead).
+                // V6 AK: Wave-8 W already set _BaseColor=CellColor(ch) per cell.
+                // Multiplying by WorldThemeTint caused double-darkening (all slabs black).
+                // Preserve BaseColor directly — no tint multiplication.
                 var mat = mr.sharedMaterial;
                 if (mat != null && mat.HasProperty("_BaseColor"))
                 {
                     Color baseColor = mat.GetColor("_BaseColor");
-                    Color blended = new Color(
-                        baseColor.r * tint.r,
-                        baseColor.g * tint.g,
-                        baseColor.b * tint.b,
-                        baseColor.a
-                    );
-                    mpb.SetColor("_BaseColor", blended);
+                    mpb.SetColor("_BaseColor", baseColor);
                     mr.SetPropertyBlock(mpb);
                 }
             }
