@@ -78,6 +78,17 @@ namespace CrowdDefense.Entities
         private void TickSynergyHalo()
         {
             if (_synergyHaloRenderer == null) return;
+
+            // Skip tick if tower is disabled/grayed out
+            if (IsDisabled || TempDisabledUntilTime > Time.time)
+            {
+                _haloMpb ??= new MaterialPropertyBlock();
+                _synergyHaloRenderer.GetPropertyBlock(_haloMpb);
+                _haloMpb.SetColor(_haloColorId, new Color(0.4f, 0.8f, 1f, 0f));
+                _synergyHaloRenderer.SetPropertyBlock(_haloMpb);
+                return;
+            }
+
             _haloMpb ??= new MaterialPropertyBlock();
             _synergyHaloRenderer.GetPropertyBlock(_haloMpb);
             float prevAlpha = _haloMpb.GetColor(_haloColorId).a;
