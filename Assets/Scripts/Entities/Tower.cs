@@ -424,8 +424,10 @@ namespace CrowdDefense.Entities
             var rend = fallback.GetComponent<MeshRenderer>();
             if (rend != null)
             {
-                rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"))
-                    { color = color };
+                var mat = new Material(ShaderUtil.GetUnlitShader());
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+                else mat.color = color;
+                rend.material = mat;
             }
             Object.Destroy(fallback.GetComponent<Collider>());
             return fallback;

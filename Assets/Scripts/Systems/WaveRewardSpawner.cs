@@ -298,14 +298,16 @@ namespace CrowdDefense.Systems
 
         private static Material BuildGoldenMaterial()
         {
-            var shader = Shader.Find("Universal Render Pipeline/Lit")
-                      ?? Shader.Find("Standard");
-            var mat = new Material(shader ?? Shader.Find("Hidden/InternalErrorShader")!);
-            mat.color = new Color(1f, 0.85f, 0.1f);
-            // Emission for glow
-            mat.EnableKeyword("_EMISSION");
-            mat.SetColor("_EmissionColor", new Color(1f, 0.5f, 0f, 1f) * 2f);
-            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            var mat = new Material(ShaderUtil.GetUnlitShader());
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", new Color(1f, 0.85f, 0.1f));
+            else mat.color = new Color(1f, 0.85f, 0.1f);
+            // Emission for glow (URP Lit only — skip silently on Unlit)
+            if (mat.HasProperty("_EmissionColor"))
+            {
+                mat.EnableKeyword("_EMISSION");
+                mat.SetColor("_EmissionColor", new Color(1f, 0.5f, 0f, 1f) * 2f);
+                mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            }
             return mat;
         }
 

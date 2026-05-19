@@ -96,10 +96,9 @@ namespace CrowdDefense.Entities
             Object.Destroy(body.GetComponent<Collider>());
 
             var mr  = body.GetComponent<MeshRenderer>();
-            var mat = new Material(ShaderUtil.GetLitShader())
-            {
-                color = new Color(1.00f, 0.82f, 0.12f)
-            };
+            var mat = new Material(ShaderUtil.GetUnlitShader());
+            if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", new Color(1.00f, 0.82f, 0.12f));
+            else mat.color = new Color(1.00f, 0.82f, 0.12f);
             mr.sharedMaterial = mat;
         }
 

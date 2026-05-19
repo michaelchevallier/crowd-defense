@@ -772,8 +772,10 @@ namespace CrowdDefense.Systems
                 var rend = castleGo.GetComponent<MeshRenderer>();
                 if (rend != null)
                 {
-                    rend.material = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
-                    rend.material.color = new Color(0.4f, 0.25f, 0.1f, 1f);
+                    var mat = new Material(ShaderUtil.GetUnlitShader());
+                    if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", new Color(0.4f, 0.25f, 0.1f, 1f));
+                    else mat.color = new Color(0.4f, 0.25f, 0.1f, 1f);
+                    rend.material = mat;
                 }
                 castle = castleGo.AddComponent<Castle>();
             }
