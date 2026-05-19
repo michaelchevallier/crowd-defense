@@ -901,15 +901,20 @@ namespace CrowdDefense.Systems
 #endif
                 return;
             }
+            int count = 0;
             for (int x = 0; x < grid.Width; x++)
             for (int y = 0; y < grid.Height; y++)
             {
                 if (!grid.IsBuildable(x, y)) continue;
                 var pos = GridCoords.CellToWorld(x, y, grid.Width, grid.Height, grid.CellSize);
-                pos.y = 0.1f;
+                pos.y = 0.35f;
                 var bpGo = Instantiate(buildPointPrefab, pos, Quaternion.identity);
                 bpGo.GetComponent<Entities.BuildPoint>()?.Init(new Vector2Int(x, y));
+                count++;
             }
+#if UNITY_EDITOR
+            Debug.Log($"[LevelRunner] SpawnBuildPoints: {count} build points spawned across {grid.Width}x{grid.Height} grid");
+#endif
         }
 
         // ── Input helpers ───────────────────────────────────────────────────────

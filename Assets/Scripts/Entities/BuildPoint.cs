@@ -23,7 +23,7 @@ namespace CrowdDefense.Entities
         {
             _pulseTime += Time.deltaTime;
             float pulse = 1f + Mathf.Sin(_pulseTime * 4f) * 0.075f;
-            transform.localScale = new Vector3(1.6f * pulse, 0.02f, 1.6f * pulse);
+            transform.localScale = new Vector3(1.6f * pulse, 0.15f, 1.6f * pulse);
 
             var hero = Hero.Current;
             if (hero == null) return;
