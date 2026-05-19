@@ -195,7 +195,9 @@ namespace CrowdDefense.UI
         IEnumerator FadeAndLoad(string sceneName, Color fadeColor, float fadeDur)
         {
             _busy = true;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] FadeAndLoad start: scene='{sceneName}'");
+#endif
 
             if (_overlay == null)
             {
@@ -208,7 +210,9 @@ namespace CrowdDefense.UI
             _overlay.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 0f);
 
             // Start async load immediately, hold activation
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] Starting LoadSceneAsync('{sceneName}')");
+#endif
             _loadingOp = SceneManager.LoadSceneAsync(sceneName);
             if (_loadingOp == null)
             {
@@ -218,7 +222,9 @@ namespace CrowdDefense.UI
                 yield break;
             }
             _loadingOp.allowSceneActivation = false;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] LoadSceneAsync success, allowSceneActivation=false");
+#endif
 
             // Wait up to 500 ms — skip loading UI entirely if load is already done
             float waited = 0f;
@@ -230,16 +236,22 @@ namespace CrowdDefense.UI
             }
 
             bool showLoadingUi = _loadingOp.progress < 0.9f;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] Pre-fade checkpoint: showLoadingUi={showLoadingUi}, progress={_loadingOp.progress}");
+#endif
 
             // V8 FIX: enable raycast blocking during active fade so clicks
             // don't slip through and trigger UI on the scene we're leaving.
             _overlay.raycastTarget = true;
 
             // Fade to color
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] Starting Fade(0→1, dur={fadeDur})");
+#endif
             yield return StartCoroutine(Fade(0f, 1f, fadeDur));
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] Fade complete");
+#endif
 
             if (showLoadingUi)
             {
@@ -270,17 +282,23 @@ namespace CrowdDefense.UI
                 yield return StartCoroutine(FadeGroup(_loadingGroup, 1f, 0f, 0.2f));
             }
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] Activating scene '{sceneName}'");
+#endif
             _loadingOp.allowSceneActivation = true;
             _loadingOp = null;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] Scene activated, waiting for new scene to initialize");
+#endif
             yield return new WaitForSeconds(0.1f); // Brief pause for scene Awake/Start
 
             // Fade out overlay, keep it transparent (alpha 0) so it doesn't cover the new scene.
             // Previous bug: setting _overlay.color = Color.black after fade-out re-set alpha=1
             // (Color.black = rgba(0,0,0,1)), making the overlay fully opaque black and hiding the
             // newly loaded scene. Fix: explicitly set color with alpha=0 (transparent black).
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log($"[SceneTransition] Starting fade-out (1→0)");
+#endif
             yield return StartCoroutine(Fade(1f, 0f, FadeDuration));
             if (_overlay != null)
             {
@@ -288,7 +306,9 @@ namespace CrowdDefense.UI
                 // V8 FIX: disable raycast blocking now that we're invisible, so
                 // the underlying scene's UI Toolkit / UGUI clicks work normally.
                 _overlay.raycastTarget = false;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.Log($"[SceneTransition] Fade-out complete, transition finished (overlay alpha forced to 0, raycastTarget=false)");
+#endif
             }
             else
             {
@@ -340,7 +360,9 @@ namespace CrowdDefense.UI
         public static void EnsureExists()
         {
             if (Instance != null) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
             Debug.Log("[SceneTransition.EnsureExists] Creating new SceneTransition GameObject");
+#endif
             try
             {
                 var go = new GameObject("SceneTransition");
@@ -356,7 +378,9 @@ namespace CrowdDefense.UI
                     Destroy(go);
                     return;
                 }
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
                 Debug.Log("[SceneTransition.EnsureExists] SceneTransition created successfully");
+#endif
             }
             catch (System.Exception ex)
             {
