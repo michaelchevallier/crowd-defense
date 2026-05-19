@@ -40,9 +40,12 @@ namespace CrowdDefense.UI
         private VisualElement? _startBannerUxml;
         private VisualElement? _clearBannerUxml;
         private Label?         _clearBannerN;
+        private Label?         _startBannerN;
         private Coroutine?     _clearAnim;
+        private Coroutine?     _startAnim;
 
         private const float ClearHoldS = 2.5f;
+        private const float StartHoldS = 1.5f;
 
         private void Start()
         {
@@ -52,12 +55,13 @@ namespace CrowdDefense.UI
                 WaveManager.Instance.OnWaveCleared += OnWaveCleared;
             }
 
-            // Wire the UXML-declared clear banner (added by P0-UI-6 to HUD.uxml)
+            // Wire the UXML-declared banners (start & clear)
             var uiDoc = GetComponent<UIDocument>();
             var root = uiDoc?.rootVisualElement;
             if (root != null)
             {
                 _startBannerUxml = root.Q<VisualElement>("wave-start-banner");
+                _startBannerN    = root.Q<Label>("wave-start-n");
                 _clearBannerUxml = root.Q<VisualElement>("wave-clear-banner");
                 _clearBannerN    = root.Q<Label>("wave-clear-n");
             }
@@ -77,6 +81,7 @@ namespace CrowdDefense.UI
             int total = WaveManager.Instance?.TotalWaves ?? 0;
             var waveDef = WaveManager.Instance?.GetWaveDef(idx);
             Show(idx + 1, total, waveDef);
+            AnimateStartBanner(idx + 1);
         }
 
         private void OnWaveCleared(int idx)
@@ -85,6 +90,23 @@ namespace CrowdDefense.UI
             if (_clearBannerN != null) _clearBannerN.text = (idx + 1).ToString();
             if (_clearAnim != null) StopCoroutine(_clearAnim);
             _clearAnim = StartCoroutine(AnimateClearBanner());
+        }
+
+        private void AnimateStartBanner(int waveNum)
+        {
+            if (_startBannerUxml == null) return;
+            if (_startBannerN != null) _startBannerN.text = waveNum.ToString();
+            if (_startAnim != null) StopCoroutine(_startAnim);
+            _startAnim = StartCoroutine(AnimateStartBannerCoroutine());
+        }
+
+        private IEnumerator AnimateStartBannerCoroutine()
+        {
+            if (_startBannerUxml == null) yield break;
+            _startBannerUxml.RemoveFromClassList("wave-banner--hidden");
+            yield return new WaitForSeconds(StartHoldS);
+            _startBannerUxml.AddToClassList("wave-banner--hidden");
+            _startAnim = null;
         }
 
         private IEnumerator AnimateClearBanner()
