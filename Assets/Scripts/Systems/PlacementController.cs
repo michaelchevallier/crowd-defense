@@ -164,6 +164,7 @@ namespace CrowdDefense.Systems
                 Debug.Log($"[Place] reject cell ({cell.x},{cell.y}) char='{grid.At(cell.x, cell.y)}' (not buildable)");
 #endif
                 TriggerPlaceFeedback(false, hitPos);
+                Toast.Show("Emplacement invalide", "Pas sur les chemins ou rochers.", 2500, null, ToastType.Warning);
                 return;
             }
 
@@ -181,6 +182,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
                     Debug.Log($"[Place] reject : magnet cap reached ({count}/{cap})");
 #endif
+                    Toast.Show("Cap magnets atteint", $"Maximum {cap} magnets par niveau.", 2500, null, ToastType.Warning);
                     return;
                 }
             }
@@ -192,6 +194,7 @@ namespace CrowdDefense.Systems
 #if UNITY_EDITOR
                 Debug.Log($"[Place] reject : not enough gold ({Economy.Instance?.Gold ?? 0} < {cost})");
 #endif
+                Toast.Show("Or insuffisant", $"Cette tour coute {cost}¢, vous avez {Economy.Instance?.Gold ?? 0}¢.", 2500, null, ToastType.Warning);
                 return;
             }
             if (cost == 0 && hero != null && hero.FirstTowerFree)
