@@ -134,6 +134,7 @@ namespace CrowdDefense.Systems
         {
             if (s <= 0f) return;
             PlayerPrefs.SetFloat(KeyTime, TotalTimePlayed + s);
+            PlayerPrefs.Save();
         }
 
         public void AddLevelWon()
