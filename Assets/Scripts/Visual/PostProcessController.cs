@@ -26,6 +26,12 @@ namespace CrowdDefense.Visual
             LevelEvents.OnLevelStart += HandleLevelStart;
             if (LevelRunner.Instance != null)
                 LevelRunner.Instance.OnTotalHPChanged += OnCastleHP;
+            var em = EventManager.Instance;
+            if (em != null)
+            {
+                em.Subscribe<BossEncounteredEvent>(OnBossEncountered);
+                em.Subscribe<BossDefeatedEvent>(OnBossDefeated);
+            }
         }
 
         private void OnDisable()
@@ -33,6 +39,12 @@ namespace CrowdDefense.Visual
             LevelEvents.OnLevelStart -= HandleLevelStart;
             if (LevelRunner.Instance != null)
                 LevelRunner.Instance.OnTotalHPChanged -= OnCastleHP;
+            var em = EventManager.Instance;
+            if (em != null)
+            {
+                em.Unsubscribe<BossEncounteredEvent>(OnBossEncountered);
+                em.Unsubscribe<BossDefeatedEvent>(OnBossDefeated);
+            }
         }
 
         // ── Volume bootstrap ─────────────────────────────────────────────────────
@@ -98,6 +110,16 @@ namespace CrowdDefense.Visual
         {
             if (_bloom == null) return;
             _bloom.intensity.value = intensity;
+        }
+
+        private void OnBossEncountered(BossEncounteredEvent evt)
+        {
+            SetBloomIntensity(2.0f);
+        }
+
+        private void OnBossDefeated(BossDefeatedEvent evt)
+        {
+            SetBloomIntensity(0.5f);
         }
 
         // ── Red vignette flash ────────────────────────────────────────────────────
