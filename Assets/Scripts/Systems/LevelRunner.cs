@@ -902,11 +902,31 @@ namespace CrowdDefense.Systems
 #endif
                 return;
             }
+
+            // V6 T25-A: collect PATH cells first, then spawn BuildPoint only on cells adjacent to path
+            var pathCells = new HashSet<Vector2Int>();
+            for (int x = 0; x < grid.Width; x++)
+            for (int y = 0; y < grid.Height; y++)
+            {
+                char ch = grid.At(x, y);
+                if (ch == GridCoords.PATH || ch == GridCoords.PORTAL || ch == GridCoords.CASTLE ||
+                    ch == GridCoords.BRIDGE_WATER || ch == GridCoords.BRIDGE_LAVA)
+                    pathCells.Add(new Vector2Int(x, y));
+            }
+
             int count = 0;
             for (int x = 0; x < grid.Width; x++)
             for (int y = 0; y < grid.Height; y++)
             {
                 if (!grid.IsBuildable(x, y)) continue;
+
+                // V6 T25-A: only spawn on cells immediately adjacent (4-neighbor) to a path cell
+                bool adjacentToPath = pathCells.Contains(new Vector2Int(x - 1, y)) ||
+                                      pathCells.Contains(new Vector2Int(x + 1, y)) ||
+                                      pathCells.Contains(new Vector2Int(x, y - 1)) ||
+                                      pathCells.Contains(new Vector2Int(x, y + 1));
+                if (!adjacentToPath) continue;
+
                 var pos = GridCoords.CellToWorld(x, y, grid.Width, grid.Height, grid.CellSize);
                 pos.y = 0.6f;
                 var bpGo = Instantiate(buildPointPrefab, pos, Quaternion.identity);
@@ -914,7 +934,7 @@ namespace CrowdDefense.Systems
                 count++;
             }
 #if UNITY_EDITOR
-            Debug.Log($"[LevelRunner] SpawnBuildPoints: {count} build points spawned across {grid.Width}x{grid.Height} grid");
+            Debug.Log($"[LevelRunner] SpawnBuildPoints (lane-only): {count} build points spawned adjacent to path");
 #endif
         }
 
