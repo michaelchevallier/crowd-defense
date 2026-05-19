@@ -330,6 +330,19 @@ namespace CrowdDefense.Systems
 #endif
                     // D1-02: open skip bonus window and wait for player
                     _nextWaveToStart = _currentWaveIdx + 1;
+
+                    // T22-K: auto-fire AllWavesCompleted when the final wave clears (not endless)
+                    bool isEndless = levelData!.IsEndless || LevelRunner.Instance?.IsEndlessRun == true;
+                    if (!isEndless && _nextWaveToStart >= levelData!.Waves.Count)
+                    {
+#if UNITY_EDITOR
+                        Debug.Log("[WaveManager] Final wave cleared — auto-firing OnAllWavesCompleted");
+#endif
+                        OnAllWavesCompleted?.Invoke();
+                        enabled = false;
+                        return;
+                    }
+
                     _waitingForPlayerStart = true;
                     _skipWindowTimer = BalanceConfig.Get().SkipWindowSeconds;
                     _lastBreakSecond = -1;
