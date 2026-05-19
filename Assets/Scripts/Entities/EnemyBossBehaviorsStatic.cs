@@ -18,6 +18,9 @@ namespace CrowdDefense.Entities
         private const float KrakenSlamCooldown          = 6f;
         private const float KrakenSlamWarningDuration   = 0.6f;
 
+        private static readonly int _baseColorId = Shader.PropertyToID("_BaseColor");
+        private static readonly int _colorId     = Shader.PropertyToID("_Color");
+
         // ── 1. WizardKing — Teleport + Projectile Rain ────────────────────────
         internal static void TickWizardKing(Enemy e)
         {
@@ -209,8 +212,8 @@ namespace CrowdDefense.Entities
                 if (e.IsDead) { e._krakenSlamTelegraphActive = false; yield break; }
                 float pulse = Mathf.Abs(Mathf.Sin(elapsed * Mathf.PI * 5f));
                 var yellow = new Color(1f, pulse, 0f, 1f);
-                mpb.SetColor(Shader.PropertyToID("_BaseColor"), yellow);
-                mpb.SetColor(Shader.PropertyToID("_Color"),     yellow);
+                mpb.SetColor(_baseColorId, yellow);
+                mpb.SetColor(_colorId,     yellow);
                 for (int r = 0; r < rends.Length; r++)
                     rends[r].SetPropertyBlock(mpb);
                 elapsed += Time.deltaTime;
