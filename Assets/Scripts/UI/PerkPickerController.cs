@@ -282,6 +282,7 @@ namespace CrowdDefense.UI
                 {
                     var ctx = RunContext.Instance;
                     ctx?.AddPerk(perkId);
+                    TutorialState.Instance?.NotifyPerkChosen();
                 }
 
                 onSelectionDone?.Invoke();

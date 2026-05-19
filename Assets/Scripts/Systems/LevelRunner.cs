@@ -817,6 +817,7 @@ namespace CrowdDefense.Systems
 
             Hero = heroGo.GetComponent<Hero>() ?? heroGo.AddComponent<Hero>();
             Hero.Init(resolvedHeroType, spawnPos, maxX, maxZ);
+            TutorialState.Instance?.NotifyHeroPlaced();
 
             Hero.OnLevelUp += (_, _, _) =>
                 VfxPool.Instance?.SpawnLevelUp(Hero.transform.position + Vector3.up * 1.2f);

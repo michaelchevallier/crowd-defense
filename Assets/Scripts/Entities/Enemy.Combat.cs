@@ -231,6 +231,7 @@ namespace CrowdDefense.Entities
             Achievements.Instance?.TrackEvent("enemy_killed", 1);
             LifetimeStats.Instance?.AddKill(1);
             WaveHistoryLog.Instance?.Log("kill", $"Mort : {cfg?.DisplayName ?? cfg?.Id ?? "?"}");
+            TutorialState.Instance?.NotifyEnemyKilled(this);
 
             StopEnrageVFX();
             CancelInvoke(nameof(EmitAoePulse));
