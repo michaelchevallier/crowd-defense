@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Imposteur
   description: "Bonus vague rapide +80%, d\xE9g\xE2ts tours -10%."
   icon: {fileID: 0}
-  iconEmoji: trickster
+  iconEmoji: "\U0001F3AD"
   gemCost: 10
   modifiers:
   - key: SkipBonusGold

@@ -17,7 +17,7 @@ MonoBehaviour:
   description: "Int\xE9r\xEAt banque +50%, bonus vague rapide +40%, aimant pi\xE8ces
     +20%."
   icon: {fileID: 0}
-  iconEmoji: merchant
+  iconEmoji: "\U0001F4B0"
   gemCost: 10
   modifiers:
   - key: BankInterestRate

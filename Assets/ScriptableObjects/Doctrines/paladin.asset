@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Paladin
   description: "PV ch\xE2teau +30%, revente tours +10%."
   icon: {fileID: 0}
-  iconEmoji: paladin
+  iconEmoji: "\U0001F6E1️"
   gemCost: 10
   modifiers:
   - key: CastleHPBase

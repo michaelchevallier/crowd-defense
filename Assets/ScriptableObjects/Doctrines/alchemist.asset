@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Alchimiste
   description: "Int\xE9r\xEAt banque +80%, port\xE9e aimant +30%."
   icon: {fileID: 0}
-  iconEmoji: alchemist
+  iconEmoji: "\U0001F9EA"
   gemCost: 10
   modifiers:
   - key: BankInterestRate

@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Berserker
   description: "D\xE9g\xE2ts tours +15%, PV ch\xE2teau -15%."
   icon: {fileID: 0}
-  iconEmoji: berserker
+  iconEmoji: "\U0001FA93"
   gemCost: 10
   modifiers:
   - key: TowerDamageMul

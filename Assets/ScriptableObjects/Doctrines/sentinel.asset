@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Sentinelle
   description: "Port\xE9e des tours +10%, PV ch\xE2teau +15%."
   icon: {fileID: 0}
-  iconEmoji: sentinel
+  iconEmoji: "\U0001F441️"
   gemCost: 10
   modifiers:
   - key: TowerDamageMul

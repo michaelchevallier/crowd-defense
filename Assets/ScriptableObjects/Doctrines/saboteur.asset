@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: Saboteur
   description: Bonus streak +40%, multiplicateur de horde -10%.
   icon: {fileID: 0}
-  iconEmoji: saboteur
+  iconEmoji: "\U0001F4A3"
   gemCost: 10
   modifiers:
   - key: StreakBonusPerWave
