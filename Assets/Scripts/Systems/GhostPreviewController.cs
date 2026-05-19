@@ -82,7 +82,7 @@ namespace CrowdDefense.Systems
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit")
                       ?? Shader.Find("Universal Render Pipeline/Unlit")
-                      ?? Shader.Find("Standard");
+                      ?? ShaderUtil.GetUnlitShader();
             var mat = new Material(shader) { renderQueue = 3000 };
             mat.SetFloat("_Surface", 1f);
             mat.SetFloat("_Blend",   0f);

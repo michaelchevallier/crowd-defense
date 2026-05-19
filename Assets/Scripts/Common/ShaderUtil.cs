@@ -14,7 +14,7 @@ namespace CrowdDefense.Common
         public static Shader GetLitShader()
         {
             if (_litShader == null)
-                _litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard");
+                _litShader = Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Universal Render Pipeline/Unlit");
             return _litShader!;
         }
 

@@ -152,7 +152,7 @@ namespace CrowdDefense.Entities
                 go.transform.SetParent(transform);
                 go.transform.localScale = Vector3.one * 0.2f;
                 Object.Destroy(go.GetComponent<Collider>());
-                var mat = new Material(unlitShader != null ? unlitShader : Shader.Find("Standard")!) { color = Color.white };
+                var mat = new Material(unlitShader ?? ShaderUtil.GetUnlitShader()) { color = Color.white };
                 go.GetComponent<MeshRenderer>().material = mat;
                 go.SetActive(false);
                 _perkIcons[i] = go;

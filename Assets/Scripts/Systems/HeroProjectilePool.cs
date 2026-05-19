@@ -46,7 +46,7 @@ namespace CrowdDefense.Systems
                 var _heroProjMR = go.GetComponent<MeshRenderer>();
                 if (_heroProjMR != null)
                 {
-                    var _heroProjMat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color") ?? Shader.Find("Standard")!);
+                    var _heroProjMat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color") ?? ShaderUtil.GetUnlitShader());
                     if (_heroProjMat.HasProperty("_BaseColor")) _heroProjMat.SetColor("_BaseColor", new Color(0.9f, 0.9f, 0.2f));
                     else _heroProjMat.color = new Color(0.9f, 0.9f, 0.2f);
                     _heroProjMR.material = _heroProjMat;

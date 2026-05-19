@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Data;
 
 namespace CrowdDefense.Visual
@@ -157,7 +158,7 @@ namespace CrowdDefense.Visual
             Shader? shader = Shader.Find("Universal Render Pipeline/Unlit")
                           ?? Shader.Find("Unlit/Color");
 
-            var mat = shader != null ? new Material(shader) : new Material(Shader.Find("Standard")!);
+            var mat = new Material(shader ?? ShaderUtil.GetUnlitShader());
             mat.name = $"ParallaxMat_L{layerIndex}";
 
             if (mat.HasProperty("_BaseColor"))

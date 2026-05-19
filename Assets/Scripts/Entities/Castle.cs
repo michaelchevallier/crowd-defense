@@ -192,7 +192,7 @@ namespace CrowdDefense.Entities
         protected static Material BuildUnlitMaterial(Color color, bool transparent)
         {
             var shader = Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color");
-            var mat = new Material(shader ?? Shader.Find("Standard")!);
+            var mat = new Material(shader ?? ShaderUtil.GetUnlitShader());
             mat.color = color;
             if (transparent)
             {

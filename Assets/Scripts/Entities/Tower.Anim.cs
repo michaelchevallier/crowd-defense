@@ -381,7 +381,7 @@ namespace CrowdDefense.Entities
                 var rend = pip.GetComponent<Renderer>();
                 if (rend != null)
                 {
-                    var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard"));
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? ShaderUtil.GetUnlitShader());
                     mat.color = level >= 3
                         ? new Color(1f, 0.82f, 0.15f)
                         : new Color(0.8f, 0.8f, 0.9f);

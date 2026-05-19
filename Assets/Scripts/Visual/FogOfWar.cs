@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using CrowdDefense.Common;
 using CrowdDefense.Systems;
 using CrowdDefense.Entities;
 
@@ -108,10 +109,9 @@ namespace CrowdDefense.Visual
         {
             // Use URP Unlit or built-in transparent depending on pipeline.
             var shader = Shader.Find("Universal Render Pipeline/Unlit")
-                      ?? Shader.Find("Unlit/Color")
-                      ?? Shader.Find("Standard");
+                      ?? Shader.Find("Unlit/Color");
 
-            var mat = new Material(shader != null ? shader : Shader.Find("Standard")!);
+            var mat = new Material(shader ?? ShaderUtil.GetUnlitShader());
 
             // Transparent blending
             mat.SetFloat("_Surface", 1f);           // URP: 1 = Transparent

@@ -405,7 +405,7 @@ namespace CrowdDefense.Entities
 
             var mat = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit")
                                ?? Shader.Find("Sprites/Default")
-                               ?? Shader.Find("Standard")!) { name = "EnrageRing_Mat" };
+                               ?? ShaderUtil.GetUnlitShader()) { name = "EnrageRing_Mat" };
             mat.SetInt("_ZWrite", 0);
             mat.renderQueue = 3000;
             _enrageRing.material = mat;

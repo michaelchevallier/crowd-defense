@@ -103,7 +103,7 @@ namespace CrowdDefense.Systems
             Color col = type == LootType.Gem ? GemColor : XpColor;
             var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")
                               ?? Shader.Find("Universal Render Pipeline/Unlit")
-                              ?? Shader.Find("Standard")!);
+                              ?? ShaderUtil.GetUnlitShader());
             if (mat.HasProperty("_BaseColor"))
                 mat.SetColor("_BaseColor", col);
             else

@@ -1,5 +1,6 @@
 #nullable enable
 using UnityEngine;
+using CrowdDefense.Common;
 
 namespace CrowdDefense.Visual
 {
@@ -61,8 +62,7 @@ namespace CrowdDefense.Visual
             var shader = Shader.Find("Universal Render Pipeline/Particles/Unlit")
                       ?? Shader.Find("Particles/Standard Unlit")
                       ?? Shader.Find("Sprites/Default")
-                      ?? Shader.Find("Standard")
-                      ?? Shader.Find("Hidden/InternalErrorShader")!;
+                      ?? ShaderUtil.GetUnlitShader();
             var mat = new Material(shader) { name = "VfxParticle_Additive" };
             mat.SetFloat("_Surface", 1f);
             mat.SetFloat("_Blend", 3f);

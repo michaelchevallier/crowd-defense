@@ -122,7 +122,7 @@ namespace CrowdDefense.Visual
         {
             var shader = Shader.Find("Universal Render Pipeline/Unlit")
                       ?? Shader.Find("Sprites/Default")
-                      ?? Shader.Find("Standard")!;
+                      ?? ShaderUtil.GetUnlitShader();
             var mat = new Material(shader) { name = "CoinToken_Mat" };
             mat.SetFloat("_Surface", 1f);
             mat.SetFloat("_Blend", 0f);
