@@ -77,6 +77,18 @@
                             <ui:Toggle name="shake-toggle" class="setting-toggle" />
                         </ui:VisualElement>
                         <ui:VisualElement class="setting-row">
+                            <ui:Label text="Bloom" name="bloom-label" class="setting-label" />
+                            <ui:DropdownField name="bloom-dropdown" class="setting-dropdown" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Weather" name="weather-label" class="setting-label" />
+                            <ui:Toggle name="weather-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
+                            <ui:Label text="Damage Icons" name="damage-icons-label" class="setting-label" />
+                            <ui:Toggle name="damage-icons-toggle" class="setting-toggle" />
+                        </ui:VisualElement>
+                        <ui:VisualElement class="setting-row">
                             <ui:Label text="Fullscreen" name="fullscreen-label" class="setting-label" />
                             <ui:Button text="Fullscreen ON" name="settings-fullscreen-btn" class="settings-btn settings-btn-fullscreen" />
                         </ui:VisualElement>

@@ -51,6 +51,8 @@ namespace CrowdDefense.UI
         private DropdownField? _bloomDropdown;
         private Toggle? _vfxToggle;
         private Toggle? _shakeToggle;
+        private Toggle? _weatherToggle;
+        private Toggle? _damageIconsToggle;
         private Toggle? _autoPauseToggle;
         private Label?  _autoPauseLabel;
 
@@ -94,6 +96,8 @@ namespace CrowdDefense.UI
         private Label? _bloomLabel;
         private Label? _vfxLabel;
         private Label? _shakeLabel;
+        private Label? _weatherLabel;
+        private Label? _damageIconsLabel;
         private Label? _a11ySectionLabel;
         private Label? _colorblindLabel;
         private Label? _reduceMotionLabel;
@@ -177,6 +181,8 @@ namespace CrowdDefense.UI
             _bloomDropdown   = Root.Q<DropdownField>("bloom-dropdown");
             _vfxToggle = Root.Q<Toggle>("vfx-toggle");
             _shakeToggle = Root.Q<Toggle>("shake-toggle");
+            _weatherToggle = Root.Q<Toggle>("weather-toggle");
+            _damageIconsToggle = Root.Q<Toggle>("damage-icons-toggle");
             _autoPauseToggle = Root.Q<Toggle>("auto-pause-toggle");
             _autoPauseLabel  = Root.Q<Label>("auto-pause-label");
 
@@ -225,6 +231,8 @@ namespace CrowdDefense.UI
             _bloomLabel          = Root.Q<Label>("bloom-label");
             _vfxLabel            = Root.Q<Label>("vfx-label");
             _shakeLabel          = Root.Q<Label>("shake-label");
+            _weatherLabel        = Root.Q<Label>("weather-label");
+            _damageIconsLabel    = Root.Q<Label>("damage-icons-label");
             _a11ySectionLabel    = Root.Q<Label>("a11y-section-title");
             _colorblindLabel     = Root.Q<Label>("colorblind-label");
             _reduceMotionLabel   = Root.Q<Label>("reduce-motion-label");
@@ -298,6 +306,14 @@ namespace CrowdDefense.UI
                 : L.CurrentLocale == "es" ? "Bloom" : "Bloom";
             if (_vfxLabel != null)            _vfxLabel.text            = L.Get("settings.vfx");
             if (_shakeLabel != null)          _shakeLabel.text          = L.Get("settings.shake");
+            if (_weatherLabel != null)
+                _weatherLabel.text = L.CurrentLocale == "fr" ? "Meteo"
+                    : L.CurrentLocale == "es" ? "Clima"
+                    : "Weather";
+            if (_damageIconsLabel != null)
+                _damageIconsLabel.text = L.CurrentLocale == "fr" ? "Icones de degats"
+                    : L.CurrentLocale == "es" ? "Iconos de dano"
+                    : "Damage Icons";
             if (_musicPulseLabel != null)
                 _musicPulseLabel.text = L.CurrentLocale == "fr" ? "Pulse musical"
                     : L.CurrentLocale == "es" ? "Pulso musical"
@@ -468,6 +484,18 @@ namespace CrowdDefense.UI
                 SettingsRegistry.Instance.ShakeEnabled = evt.newValue;
             });
 
+            _weatherToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.WeatherEnabled = evt.newValue;
+            });
+
+            _damageIconsToggle?.RegisterValueChangedCallback(evt =>
+            {
+                if (_suppressEvents || SettingsRegistry.Instance == null) return;
+                SettingsRegistry.Instance.ShowDamageIcons = evt.newValue;
+            });
+
             _musicPulseToggle?.RegisterValueChangedCallback(evt =>
             {
                 if (_suppressEvents || SettingsRegistry.Instance == null) return;
@@ -634,6 +662,8 @@ namespace CrowdDefense.UI
                 }
                 if (_vfxToggle != null) _vfxToggle.value = reg.VFXEnabled;
                 if (_shakeToggle != null) _shakeToggle.value = reg.ShakeEnabled;
+                if (_weatherToggle != null) _weatherToggle.value = reg.WeatherEnabled;
+                if (_damageIconsToggle != null) _damageIconsToggle.value = reg.ShowDamageIcons;
                 if (_musicPulseToggle != null) _musicPulseToggle.value = reg.MusicPulseEnabled;
                 if (_autoPauseToggle != null) _autoPauseToggle.value = reg.AutoPauseOnBlur;
 
@@ -723,6 +753,7 @@ namespace CrowdDefense.UI
                     "cd.gfx.damage_icons", "cd.gfx.music_pulse_v1", "cd.gfx.weather", "cd.gfx.bloom",
                     "cd.a11y.colorblind", "cd.a11y.reduce_motion", "cd.a11y.large_text",
                     "cd.a11y.font_size", "cd.a11y.high_contrast",
+                    "cd.locale", "cd.difficulty",
                 };
                 foreach (string key in keys)
                     PlayerPrefs.DeleteKey(key);
