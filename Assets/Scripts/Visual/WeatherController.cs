@@ -319,11 +319,24 @@ namespace CrowdDefense.Visual
             var weatherPsRenderer = go.GetComponent<ParticleSystemRenderer>();
             if (weatherPsRenderer != null && weatherPsRenderer.sharedMaterial == null)
             {
+                weatherPsRenderer.renderMode = ParticleSystemRenderMode.Billboard;
+
                 var weatherMat = new Material(
                     Shader.Find("Universal Render Pipeline/Particles/Unlit")
                     ?? ShaderUtil.GetUnlitShader());
+
+                // Enable URP transparency (Surface Type = Transparent)
+                weatherMat.SetFloat("_Surface", 1f);           // 0=Opaque, 1=Transparent
+                weatherMat.SetFloat("_Blend", 0f);             // 0=Alpha blend
+                weatherMat.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                weatherMat.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                weatherMat.SetFloat("_ZWrite", 0f);
+                weatherMat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+                weatherMat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+
+                float alpha = wt == WeatherType.Clouds ? 0.4f : 0.6f;
                 if (weatherMat.HasProperty("_BaseColor"))
-                    weatherMat.SetColor("_BaseColor", new Color(1f, 1f, 1f, 0.6f));
+                    weatherMat.SetColor("_BaseColor", new Color(1f, 1f, 1f, alpha));
                 weatherPsRenderer.material = weatherMat;
             }
 
