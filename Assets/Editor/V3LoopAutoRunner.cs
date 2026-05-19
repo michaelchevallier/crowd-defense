@@ -14,7 +14,9 @@ namespace CrowdDefense.EditorTools
     /// "cd_v3loop_auto_on_load" is true. Survives domain reloads by persisting
     /// state in SessionState.
     /// </summary>
-    [InitializeOnLoad]
+    // V6 T24-J: [InitializeOnLoad] disabled — interferes with normal Menu→School→WorldMap→Combat
+    // test flow. Re-enable via menu Tools > CrowdDefense > QA > V3Loop > Auto > Start if needed.
+    // [InitializeOnLoad]
     public static class V3LoopAutoRunner
     {
         private const string PrefAuto    = "cd_v3loop_auto_on_load";
