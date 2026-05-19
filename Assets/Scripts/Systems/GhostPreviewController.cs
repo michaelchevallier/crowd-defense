@@ -81,6 +81,7 @@ namespace CrowdDefense.Systems
         private static Material BuildTransparentMaterial()
         {
             var shader = Shader.Find("Universal Render Pipeline/Lit")
+                      ?? Shader.Find("Universal Render Pipeline/Unlit")
                       ?? Shader.Find("Standard");
             var mat = new Material(shader) { renderQueue = 3000 };
             mat.SetFloat("_Surface", 1f);

@@ -101,7 +101,9 @@ namespace CrowdDefense.Systems
             Destroy(go.GetComponent<Collider>());
 
             Color col = type == LootType.Gem ? GemColor : XpColor;
-            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Standard")!);
+            var mat = new Material(Shader.Find("Universal Render Pipeline/Lit")
+                              ?? Shader.Find("Universal Render Pipeline/Unlit")
+                              ?? Shader.Find("Standard")!);
             mat.color = col;
             // Emissive glow
             mat.EnableKeyword("_EMISSION");

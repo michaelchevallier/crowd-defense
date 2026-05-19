@@ -77,6 +77,13 @@ namespace CrowdDefense.Visual
                 {
                     animator.runtimeAnimatorController = fallback;
                 }
+                else
+                {
+                    // V6 W1-Y: BaseCharacter controller also absent — disable all SkinnedMeshRenderers
+                    // to avoid magenta placeholder cubes on URP.
+                    foreach (var smr in animatorTarget.GetComponentsInChildren<SkinnedMeshRenderer>())
+                        smr.enabled = false;
+                }
 #if UNITY_EDITOR
                 Debug.LogWarning(
                     $"[AnimationController] Controller '{rawName}' missing — fallback BaseCharacter applied. " +
