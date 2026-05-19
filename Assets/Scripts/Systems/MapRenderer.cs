@@ -284,7 +284,9 @@ namespace CrowdDefense.Systems
                     m.shader = unlit;
                     if (tex != null && m.HasProperty("_BaseMap"))
                         m.SetTexture("_BaseMap", tex);
-                    if (!m.HasProperty("_BaseColor") || m.GetColor("_BaseColor") == Color.clear)
+                    // V6 W1-W: ALWAYS set _BaseColor to CellColor(ch) — the .mat default may be dark navy,
+                    // strict Color.clear check missed that case. Wave-1 grass texture should multiply with this.
+                    if (m.HasProperty("_BaseColor"))
                         m.SetColor("_BaseColor", CellColor(ch));
                 }
                 _matCache[key] = m;
