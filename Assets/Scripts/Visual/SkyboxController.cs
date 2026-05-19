@@ -1,4 +1,5 @@
 #nullable enable
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
@@ -97,6 +98,13 @@ namespace CrowdDefense.Visual
             if (mat != null)
             {
                 RenderSettings.skybox = mat;
+                // J-SKYBOX-RUNTIME fix: Main.unity camera may clear with SolidColor (dark/green).
+                // Force Skybox clearFlags so the panoramic material actually renders.
+                // If Camera.main is null during Awake (execution-order race), retry next frame.
+                if (Camera.main != null)
+                    Camera.main.clearFlags = CameraClearFlags.Skybox;
+                else
+                    StartCoroutine(ForceSkyboxFlagNextFrame());
             }
             else if (RenderSettings.skybox == null)
             {
@@ -120,6 +128,13 @@ namespace CrowdDefense.Visual
             var probe = Object.FindAnyObjectByType<ReflectionProbe>();
             if (probe != null && probe.mode == ReflectionProbeMode.Realtime)
                 probe.RenderProbe();
+        }
+
+        private IEnumerator ForceSkyboxFlagNextFrame()
+        {
+            yield return null;
+            if (Camera.main != null)
+                Camera.main.clearFlags = CameraClearFlags.Skybox;
         }
     }
 }
