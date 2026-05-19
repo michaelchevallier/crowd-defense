@@ -411,6 +411,18 @@ namespace CrowdDefense.Systems
             ActiveBuildCell = cell;
             var grid = PathManager.Instance?.Grid;
             if (grid == null) return;
+
+            // V4 flow: if user has pre-selected a tower in toolbar, AUTO-PLACE here
+            // (skip the menu). Otherwise fall back to legacy menu-open behavior.
+            if (selectedTowerType != null)
+            {
+                var placed = TryPlaceAtActiveBuildCell(selectedTowerType);
+                if (placed)
+                    return;
+                // If TryPlace failed (cost, cap, invalid), don't open menu — wait for next BuildPoint
+                return;
+            }
+
             Vector3 cellWorld = GridCoords.CellToWorld(cell.x, cell.y, grid.Width, grid.Height, grid.CellSize);
             OnEmptyBuildableTileClick?.Invoke(cellWorld);
         }
