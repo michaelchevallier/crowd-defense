@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 52290e33f8d1d4c1fbbfaeda7fcc43eb, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -4641,7 +4641,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ef61924db7b39d6b60c0b42264c719db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: CrowdDefense::CrowdDefense.Visual.SkyboxController
-  skyboxPlaine: {fileID: 2100000, guid: 3a4c0e00f165085d1192ab5ff0f9c96b, type: 2}
+  skyboxPlaine: {fileID: 2100000, guid: 52290e33f8d1d4c1fbbfaeda7fcc43eb, type: 2}
   skyboxForet: {fileID: 2100000, guid: 6361012ada938e1ca055928b39ed2d1c, type: 2}
   skyboxDesert: {fileID: 2100000, guid: 7ce0dad5962f1e22f10f6d7bda3fa7b0, type: 2}
   skyboxVolcan: {fileID: 2100000, guid: ff7c4e187edbfdb052dc28390d394468, type: 2}

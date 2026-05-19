@@ -98,13 +98,27 @@ namespace CrowdDefense.Visual
             if (mat != null)
             {
                 RenderSettings.skybox = mat;
-                // J-SKYBOX-RUNTIME fix: Main.unity camera may clear with SolidColor (dark/green).
-                // Force Skybox clearFlags so the panoramic material actually renders.
-                // If Camera.main is null during Awake (execution-order race), retry next frame.
-                if (Camera.main != null)
-                    Camera.main.clearFlags = CameraClearFlags.Skybox;
+                // L-SKYBOX-V2: bulletproof — FindObjectsByType covers UI cam + hero cam, not just Camera.main.
+                // Also force ambient=Skybox so scene lighting picks up the panorama tint instead of flat dark.
+                var allCams = Object.FindObjectsByType<Camera>(FindObjectsSortMode.None);
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                Debug.Log($"[SkyboxController] ApplyTheme {theme}: mat={mat.name}, cameras={allCams.Length}, Camera.main={Camera.main?.name}");
+#endif
+                if (allCams.Length > 0)
+                {
+                    foreach (var cam in allCams)
+                    {
+                        if (cam != null)
+                            cam.clearFlags = CameraClearFlags.Skybox;
+                    }
+                }
                 else
+                {
+                    // Execution-order race — no cameras awake yet, retry next frame.
                     StartCoroutine(ForceSkyboxFlagNextFrame());
+                }
+                RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Skybox;
+                RenderSettings.ambientIntensity = 1f;
             }
             else if (RenderSettings.skybox == null)
             {
@@ -133,8 +147,11 @@ namespace CrowdDefense.Visual
         private IEnumerator ForceSkyboxFlagNextFrame()
         {
             yield return null;
-            if (Camera.main != null)
-                Camera.main.clearFlags = CameraClearFlags.Skybox;
+            foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+            {
+                if (cam != null)
+                    cam.clearFlags = CameraClearFlags.Skybox;
+            }
         }
     }
 }
