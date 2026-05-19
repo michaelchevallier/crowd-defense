@@ -11,7 +11,7 @@ namespace CrowdDefense.UI
     public class TutorialPopupController : MonoBehaviour
     {
         private const string PrefKey   = "tutorial_done_v1";
-        private const string LevelId   = "W1-1";
+        private const string LevelId   = "world1-1";
         private const float  FadeSecs  = 0.4f;
 
         private CanvasGroup? _canvasGroup;

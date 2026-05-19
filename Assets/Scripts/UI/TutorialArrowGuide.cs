@@ -13,7 +13,7 @@ namespace CrowdDefense.UI
     public class TutorialArrowGuide : MonoBehaviour
     {
         private const string PrefKey  = "tutorial_arrow_done_v1";
-        private const string LevelId  = "W1-1";
+        private const string LevelId  = "world1-1";
         private const float  AutoSecs = 5f;
         private const float  BobAmp   = 12f;  // px up/down
         private const float  BobFreq  = 2.5f; // hz

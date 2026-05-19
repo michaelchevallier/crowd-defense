@@ -13,7 +13,7 @@ namespace CrowdDefense.UI
     {
         private const string PrefKey      = "cd.tutorial_done";
         private const string RunCountKey  = "cd.run.count";
-        private const string LevelId      = "W1-1";
+        private const string LevelId      = "world1-1";
         private const float  FadeSecs     = 0.35f;
         private const float  TipDisplaySecs = 5f;
 
