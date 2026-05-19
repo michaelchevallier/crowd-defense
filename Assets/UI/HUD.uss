@@ -1712,6 +1712,11 @@
     bottom: 160px;
 }
 
+/* Responsive: portrait mobile push wave-preview above skill bar to avoid overlap */
+.hud-root.portrait .wave-preview {
+    bottom: 280px;
+}
+
 /* Skill tooltip (shown on hover over a skill slot) */
 .skill-tooltip {
     position: absolute;
