@@ -86,8 +86,27 @@ namespace CrowdDefense.Systems
                 ach.TrackEvent("gold_snapshot", 1000 - existing);
         }
 
-        private static void OnBossDefeated(BossDefeatedEvent _) =>
-            Achievements.Instance?.TrackEvent("boss_killed", 1);
+        private static void OnBossDefeated(BossDefeatedEvent evt)
+        {
+            var ach = Achievements.Instance;
+            if (ach == null) return;
+
+            // Track the generic "boss_killed" counter (for hidden_boss_lover)
+            ach.TrackEvent("boss_killed", 1);
+
+            // Unlock the specific boss-kill achievement
+            switch (evt.BossTypeId)
+            {
+                case "warlord_boss":     ach.Unlock("kill_warlord_boss"); break;
+                case "dragon_boss":      ach.Unlock("kill_dragon_boss"); break;
+                case "kraken_boss":      ach.Unlock("kill_kraken_boss"); break;
+                case "apocalypse_boss":  ach.Unlock("kill_apocalypse_boss"); break;
+                case "wizard_king":      ach.Unlock("kill_wizard_king"); break;
+                case "cosmic_boss":      ach.Unlock("kill_cosmic_boss"); break;
+                case "corsair_boss":     ach.Unlock("kill_corsair_boss"); break;
+                case "brigand_boss":     ach.Unlock("kill_brigand_boss"); break;
+            }
+        }
 
         private void OnLevelComplete()
         {

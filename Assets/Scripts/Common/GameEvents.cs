@@ -52,7 +52,7 @@ namespace CrowdDefense.Common
     public record BossEncounteredEvent(string DisplayName, float MaxHp, Color AuraColor, Vector3 BossPos, string[] CutsceneLines);
     public record BossHpChangedEvent(float Ratio);
     public record BossPhaseChangedEvent(string PhaseName, int PhaseIdx);
-    public record BossDefeatedEvent(string DisplayName);
+    public record BossDefeatedEvent(string DisplayName, string BossTypeId);
     public record BossChargeWarningEvent;
 
     // Hero

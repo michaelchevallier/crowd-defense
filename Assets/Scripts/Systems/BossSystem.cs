@@ -122,9 +122,10 @@ namespace CrowdDefense.Systems
 
         private void PublishDefeatOnce()
         {
-            if (_defeatedPublished || _currentDef == null) return;
+            if (_defeatedPublished || _currentDef == null || _currentBoss == null) return;
             _defeatedPublished = true;
-            EventManager.Instance?.Publish(new BossDefeatedEvent(_currentDef.DisplayNameFr));
+            var bossTypeId = _currentBoss.Config?.Id ?? "";
+            EventManager.Instance?.Publish(new BossDefeatedEvent(_currentDef.DisplayNameFr, bossTypeId));
             Toast.Show("Boss Defeated", _currentDef.DisplayNameFr, 4000, null, ToastType.Achievement);
 
             Vector3 pos = _currentBoss != null ? _currentBoss.transform.position : Vector3.zero;
