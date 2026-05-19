@@ -63,6 +63,7 @@ namespace CrowdDefense.UI
         private VisualElement? _heroPortraitVE;
         private Label? heroHpLabel;
         private Label? heroLevelLabel;
+        private VisualElement? heroHpBarFill;
         private VisualElement? heroXpBarFill;
         private Label? heroXpLabel;
         private Label? heroXpValue;
@@ -281,6 +282,7 @@ namespace CrowdDefense.UI
             BindHeroPortraitColor();
             heroHpLabel = Root.Q<Label>("hero-hp-label");
             heroLevelLabel = Root.Q<Label>("hero-level");
+            heroHpBarFill = Root.Q<VisualElement>("hero-hp-bar-fill");
             heroXpLabel = Root.Q<Label>("hero-xp-label");
             heroXpBarFill = Root.Q<VisualElement>("hero-xp-bar-fill");
             heroXpValue = Root.Q<Label>("hero-xp-value");
@@ -608,6 +610,12 @@ namespace CrowdDefense.UI
 
             if (heroLevelLabel != null)
                 heroLevelLabel.text = L.Get("hud.hero_level", hero.Level);
+
+            if (heroHpBarFill != null)
+            {
+                float hpRatio = hero.HPMax > 0 ? Mathf.Clamp01(hero.HP / hero.HPMax) : 1f;
+                heroHpBarFill.style.width = new Length(hpRatio * 100f, LengthUnit.Percent);
+            }
 
             if (heroXpBarFill != null)
             {
