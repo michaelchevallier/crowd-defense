@@ -356,7 +356,8 @@ namespace CrowdDefense.Entities
         {
             if (cfg == null || tier <= 1) return;
 
-            string suffix = tier == 2 ? "_t2" : "_t3";
+            // V6 T22-I: registry uses _l2/_l3 suffix (7 variants prêts), not _t2/_t3
+            string suffix = tier == 2 ? "_l2" : "_l3";
             string variantKey = cfg.AssetKey + suffix;
 
             var registry = Resources.Load<AssetRegistry>("AssetRegistry");
