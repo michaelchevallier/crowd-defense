@@ -15,7 +15,7 @@ namespace CrowdDefense.Visual
         [SerializeField] private float orbitSpeed      = 120f;
 
         [SerializeField] private float minY = 10f;
-        [SerializeField] private float maxY = 30f;
+        [SerializeField] private float maxY = 40f;
 
         // Map bounds — set from outside (LevelRunner/BuildMainSceneTool)
         [SerializeField] private float mapHalfX = 59.5f;
@@ -72,10 +72,12 @@ namespace CrowdDefense.Visual
         // ── Lifecycle ─────────────────────────────────────────────────────────
         private void Start()
         {
-            // V4-parity: top-down 47° elevation looking toward +Z; map extends Z[-14..14],
-            // castle at Z=-12, portal at Z=+12. Camera at Z=-21 looks forward across the map.
-            transform.position = new Vector3(0f, 30f, -21f);
+            // V6 W1-1 parity: cadrer TOUTE la map (15×7 cells = 30×14 world units, X[-15,15] Z[-14,14]).
+            // Castle z=-12, portal z=+12, mountains skybox visibles haut. FOV 55° = mid-zoom isométrique.
+            transform.position = new Vector3(0f, 36f, -28f);
             transform.rotation = Quaternion.Euler(47f, 0f, 0f);
+            var cam = GetComponent<Camera>();
+            if (cam != null) cam.fieldOfView = 55f;
 
             _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
             _defaultPosition = transform.position;
