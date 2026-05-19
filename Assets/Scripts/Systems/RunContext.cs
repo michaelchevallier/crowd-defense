@@ -79,6 +79,7 @@ namespace CrowdDefense.Systems
             ActivePerks.Add(perkId);
             SaveSystem.AppendRunPerk(perkId);
             OnPerksChanged?.Invoke();
+            Achievements.Instance?.TrackEvent("perk_collected", 1);
         }
 
         public void AdvanceLevel(string nextLevelId)

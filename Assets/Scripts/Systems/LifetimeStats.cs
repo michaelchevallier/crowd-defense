@@ -128,6 +128,8 @@ namespace CrowdDefense.Systems
             if (n <= 0) return;
             PlayerPrefs.SetInt(KeyGold, TotalGold + n);
             PlayerPrefs.Save();
+            if (TotalGold + n >= 1_000_000)
+                Achievements.Instance?.Unlock("hoarder");
         }
 
         public void AddTime(float s)

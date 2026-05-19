@@ -78,6 +78,7 @@ namespace CrowdDefense.Systems
             PlayerPrefs.SetInt(StreakKey, streak);
             PlayerPrefs.SetString(LastWinKey, today);
             PlayerPrefs.Save();
+            Achievements.Instance?.TrackEvent("daily_streak", 1);
         }
 
         public void CheckStreakBreak()
