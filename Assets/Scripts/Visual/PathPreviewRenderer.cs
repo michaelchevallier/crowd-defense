@@ -15,7 +15,7 @@ namespace CrowdDefense.Visual
         private const float YOffset     = 0.12f;
 
         private readonly List<LineRenderer> _lines = new();
-        private bool _visible = true;
+        private bool _visible = false;
 
         private void Start()
         {
@@ -59,6 +59,7 @@ namespace CrowdDefense.Visual
             for (int i = 0; i < waypoints.Count; i++)
                 lr.SetPosition(i, waypoints[i] + Vector3.up * YOffset);
 
+            lr.enabled = false;
             _lines.Add(lr);
         }
 
