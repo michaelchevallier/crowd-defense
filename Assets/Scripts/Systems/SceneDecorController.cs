@@ -299,7 +299,10 @@ namespace CrowdDefense.Systems
             trunk.name = goName + "_trunk";
             trunk.transform.SetParent(root.transform, false);
             trunk.transform.localScale = new Vector3(0.15f * rs, 0.5f * rs, 0.15f * rs);
-            trunk.transform.localPosition = Vector3.zero;
+            // V6 W1-O: Cylinder pivot is at center; offset Y by half-height (localScale.y = half-height
+            // of a Unity Cylinder whose mesh spans -1..+1 before scale) so base touches ground.
+            float trunkHalfH = trunk.transform.localScale.y;
+            trunk.transform.localPosition = new Vector3(0f, trunkHalfH, 0f);
             ApplyTreePart(trunk, new Color(0.45f, 0.30f, 0.15f));
             var tc = trunk.GetComponent<Collider>();
             if (tc != null) Destroy(tc);
@@ -308,7 +311,7 @@ namespace CrowdDefense.Systems
             foliage.name = goName + "_foliage";
             foliage.transform.SetParent(root.transform, false);
             foliage.transform.localScale = new Vector3(0.55f * rs, 0.55f * rs, 0.55f * rs);
-            foliage.transform.localPosition = new Vector3(0f, 0.7f * rs, 0f);
+            foliage.transform.localPosition = new Vector3(0f, trunkHalfH * 2f + 0.35f * rs, 0f);
             ApplyTreePart(foliage, def.BaseColor);
             var fc = foliage.GetComponent<Collider>();
             if (fc != null) Destroy(fc);
