@@ -3,6 +3,9 @@ using UnityEngine;
 using CrowdDefense.Common;
 using CrowdDefense.Data;
 using CrowdDefense.Visual;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace CrowdDefense.Entities
 {
@@ -57,15 +60,28 @@ namespace CrowdDefense.Entities
             if (registry == null)
             {
                 Debug.LogError("[Hero] AssetRegistry not found — check Resources/AssetRegistry.asset exists");
-                BuildFallbackMesh();
-                return null;
+                return CreateColoredFallback(cfg?.BodyColor ?? Color.green);
             }
             var prefab = registry.Get(assetKey);
+
+#if UNITY_EDITOR
+            // V6 T25-D: Editor fallback — if AssetRegistry ref is broken, load directly
             if (prefab == null)
             {
-                Debug.LogError($"[Hero] GLTF prefab MISSING for assetKey='{assetKey}' — assign prefab in AssetRegistry");
-                BuildFallbackMesh();
-                return null;
+                var parts = assetKey.Split('_');
+                for (int pi = 0; pi < parts.Length; pi++)
+                    if (parts[pi].Length > 0) parts[pi] = char.ToUpper(parts[pi][0]) + parts[pi].Substring(1);
+                var directPath = $"Assets/Models/Heroes/KayKit/Characters/{string.Join("_", parts)}.glb";
+                prefab = AssetDatabase.LoadAssetAtPath<GameObject>(directPath);
+                if (prefab != null)
+                    Debug.LogWarning($"[Hero] AssetRegistry ref broken for '{assetKey}' — loaded via direct path {directPath}");
+            }
+#endif
+
+            if (prefab == null)
+            {
+                Debug.LogError($"[Hero] GLTF prefab MISSING for assetKey='{assetKey}' — check AssetRegistry entries");
+                return CreateColoredFallback(cfg?.BodyColor ?? Color.green);
             }
             var inst = Object.Instantiate(prefab, transform);
             inst.name = "Mesh_" + assetKey;
@@ -74,6 +90,26 @@ namespace CrowdDefense.Entities
             inst.transform.localScale    = Vector3.one;
             SetupCapeCloth(inst);
             return inst;
+        }
+
+        private GameObject CreateColoredFallback(Color color)
+        {
+            var fallback = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            fallback.name = "FallbackCapsule";
+            fallback.transform.SetParent(transform);
+            fallback.transform.localPosition = Vector3.zero;
+            fallback.transform.localRotation = Quaternion.identity;
+            fallback.transform.localScale    = new Vector3(0.5f, 1.0f, 0.5f);
+            var rend = fallback.GetComponent<MeshRenderer>();
+            if (rend != null)
+            {
+                var mat = new Material(ShaderUtil.GetUnlitShader());
+                if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+                else if (mat.HasProperty("_Color")) mat.SetColor("_Color", color);
+                rend.material = mat;
+            }
+            Object.Destroy(fallback.GetComponent<Collider>());
+            return fallback;
         }
 
         private static void SetupCapeCloth(GameObject meshRoot)
@@ -104,41 +140,6 @@ namespace CrowdDefense.Entities
                 }
                 cloth.sphereColliders = spheres;
             }
-        }
-
-        private void BuildFallbackMesh()
-        {
-            var body = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            body.name = "Body";
-            body.transform.SetParent(transform);
-            body.transform.localPosition = new Vector3(0f, 0.55f, 0f);
-            body.transform.localScale    = new Vector3(0.55f, 0.85f, 0.5f);
-            var bodyRend = body.GetComponent<MeshRenderer>();
-            if (bodyRend != null)
-            {
-                var bodyMat = new Material(ShaderUtil.GetUnlitShader());
-                var bodyColor = new Color(0f, 1f, 0f);
-                if (bodyMat.HasProperty("_BaseColor")) bodyMat.SetColor("_BaseColor", bodyColor);
-                else if (bodyMat.HasProperty("_Color")) bodyMat.SetColor("_Color", bodyColor);
-                bodyRend.material = bodyMat;
-            }
-            Object.Destroy(body.GetComponent<Collider>());
-
-            var head = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            head.name = "Head";
-            head.transform.SetParent(transform);
-            head.transform.localPosition = new Vector3(0f, 1.15f, 0f);
-            head.transform.localScale    = new Vector3(0.38f, 0.35f, 0.38f);
-            var headRend = head.GetComponent<MeshRenderer>();
-            if (headRend != null)
-            {
-                var headMat = new Material(ShaderUtil.GetUnlitShader());
-                var headColor = new Color(0f, 0.8f, 0f);
-                if (headMat.HasProperty("_BaseColor")) headMat.SetColor("_BaseColor", headColor);
-                else if (headMat.HasProperty("_Color")) headMat.SetColor("_Color", headColor);
-                headRend.material = headMat;
-            }
-            Object.Destroy(head.GetComponent<Collider>());
         }
 
         // ── Perk icons world-space ────────────────────────────────────────────
