@@ -88,7 +88,15 @@ namespace CrowdDefense.UI
         }
 
         private void HandleLevelComplete() =>
-            ShowAndWait(() => LevelLoader.GoToWorldMap());
+            ShowAndWait(() =>
+            {
+                // V6 T22-C: route through LevelRunner.ConfirmLevelComplete so stars/gems/highscores save
+                // + OnSummaryReady event fires for summary UI panels.
+                if (LevelRunner.Instance != null)
+                    LevelRunner.Instance.ConfirmLevelComplete();
+                else
+                    LevelLoader.GoToWorldMap(); // fallback if no runner
+            });
 
         // Called by LevelRunner (or HudController) on victory to show the picker.
         // onDone fires after a card is selected.
