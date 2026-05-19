@@ -43,6 +43,14 @@ namespace CrowdDefense.Systems
                 go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 go.transform.localScale = Vector3.one * 0.22f;
                 Object.Destroy(go.GetComponent<Collider>());
+                var _heroProjMR = go.GetComponent<MeshRenderer>();
+                if (_heroProjMR != null)
+                {
+                    var _heroProjMat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color") ?? Shader.Find("Standard")!);
+                    if (_heroProjMat.HasProperty("_BaseColor")) _heroProjMat.SetColor("_BaseColor", new Color(0.9f, 0.9f, 0.2f));
+                    else _heroProjMat.color = new Color(0.9f, 0.9f, 0.2f);
+                    _heroProjMR.material = _heroProjMat;
+                }
             }
 
             go.name = "HeroProj";

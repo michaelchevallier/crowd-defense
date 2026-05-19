@@ -303,9 +303,9 @@ namespace CrowdDefense.Entities
                 var rend = go.GetComponent<Renderer>();
                 if (rend != null)
                 {
-                    var baseMat = rend.sharedMaterial != null ? rend.sharedMaterial : new Material(Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit")!);
-                    var mat = new Material(baseMat);
-                    mat.color = color;
+                    var mat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color") ?? Shader.Find("Standard")!);
+                    if (mat.HasProperty("_BaseColor")) mat.SetColor("_BaseColor", color);
+                    else mat.color = color;
                     rend.material = mat;
                 }
 

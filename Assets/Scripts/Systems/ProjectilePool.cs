@@ -55,6 +55,14 @@ namespace CrowdDefense.Systems
                 go = GameObject.CreatePrimitive(PrimitiveType.Sphere);
                 go.transform.localScale = Vector3.one * 0.18f;
                 Object.Destroy(go.GetComponent<SphereCollider>());
+                var _projFallbackMR = go.GetComponent<MeshRenderer>();
+                if (_projFallbackMR != null)
+                {
+                    var _projFallbackMat = new Material(Shader.Find("Universal Render Pipeline/Unlit") ?? Shader.Find("Unlit/Color") ?? Shader.Find("Standard")!);
+                    if (_projFallbackMat.HasProperty("_BaseColor")) _projFallbackMat.SetColor("_BaseColor", new Color(1f, 0.6f, 0f));
+                    else _projFallbackMat.color = new Color(1f, 0.6f, 0f);
+                    _projFallbackMR.material = _projFallbackMat;
+                }
                 go.AddComponent<Projectile>();
             }
 

@@ -391,18 +391,21 @@ namespace CrowdDefense.Entities
                 return null;
             }
 
-            var prefab = registry.Get(assetKey);
-            if (prefab == null)
-            {
-                Debug.LogError($"[Tower] GLTF prefab MISSING for assetKey='{assetKey}' — assign prefab in AssetRegistry");
-                return CreateColoredFallback(cfg?.BodyColor ?? new Color(0.5f, 0.5f, 0.5f));
-            }
-
+            // Always hide the prefab placeholder meshes (Base=Cube, Top=Sphere) with
+            // Default-Material (Standard shader = magenta in URP) before any mesh swap,
+            // including the fallback path when assetKey is missing from AssetRegistry.
             for (int i = 0; i < transform.childCount; i++)
             {
                 var child = transform.GetChild(i);
                 if (child.name == "Base" || child.name == "Top")
                     child.gameObject.SetActive(false);
+            }
+
+            var prefab = registry.Get(assetKey);
+            if (prefab == null)
+            {
+                Debug.LogError($"[Tower] GLTF prefab MISSING for assetKey='{assetKey}' — assign prefab in AssetRegistry");
+                return CreateColoredFallback(cfg?.BodyColor ?? new Color(0.5f, 0.5f, 0.5f));
             }
 
             var instance = Object.Instantiate(prefab, transform);
