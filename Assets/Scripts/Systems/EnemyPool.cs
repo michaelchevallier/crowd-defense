@@ -126,6 +126,10 @@ namespace CrowdDefense.Systems
 
         private void OnGet(Enemy e)
         {
+            // Hide root placeholder renderer before Init assigns the real mesh child,
+            // preventing a 1-frame magenta flash (Default-Material on URP capsule).
+            var rootRend = e.GetComponent<MeshRenderer>();
+            if (rootRend != null) rootRend.enabled = false;
             e.gameObject.SetActive(true);
             _active.Add(e);
         }
