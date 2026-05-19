@@ -283,10 +283,14 @@ namespace CrowdDefense.Systems
                     else if (tex == null)
                         Debug.Log($"[MapRenderer] No texture for ch='{ch}' — solid BaseColor only");
 #endif
-                    // V6 W1-W: ALWAYS set _BaseColor to CellColor(ch) — the .mat default may be dark navy,
-                    // strict Color.clear check missed that case. Wave-1 grass texture should multiply with this.
+                    // T25-B: if texture loaded, use white BaseColor so URP/Unlit shows texture at full
+                    // brightness (finalColor = white × texture_sample = texture_sample). If no texture,
+                    // fall back to CellColor for solid color display.
                     if (m.HasProperty("_BaseColor"))
-                        m.SetColor("_BaseColor", CellColor(ch));
+                    {
+                        bool hasTexture = m.HasProperty("_BaseMap") && m.GetTexture("_BaseMap") != null;
+                        m.SetColor("_BaseColor", hasTexture ? Color.white : CellColor(ch));
+                    }
                 }
                 _matCache[key] = m;
             }
