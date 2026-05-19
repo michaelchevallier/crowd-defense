@@ -10,7 +10,7 @@ namespace CrowdDefense.Visual
     public sealed class CameraController : MonoSingleton<CameraController>
     {
         // ── Inspector ─────────────────────────────────────────────────────────
-        [SerializeField] private float panSpeed        = 20f;
+        [SerializeField] private float panSpeed        = 10f;
         [SerializeField] private float zoomSpeed       = 5f;
         [SerializeField] private float orbitSpeed      = 120f;
 
@@ -81,6 +81,7 @@ namespace CrowdDefense.Visual
             _defaultPosition = transform.position;
             _defaultRotation = transform.rotation;
             _defaultY        = transform.position.y;
+            _followVelocity = Vector3.zero;
             _followHero = PlayerPrefs.GetInt(KFollowHero, 0) == 1;
             EventManager.Instance?.Subscribe<BossEncounteredEvent>(OnBossSpawn);
         }
@@ -327,7 +328,8 @@ namespace CrowdDefense.Visual
         {
             if (_hero == null) return;
             var target = _hero.position;
-            var desired = new Vector3(target.x, transform.position.y, target.z - 12f);
+            const float offsetY = 30f; // fixed camera height above hero
+            var desired = new Vector3(target.x, _hero.position.y + offsetY, target.z - 12f);
             transform.position = Vector3.SmoothDamp(transform.position, desired,
                 ref _followVelocity, 0.2f);
         }
