@@ -54,8 +54,14 @@ namespace CrowdDefense.EditorTools
             EditorSceneManager.OpenScene($"Assets/Scenes/{sceneName}.unity", OpenSceneMode.Single);
 
             var cam = Camera.main ?? UnityEngine.Object.FindAnyObjectByType<Camera>();
+            GameObject? tempCamGo = null;
             if (cam == null)
-                throw new Exception($"No Camera found in scene {sceneName}");
+            {
+                tempCamGo = new GameObject("__ScreenshotTempCam");
+                cam = tempCamGo.AddComponent<Camera>();
+                cam.clearFlags = CameraClearFlags.SolidColor;
+                cam.backgroundColor = Color.black;
+            }
 
             int w = 1920, h = 1080;
             var rt = new RenderTexture(w, h, 32, RenderTextureFormat.ARGB32);
@@ -77,6 +83,8 @@ namespace CrowdDefense.EditorTools
             UnityEngine.Object.DestroyImmediate(tex);
             rt.Release();
             UnityEngine.Object.DestroyImmediate(rt);
+            if (tempCamGo != null)
+                UnityEngine.Object.DestroyImmediate(tempCamGo);
         }
     }
 }
