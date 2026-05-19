@@ -84,6 +84,12 @@ namespace CrowdDefense.Entities
 
             ResetPerkStats();
 
+            // V6 T22-A: disable Body capsule placeholder before mesh swap.
+            // Mirrors Tower.prefab Base/Top SetActive(false) pattern (Wave-7 V) and
+            // Enemy.prefab MeshRenderer disable (Wave-8 X).
+            var bodyChild = transform.Find("Body");
+            if (bodyChild != null) bodyChild.gameObject.SetActive(false);
+
             var meshChild = SpawnMeshChild(type.AssetKey);
             var toonRoot  = meshChild != null ? meshChild : gameObject;
 
