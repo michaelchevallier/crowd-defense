@@ -64,7 +64,12 @@ namespace CrowdDefense.Visual
         // ── Public setters ────────────────────────────────────────────────────
         public void SetHero(Transform hero)    => _hero   = hero;
         public void SetCastle(Transform castle) => _castle = castle;
-        public void SetMapBounds(float halfX, float halfZ) { mapHalfX = halfX; mapHalfZ = halfZ; }
+        public void SetMapBounds(float halfX, float halfZ)
+        {
+            // V6 T22-G: floor to 30 so init cam pos (0,36,-28) survives ClampPosition
+            mapHalfX = Mathf.Max(halfX, 30f);
+            mapHalfZ = Mathf.Max(halfZ, 30f);
+        }
 
         // Called every frame by VirtualJoystick with a -1..1 direction, or Vector2.zero to stop.
         public void SetPan(Vector2 direction) => _externalPan = direction;
