@@ -822,3 +822,5 @@ Added more towers (50 placed, mixed types) + bumped loop limit to 600. Iterating
 2026-05-19 01h25 — scrute /loop #264 (cron). **1 new commit** depuis #263 (HEAD `c3c9be49`) : docs(qa)(N-Validation) autonomy run N2 9/10 PASS (Singletons/LevelData/Tower/Enemy/AudioRegistry R2A✅/Shaders/UIDocs/Resources R2B✅/LevelRegistry — seul FAIL PathfindingGrid naming key) + N4 3/4 PASS (Loader/WorldMap/Main PNG OK, Menu no Camera). N3+N5 abandonnés (EnterPlaymode batch skip confirmé observation phase1 stuck). Unity Editor PID 145 relancé. Confidence : compile HIGH, static HIGH, Play mode UNKNOWN (Mike test final requis). 2 worktrees. **Drift 0/12** ✅. **T3 silent**.
 
 2026-05-19 01h55 — scrute /loop #265 (cron). **0 new commit** depuis #264 (HEAD `caf83203`). 2 worktrees stables. Mike silent. **Drift 0/12** ✅. **T3 silent**.
+
+2026-05-19 02h25 — scrute /loop #266 (cron). **0 new commit** depuis #265 (HEAD `49a27226`). 2 worktrees stables. Mike silent (~3h post N-Validation push). **Drift 0/12** ✅. **T3 silent**.
