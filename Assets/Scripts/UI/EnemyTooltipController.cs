@@ -112,7 +112,7 @@ namespace CrowdDefense.UI
             _sb.Append("Vitesse: ");
             _sb.Append(cfg.Speed.ToString("F1"));
             _sb.Append('\n');
-            _sb.Append("Reward: ");
+            _sb.Append("Récompense : ");
             _sb.Append(cfg.Reward);
             _sb.Append('c');
             if (_labelStats != null) _labelStats.text = _sb.ToString();

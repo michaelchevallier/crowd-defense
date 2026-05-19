@@ -10,11 +10,11 @@
         <ui:VisualElement name="tutorial-bubble" class="tutorial-bubble">
             <ui:Label text="" name="tutorial-text" class="tutorial-text" />
             <ui:VisualElement class="tutorial-bubble-actions">
-                <ui:Button text="Next" name="tutorial-btn-next" class="tutorial-btn tutorial-btn-next" />
+                <ui:Button text="Suivant" name="tutorial-btn-next" class="tutorial-btn tutorial-btn-next" />
             </ui:VisualElement>
         </ui:VisualElement>
 
         <!-- Skip tutorial — top-right corner -->
-        <ui:Button text="Skip Tutorial" name="tutorial-btn-skip" class="tutorial-btn-skip" />
+        <ui:Button text="Passer le tutoriel" name="tutorial-btn-skip" class="tutorial-btn-skip" />
     </ui:VisualElement>
 </ui:UXML>

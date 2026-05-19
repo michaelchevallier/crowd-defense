@@ -20,7 +20,7 @@
                     </ui:VisualElement>
                     <ui:Label text="— Empty —" name="slot-empty-0" class="slot-empty" />
                     <ui:VisualElement class="slot-actions">
-                        <ui:Button text="Continue" name="slot-continue-0" class="slot-btn slot-btn-continue" />
+                        <ui:Button text="Continuer" name="slot-continue-0" class="slot-btn slot-btn-continue" />
                         <ui:Button text="New Game" name="slot-new-0" class="slot-btn slot-btn-new" />
                         <ui:Button text="Delete" name="slot-delete-0" class="slot-btn slot-btn-delete" />
                     </ui:VisualElement>
@@ -37,7 +37,7 @@
                     </ui:VisualElement>
                     <ui:Label text="— Empty —" name="slot-empty-1" class="slot-empty" />
                     <ui:VisualElement class="slot-actions">
-                        <ui:Button text="Continue" name="slot-continue-1" class="slot-btn slot-btn-continue" />
+                        <ui:Button text="Continuer" name="slot-continue-1" class="slot-btn slot-btn-continue" />
                         <ui:Button text="New Game" name="slot-new-1" class="slot-btn slot-btn-new" />
                         <ui:Button text="Delete" name="slot-delete-1" class="slot-btn slot-btn-delete" />
                     </ui:VisualElement>
@@ -54,7 +54,7 @@
                     </ui:VisualElement>
                     <ui:Label text="— Empty —" name="slot-empty-2" class="slot-empty" />
                     <ui:VisualElement class="slot-actions">
-                        <ui:Button text="Continue" name="slot-continue-2" class="slot-btn slot-btn-continue" />
+                        <ui:Button text="Continuer" name="slot-continue-2" class="slot-btn slot-btn-continue" />
                         <ui:Button text="New Game" name="slot-new-2" class="slot-btn slot-btn-new" />
                         <ui:Button text="Delete" name="slot-delete-2" class="slot-btn slot-btn-delete" />
                     </ui:VisualElement>

@@ -62,7 +62,7 @@
             <ui:Button text="Doctrines" name="btn-doctrine" class="hud-doctrine-btn" tooltip="Doctrines" />
             <ui:Button text="&#x1F6D2;" name="btn-shop" class="hud-shop-btn" tooltip="Boutique" />
             <ui:Button text="&#x1F5FA;" name="btn-map" class="hud-map-btn" tooltip="Carte des mondes" />
-            <ui:Button text="&#x2699;" name="btn-settings" class="hud-settings-btn" tooltip="Settings" />
+            <ui:Button text="&#x2699;" name="btn-settings" class="hud-settings-btn" tooltip="Paramètres" />
             <ui:Button text="&#x1F50A;" name="btn-mute" class="hud-mute-btn" tooltip="Mute audio" />
             <ui:Button text="&#x1F4DA;" name="btn-encyclopedia" class="hud-encyclopedia-btn" tooltip="Encyclopedie [I]" />
         </ui:VisualElement>
@@ -132,7 +132,7 @@
 
             <!-- Repair button (visible si tower damaged) -->
             <ui:Button name="btn-repair" class="radial-btn-repair" style="display: none;">
-                <ui:Label text="Repair" name="btn-repair-label" class="radial-btn-action-label" />
+                <ui:Label text="Réparer" name="btn-repair-label" class="radial-btn-action-label" />
                 <ui:Label text="" name="btn-repair-cost" class="radial-btn-cost" />
             </ui:Button>
 
@@ -149,7 +149,7 @@
             <!-- Actions secondaires : Range toggle + Sell + Cancel -->
             <ui:VisualElement class="radial-action-row">
                 <ui:Button name="btn-range" class="radial-btn-range">
-                    <ui:Label text="Range" name="btn-range-label" class="radial-btn-action-label" />
+                    <ui:Label text="Portée" name="btn-range-label" class="radial-btn-action-label" />
                 </ui:Button>
                 <ui:Button name="btn-sell" class="radial-btn-sell">
                     <ui:Label text="" name="btn-sell-label" class="radial-btn-sell-label" />
@@ -222,10 +222,10 @@
             <ui:VisualElement name="tutorial-bubble" class="tutorial-bubble">
                 <ui:Label text="" name="tutorial-text" class="tutorial-text" />
                 <ui:VisualElement class="tutorial-bubble-actions">
-                    <ui:Button text="Next" name="tutorial-btn-next" class="tutorial-btn tutorial-btn-next" />
+                    <ui:Button text="Suivant" name="tutorial-btn-next" class="tutorial-btn tutorial-btn-next" />
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:Button text="Skip Tutorial" name="tutorial-btn-skip" class="tutorial-btn-skip" />
+            <ui:Button text="Passer le tutoriel" name="tutorial-btn-skip" class="tutorial-btn-skip" />
         </ui:VisualElement>
 
         <!-- Tower stats panel (top-right, shown on tower select) -->
@@ -239,7 +239,7 @@
                 <ui:Label text="" name="stats-dps-value" class="stats-value" />
             </ui:VisualElement>
             <ui:VisualElement class="stats-row">
-                <ui:Label text="Range" name="stats-range-label" class="stats-label" />
+                <ui:Label text="Portée" name="stats-range-label" class="stats-label" />
                 <ui:Label text="" name="stats-range-value" class="stats-value" />
             </ui:VisualElement>
             <ui:VisualElement class="stats-row">
@@ -640,7 +640,7 @@
         <!-- Settings panel (SettingsPanelController) -->
         <ui:VisualElement name="settings-root" class="settings-root hidden">
             <ui:VisualElement name="settings-panel" class="settings-panel">
-                <ui:Label text="Settings" name="settings-title" class="settings-title" />
+                <ui:Label text="Paramètres" name="settings-title" class="settings-title" />
                 <ui:ScrollView name="settings-scroll" class="settings-scroll">
                     <ui:VisualElement class="settings-section">
                         <ui:Label text="Audio" name="audio-section-title" class="section-title" />
@@ -710,7 +710,7 @@
                 <ui:VisualElement class="settings-footer">
                     <ui:Button text="Reset Camera" name="settings-reset-camera-btn" class="settings-btn settings-btn-reset" />
                     <ui:Button text="Fullscreen ON" name="settings-fullscreen-btn" class="settings-btn settings-btn-fullscreen" />
-                    <ui:Button text="Close" name="settings-close-btn" class="settings-btn settings-btn-close" />
+                    <ui:Button text="Fermer" name="settings-close-btn" class="settings-btn settings-btn-close" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

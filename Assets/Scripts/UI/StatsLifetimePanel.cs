@@ -184,7 +184,7 @@ namespace CrowdDefense.UI
             var scores = LifetimeStats.GetLeaderboard();
             if (scores.Count == 0)
             {
-                var empty = new Label("No runs yet");
+                var empty = new Label("Aucune run pour l'instant");
                 empty.AddToClassList("lt-lb-empty");
                 _leaderboardContainer.Add(empty);
                 return;

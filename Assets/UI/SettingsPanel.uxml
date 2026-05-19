@@ -4,7 +4,7 @@
     <Style src="SettingsPanel.uss" />
     <ui:VisualElement name="settings-root" class="settings-root hidden">
         <ui:VisualElement name="settings-panel" class="settings-panel">
-            <ui:Label text="Settings" name="settings-title" class="settings-title" />
+            <ui:Label text="Paramètres" name="settings-title" class="settings-title" />
 
             <!-- Tab row -->
             <ui:VisualElement name="settings-tabs" class="tab-row">
@@ -179,7 +179,7 @@
             </ui:VisualElement>
 
             <ui:VisualElement class="settings-footer">
-                <ui:Button text="Close" name="settings-close-btn" class="settings-btn settings-btn-close" />
+                <ui:Button text="Fermer" name="settings-close-btn" class="settings-btn settings-btn-close" />
             </ui:VisualElement>
             <ui:VisualElement class="settings-danger-row">
                 <ui:Button text="Reset to Defaults" name="settings-reset-defaults-btn" class="settings-btn settings-btn-reset" />

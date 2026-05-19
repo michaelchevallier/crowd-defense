@@ -4,11 +4,11 @@
     <Style src="Leaderboard.uss" />
     <ui:VisualElement name="leaderboard-root" class="leaderboard-root hidden">
         <ui:VisualElement name="leaderboard-panel" class="leaderboard-panel">
-            <ui:Label text="Best Runs" name="leaderboard-title" class="leaderboard-title" />
-            <ui:Label text="No runs yet." name="leaderboard-empty" class="leaderboard-empty" />
+            <ui:Label text="Meilleures runs" name="leaderboard-title" class="leaderboard-title" />
+            <ui:Label text="Aucune run pour l'instant." name="leaderboard-empty" class="leaderboard-empty" />
             <ui:VisualElement name="leaderboard-list" class="leaderboard-list" />
             <ui:VisualElement class="leaderboard-footer">
-                <ui:Button text="Close" name="leaderboard-close-btn" class="lb-btn" />
+                <ui:Button text="Fermer" name="leaderboard-close-btn" class="lb-btn" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

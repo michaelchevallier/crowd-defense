@@ -40,7 +40,7 @@
         <!-- Ligne secondaire : Range ring toggle + Sell + Cancel -->
         <ui:VisualElement class="radial-action-row">
             <ui:Button name="btn-range" class="radial-btn-range">
-                <ui:Label text="Range" name="btn-range-label" class="radial-btn-action-label" />
+                <ui:Label text="Portée" name="btn-range-label" class="radial-btn-action-label" />
             </ui:Button>
 
             <ui:Button name="btn-sell" class="radial-btn-sell">

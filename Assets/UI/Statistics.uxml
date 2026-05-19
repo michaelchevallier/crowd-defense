@@ -98,7 +98,7 @@
             </ui:VisualElement>
 
             <ui:VisualElement class="stats-footer">
-                <ui:Button text="Close" name="stats-close-btn" class="stats-close-btn" />
+                <ui:Button text="Fermer" name="stats-close-btn" class="stats-close-btn" />
             </ui:VisualElement>
 
         </ui:VisualElement>
