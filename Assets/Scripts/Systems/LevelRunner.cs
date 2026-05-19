@@ -866,7 +866,8 @@ namespace CrowdDefense.Systems
                     float halfZ = grid2.Height * grid2.CellSize * 0.5f;
                     camCtrl.SetMapBounds(halfX, halfZ);
                 }
-                // V6 Q-CAM-FRAMING: do not force follow on hero spawn — V4 reference is static cam
+                // V6 AR: V4-parity hero-centered cam — re-enable follow on hero spawn
+                camCtrl.FollowHero = true;
             }
 
 #if UNITY_EDITOR

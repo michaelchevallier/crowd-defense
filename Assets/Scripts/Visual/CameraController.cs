@@ -79,9 +79,10 @@ namespace CrowdDefense.Visual
             var cam = GetComponent<Camera>();
             if (cam != null) cam.fieldOfView = 55f;
 
-            // V6 Q-CAM-FRAMING: force follow OFF at start — V4 reference is static cam
-            _followHero = false;
-            PlayerPrefs.SetInt(KFollowHero, 0);
+            // V6 AR: re-enable hero follow — Wave-18 AL fixed castle blocking (scale 3x→1.5x).
+            // V4-parity: cam centered on hero who walks the map.
+            _followHero = true;
+            PlayerPrefs.SetInt(KFollowHero, 1);
 
             _baseY = Mathf.Clamp(transform.position.y, minY, maxY);
             _defaultPosition = transform.position;
@@ -336,7 +337,7 @@ namespace CrowdDefense.Visual
             const float offsetY = 30f; // fixed camera height above hero
             var desired = new Vector3(target.x, _hero.position.y + offsetY, target.z - 12f);
             transform.position = Vector3.SmoothDamp(transform.position, desired,
-                ref _followVelocity, 0.2f);
+                ref _followVelocity, 0.4f);
         }
 
         // ── Screen shake ─────────────────────────────────────────────────────
