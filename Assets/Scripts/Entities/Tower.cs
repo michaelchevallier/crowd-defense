@@ -121,8 +121,9 @@ namespace CrowdDefense.Entities
 
         private float _lastDotPopupAt = -1f;
 
-        private readonly List<float> _damageLogTimes  = new();
-        private readonly List<float> _damageLogValues = new();
+        // Queue instead of List — Dequeue() is O(1) vs RemoveAt(0) O(N) shift
+        private readonly Queue<float> _damageLogTimes  = new();
+        private readonly Queue<float> _damageLogValues = new();
 
         private float _clusterTimer;
 
@@ -244,18 +245,22 @@ namespace CrowdDefense.Entities
         public float GetLiveDps()
         {
             float cutoff = Time.time - 5f;
-            while (_damageLogTimes.Count > 0 && _damageLogTimes[0] < cutoff)
+            while (_damageLogTimes.Count > 0 && _damageLogTimes.Peek() < cutoff)
             {
-                _damageLogTimes.RemoveAt(0);
-                _damageLogValues.RemoveAt(0);
+                _damageLogTimes.Dequeue();
+                _damageLogValues.Dequeue();
             }
             float total = 0f;
-            for (int i = 0; i < _damageLogValues.Count; i++)
-                total += _damageLogValues[i];
+            foreach (float v in _damageLogValues)
+                total += v;
             return total / 5f;
         }
 
         private GameObject? _meshChild;
+        // Cached once after mesh spawn — avoids GetComponentsInChildren alloc every frame in TickHitFlash
+        private Renderer[]? _cachedRenderers;
+        // Reused per FireChainLightning call — avoids HashSet alloc on every shot
+        private readonly HashSet<Enemy> _chainLightningHit = new();
 
         [SerializeField] private GameObject? _meshHead;
 
@@ -316,6 +321,7 @@ namespace CrowdDefense.Entities
                 : SpawnMeshChild(assetKey);
 
             var toonRoot = _meshChild != null ? _meshChild : gameObject;
+            _cachedRenderers = toonRoot.GetComponentsInChildren<Renderer>();
             if (skinMat != null)
                 MaterialController.ApplyOverrideMaterial(toonRoot, skinMat);
             else

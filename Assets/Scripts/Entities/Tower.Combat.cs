@@ -177,8 +177,8 @@ namespace CrowdDefense.Entities
                 if (flyMul > 1f) dmg *= flyMul;
             }
 
-            _damageLogTimes.Add(Time.time);
-            _damageLogValues.Add(dmg);
+            _damageLogTimes.Enqueue(Time.time);
+            _damageLogValues.Enqueue(dmg);
             TotalDamageDealt += dmg;
 
             int effectivePierce = L3Pierce > 0 ? L3Pierce : cfg.Pierce + _pierceBonus;
@@ -248,7 +248,9 @@ namespace CrowdDefense.Entities
         {
             if (WaveManager.Instance == null || jumps <= 0) return;
             float rangeSq = range * range;
-            var hit = new HashSet<Enemy> { origin };
+            _chainLightningHit.Clear();
+            _chainLightningHit.Add(origin);
+            var hit = _chainLightningHit;
             Enemy? current = origin;
 
             VfxPool.Instance?.SpawnLightningChain(origin.transform.position);

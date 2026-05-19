@@ -56,8 +56,8 @@ namespace CrowdDefense.Entities
             else
                 intensity = Mathf.Lerp(0.5f, 0f, (_hitFlashElapsed - HitFlashPeak) / (HitFlashTotal - HitFlashPeak));
 
-            var root = _meshChild != null ? _meshChild : gameObject;
-            var renderers = root.GetComponentsInChildren<Renderer>();
+            var renderers = _cachedRenderers;
+            if (renderers == null) return;
             _hitFlashMpb ??= new MaterialPropertyBlock();
             var emission = Color.white * intensity;
             foreach (var r in renderers)
