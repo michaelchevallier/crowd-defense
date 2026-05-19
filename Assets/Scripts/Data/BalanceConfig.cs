@@ -7,12 +7,17 @@ namespace CrowdDefense.Data
     public class BalanceConfig : ScriptableObject
     {
         private static BalanceConfig? _cached;
+        private static BalanceConfig? _runtimeOverride;
 
         public static BalanceConfig Get()
         {
+            if (_runtimeOverride != null) return _runtimeOverride;
             if (_cached == null) _cached = Resources.Load<BalanceConfig>("BalanceConfig");
             return _cached!;
         }
+
+        public static void SetRuntimeOverride(BalanceConfig cfg) => _runtimeOverride = cfg;
+        public static void ClearRuntimeOverride() => _runtimeOverride = null;
 
         [Header("Tower scaling")]
         public float TowerDamageMul = 1.6f;

@@ -163,6 +163,8 @@ namespace CrowdDefense.Systems
 
             if (Economy.Instance != null)
                 Economy.Instance.OnGoldChanged -= HandleGoldChanged;
+
+            BalanceConfig.ClearRuntimeOverride();
         }
 
         private void Start()
@@ -176,6 +178,16 @@ namespace CrowdDefense.Systems
 
             if (Economy.Instance != null)
                 Economy.Instance.OnGoldChanged += HandleGoldChanged;
+
+            // Wire doctrine modifiers into runtime balance config (all 7 doctrines now have gameplay effect)
+            var runtimeBalance = DoctrineSystem.Instance?.BuildRunConfig(BalanceConfig.Get());
+            if (runtimeBalance != null && runtimeBalance != BalanceConfig.Get())
+            {
+                BalanceConfig.SetRuntimeOverride(runtimeBalance);
+#if UNITY_EDITOR
+                Debug.Log($"[LevelRunner] Applied doctrine: {DoctrineSystem.Instance!.ActiveDoctrine?.displayName}");
+#endif
+            }
 
             SpawnCastle();
             SpawnHero();
