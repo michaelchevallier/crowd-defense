@@ -266,6 +266,13 @@ namespace CrowdDefense.Visual
 
         public static void ApplySkyGradient(LevelTheme theme)
         {
+            // V6 T-WEATHER-PLAINE: force Clouds (blue tint) for Plaine — random pool could
+            // resolve to Mist/Pollen (green tint) if ThemeWeather entry is ever widened.
+            if (theme == LevelTheme.Plaine)
+            {
+                ApplySkyGradient(WeatherType.Clouds);
+                return;
+            }
             if (!ThemeWeather.TryGetValue(theme, out var types)) return;
             foreach (var wt in types)
                 if (SkyTints.ContainsKey(wt)) { ApplySkyGradient(wt); return; }
