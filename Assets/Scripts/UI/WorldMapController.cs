@@ -31,7 +31,7 @@ namespace CrowdDefense.UI
         };
 
         private const int WorldCount     = 10;
-        private const int LevelsPerWorld = 10;
+        private const int LevelsPerWorld = 9;
 
         private static readonly string[] WorldThemeKeys =
         {

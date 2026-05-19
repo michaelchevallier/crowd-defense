@@ -585,14 +585,14 @@ namespace CrowdDefense.Systems
             Save();
         }
 
-        // "worldX-Y" → "worldX-(Y+1)" jusqu'à 8, puis "world(X+1)-1" jusqu'à 10
+        // "worldX-Y" → "worldX-(Y+1)" jusqu'à 9, puis "world(X+1)-1" jusqu'à 10
         private static string ComputeNextLevelId(string current)
         {
             if (!current.StartsWith("world")) return "";
             var rest = current.Substring(5).Split('-');
             if (rest.Length != 2) return "";
             if (!int.TryParse(rest[0], out int w) || !int.TryParse(rest[1], out int l)) return "";
-            if (l < 8) return $"world{w}-{l + 1}";
+            if (l < 9) return $"world{w}-{l + 1}";
             if (w < 10) return $"world{w + 1}-1";
             return "";
         }
@@ -682,13 +682,13 @@ namespace CrowdDefense.Systems
             }
         }
 
-        // Count distinct worlds cleared (world X cleared = world X-8 in clearedLevels)
+        // Count distinct worlds cleared (world X cleared = world X-9 in clearedLevels)
         public static int WorldsCleared()
         {
             var cleared = Load().clearedLevels;
             int count = 0;
             for (int w = 1; w <= 10; w++)
-                if (cleared.Contains($"world{w}-8")) count++;
+                if (cleared.Contains($"world{w}-9")) count++;
             return count;
         }
 
