@@ -97,25 +97,21 @@ namespace CrowdDefense.UI
                 return;
             }
 
-            Debug.Log("[WorldMapController] Start() called");
             var uiDoc = GetComponent<UIDocument>();
             if (uiDoc == null)
             {
                 Debug.LogError("[WorldMapController] UIDocument not found");
                 return;
             }
-            Debug.Log("[WorldMapController] UIDocument found");
-            Debug.Log($"[WorldMapController] UIDocument.panelSettings={uiDoc.panelSettings?.name ?? "NULL"}");
             _root     = uiDoc.rootVisualElement;
             if (_root == null)
             {
                 Debug.LogError("[WorldMapController] rootVisualElement is null — UXML failed to load");
                 return;
             }
-            Debug.Log("[WorldMapController] rootVisualElement found");
-            Debug.Log($"[WorldMapController] Root name={_root.name}, class={string.Join(",", _root.GetClasses())}");
-            Debug.Log($"[WorldMapController] Root style display={_root.style.display}, visibility={_root.style.visibility}");
-            Debug.Log($"[WorldMapController] Root style position={_root.style.position}, left={_root.style.left}, right={_root.style.right}, top={_root.style.top}, bottom={_root.style.bottom}");
+#if UNITY_EDITOR
+            Debug.Log($"[WorldMapController] root={_root.name} panelSettings={uiDoc.panelSettings?.name ?? "NULL"}");
+#endif
 
             _registry = LevelRegistry.Get();
             if (_registry == null)
@@ -123,26 +119,18 @@ namespace CrowdDefense.UI
                 Debug.LogError("[WorldMapController] LevelRegistry.Get() returned null");
                 return;
             }
-            Debug.Log("[WorldMapController] LevelRegistry loaded");
             _runMap   = RunMap.Instance;
             if (_runMap == null)
             {
                 Debug.LogError("[WorldMapController] RunMap.Instance is null");
                 return;
             }
-            Debug.Log("[WorldMapController] RunMap instance acquired, starting BuildUI()");
             BuildUI();
-            Debug.Log("[WorldMapController] BuildUI() complete");
         }
 
         private void BuildUI()
         {
             if (_root == null) return;
-
-            // ── Diagnostic logging ──
-            Debug.Log($"[WorldMap] Root resolvedStyle: display={_root.resolvedStyle.display}, visibility={_root.resolvedStyle.visibility}, opacity={_root.resolvedStyle.opacity}");
-            Debug.Log($"[WorldMap] Root size: width={_root.resolvedStyle.width}, height={_root.resolvedStyle.height}");
-            Debug.Log($"[WorldMap] Root layout: x={_root.layout.x}, y={_root.layout.y}, w={_root.layout.width}, h={_root.layout.height}");
 
             var titleLabel = _root.Q<Label>("worldmap-title");
             if (titleLabel != null) titleLabel.text = L.Get("worldmap.title");
@@ -166,14 +154,6 @@ namespace CrowdDefense.UI
             ShowWorld(_activeWorld);
             WireSpecialTiles();
 
-            // ── Final diagnostics ──
-            Debug.Log($"[WorldMap] After BuildUI: levelGrid children={_levelGrid?.childCount ?? -1}");
-            if (_root != null)
-            {
-                Debug.Log($"[WorldMap] Final root: display={_root.resolvedStyle.display}, visibility={_root.resolvedStyle.visibility}, layout_h={_root.layout.height}");
-                var tabBar = _root.Q<VisualElement>("worldmap-tabs");
-                Debug.Log($"[WorldMap] Tab bar: {(tabBar != null ? $"found, childCount={tabBar.childCount}" : "NULL")}");
-            }
         }
 
         // ── RunMap node-graph view ────────────────────────────────────────
@@ -454,7 +434,6 @@ namespace CrowdDefense.UI
             bool hasData = data != null;
             var tile = new Button(() =>
             {
-                Debug.Log($"[WorldMap.Tile {id}] Button click fired (unlocked={isUnlocked}, hasData={hasData})");
                 if (isUnlocked && hasData) LevelLoader.LoadLevel(id);
                 else if (!isUnlocked) Toast.Show("Niveau verrouille", "Terminez le niveau precedent.", 2500, null, ToastType.Generic);
             });
