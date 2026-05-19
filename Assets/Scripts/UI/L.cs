@@ -403,6 +403,17 @@ namespace CrowdDefense.UI
                     ["perk.rarity_legendary"] = "Legendaire",
                     ["perk.placeholder_name"] = "Bonus inconnu",
                     ["perk.placeholder_desc"] = "Aucune description disponible.",
+                    ["perk.reroll"] = "Relancer",
+
+                    // ── Skin picker ────────────────────────────────────────────────
+                    ["skin.title"] = "Apparences",
+                    ["skin.close"] = "Fermer",
+                    ["skin.equip_btn"] = "Équiper",
+                    ["skin.equipped"] = "Équipé",
+                    ["skin.locked"] = "Verrouillé",
+                    ["skin.category_vfx"] = "Effets visuels",
+                    ["skin.category_hero"] = "Héros",
+                    ["skin.category_castle"] = "Château",
 
                     // ── HUD pills ───────────────────────────────────────────────────
                     ["hud.gold_label"] = "\U0001F4B0 OR",
@@ -603,6 +614,7 @@ namespace CrowdDefense.UI
                     // ── Level Summary ──────────────────────────────────────────────
                     ["summary.victory"]          = "VICTOIRE",
                     ["summary.game_over"]        = "GAME OVER",
+                    ["summary.stat_score"]       = "Score",
                     ["summary.stat_kills"]       = "Kills",
                     ["summary.stat_towers"]      = "Tours placees",
                     ["summary.stat_perks"]       = "Perks",
