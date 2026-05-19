@@ -29,27 +29,29 @@ namespace CrowdDefense.Common
 
         // Port de ToonMaterial.js : cel-shading 3 steps shadow/mid/bright
         // Résout d'abord le nouveau Toon/Lit, fallback vers l'ancien CrowdDefense/ToonCelShading.
-        // R2-recovery : Standard shader renders MAGENTA on URP — fallback URP/Lit instead.
+        // H-SHADERS : fallback URP/Unlit (not URP/Lit) so tiles render without ambient light setup.
+        // Toon custom shaders exist at Assets/Shaders/Toon/ and should resolve normally; Unlit is
+        // a safety net in case URP 17.3.0 fails to compile them (path tiles + water would go dark).
         public static Shader GetToonShader()
         {
             if (_toonShader == null)
                 _toonShader = Shader.Find("CrowdDefense/Toon/Lit")
                            ?? Shader.Find("CrowdDefense/ToonCelShading")
-                           ?? GetLitShader();
+                           ?? GetUnlitShader();
             return _toonShader!;
         }
 
         public static Shader GetToonWaterShader()
         {
             if (_toonWaterShader == null)
-                _toonWaterShader = Shader.Find("CrowdDefense/Toon/Water") ?? GetLitShader();
+                _toonWaterShader = Shader.Find("CrowdDefense/Toon/Water") ?? GetUnlitShader();
             return _toonWaterShader!;
         }
 
         public static Shader GetToonLavaShader()
         {
             if (_toonLavaShader == null)
-                _toonLavaShader = Shader.Find("CrowdDefense/Toon/Lava") ?? GetLitShader();
+                _toonLavaShader = Shader.Find("CrowdDefense/Toon/Lava") ?? GetUnlitShader();
             return _toonLavaShader!;
         }
     }
