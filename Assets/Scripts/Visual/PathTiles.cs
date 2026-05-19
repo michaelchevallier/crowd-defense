@@ -162,13 +162,13 @@ namespace CrowdDefense.Visual
             if (waterCells.Count > 0)
             {
                 var mat = config?.GetWaterMat(theme) ?? MakeFallbackWaterMat();
-                SpawnStreamBatch(grid, waterCells, mat, yOffset: 0.02f, "WaterStreams");
+                SpawnStreamBatch(grid, waterCells, mat, yOffset: 0.06f, "WaterStreams");
             }
 
             if (lavaCells.Count > 0)
             {
                 var mat = config?.GetLavaMat(theme) ?? MakeFallbackLavaMat();
-                SpawnStreamBatch(grid, lavaCells, mat, yOffset: 0.02f, "LavaStreams");
+                SpawnStreamBatch(grid, lavaCells, mat, yOffset: 0.06f, "LavaStreams");
             }
         }
 
