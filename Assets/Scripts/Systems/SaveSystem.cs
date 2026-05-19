@@ -821,7 +821,12 @@ namespace CrowdDefense.Systems
         // ── Mid-level resume (P1) ─────────────────────────────────────────────
 
         private const string MID_LEVEL_KEY_PREFIX = "cd_midlevel_v1_slot";
+        private const string MID_LEVEL_TMP_SUFFIX = "_tmp";
+        private const string MID_LEVEL_BAK_SUFFIX = "_bak";
+
         private static string MidLevelKey(int slot) => $"{MID_LEVEL_KEY_PREFIX}{slot}";
+        private static string MidLevelTmpKey(int slot) => $"{MID_LEVEL_KEY_PREFIX}{slot}{MID_LEVEL_TMP_SUFFIX}";
+        private static string MidLevelBakKey(int slot) => $"{MID_LEVEL_KEY_PREFIX}{slot}{MID_LEVEL_BAK_SUFFIX}";
 
         public static bool HasRunState()
         {
@@ -830,28 +835,66 @@ namespace CrowdDefense.Systems
 
         public static void SaveRunState(MidLevelStateData data)
         {
-            PlayerPrefs.SetString(MidLevelKey(CurrentSlot), JsonUtility.ToJson(data));
-            PlayerPrefs.Save();
-            CrowdDefense.UI.AutoSaveIndicator.Instance?.Pulse();
+            try
+            {
+                string json = JsonUtility.ToJson(data);
+                int s = CurrentSlot;
+                string primary = MidLevelKey(s);
+                string tmp = MidLevelTmpKey(s);
+                string bak = MidLevelBakKey(s);
+
+                // Stage 1: write to tmp
+                PlayerPrefs.SetString(tmp, json);
+                PlayerPrefs.Save();
+
+                // Stage 2: rotate current → backup
+                string current = PlayerPrefs.GetString(primary, "");
+                if (!string.IsNullOrEmpty(current))
+                    PlayerPrefs.SetString(bak, current);
+
+                // Stage 3: promote tmp → primary
+                PlayerPrefs.SetString(primary, json);
+                PlayerPrefs.DeleteKey(tmp);
+                PlayerPrefs.Save();
+
+                CrowdDefense.UI.AutoSaveIndicator.Instance?.Pulse();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[SaveSystem] SaveRunState failed: {ex.Message}");
+            }
         }
 
         public static MidLevelStateData? LoadRunState()
         {
-            string json = PlayerPrefs.GetString(MidLevelKey(CurrentSlot), "");
+            int s = CurrentSlot;
+            string json = PlayerPrefs.GetString(MidLevelKey(s), "");
+            MidLevelStateData? data = TryDeserializeMidLevel(json);
+            if (data != null) return data;
+
+            // Fallback to backup if primary corrupted
+            string bakJson = PlayerPrefs.GetString(MidLevelBakKey(s), "");
+            data = TryDeserializeMidLevel(bakJson);
+            if (data != null)
+            {
+                Debug.LogWarning("[SaveSystem] LoadRunState: primary corrupt, used backup");
+            }
+            return data;
+        }
+
+        private static MidLevelStateData? TryDeserializeMidLevel(string json)
+        {
             if (string.IsNullOrEmpty(json)) return null;
             try { return JsonUtility.FromJson<MidLevelStateData>(json); }
-            catch (Exception ex)
-            {
-#if UNITY_EDITOR
-                Debug.LogWarning($"[SaveSystem] LoadRunState corrupted, reset: {ex.Message}");
-#endif
-                return null;
-            }
+            catch { return null; }
         }
 
         public static void ClearMidLevelState()
         {
-            PlayerPrefs.DeleteKey(MidLevelKey(CurrentSlot));
+            int s = CurrentSlot;
+            PlayerPrefs.DeleteKey(MidLevelKey(s));
+            PlayerPrefs.DeleteKey(MidLevelTmpKey(s));
+            PlayerPrefs.DeleteKey(MidLevelBakKey(s));
             PlayerPrefs.Save();
         }
 
