@@ -273,6 +273,7 @@ namespace CrowdDefense.Entities
         private void PostUpgradeVisuals(int level)
         {
             DrawTierPips(level);
+            ApplyTierSkin(level);
             SpawnUpgradeRing(level);
             SpawnUpgradeConfetti(level);
             ApplyL3Tint();
