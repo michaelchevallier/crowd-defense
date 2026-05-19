@@ -504,6 +504,12 @@ namespace CrowdDefense.Systems
             // Synergy snapshot is informational; Synergies re-evaluates from placed towers automatically.
             // synergyActiveIds preserved in DTO for future validation or display in restore toast.
 
+            // Restore wave progress: sync WaveManager to saved waveIdx (B-WAVE-RESTORE).
+            if (WaveManager.Instance != null && mid.waveIdx > 0)
+            {
+                WaveManager.Instance.SkipToWave(mid.waveIdx);
+            }
+
 #if UNITY_EDITOR
             Debug.Log($"[LevelRunner] mid-level restore: level={mid.levelId} wave={mid.waveIdx} gold={mid.gold} hp={mid.castleHP} towers={mid.towers?.Count ?? 0} heroLv={mid.heroLevel} synergies={mid.synergyActiveIds?.Count ?? 0}");
 #endif

@@ -380,6 +380,20 @@ namespace CrowdDefense.Systems
 #endif
 
         // Called by HudController on button click or N keypress (debounced externally)
+        // Skip to a specific wave without spawning enemies from skipped waves.
+        // Called during mid-level restore to synchronize WaveManager state with saved waveIdx.
+        public void SkipToWave(int targetIdx)
+        {
+            // Only valid before wave starts (safety: no-op if wave active or all waves done).
+            if (_waveActive || targetIdx < 0 || (levelData != null && targetIdx >= levelData.Waves.Count))
+                return;
+
+            _nextWaveToStart = targetIdx;
+#if UNITY_EDITOR
+            Debug.Log($"[WaveManager] SkipToWave: next wave set to {targetIdx + 1}");
+#endif
+        }
+
         public void StartNextWave()
         {
             if (!_waitingForPlayerStart) return;
