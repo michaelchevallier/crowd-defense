@@ -160,6 +160,12 @@ namespace CrowdDefense.UI
             _sb.Append("\nTues: ");
             _sb.Append(tower.TotalKills);
 
+            var bal = BalanceConfig.Get();
+            int refund = Mathf.RoundToInt(tower.CumulativeCost * bal.SellRefundRatio);
+            _sb.Append("\nVendre: ");
+            _sb.Append(refund);
+            _sb.Append("c (80%)");
+
             if (_tooltipStats != null) _tooltipStats.text = _sb.ToString();
 
             // ── Synergies ────────────────────────────────────────────────────────
